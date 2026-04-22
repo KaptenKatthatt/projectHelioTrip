@@ -1,0 +1,30 @@
+---
+description: ProjectHelioTrip - tech stack, struktur och kodstil
+alwaysApply: true
+---
+
+# ProjectHelioTrip
+
+## Stack
+- Vite + React 19 + TypeScript (strict).
+- 3D: three, @react-three/fiber, @react-three/drei.
+- State: zustand (inga Contexts för global state).
+- Ikoner: lucide-react.
+
+## Struktur
+- `src/components/` – UI-komponenter.
+- `src/scene/` – R3F-komponenter (Canvas-innehåll).
+- `src/store/` – zustand-stores.
+- `src/hooks/` – custom hooks.
+- `src/lib/` – ramverksfri hjälplogik.
+
+## Filnamn & exports
+- `PascalCase.tsx` för komponenter, `camelCase.ts` för övrigt.
+- Namngivna exports för komponenter – inga default exports.
+- En komponent per fil.
+
+## Kodstil
+- Tidig-return framför djup nesting.
+- Inga kommentarer som bara upprepar koden.
+- Ingen död kod eller oanvända imports.
+- Prestanda prioriteras: undvik onödig allokering, memoa tunga beräkningar.

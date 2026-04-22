@@ -1,0 +1,23 @@
+import type { Translation } from '../translations';
+
+export const sv: Translation = {
+  appTitle: 'HelioTrip',
+  tagline: 'Utforska solsystemet',
+  planets: {
+    sun: 'Solen',
+    mercury: 'Merkurius',
+    venus: 'Venus',
+    earth: 'Jorden',
+    mars: 'Mars',
+    jupiter: 'Jupiter',
+    saturn: 'Saturnus',
+    uranus: 'Uranus',
+    neptune: 'Neptunus',
+  },
+  ui: {
+    travelTo: 'Res till',
+    arriving: 'Anländer…',
+    language: 'Språk',
+    loading: 'Laddar…',
+  },
+};

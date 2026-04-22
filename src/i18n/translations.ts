@@ -1,0 +1,39 @@
+import type { PlanetId } from '../lib/planets';
+import { en } from './locales/en';
+import { sv } from './locales/sv';
+
+export type Locale = 'en' | 'sv';
+
+export type Translation = {
+  appTitle: string;
+  tagline: string;
+  planets: Record<PlanetId, string>;
+  ui: {
+    travelTo: string;
+    arriving: string;
+    language: string;
+    loading: string;
+  };
+};
+
+export const translations: Record<Locale, Translation> = { en, sv };
+
+export const DEFAULT_LOCALE: Locale = 'sv';
+
+export const SUPPORTED_LOCALES: readonly Locale[] = ['sv', 'en'];
+
+export const LOCALE_LABELS: Record<Locale, string> = {
+  sv: 'Svenska',
+  en: 'English',
+};
+
+export const detectLocale = (): Locale => {
+  if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
+  const lang = navigator.language.toLowerCase();
+  if (lang.startsWith('sv')) return 'sv';
+  if (lang.startsWith('en')) return 'en';
+  return DEFAULT_LOCALE;
+};
+
+export const isLocale = (value: unknown): value is Locale =>
+  value === 'sv' || value === 'en';

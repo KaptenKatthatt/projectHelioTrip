@@ -1,0 +1,14 @@
+---
+description: Strikt TypeScript-standard för projektet
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript
+
+- Strict mode alltid på. Inga `any` – använd `unknown` + narrowing.
+- `type` för props, returtyper och unions. `interface` endast för utökningsbara publika API:er.
+- Explicita returtyper på exporterade funktioner och hooks.
+- Föredra `readonly` för oföränderliga props/arrays.
+- `satisfies` framför type assertions när det går.
+- Undvik non-null assertions (`!`). Narrow istället.
