@@ -5,11 +5,13 @@ import { CameraManager } from './CameraManager';
 import { TimeManager } from './TimeManager';
 import { Planets } from './Planets';
 import { AsteroidBelt } from './AsteroidBelt';
+import { OrbitLines } from './OrbitLines';
+import { Effects } from './Effects';
 
 export const Scene = () => {
   return (
     <Canvas
-      camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 5000 }}
+      camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
       shadows
@@ -27,10 +29,10 @@ export const Scene = () => {
 
       <Suspense fallback={null}>
         <Stars
-          radius={400}
-          depth={120}
-          count={8000}
-          factor={5}
+          radius={2500}
+          depth={400}
+          count={12000}
+          factor={6}
           saturation={0}
           fade
           speed={0.3}
@@ -38,10 +40,12 @@ export const Scene = () => {
       </Suspense>
 
       <TimeManager />
+      <OrbitLines />
       <Planets />
       <AsteroidBelt />
 
       <CameraManager />
+      <Effects />
     </Canvas>
   );
 };

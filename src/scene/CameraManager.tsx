@@ -16,6 +16,9 @@ const ARC_HEIGHT_FACTOR = 0.25;
 const VIEW_DISTANCE_MULTIPLIER = 6;
 const VIEW_DISTANCE_MIN = 8;
 
+const OVERVIEW_POSITION = new Vector3(0, 900, 0.001);
+const OVERVIEW_TARGET = new Vector3(0, 0, 0);
+
 type Travel = {
   curve: CatmullRomCurve3;
   startQuat: Quaternion;
@@ -24,11 +27,42 @@ type Travel = {
   targetPos: Vector3;
 };
 
+type Destination = {
+  endPos: Vector3;
+  targetPos: Vector3;
+};
+
+const computeDestination = (
+  startPos: Vector3,
+  state: ReturnType<typeof useStore.getState>,
+): Destination | null => {
+  if (state.viewMode === 'overview') {
+    return {
+      endPos: OVERVIEW_POSITION.clone(),
+      targetPos: OVERVIEW_TARGET.clone(),
+    };
+  }
+  if (!state.activePlanet) return null;
+  const planet = getPlanet(state.activePlanet);
+  if (!planet) return null;
+
+  const targetPos = getLivePosition(state.activePlanet).clone();
+
+  const viewDistance = Math.max(
+    VIEW_DISTANCE_MIN,
+    planet.radius * VIEW_DISTANCE_MULTIPLIER,
+  );
+  const offset = new Vector3().subVectors(startPos, targetPos);
+  if (offset.lengthSq() < 1e-6) offset.set(0, planet.radius, viewDistance);
+  offset.setLength(viewDistance);
+  const endPos = targetPos.clone().add(offset);
+  return { endPos, targetPos };
+};
+
 export const CameraManager = () => {
   const camera = useThree((s) => s.camera);
 
-  const activePlanet = useStore((s) => s.activePlanet);
-  const isTraveling = useStore((s) => s.isTraveling);
+  const travelId = useStore((s) => s.travelId);
   const setCameraPosition = useStore((s) => s.setCameraPosition);
   const arrive = useStore((s) => s.arrive);
 
@@ -44,22 +78,14 @@ export const CameraManager = () => {
   }));
 
   useEffect(() => {
-    if (!isTraveling || !activePlanet) return;
+    if (travelId === 0) return;
 
-    const planet = getPlanet(activePlanet);
-    if (!planet) return;
-
-    const targetPos = getLivePosition(activePlanet).clone();
+    const state = useStore.getState();
     const startPos = camera.position.clone();
+    const dest = computeDestination(startPos, state);
+    if (!dest) return;
 
-    const viewDistance = Math.max(
-      VIEW_DISTANCE_MIN,
-      planet.radius * VIEW_DISTANCE_MULTIPLIER,
-    );
-    const approach = new Vector3()
-      .subVectors(startPos, targetPos)
-      .setLength(viewDistance);
-    const endPos = targetPos.clone().add(approach);
+    const { endPos, targetPos } = dest;
 
     const mid = new Vector3().lerpVectors(startPos, endPos, 0.5);
     mid.y += startPos.distanceTo(endPos) * ARC_HEIGHT_FACTOR;
@@ -68,7 +94,7 @@ export const CameraManager = () => {
 
     const startQuat = camera.quaternion.clone();
     dummy.position.copy(endPos);
-    dummy.up.copy(camera.up);
+    dummy.up.set(0, 1, 0);
     dummy.lookAt(targetPos);
     dummy.updateMatrixWorld();
     const endQuat = dummy.quaternion.clone();
@@ -87,7 +113,7 @@ export const CameraManager = () => {
         travelRef.current = null;
       },
     });
-  }, [isTraveling, activePlanet, camera, dummy, api, setCameraPosition, arrive]);
+  }, [travelId, camera, dummy, api, setCameraPosition, arrive]);
 
   useFrame(() => {
     const travel = travelRef.current;

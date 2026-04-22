@@ -5,11 +5,17 @@ import type { PlanetId } from '../lib/planets';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 
+export type ViewMode = 'close' | 'overview';
+
 export type SimulationState = {
   activePlanet: PlanetId | null;
   cameraPosition: Vector3;
   isTraveling: boolean;
   simulationTime: Date;
+  timeScale: number;
+  isPlaying: boolean;
+  viewMode: ViewMode;
+  travelId: number;
   locale: Locale;
 };
 
@@ -19,8 +25,13 @@ export type SimulationActions = {
   setIsTraveling: (traveling: boolean) => void;
   setSimulationTime: (time: Date) => void;
   travelTo: (planet: PlanetId) => void;
+  travelToOverview: () => void;
   arrive: () => void;
   resetSimulationTime: () => void;
+  setTimeScale: (scale: number) => void;
+  setIsPlaying: (playing: boolean) => void;
+  togglePlay: () => void;
+  setViewMode: (mode: ViewMode) => void;
   setLocale: (locale: Locale) => void;
 };
 
@@ -39,6 +50,10 @@ export const useStore = create<Store>()(
       cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
       isTraveling: false,
       simulationTime: new Date(),
+      timeScale: 1,
+      isPlaying: false,
+      viewMode: 'overview',
+      travelId: 0,
       locale: detectLocale(),
 
       setActivePlanet: (planet) => set({ activePlanet: planet }),
@@ -51,11 +66,31 @@ export const useStore = create<Store>()(
       setSimulationTime: (time) => set({ simulationTime: time }),
 
       travelTo: (planet) =>
-        set({ activePlanet: planet, isTraveling: true }),
+        set((state) => ({
+          activePlanet: planet,
+          isTraveling: true,
+          viewMode: 'close',
+          travelId: state.travelId + 1,
+        })),
+
+      travelToOverview: () =>
+        set((state) => ({
+          isTraveling: true,
+          viewMode: 'overview',
+          travelId: state.travelId + 1,
+        })),
 
       arrive: () => set({ isTraveling: false }),
 
       resetSimulationTime: () => set({ simulationTime: new Date() }),
+
+      setTimeScale: (scale) => set({ timeScale: scale }),
+
+      setIsPlaying: (playing) => set({ isPlaying: playing }),
+
+      togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+
+      setViewMode: (mode) => set({ viewMode: mode }),
 
       setLocale: (locale) => set({ locale }),
     }),

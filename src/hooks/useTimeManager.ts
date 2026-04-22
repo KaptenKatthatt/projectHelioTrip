@@ -24,9 +24,19 @@ export const useTimeManager = (): void => {
   const dayCache = useMemo<Map<number, DayMap>>(() => new Map(), []);
   const pending = useRef(new Set<string>());
 
-  useFrame(() => {
-    const simTime = useStore.getState().simulationTime;
-    const timeInDays = simTime.getTime() / MS_PER_DAY;
+  useFrame((_state, delta) => {
+    const { simulationTime, isPlaying, timeScale, setSimulationTime } =
+      useStore.getState();
+
+    if (isPlaying && timeScale !== 0) {
+      const deltaMs = delta * timeScale * MS_PER_DAY;
+      setSimulationTime(new Date(simulationTime.getTime() + deltaMs));
+    }
+
+    const currentSimTime = isPlaying && timeScale !== 0
+      ? useStore.getState().simulationTime
+      : simulationTime;
+    const timeInDays = currentSimTime.getTime() / MS_PER_DAY;
     const dayFloor = Math.floor(timeInDays);
     const dayCeil = dayFloor + 1;
     const frac = timeInDays - dayFloor;

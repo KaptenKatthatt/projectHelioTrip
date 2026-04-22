@@ -13,6 +13,16 @@ export type Translation = {
     arriving: string;
     language: string;
     loading: string;
+    overview: string;
+    closeup: string;
+    distance: string;
+    radius: string;
+    simDate: string;
+    play: string;
+    pause: string;
+    speed: string;
+    planets: string;
+    resetTime: string;
   };
 };
 

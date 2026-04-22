@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Scene } from './scene/Scene';
+import { HUD } from './components/HUD';
 import { useStore } from './store/useStore';
 
 export const App = () => {
@@ -9,5 +10,10 @@ export const App = () => {
     document.documentElement.lang = locale;
   }, [locale]);
 
-  return <Scene />;
+  return (
+    <>
+      <Scene />
+      <HUD />
+    </>
+  );
 };
