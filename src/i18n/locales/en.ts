@@ -13,6 +13,7 @@ export const en: Translation = {
     saturn: 'Saturn',
     uranus: 'Uranus',
     neptune: 'Neptune',
+    pluto: 'Pluto',
   },
   ui: {
     travelTo: 'Travel to',

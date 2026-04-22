@@ -7,7 +7,8 @@ export type PlanetId =
   | 'jupiter'
   | 'saturn'
   | 'uranus'
-  | 'neptune';
+  | 'neptune'
+  | 'pluto';
 
 export const HORIZONS_COMMAND_IDS: Record<PlanetId, number> = {
   sun: 10,
@@ -19,6 +20,7 @@ export const HORIZONS_COMMAND_IDS: Record<PlanetId, number> = {
   saturn: 699,
   uranus: 799,
   neptune: 899,
+  pluto: 999,
 };
 
 export const PLANET_IDS = Object.keys(HORIZONS_COMMAND_IDS) as readonly PlanetId[];

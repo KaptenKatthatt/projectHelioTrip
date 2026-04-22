@@ -41,7 +41,7 @@ export const TimeScrubber = () => {
   const speedFmt = new Intl.NumberFormat(locale === 'sv' ? 'sv-SE' : 'en-US');
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl items-center gap-4 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md">
+    <div className="pointer-events-auto mx-auto flex w-full max-w-3xl items-center gap-4 rounded-2xl border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md">
       <button
         type="button"
         onClick={togglePlay}

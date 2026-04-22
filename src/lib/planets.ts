@@ -10,7 +10,8 @@ export type PlanetId =
   | 'jupiter'
   | 'saturn'
   | 'uranus'
-  | 'neptune';
+  | 'neptune'
+  | 'pluto';
 
 export type PlanetDefinition = {
   id: PlanetId;
@@ -31,6 +32,7 @@ export const PLANETS: readonly PlanetDefinition[] = [
   { id: 'saturn', position: au(9.54), radius: 3, color: '#e8d6a6' },
   { id: 'uranus', position: au(19.2), radius: 2, color: '#9ec6e0' },
   { id: 'neptune', position: au(30.05), radius: 1.9, color: '#4666ff' },
+  { id: 'pluto', position: au(39.48), radius: 0.5, color: '#c9b6a0' },
 ];
 
 const PLANET_MAP: ReadonlyMap<PlanetId, PlanetDefinition> = new Map(

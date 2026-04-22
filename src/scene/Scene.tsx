@@ -14,17 +14,15 @@ export const Scene = () => {
       camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
-      shadows
     >
       <color attach="background" args={['#05060a']} />
 
-      <ambientLight intensity={0.08} color="#b3c2ff" />
+      <ambientLight intensity={0.25} color="#b3c2ff" />
       <pointLight
         position={[0, 0, 0]}
-        intensity={2.5}
+        intensity={3.5}
         decay={0}
         color="#fff1c4"
-        castShadow
       />
 
       <Suspense fallback={null}>

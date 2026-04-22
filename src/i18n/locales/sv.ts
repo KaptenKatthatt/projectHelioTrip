@@ -13,6 +13,7 @@ export const sv: Translation = {
     saturn: 'Saturnus',
     uranus: 'Uranus',
     neptune: 'Neptunus',
+    pluto: 'Pluto',
   },
   ui: {
     travelTo: 'Res till',
