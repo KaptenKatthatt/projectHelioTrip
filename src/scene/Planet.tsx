@@ -62,7 +62,7 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
   );
 };
 
-type BodyProps = Required<Props>;
+type BodyProps = Pick<Props, 'id' | 'radius' | 'color'>;
 
 const Body = ({ id, radius, color }: BodyProps) => {
   const surface = getSurfaceTextures(id);

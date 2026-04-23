@@ -8,6 +8,7 @@ const LOOK_AT_DISTANCE = 100;
 const MAX_ROTATION_SPEED = 1.7;
 const SNAP_ANGLE_RAD = 0.0035;
 const NEAR_PARALLEL_THRESHOLD = 0.9995;
+const WORLD_UP = new Vector3(0, 1, 0);
 
 const slerpDirections = (
   from: Vector3,
@@ -73,6 +74,7 @@ export const SkyFocusCamera = () => {
     slerpDirections(currentDir, targetDir, t, tmpDirRef.current);
     currentDir.copy(tmpDirRef.current);
     lookAtRef.copy(camera.position).addScaledVector(currentDir, LOOK_AT_DISTANCE);
+    camera.up.copy(WORLD_UP);
     camera.lookAt(lookAtRef);
 
     if (currentDir.angleTo(targetDir) <= SNAP_ANGLE_RAD) {

@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { BodyId } from '../lib/bodies';
-import type { ConstellationMenuId } from '../lib/constellations';
+import type { ConstellationId } from '../lib/constellations';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 
@@ -22,7 +22,8 @@ export type SimulationState = {
   travelId: number;
   locale: Locale;
   navigationMode: NavigationMode;
-  selectedConstellation: ConstellationMenuId | null;
+  selectedConstellation: ConstellationId | null;
+  constellationLinesVisible: boolean;
   skyFocusId: number;
   selectedUniversePreset: UniversePreset;
 };
@@ -42,8 +43,9 @@ export type SimulationActions = {
   setViewMode: (mode: ViewMode) => void;
   setLocale: (locale: Locale) => void;
   setNavigationMode: (mode: NavigationMode) => void;
-  setSelectedConstellation: (id: ConstellationMenuId | null) => void;
-  focusSkyTarget: (id: ConstellationMenuId) => void;
+  setSelectedConstellation: (id: ConstellationId | null) => void;
+  focusSkyTarget: (id: ConstellationId) => void;
+  toggleConstellationLinesVisible: () => void;
   setSelectedUniversePreset: (preset: UniversePreset) => void;
 };
 
@@ -69,6 +71,7 @@ export const useStore = create<Store>()(
       locale: detectLocale(),
       navigationMode: 'cinematic',
       selectedConstellation: null,
+      constellationLinesVisible: true,
       skyFocusId: 0,
       selectedUniversePreset: 'solarSystem',
 
@@ -120,11 +123,22 @@ export const useStore = create<Store>()(
       focusSkyTarget: (id) =>
         set((state) => ({
           selectedConstellation: id,
-          isTraveling: true,
+          isTraveling: state.selectedConstellation === null,
           viewMode: 'overview',
-          travelId: state.travelId + 1,
+          travelId:
+            state.selectedConstellation === null
+              ? state.travelId + 1
+              : state.travelId,
           navigationMode: 'cinematic',
-          skyFocusId: state.skyFocusId + 1,
+          skyFocusId:
+            state.selectedConstellation === null
+              ? state.skyFocusId + 1
+              : state.skyFocusId,
+        })),
+
+      toggleConstellationLinesVisible: () =>
+        set((state) => ({
+          constellationLinesVisible: !state.constellationLinesVisible,
         })),
 
       setSelectedUniversePreset: (preset) =>

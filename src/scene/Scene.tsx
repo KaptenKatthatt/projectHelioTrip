@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { BodyPickers } from './BodyPickers';
 import { CameraManager } from './CameraManager';
+import { ConstellationLines } from './ConstellationLines';
 import { FreeFlightControls } from './FreeFlightControls';
 import { GlobalZoom } from './GlobalZoom';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
@@ -49,6 +50,7 @@ export const Scene = () => {
 
       <TimeManager />
       <OrbitLines />
+      <ConstellationLines />
       <Suspense fallback={null}>
         <Planets />
       </Suspense>

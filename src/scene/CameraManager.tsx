@@ -182,6 +182,7 @@ export const CameraManager = () => {
   const camera = useThree((s) => s.camera);
 
   const travelId = useStore((s) => s.travelId);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
   const setCameraPosition = useStore((s) => s.setCameraPosition);
   const arrive = useStore((s) => s.arrive);
 
@@ -316,6 +317,7 @@ export const CameraManager = () => {
      * snap the camera back to the cinematic offset every frame.
      */
     if (arrived.kind === 'body') return;
+    if (selectedConstellation) return;
 
     tmpTargetPos.copy(OVERVIEW_TARGET);
     camera.position.copy(OVERVIEW_POSITION);

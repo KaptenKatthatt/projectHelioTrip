@@ -62,5 +62,7 @@ export const en: Translation = {
     universeSolarSystem: 'Solar System',
     universeStarWars: 'Star Wars',
     universeMilkyWayOverview: 'Milky Way Overview',
+    showConstellationLines: 'Show constellation lines',
+    hideConstellationLines: 'Hide constellation lines',
   },
 };

@@ -4,6 +4,7 @@ import { useTexture } from '@react-three/drei';
 import {
   BufferAttribute,
   BufferGeometry,
+  CanvasTexture,
   DoubleSide,
   Float32BufferAttribute,
   RingGeometry,
@@ -90,6 +91,31 @@ const createParticleGeometry = (
   return geo;
 };
 
+const createSoftParticleTexture = (): CanvasTexture => {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    return new CanvasTexture(canvas);
+  }
+
+  const center = size * 0.5;
+  const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
+  gradient.addColorStop(0, 'rgba(255,255,255,1)');
+  gradient.addColorStop(0.6, 'rgba(255,255,255,0.9)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const texture = new CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+};
+
 export const Rings = ({ planetId, radius }: Props) => {
   const def = getRingDefinition(planetId);
   if (!def) return null;
@@ -116,9 +142,11 @@ const RingSystem = ({
     () => createParticleGeometry(inner, outer, def.particleCount, def.seed),
     [inner, outer, def.particleCount, def.seed],
   );
+  const particleTexture = useMemo(() => createSoftParticleTexture(), []);
 
   useEffect(() => () => ringGeometry.dispose(), [ringGeometry]);
   useEffect(() => () => particleGeometry.dispose(), [particleGeometry]);
+  useEffect(() => () => particleTexture.dispose(), [particleTexture]);
 
   useLayoutEffect(() => {
     const group = groupRef.current;
@@ -147,10 +175,13 @@ const RingSystem = ({
         <pointsMaterial
           vertexColors
           color={def.color}
+          map={particleTexture}
+          alphaMap={particleTexture}
           size={def.particleSize}
           sizeAttenuation
           transparent
           opacity={Math.min(1, def.opacity + 0.3)}
+          alphaTest={0.02}
           depthWrite={false}
         />
       </points>

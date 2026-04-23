@@ -62,5 +62,7 @@ export const sv: Translation = {
     universeSolarSystem: 'Solsystemet',
     universeStarWars: 'Star Wars',
     universeMilkyWayOverview: 'Vintergatan (översikt)',
+    showConstellationLines: 'Visa stjärnbildslinjer',
+    hideConstellationLines: 'Dölj stjärnbildslinjer',
   },
 };

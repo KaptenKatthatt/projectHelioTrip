@@ -47,6 +47,8 @@ export type Translation = {
     universeSolarSystem: string;
     universeStarWars: string;
     universeMilkyWayOverview: string;
+    showConstellationLines: string;
+    hideConstellationLines: string;
   };
 };
 

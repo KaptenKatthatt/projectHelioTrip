@@ -16,15 +16,18 @@ export const NavigationAccordion = () => {
   const [openSection, setOpenSection] = useState<SectionId>('planets');
 
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
   const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
   const focusSkyTarget = useStore((s) => s.focusSkyTarget);
+  const toggleConstellationLinesVisible = useStore(
+    (s) => s.toggleConstellationLinesVisible,
+  );
   const setSelectedUniversePreset = useStore((s) => s.setSelectedUniversePreset);
 
   const constellationItems = useMemo(
     () =>
       CONSTELLATION_MENU_ITEMS.map((item) => ({
         id: item.id,
-        kind: item.kind,
         label: locale === 'sv' ? item.labelSv : item.labelEn,
       })),
     [locale],
@@ -62,24 +65,49 @@ export const NavigationAccordion = () => {
           {constellationItems.map((item) => {
             const isActive = selectedConstellation === item.id;
             return (
-              <button
+              <div
                 key={item.id}
-                type="button"
-                onClick={() => focusSkyTarget(item.id)}
                 className={
-                  'rounded-lg px-2.5 py-1.5 text-left text-sm transition ' +
+                  'flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm transition ' +
                   (isActive
                     ? 'bg-white/15 text-white'
                     : 'text-white/70 hover:bg-white/10 hover:text-white')
                 }
               >
-                {item.label}
-                {item.kind === 'star' ? (
-                  <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-                    {t.ui.focusStar}
+                <button
+                  type="button"
+                  onClick={() => focusSkyTarget(item.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
+                  <span className="truncate">{item.label}</span>
+                </button>
+                {isActive ? (
+                  <span className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={toggleConstellationLinesVisible}
+                      aria-label={
+                        constellationLinesVisible
+                          ? t.ui.hideConstellationLines
+                          : t.ui.showConstellationLines
+                      }
+                      title={
+                        constellationLinesVisible
+                          ? t.ui.hideConstellationLines
+                          : t.ui.showConstellationLines
+                      }
+                      className={
+                        'rounded-md border px-1.5 py-0.5 text-[10px] leading-none transition ' +
+                        (constellationLinesVisible
+                          ? 'border-cyan-200/60 bg-cyan-300/20 text-cyan-100'
+                          : 'border-white/25 bg-transparent text-white/55 hover:text-white/80')
+                      }
+                    >
+                      ╱╲
+                    </button>
                   </span>
                 ) : null}
-              </button>
+              </div>
             );
           })}
         </div>
