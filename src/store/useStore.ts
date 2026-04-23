@@ -9,7 +9,7 @@ import type { Locale } from '../i18n/translations';
 export type ViewMode = 'close' | 'overview';
 
 export type NavigationMode = 'cinematic' | 'free';
-export type UniversePreset = 'solarSystem' | 'starWars' | 'milkyWayOverview';
+export type UniversePreset = 'solarSystem' | 'milkyWayOverview';
 
 export type SimulationState = {
   activeBody: BodyId | null;

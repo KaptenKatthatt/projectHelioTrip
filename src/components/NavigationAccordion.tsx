@@ -36,7 +36,6 @@ export const NavigationAccordion = () => {
   const universeOptions = useMemo<readonly UniverseOption[]>(
     () => [
       { id: 'solarSystem', label: t.ui.universeSolarSystem },
-      { id: 'starWars', label: t.ui.universeStarWars },
       { id: 'milkyWayOverview', label: t.ui.universeMilkyWayOverview },
     ],
     [t],

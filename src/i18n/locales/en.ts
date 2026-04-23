@@ -60,7 +60,6 @@ export const en: Translation = {
     focusStar: 'Star',
     comingSoon: 'Feature wiring comes in a later step.',
     universeSolarSystem: 'Solar System',
-    universeStarWars: 'Star Wars',
     universeMilkyWayOverview: 'Milky Way Overview',
     showConstellationLines: 'Show constellation lines',
     hideConstellationLines: 'Hide constellation lines',

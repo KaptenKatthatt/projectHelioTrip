@@ -45,7 +45,6 @@ export type Translation = {
     focusStar: string;
     comingSoon: string;
     universeSolarSystem: string;
-    universeStarWars: string;
     universeMilkyWayOverview: string;
     showConstellationLines: string;
     hideConstellationLines: string;
