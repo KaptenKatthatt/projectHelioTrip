@@ -6,6 +6,7 @@ import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
+import { MoonArtifacts } from './MoonArtifacts';
 
 type Props = {
   moon: MoonDefinition;
@@ -57,6 +58,7 @@ export const Moon = ({ moon }: Props) => {
         <Suspense fallback={<FlatMoon moon={moon} />}>
           <MoonBody moon={moon} />
         </Suspense>
+        {moon.id === 'moon' && <MoonArtifacts moonRadius={moon.radius} />}
       </group>
     </group>
   );

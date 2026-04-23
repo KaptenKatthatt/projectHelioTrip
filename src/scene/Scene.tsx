@@ -1,8 +1,10 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
+import { BodyPickers } from './BodyPickers';
 import { CameraManager } from './CameraManager';
 import { FreeFlightControls } from './FreeFlightControls';
+import { GlobalZoom } from './GlobalZoom';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { TimeManager } from './TimeManager';
 import { useStore } from '../store/useStore';
@@ -18,8 +20,12 @@ export const Scene = () => {
 
   return (
     <Canvas
-      camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      camera={{ position: [0, 20, 80], fov: 55, near: 0.001, far: 8000 }}
+      gl={{
+        antialias: true,
+        powerPreference: 'high-performance',
+        logarithmicDepthBuffer: true,
+      }}
       dpr={[1, 2]}
     >
       <color attach="background" args={['#05060a']} />
@@ -55,6 +61,8 @@ export const Scene = () => {
 
       <CameraManager />
       <PlanetOrbitControls />
+      <GlobalZoom />
+      <BodyPickers />
       {navigationMode === 'free' && <FreeFlightControls />}
       <Effects />
     </Canvas>

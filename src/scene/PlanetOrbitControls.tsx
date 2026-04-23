@@ -6,7 +6,7 @@ import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
 
-const MIN_DISTANCE_MULTIPLIER = 1.2;
+const MIN_DISTANCE_MULTIPLIER = 1.02;
 const MAX_DISTANCE_MULTIPLIER = 60;
 const DAMPING_FACTOR = 0.08;
 
