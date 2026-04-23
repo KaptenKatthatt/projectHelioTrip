@@ -143,6 +143,7 @@ export const ConstellationLines = () => {
   }, [opacity]);
 
   useEffect(() => {
+    if (isTraveling) return;
     const current = displayedIdRef.current;
 
     if (!selectedConstellation) {
@@ -155,8 +156,6 @@ export const ConstellationLines = () => {
       phaseRef.current = 'fadeOut';
       return;
     }
-
-    if (isTraveling) return;
 
     if (!current) {
       displayedIdRef.current = selectedConstellation;
@@ -229,15 +228,13 @@ export const ConstellationLines = () => {
 
     const starMaterial = starMaterialRef.current;
     if (!starMaterial || !renderData) return;
-    const visibleOpacity = isTraveling ? 0 : opacity;
     starMaterial.uniforms.uSize.value = renderData.starSize;
     starMaterial.uniforms.uPixelRatio.value = pixelRatio;
-    starMaterial.uniforms.uOpacity.value = visibleOpacity;
+    starMaterial.uniforms.uOpacity.value = opacity;
   });
 
   if (!renderData) return null;
-  const visibleOpacity = isTraveling ? 0 : opacity;
-  const lineOpacity = constellationLinesVisible ? visibleOpacity * 0.95 : 0;
+  const lineOpacity = constellationLinesVisible ? opacity * 0.95 : 0;
 
   return (
     <group ref={groupRef} renderOrder={5}>
@@ -265,7 +262,7 @@ export const ConstellationLines = () => {
             uColor: { value: STAR_COLOR },
             uSize: { value: renderData.starSize },
             uPixelRatio: { value: pixelRatio },
-            uOpacity: { value: visibleOpacity },
+            uOpacity: { value: opacity },
           }}
           vertexShader={STAR_VERTEX_SHADER}
           fragmentShader={STAR_FRAGMENT_SHADER}
