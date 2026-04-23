@@ -6,11 +6,20 @@ export const ViewModeToggle = () => {
   const { t } = useTranslation();
   const viewMode = useStore((s) => s.viewMode);
   const activeBody = useStore((s) => s.activeBody);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
+  const selectedStarWarsBody = useStore((s) => s.selectedStarWarsBody);
   const travelTo = useStore((s) => s.travelTo);
+  const travelToStarWars = useStore((s) => s.travelToStarWars);
   const travelToOverview = useStore((s) => s.travelToOverview);
 
   const onClick = (): void => {
-    if (viewMode === 'overview' && activeBody) {
+    if (
+      viewMode === 'overview' &&
+      selectedUniversePreset === 'starWars' &&
+      selectedStarWarsBody
+    ) {
+      travelToStarWars(selectedStarWarsBody);
+    } else if (viewMode === 'overview' && activeBody) {
       travelTo(activeBody);
     } else {
       travelToOverview();
@@ -20,7 +29,9 @@ export const ViewModeToggle = () => {
   const isOverview = viewMode === 'overview';
   const label = isOverview ? t.ui.closeup : t.ui.overview;
   const Icon = isOverview ? Telescope : Globe2;
-  const disabled = isOverview && !activeBody;
+  const hasCloseTarget =
+    selectedUniversePreset === 'starWars' ? !!selectedStarWarsBody : !!activeBody;
+  const disabled = isOverview && !hasCloseTarget;
 
   return (
     <button

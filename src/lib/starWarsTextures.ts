@@ -22,7 +22,10 @@ export const STAR_WARS_TEXTURES: Partial<
     enabled: true,
     diffuse: swBase('death-star', 'diffuse.jpg'),
   },
-  alderaan: sw('alderaan'),
+  alderaan: {
+    enabled: true,
+    diffuse: swBase('alderaan', 'diffuse.jpg'),
+  },
   yavin: sw('yavin'),
   'yavin-4': sw('yavin-4'),
   hoth: sw('hoth'),

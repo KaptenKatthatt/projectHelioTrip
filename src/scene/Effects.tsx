@@ -11,6 +11,7 @@ import { DepthOfFieldEffect, ToneMappingMode } from 'postprocessing';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBody, getBodyWorldPosition } from '../lib/bodies';
+import { getStarWarsBody } from '../lib/starWarsSystems';
 
 const DEFAULT_FOCUS_RANGE = 400;
 const CLOSE_FOCUS_RANGE_MIN = 60;
@@ -28,8 +29,13 @@ export const Effects = () => {
    * keeps `DepthOfFieldEffect.update()` in sync with the live body.
    */
   useFrame(() => {
-    const { activeBody, viewMode } = useStore.getState();
-    if (viewMode === 'close' && activeBody) {
+    const { activeBody, selectedUniversePreset, selectedStarWarsBody, viewMode } =
+      useStore.getState();
+    if (viewMode === 'close' && selectedUniversePreset === 'starWars' && selectedStarWarsBody) {
+      const body = getStarWarsBody(selectedStarWarsBody);
+      if (body) focusTarget.set(...body.position);
+      else focusTarget.set(0, 0, 0);
+    } else if (viewMode === 'close' && activeBody) {
       getBodyWorldPosition(activeBody, focusTarget);
     } else {
       focusTarget.set(0, 0, 0);
@@ -69,8 +75,19 @@ export const Effects = () => {
  */
 const useFocusRange = (): number => {
   const activeBody = useStore((s) => s.activeBody);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
+  const selectedStarWarsBody = useStore((s) => s.selectedStarWarsBody);
   const viewMode = useStore((s) => s.viewMode);
-  if (viewMode !== 'close' || !activeBody) return DEFAULT_FOCUS_RANGE;
+  if (viewMode !== 'close') return DEFAULT_FOCUS_RANGE;
+  if (selectedUniversePreset === 'starWars' && selectedStarWarsBody) {
+    const starWarsBody = getStarWarsBody(selectedStarWarsBody);
+    if (!starWarsBody) return DEFAULT_FOCUS_RANGE;
+    return Math.max(
+      starWarsBody.radius * CLOSE_FOCUS_RANGE_PER_RADIUS,
+      CLOSE_FOCUS_RANGE_MIN,
+    );
+  }
+  if (!activeBody) return DEFAULT_FOCUS_RANGE;
   const body = getBody(activeBody);
   if (!body) return DEFAULT_FOCUS_RANGE;
   return Math.max(

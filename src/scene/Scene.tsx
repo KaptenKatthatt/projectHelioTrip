@@ -31,10 +31,10 @@ export const Scene = () => {
     >
       <color attach="background" args={['#05060a']} />
 
-      <ambientLight intensity={0.25} color="#b3c2ff" />
+      <ambientLight intensity={isStarWars ? 0.8 : 0.25} color="#b3c2ff" />
       <pointLight
         position={[0, 0, 0]}
-        intensity={3.5}
+        intensity={isStarWars ? 5.2 : 3.5}
         decay={0}
         color="#fff1c4"
       />

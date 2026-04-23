@@ -9,7 +9,7 @@ import { useStore } from '../store/useStore';
 const LOOK_AT_DISTANCE = 100;
 const NEAR_PARALLEL_THRESHOLD = 0.9995;
 const WORLD_UP = new Vector3(0, 1, 0);
-const INTRO_DURATION_MS = 2600;
+const INTRO_DURATION_MS = 3000;
 const INTRO_MOVE_DISTANCE = 220;
 const BODY_PADDING = 1.2;
 const MIN_SAFE_MOVE_DISTANCE = 8;
