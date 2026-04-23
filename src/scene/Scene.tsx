@@ -6,6 +6,7 @@ import { CameraManager } from './CameraManager';
 import { FreeFlightControls } from './FreeFlightControls';
 import { GlobalZoom } from './GlobalZoom';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
+import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
 import { useStore } from '../store/useStore';
 import { Planets } from './Planets';
@@ -56,6 +57,7 @@ export const Scene = () => {
       <AsteroidBelt />
 
       <CameraManager />
+      <SkyFocusCamera />
       <PlanetOrbitControls />
       <GlobalZoom />
       <BodyPickers />

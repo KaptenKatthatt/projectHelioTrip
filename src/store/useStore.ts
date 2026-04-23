@@ -23,6 +23,7 @@ export type SimulationState = {
   locale: Locale;
   navigationMode: NavigationMode;
   selectedConstellation: ConstellationMenuId | null;
+  skyFocusId: number;
   selectedUniversePreset: UniversePreset;
 };
 
@@ -42,6 +43,7 @@ export type SimulationActions = {
   setLocale: (locale: Locale) => void;
   setNavigationMode: (mode: NavigationMode) => void;
   setSelectedConstellation: (id: ConstellationMenuId | null) => void;
+  focusSkyTarget: (id: ConstellationMenuId) => void;
   setSelectedUniversePreset: (preset: UniversePreset) => void;
 };
 
@@ -67,6 +69,7 @@ export const useStore = create<Store>()(
       locale: detectLocale(),
       navigationMode: 'cinematic',
       selectedConstellation: null,
+      skyFocusId: 0,
       selectedUniversePreset: 'solarSystem',
 
       setActiveBody: (id) => set({ activeBody: id }),
@@ -85,6 +88,7 @@ export const useStore = create<Store>()(
           viewMode: 'close',
           travelId: state.travelId + 1,
           navigationMode: 'cinematic',
+          selectedConstellation: null,
         })),
 
       travelToOverview: () =>
@@ -112,6 +116,16 @@ export const useStore = create<Store>()(
       setNavigationMode: (mode) => set({ navigationMode: mode }),
 
       setSelectedConstellation: (id) => set({ selectedConstellation: id }),
+
+      focusSkyTarget: (id) =>
+        set((state) => ({
+          selectedConstellation: id,
+          isTraveling: true,
+          viewMode: 'overview',
+          travelId: state.travelId + 1,
+          navigationMode: 'cinematic',
+          skyFocusId: state.skyFocusId + 1,
+        })),
 
       setSelectedUniversePreset: (preset) =>
         set({ selectedUniversePreset: preset }),

@@ -40,6 +40,13 @@ export type Translation = {
     controlUpDown: string;
     controlBoost: string;
     controlExit: string;
+    constellations: string;
+    universes: string;
+    focusStar: string;
+    comingSoon: string;
+    universeSolarSystem: string;
+    universeStarWars: string;
+    universeMilkyWayOverview: string;
   };
 };
 

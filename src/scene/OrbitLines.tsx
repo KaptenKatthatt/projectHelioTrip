@@ -26,6 +26,8 @@ const buildOrbit = (radius: number): BufferGeometry => {
 
 export const OrbitLines = () => {
   const viewMode = useStore((s) => s.viewMode);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
 
   const orbits = useMemo<readonly OrbitGeo[]>(
     () =>
@@ -38,6 +40,13 @@ export const OrbitLines = () => {
   );
 
   const opacity = viewMode === 'overview' ? 0.45 : 0.1;
+
+  if (
+    selectedConstellation ||
+    selectedUniversePreset === 'milkyWayOverview'
+  ) {
+    return null;
+  }
 
   return (
     <group>

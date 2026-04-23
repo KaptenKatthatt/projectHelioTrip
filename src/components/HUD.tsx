@@ -3,8 +3,8 @@ import { FlightModeToggle } from './FlightModeToggle';
 import { FreeFlightHelp } from './FreeFlightHelp';
 import { FreeFlightHint } from './FreeFlightHint';
 import { LanguageToggle } from './LanguageToggle';
+import { NavigationAccordion } from './NavigationAccordion';
 import { PlanetPanel } from './PlanetPanel';
-import { PlanetSelector } from './PlanetSelector';
 import { TimeScrubber } from './TimeScrubber';
 import { ViewModeToggle } from './ViewModeToggle';
 
@@ -29,7 +29,7 @@ export const HUD = () => {
       <FreeFlightHint />
 
       <div className="flex items-end justify-between gap-6">
-        <PlanetSelector />
+        <NavigationAccordion />
         <div className="flex flex-col items-end gap-3">
           <PlanetPanel />
           <FreeFlightHelp />

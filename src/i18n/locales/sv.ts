@@ -55,5 +55,12 @@ export const sv: Translation = {
     controlUpDown: 'Upp / Ner',
     controlBoost: 'Boost',
     controlExit: 'Lämna fritt flyg',
+    constellations: 'Stjärnbilder',
+    universes: 'Universum',
+    focusStar: 'Stjärna',
+    comingSoon: 'Funktionerna kopplas in i ett senare steg.',
+    universeSolarSystem: 'Solsystemet',
+    universeStarWars: 'Star Wars',
+    universeMilkyWayOverview: 'Vintergatan (översikt)',
   },
 };

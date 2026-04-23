@@ -17,7 +17,7 @@ export const NavigationAccordion = () => {
 
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
-  const setSelectedConstellation = useStore((s) => s.setSelectedConstellation);
+  const focusSkyTarget = useStore((s) => s.focusSkyTarget);
   const setSelectedUniversePreset = useStore((s) => s.setSelectedUniversePreset);
 
   const constellationItems = useMemo(
@@ -40,27 +40,11 @@ export const NavigationAccordion = () => {
   );
 
   const toggleSection = (section: SectionId): void => {
-    setOpenSection((current) => (current === section ? section : section));
+    setOpenSection(section);
   };
 
   return (
     <nav className="pointer-events-auto flex w-56 flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md">
-      <button
-        type="button"
-        onClick={() => toggleSection('planets')}
-        className={
-          'rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
-          (openSection === 'planets'
-            ? 'bg-white/12 text-white/85'
-            : 'text-white/45 hover:bg-white/8 hover:text-white/70')
-        }
-      >
-        {t.ui.planets}
-      </button>
-      {openSection === 'planets' ? (
-        <PlanetSelector className="flex w-full flex-col gap-0.5" showHeading={false} />
-      ) : null}
-
       <button
         type="button"
         onClick={() => toggleSection('constellations')}
@@ -81,7 +65,7 @@ export const NavigationAccordion = () => {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setSelectedConstellation(item.id)}
+                onClick={() => focusSkyTarget(item.id)}
                 className={
                   'rounded-lg px-2.5 py-1.5 text-left text-sm transition ' +
                   (isActive
@@ -135,6 +119,22 @@ export const NavigationAccordion = () => {
           })}
           <p className="px-2.5 pt-1 text-xs text-white/45">{t.ui.comingSoon}</p>
         </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => toggleSection('planets')}
+        className={
+          'rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
+          (openSection === 'planets'
+            ? 'bg-white/12 text-white/85'
+            : 'text-white/45 hover:bg-white/8 hover:text-white/70')
+        }
+      >
+        {t.ui.planets}
+      </button>
+      {openSection === 'planets' ? (
+        <PlanetSelector className="flex w-full flex-col gap-0.5" showHeading={false} />
       ) : null}
     </nav>
   );

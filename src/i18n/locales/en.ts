@@ -55,5 +55,12 @@ export const en: Translation = {
     controlUpDown: 'Up / Down',
     controlBoost: 'Boost',
     controlExit: 'Exit free flight',
+    constellations: 'Constellations',
+    universes: 'Universes',
+    focusStar: 'Star',
+    comingSoon: 'Feature wiring comes in a later step.',
+    universeSolarSystem: 'Solar System',
+    universeStarWars: 'Star Wars',
+    universeMilkyWayOverview: 'Milky Way Overview',
   },
 };
