@@ -10,11 +10,6 @@ export type StarWarsSurfaceTextures = {
 const swBase = (body: StarWarsBodyId, file: string): string =>
   `/textures/star-wars/${body}/${file}`;
 
-const sw = (body: StarWarsBodyId): StarWarsSurfaceTextures => ({
-  enabled: false,
-  diffuse: swBase(body, 'diffuse.jpg'),
-});
-
 export const STAR_WARS_TEXTURES: Partial<
   Record<StarWarsBodyId, StarWarsSurfaceTextures>
 > = {
@@ -26,15 +21,30 @@ export const STAR_WARS_TEXTURES: Partial<
     enabled: true,
     diffuse: swBase('alderaan', 'diffuse.jpg'),
   },
-  yavin: sw('yavin'),
-  'yavin-4': sw('yavin-4'),
-  hoth: sw('hoth'),
+  yavin: {
+    enabled: true,
+    diffuse: swBase('yavin', 'diffuse.jpg'),
+  },
+  'yavin-4': {
+    enabled: true,
+    diffuse: swBase('yavin-4', 'diffuse.jpg'),
+  },
+  hoth: {
+    enabled: true,
+    diffuse: swBase('hoth', 'diffuse.jpg'),
+  },
   endor: {
     enabled: true,
     diffuse: swBase('endor', 'diffuse.jpg'),
   },
-  'kef-bir': sw('kef-bir'),
-  coruscant: sw('coruscant'),
+  'kef-bir': {
+    enabled: true,
+    diffuse: swBase('kef-bir', 'diffuse.jpg'),
+  },
+  coruscant: {
+    enabled: true,
+    diffuse: swBase('coruscant', 'diffuse.jpg'),
+  },
   naboo: {
     enabled: true,
     diffuse: swBase('naboo', 'diffuse.jpg'),
@@ -43,10 +53,22 @@ export const STAR_WARS_TEXTURES: Partial<
     enabled: true,
     diffuse: swBase('tatooine', 'diffuse.jpg'),
   },
-  kamino: sw('kamino'),
-  geonosis: sw('geonosis'),
-  kashyyyk: sw('kashyyyk'),
-  mustafar: sw('mustafar'),
+  kamino: {
+    enabled: true,
+    diffuse: swBase('kamino', 'diffuse.jpg'),
+  },
+  geonosis: {
+    enabled: true,
+    diffuse: swBase('geonosis', 'diffuse.jpg'),
+  },
+  kashyyyk: {
+    enabled: true,
+    diffuse: swBase('kashyyyk', 'diffuse.jpg'),
+  },
+  mustafar: {
+    enabled: true,
+    diffuse: swBase('mustafar', 'diffuse.jpg'),
+  },
 };
 
 export const getStarWarsSurfaceTextures = (
