@@ -30,6 +30,7 @@ export const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
   saturn: { diffuse: base('saturn', 'diffuse.jpg') },
   uranus: { diffuse: base('uranus', 'diffuse.jpg') },
   neptune: { diffuse: base('neptune', 'diffuse.jpg') },
+  pluto: { diffuse: base('pluto', 'diffuse.jpg') },
 };
 
 export const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {

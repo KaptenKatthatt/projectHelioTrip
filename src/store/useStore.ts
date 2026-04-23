@@ -7,6 +7,8 @@ import type { Locale } from '../i18n/translations';
 
 export type ViewMode = 'close' | 'overview';
 
+export type NavigationMode = 'cinematic' | 'free';
+
 export type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
@@ -17,6 +19,7 @@ export type SimulationState = {
   viewMode: ViewMode;
   travelId: number;
   locale: Locale;
+  navigationMode: NavigationMode;
 };
 
 export type SimulationActions = {
@@ -33,6 +36,7 @@ export type SimulationActions = {
   togglePlay: () => void;
   setViewMode: (mode: ViewMode) => void;
   setLocale: (locale: Locale) => void;
+  setNavigationMode: (mode: NavigationMode) => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -55,6 +59,7 @@ export const useStore = create<Store>()(
       viewMode: 'overview',
       travelId: 0,
       locale: detectLocale(),
+      navigationMode: 'cinematic',
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -71,6 +76,7 @@ export const useStore = create<Store>()(
           isTraveling: true,
           viewMode: 'close',
           travelId: state.travelId + 1,
+          navigationMode: 'cinematic',
         })),
 
       travelToOverview: () =>
@@ -78,6 +84,7 @@ export const useStore = create<Store>()(
           isTraveling: true,
           viewMode: 'overview',
           travelId: state.travelId + 1,
+          navigationMode: 'cinematic',
         })),
 
       arrive: () => set({ isTraveling: false }),
@@ -93,6 +100,8 @@ export const useStore = create<Store>()(
       setViewMode: (mode) => set({ viewMode: mode }),
 
       setLocale: (locale) => set({ locale }),
+
+      setNavigationMode: (mode) => set({ navigationMode: mode }),
     }),
     {
       name: 'heliotrip-preferences',

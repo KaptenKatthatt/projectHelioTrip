@@ -1,4 +1,7 @@
 import { useTranslation } from '../hooks/useTranslation';
+import { FlightModeToggle } from './FlightModeToggle';
+import { FreeFlightHelp } from './FreeFlightHelp';
+import { FreeFlightHint } from './FreeFlightHint';
 import { LanguageToggle } from './LanguageToggle';
 import { PlanetPanel } from './PlanetPanel';
 import { PlanetSelector } from './PlanetSelector';
@@ -17,14 +20,20 @@ export const HUD = () => {
           <p className="text-xs text-white/50">{t.tagline}</p>
         </div>
         <div className="flex items-center gap-2">
+          <FlightModeToggle />
           <ViewModeToggle />
           <LanguageToggle />
         </div>
       </header>
 
+      <FreeFlightHint />
+
       <div className="flex items-end justify-between gap-6">
         <PlanetSelector />
-        <PlanetPanel />
+        <div className="flex flex-col items-end gap-3">
+          <PlanetPanel />
+          <FreeFlightHelp />
+        </div>
       </div>
 
       <footer>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
   Bloom,
@@ -7,7 +7,7 @@ import {
   ToneMapping,
   Vignette,
 } from '@react-three/postprocessing';
-import { ToneMappingMode } from 'postprocessing';
+import { DepthOfFieldEffect, ToneMappingMode } from 'postprocessing';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBody, getBodyWorldPosition } from '../lib/bodies';
@@ -18,7 +18,15 @@ const CLOSE_FOCUS_RANGE_PER_RADIUS = 12;
 
 export const Effects = () => {
   const focusTarget = useMemo(() => new Vector3(), []);
+  const dofRef = useRef<DepthOfFieldEffect>(null);
 
+  /**
+   * R3F applies the `target` prop via `effect.target.copy(value)`, which
+   * snapshots the vector at render time. Without writing back each frame,
+   * the DoF would focus on a stale position (initially the origin) and
+   * blur every body we navigate to. Mutating `effect.target` directly
+   * keeps `DepthOfFieldEffect.update()` in sync with the live body.
+   */
   useFrame(() => {
     const { activeBody, viewMode } = useStore.getState();
     if (viewMode === 'close' && activeBody) {
@@ -26,6 +34,8 @@ export const Effects = () => {
     } else {
       focusTarget.set(0, 0, 0);
     }
+    const dof = dofRef.current;
+    if (dof?.target) dof.target.copy(focusTarget);
   });
 
   const focusRange = useFocusRange();
@@ -40,6 +50,7 @@ export const Effects = () => {
         radius={0.85}
       />
       <DepthOfField
+        ref={dofRef}
         target={focusTarget}
         focusRange={focusRange}
         bokehScale={1.2}

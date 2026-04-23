@@ -2,7 +2,10 @@ import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import { CameraManager } from './CameraManager';
+import { FreeFlightControls } from './FreeFlightControls';
+import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { TimeManager } from './TimeManager';
+import { useStore } from '../store/useStore';
 import { Planets } from './Planets';
 import { Moons } from './Moons';
 import { Satellites } from './Satellites';
@@ -11,6 +14,8 @@ import { OrbitLines } from './OrbitLines';
 import { Effects } from './Effects';
 
 export const Scene = () => {
+  const navigationMode = useStore((s) => s.navigationMode);
+
   return (
     <Canvas
       camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
@@ -49,6 +54,8 @@ export const Scene = () => {
       <AsteroidBelt />
 
       <CameraManager />
+      <PlanetOrbitControls />
+      {navigationMode === 'free' && <FreeFlightControls />}
       <Effects />
     </Canvas>
   );

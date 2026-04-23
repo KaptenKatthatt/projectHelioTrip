@@ -31,6 +31,15 @@ export type Translation = {
     readOnWikipedia: string;
     parent: string;
     distanceFromParent: string;
+    autopilot: string;
+    freeFlight: string;
+    clickToFly: string;
+    escToRelease: string;
+    controls: string;
+    controlMove: string;
+    controlUpDown: string;
+    controlBoost: string;
+    controlExit: string;
   };
 };
 

@@ -262,6 +262,8 @@ export const CameraManager = () => {
   ]);
 
   useFrame(() => {
+    if (useStore.getState().navigationMode === 'free') return;
+
     const travel = travelRef.current;
 
     if (travel) {
@@ -307,24 +309,16 @@ export const CameraManager = () => {
     const arrived = arrivedRef.current;
     if (!arrived) return;
 
-    if (arrived.kind === 'body') {
-      getBodyWorldPosition(arrived.bodyId, tmpTargetPos);
-      const parent = getBodyParent(arrived.bodyId);
-      if (parent) {
-        computeChildBodyEndPos(
-          tmpTargetPos,
-          getLivePosition(parent),
-          arrived.viewDistance,
-          tmpEndPos,
-        );
-      } else {
-        computePlanetEndPos(tmpTargetPos, arrived.viewDistance, tmpEndPos);
-      }
-      camera.position.copy(tmpEndPos);
-    } else {
-      tmpTargetPos.copy(OVERVIEW_TARGET);
-      camera.position.copy(OVERVIEW_POSITION);
-    }
+    /**
+     * After arriving at a body, `PlanetOrbitControls` owns the camera:
+     * it tracks the body's live position and lets the user orbit/zoom.
+     * Writing `camera.position` here would fight OrbitControls and
+     * snap the camera back to the cinematic offset every frame.
+     */
+    if (arrived.kind === 'body') return;
+
+    tmpTargetPos.copy(OVERVIEW_TARGET);
+    camera.position.copy(OVERVIEW_POSITION);
     camera.up.copy(WORLD_UP);
     camera.lookAt(tmpTargetPos);
   });
