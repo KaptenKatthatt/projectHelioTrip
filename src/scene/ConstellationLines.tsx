@@ -6,6 +6,8 @@ import {
   BufferGeometry,
   Float32BufferAttribute,
   Group,
+  Quaternion,
+  ShaderMaterial,
   Vector3,
 } from 'three';
 import { CONSTELLATION_SHAPES } from '../lib/constellationShapes';
@@ -17,8 +19,11 @@ const LINE_COLOR = '#8ec5ff';
 const STAR_SIZE = 8;
 const LINE_WIDTH = 1.2;
 const STAR_COLOR = new Vector3(0.85, 0.93, 1.0);
-const FADE_OUT_MS = 170;
-const FADE_IN_MS = 220;
+const FADE_OUT_MS = 350;
+const FADE_IN_MS = 450;
+const FADE_OUT_SECONDS = FADE_OUT_MS / 1000;
+const FADE_IN_SECONDS = FADE_IN_MS / 1000;
+const CANONICAL_FORWARD = new Vector3(0, 0, -1);
 
 const STAR_VERTEX_SHADER = `
 uniform float uSize;
@@ -52,6 +57,15 @@ type RenderData = {
   readonly starSize: number;
 };
 
+type StarUniformMaterial = ShaderMaterial & {
+  uniforms: {
+    uColor: { value: Vector3 };
+    uSize: { value: number };
+    uPixelRatio: { value: number };
+    uOpacity: { value: number };
+  };
+};
+
 const toDirection = (raHours: number, decDeg: number): Vector3 => {
   const ra = (raHours / 24) * Math.PI * 2;
   const dec = (decDeg * Math.PI) / 180;
@@ -67,13 +81,18 @@ const buildRenderData = (selectedId: ConstellationId): RenderData => {
   const shape = CONSTELLATION_SHAPES[selectedId];
 
   const starMap = new Map<string, Vector3>();
+  const centroid = new Vector3();
   for (const star of shape.stars) {
-    starMap.set(
-      star.id,
-      toDirection(star.rightAscensionHours, star.declinationDeg).multiplyScalar(
-        SKY_RADIUS,
-      ),
-    );
+    const dir = toDirection(star.rightAscensionHours, star.declinationDeg);
+    centroid.add(dir);
+    starMap.set(star.id, dir);
+  }
+
+  if (centroid.lengthSq() <= 1e-8) centroid.copy(CANONICAL_FORWARD);
+  else centroid.normalize();
+  const align = new Quaternion().setFromUnitVectors(centroid, CANONICAL_FORWARD);
+  for (const dir of starMap.values()) {
+    dir.applyQuaternion(align).multiplyScalar(SKY_RADIUS);
   }
 
   const starPositions = new Float32Array(shape.stars.length * 3);
@@ -104,82 +123,55 @@ export const ConstellationLines = () => {
   const camera = useThree((s) => s.camera);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const isTraveling = useStore((s) => s.isTraveling);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
   const groupRef = useRef<Group>(null);
-  const rafRef = useRef<number | null>(null);
+  const starMaterialRef = useRef<StarUniformMaterial | null>(null);
   const displayedIdRef = useRef<ConstellationId | null>(null);
-  const mountedRef = useRef(true);
+  const nextIdRef = useRef<ConstellationId | null>(null);
+  const phaseRef = useRef<'idle' | 'fadeOut' | 'fadeIn'>('idle');
+  const opacityRef = useRef(0);
   const [displayedId, setDisplayedId] = useState<ConstellationId | null>(null);
   const [opacity, setOpacity] = useState(0);
 
-  const stopAnimation = (): void => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  };
-
-  const animateOpacity = (
-    from: number,
-    to: number,
-    durationMs: number,
-    onDone?: () => void,
-  ): void => {
-    stopAnimation();
-    const start = performance.now();
-    const delta = to - from;
-    setOpacity(from);
-    const tick = (now: number): void => {
-      if (!mountedRef.current) return;
-      const progress = durationMs > 0 ? Math.min(1, (now - start) / durationMs) : 1;
-      const eased = progress * progress * (3 - 2 * progress);
-      setOpacity(from + delta * eased);
-      if (progress >= 1) {
-        rafRef.current = null;
-        onDone?.();
-        return;
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-  };
+  useEffect(() => {
+    displayedIdRef.current = displayedId;
+  }, [displayedId]);
 
   useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-      stopAnimation();
-    };
-  }, []);
+    opacityRef.current = opacity;
+  }, [opacity]);
 
   useEffect(() => {
     const current = displayedIdRef.current;
 
     if (!selectedConstellation) {
-      if (!current) return;
-      animateOpacity(opacity, 0, FADE_OUT_MS, () => {
-        if (!mountedRef.current) return;
-        displayedIdRef.current = null;
-        setDisplayedId(null);
-      });
+      nextIdRef.current = null;
+      if (!current) {
+        phaseRef.current = 'idle';
+        opacityRef.current = 0;
+        setOpacity(0);
+        return;
+      }
+      phaseRef.current = 'fadeOut';
       return;
     }
+
+    if (isTraveling) return;
 
     if (!current) {
       displayedIdRef.current = selectedConstellation;
       setDisplayedId(selectedConstellation);
-      animateOpacity(0, 1, FADE_IN_MS);
+      opacityRef.current = 0;
+      setOpacity(0);
+      phaseRef.current = 'fadeIn';
       return;
     }
 
     if (current === selectedConstellation) return;
-
-    animateOpacity(opacity, 0, FADE_OUT_MS, () => {
-      if (!mountedRef.current) return;
-      displayedIdRef.current = selectedConstellation;
-      setDisplayedId(selectedConstellation);
-      animateOpacity(0, 1, FADE_IN_MS);
-    });
-  }, [selectedConstellation]);
+    nextIdRef.current = selectedConstellation;
+    phaseRef.current = 'fadeOut';
+  }, [selectedConstellation, isTraveling]);
 
   const renderData = useMemo(() => {
     if (!displayedId) return null;
@@ -194,14 +186,60 @@ export const ConstellationLines = () => {
     [renderData],
   );
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    const phase = phaseRef.current;
+    if (phase === 'fadeOut') {
+      const nextOpacity =
+        FADE_OUT_SECONDS <= 1e-6
+          ? 0
+          : Math.max(0, opacityRef.current - delta / FADE_OUT_SECONDS);
+      opacityRef.current = nextOpacity;
+      setOpacity(nextOpacity);
+    } else if (phase === 'fadeIn') {
+      const nextOpacity =
+        FADE_IN_SECONDS <= 1e-6
+          ? 1
+          : Math.min(1, opacityRef.current + delta / FADE_IN_SECONDS);
+      opacityRef.current = nextOpacity;
+      setOpacity(nextOpacity);
+    }
+
+    if (phase === 'fadeOut' && opacityRef.current <= 0.001) {
+      const nextId = nextIdRef.current;
+      if (nextId) {
+        nextIdRef.current = null;
+        displayedIdRef.current = nextId;
+        setDisplayedId(nextId);
+        opacityRef.current = 0;
+        setOpacity(0);
+        phaseRef.current = 'fadeIn';
+      } else {
+        displayedIdRef.current = null;
+        setDisplayedId(null);
+        phaseRef.current = 'idle';
+      }
+    } else if (phase === 'fadeIn' && opacityRef.current >= 0.999) {
+      opacityRef.current = 1;
+      setOpacity(1);
+      phaseRef.current = 'idle';
+    }
+
     const group = groupRef.current;
     if (!group) return;
     group.position.copy(camera.position);
+    group.quaternion.copy(camera.quaternion);
+
+    const starMaterial = starMaterialRef.current;
+    if (!starMaterial || !renderData) return;
+    const visibleOpacity = isTraveling ? 0 : opacity;
+    starMaterial.uniforms.uSize.value = renderData.starSize;
+    starMaterial.uniforms.uPixelRatio.value = pixelRatio;
+    starMaterial.uniforms.uOpacity.value = visibleOpacity;
   });
 
   if (!renderData) return null;
-  const lineOpacity = constellationLinesVisible ? opacity * 0.95 : 0;
+  const visibleOpacity = isTraveling ? 0 : opacity;
+  const lineOpacity = constellationLinesVisible ? visibleOpacity * 0.95 : 0;
 
   return (
     <group ref={groupRef} renderOrder={5}>
@@ -220,7 +258,7 @@ export const ConstellationLines = () => {
       ))}
       <points geometry={renderData.starGeometry}>
         <shaderMaterial
-          key={`stars-${renderData.starSize}-${pixelRatio}`}
+          ref={starMaterialRef}
           transparent
           depthWrite={false}
           depthTest={false}
@@ -229,7 +267,7 @@ export const ConstellationLines = () => {
             uColor: { value: STAR_COLOR },
             uSize: { value: renderData.starSize },
             uPixelRatio: { value: pixelRatio },
-            uOpacity: { value: opacity },
+            uOpacity: { value: visibleOpacity },
           }}
           vertexShader={STAR_VERTEX_SHADER}
           fragmentShader={STAR_FRAGMENT_SHADER}

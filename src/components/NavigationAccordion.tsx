@@ -8,7 +8,7 @@ type SectionId = 'planets' | 'constellations';
 
 export const NavigationAccordion = () => {
   const { locale, t } = useTranslation();
-  const [openSection, setOpenSection] = useState<SectionId>('planets');
+  const [openSection, setOpenSection] = useState<SectionId | null>('planets');
 
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
@@ -26,7 +26,7 @@ export const NavigationAccordion = () => {
   );
 
   const toggleSection = (section: SectionId): void => {
-    setOpenSection(section);
+    setOpenSection((current) => (current === section ? null : section));
   };
 
   return (

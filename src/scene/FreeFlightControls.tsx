@@ -62,6 +62,8 @@ const COLLISION_BODIES: readonly CollisionBody[] = [
 
 export const FreeFlightControls = () => {
   const camera = useThree((s) => s.camera);
+  const activeBody = useStore((s) => s.activeBody);
+  const travelTo = useStore((s) => s.travelTo);
   const setNavigationMode = useStore((s) => s.setNavigationMode);
 
   const input = useKeyboardMovement(true);
@@ -107,6 +109,10 @@ export const FreeFlightControls = () => {
         return;
       }
       if (wasLockedRef.current) {
+        if (activeBody) {
+          travelTo(activeBody);
+          return;
+        }
         setNavigationMode('cinematic');
       }
     };
@@ -115,7 +121,7 @@ export const FreeFlightControls = () => {
     return () => {
       document.removeEventListener('pointerlockchange', onPointerLockChange);
     };
-  }, [setNavigationMode]);
+  }, [activeBody, setNavigationMode, travelTo]);
 
   useFrame((_, delta) => {
     if (delta <= 0) return;

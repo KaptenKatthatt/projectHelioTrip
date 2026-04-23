@@ -12,6 +12,7 @@ import { Moons } from './Moons';
 import { Satellites } from './Satellites';
 import { AsteroidBelt } from './AsteroidBelt';
 import { OrbitLines } from './OrbitLines';
+import { MilkyWayBackground } from './MilkyWayBackground';
 
 const LazyBodyPickers = lazy(async () => {
   const module = await import('./BodyPickers');
@@ -53,15 +54,19 @@ export const Scene = () => {
       />
 
       <Suspense fallback={null}>
-        <Stars
-          radius={2500}
-          depth={400}
-          count={12000}
-          factor={6}
-          saturation={0}
-          fade
-          speed={0.3}
-        />
+        {navigationMode === 'free' ? (
+          <MilkyWayBackground />
+        ) : (
+          <Stars
+            radius={2500}
+            depth={400}
+            count={12000}
+            factor={6}
+            saturation={0}
+            fade
+            speed={0.3}
+          />
+        )}
       </Suspense>
 
       <TimeManager />

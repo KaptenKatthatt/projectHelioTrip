@@ -21,7 +21,19 @@ export default defineConfig({
           }
 
           if (id.includes('@react-three/drei')) {
-            return 'vendor-drei';
+            if (id.includes('/core/')) {
+              return 'vendor-drei-core';
+            }
+            if (id.includes('/web/')) {
+              return 'vendor-drei-web';
+            }
+            if (id.includes('/helpers/')) {
+              return 'vendor-drei-helpers';
+            }
+            if (id.includes('/materials/')) {
+              return 'vendor-drei-materials';
+            }
+            return 'vendor-drei-misc';
           }
 
           if (
