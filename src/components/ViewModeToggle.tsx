@@ -5,13 +5,13 @@ import { useTranslation } from '../hooks/useTranslation';
 export const ViewModeToggle = () => {
   const { t } = useTranslation();
   const viewMode = useStore((s) => s.viewMode);
-  const activePlanet = useStore((s) => s.activePlanet);
+  const activeBody = useStore((s) => s.activeBody);
   const travelTo = useStore((s) => s.travelTo);
   const travelToOverview = useStore((s) => s.travelToOverview);
 
   const onClick = (): void => {
-    if (viewMode === 'overview' && activePlanet) {
-      travelTo(activePlanet);
+    if (viewMode === 'overview' && activeBody) {
+      travelTo(activeBody);
     } else {
       travelToOverview();
     }
@@ -20,7 +20,7 @@ export const ViewModeToggle = () => {
   const isOverview = viewMode === 'overview';
   const label = isOverview ? t.ui.closeup : t.ui.overview;
   const Icon = isOverview ? Telescope : Globe2;
-  const disabled = isOverview && !activePlanet;
+  const disabled = isOverview && !activeBody;
 
   return (
     <button

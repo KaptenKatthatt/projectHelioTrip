@@ -16,6 +16,7 @@ export type HorizonsVectorResult = {
 export type FetchHorizonsOptions = {
   commandId: number;
   date: Date;
+  center?: string;
 };
 
 export class HorizonsError extends Error {
@@ -25,7 +26,7 @@ export class HorizonsError extends Error {
 export const fetchHorizonsVectors = async (
   options: FetchHorizonsOptions,
 ): Promise<HorizonsVectorResult> => {
-  const { commandId, date } = options;
+  const { commandId, date, center = '500@0' } = options;
   const start = toIsoDate(date);
   const stop = toIsoDate(addDays(date, 1));
 
@@ -35,7 +36,7 @@ export const fetchHorizonsVectors = async (
     OBJ_DATA: quote('NO'),
     MAKE_EPHEM: quote('YES'),
     EPHEM_TYPE: quote('VECTORS'),
-    CENTER: quote('500@0'),
+    CENTER: quote(center),
     START_TIME: quote(start),
     STOP_TIME: quote(stop),
     STEP_SIZE: quote('1 d'),

@@ -4,6 +4,8 @@ import { Stars } from '@react-three/drei';
 import { CameraManager } from './CameraManager';
 import { TimeManager } from './TimeManager';
 import { Planets } from './Planets';
+import { Moons } from './Moons';
+import { Satellites } from './Satellites';
 import { AsteroidBelt } from './AsteroidBelt';
 import { OrbitLines } from './OrbitLines';
 import { Effects } from './Effects';
@@ -39,7 +41,11 @@ export const Scene = () => {
 
       <TimeManager />
       <OrbitLines />
-      <Planets />
+      <Suspense fallback={null}>
+        <Planets />
+      </Suspense>
+      <Moons />
+      <Satellites />
       <AsteroidBelt />
 
       <CameraManager />

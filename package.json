@@ -9,6 +9,8 @@
     "dev:api": "tsx watch scripts/dev-server.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "textures": "tsx scripts/download-textures.ts",
+    "elements": "tsx scripts/generate-orbital-elements.ts",
     "preview": "vite preview"
   },
   "dependencies": {

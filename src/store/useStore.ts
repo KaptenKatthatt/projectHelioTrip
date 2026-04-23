@@ -1,14 +1,14 @@
 import { Vector3 } from 'three';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { PlanetId } from '../lib/planets';
+import type { BodyId } from '../lib/bodies';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 
 export type ViewMode = 'close' | 'overview';
 
 export type SimulationState = {
-  activePlanet: PlanetId | null;
+  activeBody: BodyId | null;
   cameraPosition: Vector3;
   isTraveling: boolean;
   simulationTime: Date;
@@ -20,11 +20,11 @@ export type SimulationState = {
 };
 
 export type SimulationActions = {
-  setActivePlanet: (planet: PlanetId | null) => void;
+  setActiveBody: (id: BodyId | null) => void;
   setCameraPosition: (position: Vector3) => void;
   setIsTraveling: (traveling: boolean) => void;
   setSimulationTime: (time: Date) => void;
-  travelTo: (planet: PlanetId) => void;
+  travelTo: (id: BodyId) => void;
   travelToOverview: () => void;
   arrive: () => void;
   resetSimulationTime: () => void;
@@ -46,7 +46,7 @@ type PersistedState = {
 export const useStore = create<Store>()(
   persist(
     (set) => ({
-      activePlanet: null,
+      activeBody: null,
       cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
       isTraveling: false,
       simulationTime: new Date(),
@@ -56,7 +56,7 @@ export const useStore = create<Store>()(
       travelId: 0,
       locale: detectLocale(),
 
-      setActivePlanet: (planet) => set({ activePlanet: planet }),
+      setActiveBody: (id) => set({ activeBody: id }),
 
       setCameraPosition: (position) =>
         set({ cameraPosition: position.clone() }),
@@ -65,9 +65,9 @@ export const useStore = create<Store>()(
 
       setSimulationTime: (time) => set({ simulationTime: time }),
 
-      travelTo: (planet) =>
+      travelTo: (id) =>
         set((state) => ({
-          activePlanet: planet,
+          activeBody: id,
           isTraveling: true,
           viewMode: 'close',
           travelId: state.travelId + 1,

@@ -1,44 +1,96 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { easings, useSpring } from '@react-spring/three';
-import { CatmullRomCurve3, Vector3 } from 'three';
+import { useSpring } from '@react-spring/three';
+import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
-import { getPlanet, type PlanetId } from '../lib/planets';
+import {
+  getBody,
+  getBodyParent,
+  getBodyWorldPosition,
+  type BodyId,
+} from '../lib/bodies';
 import { getLivePosition } from '../lib/positionsBus';
 
-const TRAVEL_DURATION_MS = 3200;
-const ARC_HEIGHT_FACTOR = 0.2;
-const VIEW_DISTANCE_MULTIPLIER = 6;
-const VIEW_DISTANCE_MIN = 8;
+const AIM_DURATION_MS = 700;
+const FLY_DURATION_MS = 2800;
+const TOTAL_DURATION_MS = AIM_DURATION_MS + FLY_DURATION_MS;
+const AIM_FRACTION = AIM_DURATION_MS / TOTAL_DURATION_MS;
+
+const ARC_HEIGHT_FACTOR = 0.18;
+const PLANET_VIEW_DISTANCE_MULTIPLIER = 6;
+const PLANET_VIEW_DISTANCE_MIN = 8;
+const MOON_VIEW_DISTANCE_MULTIPLIER = 8;
+const MOON_VIEW_DISTANCE_MIN = 2.5;
+const LOOK_AT_DISTANCE = 100;
+const NEAR_ANTIPODAL_THRESHOLD = 0.9995;
 
 const OVERVIEW_POSITION = new Vector3(0.001, 900, 0.001);
 const OVERVIEW_TARGET = new Vector3(0, 0, 0);
+const WORLD_UP = new Vector3(0, 1, 0);
 
-type PlanetTravel = {
-  kind: 'planet';
+type BodyTravel = {
+  kind: 'body';
   startPos: Vector3;
-  planetId: PlanetId;
+  startForward: Vector3;
+  bodyId: BodyId;
   viewDistance: number;
 };
 
 type OverviewTravel = {
   kind: 'overview';
   startPos: Vector3;
+  startForward: Vector3;
 };
 
-type Travel = PlanetTravel | OverviewTravel;
+type Travel = BodyTravel | OverviewTravel;
 
 type Arrived =
-  | { kind: 'planet'; planetId: PlanetId; viewDistance: number }
+  | { kind: 'body'; bodyId: BodyId; viewDistance: number }
   | { kind: 'overview' };
 
+const easeInOutCubic = (x: number): number =>
+  x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
 /**
- * Places the camera offset from the planet in a stable cinematic angle:
- * slightly sunward, tangential to the orbit, and elevated. Because the
- * offset is rebuilt from the planet's current direction from the sun each
- * frame, the angle stays consistent as the planet moves in its orbit.
+ * Launch-and-glide easing: slow takeoff, acceleration through the middle,
+ * soft deceleration on approach. Gives travel a rocket-like feel.
  */
-const computeEndPos = (
+const easeInOutQuart = (x: number): number =>
+  x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
+
+/**
+ * Spherical linear interpolation of two unit direction vectors. Produces
+ * the shortest great-circle arc between `a` and `b`. Safe for parallel or
+ * near-antipodal inputs (falls back to `b` to avoid division by zero).
+ */
+const slerpDirections = (
+  a: Vector3,
+  b: Vector3,
+  t: number,
+  out: Vector3,
+): Vector3 => {
+  const dot = Math.max(-1, Math.min(1, a.dot(b)));
+  if (dot > NEAR_ANTIPODAL_THRESHOLD) {
+    return out.copy(b);
+  }
+  if (dot < -NEAR_ANTIPODAL_THRESHOLD) {
+    return out.copy(b);
+  }
+  const theta = Math.acos(dot);
+  const sinTheta = Math.sin(theta);
+  const wA = Math.sin((1 - t) * theta) / sinTheta;
+  const wB = Math.sin(t * theta) / sinTheta;
+  out.copy(a).multiplyScalar(wA).addScaledVector(b, wB);
+  return out.normalize();
+};
+
+/**
+ * Places the camera at a stable cinematic angle relative to a planet:
+ * slightly sunward, tangential to the orbit, and elevated. Rebuilt from
+ * the planet's current direction from the sun each frame, so the angle
+ * stays consistent as the planet orbits.
+ */
+const computePlanetEndPos = (
   planetPos: Vector3,
   viewDistance: number,
   out: Vector3,
@@ -59,6 +111,73 @@ const computeEndPos = (
   out.add(planetPos);
 };
 
+/**
+ * Places the camera outside a child body (moon/satellite) along the
+ * parent→child axis, so the body fills the frame with its parent
+ * dramatically in the background. Falls back to a sunward offset if
+ * the body coincides with its parent (very early, before any offset
+ * data has landed).
+ */
+const computeChildBodyEndPos = (
+  childPos: Vector3,
+  parentPos: Vector3,
+  viewDistance: number,
+  out: Vector3,
+): void => {
+  const dx = childPos.x - parentPos.x;
+  const dy = childPos.y - parentPos.y;
+  const dz = childPos.z - parentPos.z;
+  const len = Math.hypot(dx, dy, dz);
+
+  if (len < 1e-4) {
+    out.set(1, 0.3, 0).setLength(viewDistance).add(childPos);
+    return;
+  }
+
+  const inv = 1 / len;
+  out.set(dx * inv, dy * inv, dz * inv);
+  out.y += 0.25;
+  out.setLength(viewDistance);
+  out.add(childPos);
+};
+
+const resolveTarget = (travel: Travel, out: Vector3): void => {
+  if (travel.kind === 'overview') {
+    out.copy(OVERVIEW_TARGET);
+    return;
+  }
+  getBodyWorldPosition(travel.bodyId, out);
+};
+
+const resolveEndPos = (travel: Travel, out: Vector3, scratch: Vector3): void => {
+  if (travel.kind === 'overview') {
+    out.copy(OVERVIEW_POSITION);
+    return;
+  }
+  getBodyWorldPosition(travel.bodyId, scratch);
+  const parent = getBodyParent(travel.bodyId);
+  if (parent) {
+    computeChildBodyEndPos(
+      scratch,
+      getLivePosition(parent),
+      travel.viewDistance,
+      out,
+    );
+    return;
+  }
+  computePlanetEndPos(scratch, travel.viewDistance, out);
+};
+
+const computeViewDistance = (bodyId: BodyId, radius: number): number => {
+  if (getBodyParent(bodyId)) {
+    return Math.max(MOON_VIEW_DISTANCE_MIN, radius * MOON_VIEW_DISTANCE_MULTIPLIER);
+  }
+  return Math.max(
+    PLANET_VIEW_DISTANCE_MIN,
+    radius * PLANET_VIEW_DISTANCE_MULTIPLIER,
+  );
+};
+
 export const CameraManager = () => {
   const camera = useThree((s) => s.camera);
 
@@ -72,15 +191,14 @@ export const CameraManager = () => {
   const tmpPos = useMemo(() => new Vector3(), []);
   const tmpEndPos = useMemo(() => new Vector3(), []);
   const tmpTargetPos = useMemo(() => new Vector3(), []);
-  const tmpMid = useMemo(() => new Vector3(), []);
-  const curve = useMemo(
-    () => new CatmullRomCurve3([new Vector3(), new Vector3(), new Vector3()]),
-    [],
-  );
+  const tmpScratch = useMemo(() => new Vector3(), []);
+  const tmpDir = useMemo(() => new Vector3(), []);
+  const tmpInterpDir = useMemo(() => new Vector3(), []);
+  const tmpLookAt = useMemo(() => new Vector3(), []);
 
   const [{ t }, api] = useSpring(() => ({
     t: 0,
-    config: { duration: TRAVEL_DURATION_MS, easing: easings.easeInOutCubic },
+    config: { duration: TOTAL_DURATION_MS, easing: (x: number) => x },
   }));
 
   useEffect(() => {
@@ -88,21 +206,21 @@ export const CameraManager = () => {
 
     const state = useStore.getState();
     const startPos = camera.position.clone();
+    const startForward = new Vector3();
+    camera.getWorldDirection(startForward);
 
     let travel: Travel;
     if (state.viewMode === 'overview') {
-      travel = { kind: 'overview', startPos };
-    } else if (state.activePlanet) {
-      const planet = getPlanet(state.activePlanet);
-      if (!planet) return;
+      travel = { kind: 'overview', startPos, startForward };
+    } else if (state.activeBody) {
+      const body = getBody(state.activeBody);
+      if (!body) return;
       travel = {
-        kind: 'planet',
+        kind: 'body',
         startPos,
-        planetId: state.activePlanet,
-        viewDistance: Math.max(
-          VIEW_DISTANCE_MIN,
-          planet.radius * VIEW_DISTANCE_MULTIPLIER,
-        ),
+        startForward,
+        bodyId: state.activeBody,
+        viewDistance: computeViewDistance(state.activeBody, body.def.radius),
       };
     } else {
       return;
@@ -119,40 +237,69 @@ export const CameraManager = () => {
         const current = travelRef.current;
         if (!current) return;
 
-        resolveEndPos(current, tmpEndPos);
+        resolveEndPos(current, tmpEndPos, tmpScratch);
         setCameraPosition(tmpEndPos);
         arrive();
         arrivedRef.current =
-          current.kind === 'planet'
+          current.kind === 'body'
             ? {
-                kind: 'planet',
-                planetId: current.planetId,
+                kind: 'body',
+                bodyId: current.bodyId,
                 viewDistance: current.viewDistance,
               }
             : { kind: 'overview' };
         travelRef.current = null;
       },
     });
-  }, [travelId, camera, api, setCameraPosition, arrive, tmpEndPos]);
+  }, [
+    travelId,
+    camera,
+    api,
+    setCameraPosition,
+    arrive,
+    tmpEndPos,
+    tmpScratch,
+  ]);
 
   useFrame(() => {
     const travel = travelRef.current;
 
     if (travel) {
-      resolveEndPos(travel, tmpEndPos);
+      const progress = t.get();
       resolveTarget(travel, tmpTargetPos);
 
-      tmpMid.lerpVectors(travel.startPos, tmpEndPos, 0.5);
-      tmpMid.y +=
-        travel.startPos.distanceTo(tmpEndPos) * ARC_HEIGHT_FACTOR;
+      if (progress <= AIM_FRACTION) {
+        const aim = easeInOutCubic(progress / AIM_FRACTION);
 
-      curve.points[0].copy(travel.startPos);
-      curve.points[1].copy(tmpMid);
-      curve.points[2].copy(tmpEndPos);
-      curve.getPoint(t.get(), tmpPos);
+        tmpDir
+          .copy(tmpTargetPos)
+          .sub(travel.startPos)
+          .normalize();
+
+        slerpDirections(travel.startForward, tmpDir, aim, tmpInterpDir);
+
+        tmpLookAt
+          .copy(travel.startPos)
+          .addScaledVector(tmpInterpDir, LOOK_AT_DISTANCE);
+
+        camera.position.copy(travel.startPos);
+        camera.up.copy(WORLD_UP);
+        camera.lookAt(tmpLookAt);
+        return;
+      }
+
+      const fly = easeInOutQuart(
+        (progress - AIM_FRACTION) / (1 - AIM_FRACTION),
+      );
+
+      resolveEndPos(travel, tmpEndPos, tmpScratch);
+      tmpPos.lerpVectors(travel.startPos, tmpEndPos, fly);
+      const arcHeight =
+        travel.startPos.distanceTo(tmpEndPos) * ARC_HEIGHT_FACTOR;
+      tmpPos.y += Math.sin(fly * Math.PI) * arcHeight;
 
       camera.position.copy(tmpPos);
-      camera.up.set(0, 1, 0);
+      camera.up.copy(WORLD_UP);
       camera.lookAt(tmpTargetPos);
       return;
     }
@@ -160,34 +307,27 @@ export const CameraManager = () => {
     const arrived = arrivedRef.current;
     if (!arrived) return;
 
-    if (arrived.kind === 'planet') {
-      tmpTargetPos.copy(getLivePosition(arrived.planetId));
-      computeEndPos(tmpTargetPos, arrived.viewDistance, tmpEndPos);
+    if (arrived.kind === 'body') {
+      getBodyWorldPosition(arrived.bodyId, tmpTargetPos);
+      const parent = getBodyParent(arrived.bodyId);
+      if (parent) {
+        computeChildBodyEndPos(
+          tmpTargetPos,
+          getLivePosition(parent),
+          arrived.viewDistance,
+          tmpEndPos,
+        );
+      } else {
+        computePlanetEndPos(tmpTargetPos, arrived.viewDistance, tmpEndPos);
+      }
       camera.position.copy(tmpEndPos);
     } else {
       tmpTargetPos.copy(OVERVIEW_TARGET);
       camera.position.copy(OVERVIEW_POSITION);
     }
-    camera.up.set(0, 1, 0);
+    camera.up.copy(WORLD_UP);
     camera.lookAt(tmpTargetPos);
   });
 
   return null;
-};
-
-const resolveEndPos = (travel: Travel, out: Vector3): void => {
-  if (travel.kind === 'overview') {
-    out.copy(OVERVIEW_POSITION);
-    return;
-  }
-  const planetPos = getLivePosition(travel.planetId);
-  computeEndPos(planetPos, travel.viewDistance, out);
-};
-
-const resolveTarget = (travel: Travel, out: Vector3): void => {
-  if (travel.kind === 'overview') {
-    out.copy(OVERVIEW_TARGET);
-    return;
-  }
-  out.copy(getLivePosition(travel.planetId));
 };

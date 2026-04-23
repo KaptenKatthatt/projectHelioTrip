@@ -1,6 +1,25 @@
-# React + TypeScript + Vite
+# ProjectHelioTrip
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React 19 + TypeScript + React Three Fiber solar system visualization.
+
+## Getting started
+
+```bash
+npm install
+npm run textures   # one-time: downloads CC BY 4.0 planet textures
+npm run dev
+```
+
+`npm run textures` pulls diffuse/normal/roughness maps (plus Earth clouds) from
+[Solar System Scope](https://www.solarsystemscope.com/textures/) and
+`threejs.org/examples` into `public/textures/`. The folder is gitignored; rerun
+the script after a fresh clone.
+
+---
+
+## Template notes
+
+This project was bootstrapped from the Vite React TS template.
 
 Currently, two official plugins are available:
 

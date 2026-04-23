@@ -1,4 +1,6 @@
 import type { PlanetId } from '../lib/planets';
+import type { MoonId } from '../lib/moons';
+import type { SatelliteId } from '../lib/satellites';
 import { en } from './locales/en';
 import { sv } from './locales/sv';
 
@@ -8,6 +10,8 @@ export type Translation = {
   appTitle: string;
   tagline: string;
   planets: Record<PlanetId, string>;
+  moons: Record<MoonId, string>;
+  satellites: Record<SatelliteId, string>;
   ui: {
     travelTo: string;
     arriving: string;
@@ -22,7 +26,11 @@ export type Translation = {
     pause: string;
     speed: string;
     planets: string;
+    moons: string;
     resetTime: string;
+    readOnWikipedia: string;
+    parent: string;
+    distanceFromParent: string;
   };
 };
 

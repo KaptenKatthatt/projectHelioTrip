@@ -15,6 +15,18 @@ export const sv: Translation = {
     neptune: 'Neptunus',
     pluto: 'Pluto',
   },
+  moons: {
+    moon: 'Månen',
+    io: 'Io',
+    europa: 'Europa',
+    ganymede: 'Ganymedes',
+    callisto: 'Callisto',
+    titan: 'Titan',
+    triton: 'Triton',
+  },
+  satellites: {
+    iss: 'ISS',
+  },
   ui: {
     travelTo: 'Res till',
     arriving: 'Anländer…',
@@ -29,6 +41,10 @@ export const sv: Translation = {
     pause: 'Pausa',
     speed: 'Hastighet',
     planets: 'Planeter',
+    moons: 'Månar',
     resetTime: 'Nu',
+    readOnWikipedia: 'Läs på Wikipedia',
+    parent: 'Planet',
+    distanceFromParent: 'Avstånd från planet',
   },
 };

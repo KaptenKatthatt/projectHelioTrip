@@ -5,13 +5,33 @@ import {
   HorizonsError,
   type HorizonsVectorResult,
 } from './horizons';
-import { HORIZONS_COMMAND_IDS, isPlanetId, PLANET_IDS } from './planets';
+import {
+  HORIZONS_COMMAND_IDS,
+  isMoonId,
+  isPlanetId,
+  MOON_IDS,
+  MOON_META,
+  PLANET_IDS,
+} from './planets';
 
 export type PlanetEphemerisResponse = {
   id: string;
   date: string;
   frame: 'ecliptic-j2000';
   center: 'solar-system-barycenter';
+  units: 'AU';
+  position: HorizonsVectorResult['position'];
+  velocity: HorizonsVectorResult['velocity'];
+  distance: number;
+  lightTimeDays: number;
+};
+
+export type MoonEphemerisResponse = {
+  id: string;
+  parent: string;
+  date: string;
+  frame: 'ecliptic-j2000';
+  center: 'parent-planet';
   units: 'AU';
   position: HorizonsVectorResult['position'];
   velocity: HorizonsVectorResult['velocity'];
@@ -36,7 +56,7 @@ export const buildApp = (): Hono => {
   app.use('*', cors());
 
   app.get('/health', (c) =>
-    c.json({ status: 'ok', planets: PLANET_IDS }),
+    c.json({ status: 'ok', planets: PLANET_IDS, moons: MOON_IDS }),
   );
 
   app.get('/planets/:id', async (c) => {
@@ -67,6 +87,59 @@ export const buildApp = (): Hono => {
         date: isoDay(date),
         frame: 'ecliptic-j2000',
         center: 'solar-system-barycenter',
+        units: 'AU',
+        position: vectors.position,
+        velocity: vectors.velocity,
+        distance: vectors.distanceAu,
+        lightTimeDays: vectors.lightTimeDays,
+      };
+
+      c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+      return c.json(body);
+    } catch (error) {
+      if (error instanceof HorizonsError) {
+        return c.json(
+          { error: 'horizons_upstream', message: error.message },
+          502,
+        );
+      }
+      throw error;
+    }
+  });
+
+  app.get('/moons/:id', async (c) => {
+    const id = c.req.param('id').toLowerCase();
+    if (!isMoonId(id)) {
+      return c.json(
+        { error: 'unknown_moon', validIds: MOON_IDS },
+        400,
+      );
+    }
+
+    const date = parseDate(c.req.query('date'));
+    if (!date) {
+      return c.json(
+        { error: 'invalid_date', hint: 'Use YYYY-MM-DD' },
+        400,
+      );
+    }
+
+    const meta = MOON_META[id];
+    const parentCommand = HORIZONS_COMMAND_IDS[meta.parent];
+
+    try {
+      const vectors = await fetchHorizonsVectors({
+        commandId: meta.commandId,
+        date,
+        center: `500@${parentCommand}`,
+      });
+
+      const body: MoonEphemerisResponse = {
+        id,
+        parent: meta.parent,
+        date: isoDay(date),
+        frame: 'ecliptic-j2000',
+        center: 'parent-planet',
         units: 'AU',
         position: vectors.position,
         velocity: vectors.velocity,

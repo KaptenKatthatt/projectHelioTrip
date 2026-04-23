@@ -28,3 +28,6 @@ alwaysApply: true
 - Inga kommentarer som bara upprepar koden.
 - Ingen död kod eller oanvända imports.
 - Prestanda prioriteras: undvik onödig allokering, memoa tunga beräkningar.
+
+## Kommunikation
+- Om agenten ställt en fråga och inte fått svar, ställ frågan igen innan arbetet fortsätter.
