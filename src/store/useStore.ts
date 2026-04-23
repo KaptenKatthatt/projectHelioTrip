@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { BodyId } from '../lib/bodies';
 import type { ConstellationId } from '../lib/constellations';
-import type { StarWarsBodyId } from '../lib/starWarsSystems';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 
@@ -27,7 +26,6 @@ export type SimulationState = {
   constellationLinesVisible: boolean;
   skyFocusId: number;
   selectedUniversePreset: UniversePreset;
-  selectedStarWarsBody: StarWarsBodyId | null;
 };
 
 export type SimulationActions = {
@@ -36,7 +34,6 @@ export type SimulationActions = {
   setIsTraveling: (traveling: boolean) => void;
   setSimulationTime: (time: Date) => void;
   travelTo: (id: BodyId) => void;
-  travelToStarWars: (id: StarWarsBodyId) => void;
   travelToOverview: () => void;
   arrive: () => void;
   resetSimulationTime: () => void;
@@ -50,7 +47,6 @@ export type SimulationActions = {
   focusSkyTarget: (id: ConstellationId) => void;
   toggleConstellationLinesVisible: () => void;
   setSelectedUniversePreset: (preset: UniversePreset) => void;
-  setSelectedStarWarsBody: (id: StarWarsBodyId | null) => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -78,7 +74,6 @@ export const useStore = create<Store>()(
       constellationLinesVisible: true,
       skyFocusId: 0,
       selectedUniversePreset: 'solarSystem',
-      selectedStarWarsBody: null,
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -92,25 +87,11 @@ export const useStore = create<Store>()(
       travelTo: (id) =>
         set((state) => ({
           activeBody: id,
-          selectedStarWarsBody: null,
           isTraveling: true,
           viewMode: 'close',
           travelId: state.travelId + 1,
           navigationMode: 'cinematic',
           selectedConstellation: null,
-          selectedUniversePreset: 'solarSystem',
-        })),
-
-      travelToStarWars: (id) =>
-        set((state) => ({
-          activeBody: null,
-          selectedStarWarsBody: id,
-          isTraveling: true,
-          viewMode: 'close',
-          travelId: state.travelId + 1,
-          navigationMode: 'cinematic',
-          selectedConstellation: null,
-          selectedUniversePreset: 'starWars',
         })),
 
       travelToOverview: () =>
@@ -144,9 +125,11 @@ export const useStore = create<Store>()(
           selectedConstellation: id,
           isTraveling: state.selectedConstellation === null,
           viewMode: 'overview',
-          travelId: state.travelId,
+          travelId:
+            state.selectedConstellation === null
+              ? state.travelId + 1
+              : state.travelId,
           navigationMode: 'cinematic',
-          selectedUniversePreset: 'solarSystem',
           skyFocusId:
             state.selectedConstellation === null
               ? state.skyFocusId + 1
@@ -159,17 +142,7 @@ export const useStore = create<Store>()(
         })),
 
       setSelectedUniversePreset: (preset) =>
-        set((state) => ({
-          selectedUniversePreset: preset,
-          activeBody: preset === 'starWars' ? null : state.activeBody,
-          isTraveling: preset === 'starWars' ? false : state.isTraveling,
-          viewMode: preset === 'starWars' ? 'overview' : state.viewMode,
-          selectedConstellation: preset === 'starWars' ? null : state.selectedConstellation,
-          selectedStarWarsBody:
-            preset === 'starWars' ? state.selectedStarWarsBody : null,
-        })),
-
-      setSelectedStarWarsBody: (id) => set({ selectedStarWarsBody: id }),
+        set({ selectedUniversePreset: preset }),
     }),
     {
       name: 'heliotrip-preferences',

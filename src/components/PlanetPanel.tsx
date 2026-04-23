@@ -11,7 +11,6 @@ import { MOON_AU_SCALE } from '../lib/moons';
 import { AU_SCALE } from '../lib/constants';
 import { getWikipediaUrl } from '../lib/wikipedia';
 import { useTranslation } from '../hooks/useTranslation';
-import { getStarWarsBody, getStarWarsSystemByBody } from '../lib/starWarsSystems';
 
 type Row = {
   label: string;
@@ -21,8 +20,6 @@ type Row = {
 export const PlanetPanel = () => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const activeBody = useStore((s) => s.activeBody);
-  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
-  const selectedStarWarsBody = useStore((s) => s.selectedStarWarsBody);
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const simulationTime = useStore((s) => s.simulationTime);
@@ -74,41 +71,6 @@ export const PlanetPanel = () => {
     const url = getWikipediaUrl(activeBody, locale);
     window.open(url, '_blank', 'noopener,noreferrer');
   }, [activeBody, locale]);
-
-  if (selectedUniversePreset === 'starWars') {
-    if (!selectedStarWarsBody) return null;
-    const swBody = getStarWarsBody(selectedStarWarsBody);
-    const swSystem = getStarWarsSystemByBody(selectedStarWarsBody);
-    if (!swBody || !swSystem) return null;
-    const name = locale === 'sv' ? swBody.labelSv : swBody.labelEn;
-    const systemName = locale === 'sv' ? swSystem.labelSv : swSystem.labelEn;
-
-    return (
-      <aside className="pointer-events-auto w-80 rounded-2xl border border-white/10 bg-black/40 p-5 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <span
-            className="h-3 w-3 rounded-full ring-1 ring-white/20"
-            style={{ backgroundColor: swBody.color }}
-          />
-          <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
-        </div>
-        {isTraveling ? (
-          <p className="mt-1 text-xs text-white/50">{t.ui.arriving}</p>
-        ) : null}
-        <dl className="mt-4 space-y-2 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-white/55">{t.ui.starWarsObject}</dt>
-            <dd className="font-mono text-white">{name}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <dt className="text-white/55">{t.ui.starWarsSystem}</dt>
-            <dd className="font-mono text-white">{systemName}</dd>
-          </div>
-        </dl>
-        <p className="mt-5 text-sm text-white/60">{t.ui.starWarsTravelSoon}</p>
-      </aside>
-    );
-  }
 
   if (!activeBody || viewMode === 'overview') return null;
   const body = getBody(activeBody);

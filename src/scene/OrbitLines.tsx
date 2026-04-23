@@ -43,7 +43,7 @@ export const OrbitLines = () => {
 
   if (
     selectedConstellation ||
-    selectedUniversePreset !== 'solarSystem'
+    selectedUniversePreset === 'milkyWayOverview'
   ) {
     return null;
   }

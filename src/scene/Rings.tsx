@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import {
-  AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
@@ -104,8 +103,8 @@ const createSoftParticleTexture = (): CanvasTexture => {
 
   const center = size * 0.5;
   const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
-  gradient.addColorStop(0, 'rgba(255,255,255,0.95)');
-  gradient.addColorStop(0.45, 'rgba(255,255,255,0.62)');
+  gradient.addColorStop(0, 'rgba(255,255,255,1)');
+  gradient.addColorStop(0.6, 'rgba(255,255,255,0.9)');
   gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
   ctx.clearRect(0, 0, size, size);
@@ -181,23 +180,8 @@ const RingSystem = ({
           size={def.particleSize}
           sizeAttenuation
           transparent
-          opacity={Math.min(0.48, def.opacity + 0.1)}
+          opacity={Math.min(1, def.opacity + 0.3)}
           alphaTest={0.02}
-          depthWrite={false}
-        />
-      </points>
-      <points geometry={particleGeometry}>
-        <pointsMaterial
-          vertexColors
-          color={def.color}
-          map={particleTexture}
-          alphaMap={particleTexture}
-          size={def.particleSize * 1.9}
-          sizeAttenuation
-          transparent
-          opacity={Math.min(0.22, def.opacity + 0.03)}
-          alphaTest={0.01}
-          blending={AdditiveBlending}
           depthWrite={false}
         />
       </points>

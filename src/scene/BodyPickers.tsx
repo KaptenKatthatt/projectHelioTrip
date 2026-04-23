@@ -43,16 +43,12 @@ export const BodyPickers = () => {
   const navigationMode = useStore((s) => s.navigationMode);
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
-  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
   const travelTo = useStore((s) => s.travelTo);
 
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
 
-  const enabled =
-    !isTraveling &&
-    navigationMode !== 'free' &&
-    selectedUniversePreset === 'solarSystem';
+  const enabled = !isTraveling && navigationMode !== 'free';
 
   const pickables = useMemo<readonly PickableEntry[]>(() => {
     const list: PickableEntry[] = PLANETS.map((p) => ({
