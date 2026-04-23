@@ -70,8 +70,6 @@ export const StarWarsBodies = () => {
           rotation:
             body.id === "death-star"
               ? ([0, 0.32, 0] as const)
-              : body.id === "naboo"
-                ? ([0, 1.57, 0] as const)
               : ([0, 0, 0] as const),
         })),
       ),
@@ -142,11 +140,6 @@ export const StarWarsBodies = () => {
         diffuse.repeat.y = 1;
         diffuse.offset.x = 1.3;
         diffuse.offset.y = 0.2;
-      }
-      if (body.id === "naboo") {
-        diffuse.wrapS = RepeatWrapping;
-        diffuse.repeat.x = 1;
-        diffuse.offset.x = 0;
       }
       map.set(body.id, diffuse);
     }

@@ -29,20 +29,11 @@ export const STAR_WARS_TEXTURES: Partial<
   yavin: sw('yavin'),
   'yavin-4': sw('yavin-4'),
   hoth: sw('hoth'),
-  endor: {
-    enabled: true,
-    diffuse: swBase('endor', 'diffuse.jpg'),
-  },
+  endor: sw('endor'),
   'kef-bir': sw('kef-bir'),
   coruscant: sw('coruscant'),
-  naboo: {
-    enabled: true,
-    diffuse: swBase('naboo', 'diffuse.jpg'),
-  },
-  tatooine: {
-    enabled: true,
-    diffuse: swBase('tatooine', 'diffuse.jpg'),
-  },
+  naboo: sw('naboo'),
+  tatooine: sw('tatooine'),
   kamino: sw('kamino'),
   geonosis: sw('geonosis'),
   kashyyyk: sw('kashyyyk'),
