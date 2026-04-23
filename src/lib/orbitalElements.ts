@@ -7,9 +7,6 @@ import type { MoonId } from './moons';
 import type { PlanetId } from './planets';
 import type { OrbitalElements } from './kepler';
 
-export const ORBITAL_EPOCH_ISO = '2026-01-01T00:00:00.000Z';
-export const ORBITAL_EPOCH_MS = 1767225600000;
-
 export const PLANET_ORBITAL_ELEMENTS: Readonly<
   Partial<Record<PlanetId, OrbitalElements>>
 > = {

@@ -9,7 +9,6 @@ import type { Locale } from '../i18n/translations';
 export type ViewMode = 'close' | 'overview';
 
 export type NavigationMode = 'cinematic' | 'free';
-export type UniversePreset = 'solarSystem' | 'milkyWayOverview';
 
 export type SimulationState = {
   activeBody: BodyId | null;
@@ -25,7 +24,6 @@ export type SimulationState = {
   selectedConstellation: ConstellationId | null;
   constellationLinesVisible: boolean;
   skyFocusId: number;
-  selectedUniversePreset: UniversePreset;
 };
 
 export type SimulationActions = {
@@ -46,7 +44,6 @@ export type SimulationActions = {
   setSelectedConstellation: (id: ConstellationId | null) => void;
   focusSkyTarget: (id: ConstellationId) => void;
   toggleConstellationLinesVisible: () => void;
-  setSelectedUniversePreset: (preset: UniversePreset) => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -73,7 +70,6 @@ export const useStore = create<Store>()(
       selectedConstellation: null,
       constellationLinesVisible: true,
       skyFocusId: 0,
-      selectedUniversePreset: 'solarSystem',
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -140,9 +136,6 @@ export const useStore = create<Store>()(
         set((state) => ({
           constellationLinesVisible: !state.constellationLinesVisible,
         })),
-
-      setSelectedUniversePreset: (preset) =>
-        set({ selectedUniversePreset: preset }),
     }),
     {
       name: 'heliotrip-preferences',

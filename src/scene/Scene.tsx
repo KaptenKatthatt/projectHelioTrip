@@ -1,10 +1,7 @@
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
-import { BodyPickers } from './BodyPickers';
 import { CameraManager } from './CameraManager';
-import { ConstellationLines } from './ConstellationLines';
-import { FreeFlightControls } from './FreeFlightControls';
 import { GlobalZoom } from './GlobalZoom';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
@@ -15,7 +12,26 @@ import { Moons } from './Moons';
 import { Satellites } from './Satellites';
 import { AsteroidBelt } from './AsteroidBelt';
 import { OrbitLines } from './OrbitLines';
-import { Effects } from './Effects';
+
+const LazyBodyPickers = lazy(async () => {
+  const module = await import('./BodyPickers');
+  return { default: module.BodyPickers };
+});
+
+const LazyConstellationLines = lazy(async () => {
+  const module = await import('./ConstellationLines');
+  return { default: module.ConstellationLines };
+});
+
+const LazyFreeFlightControls = lazy(async () => {
+  const module = await import('./FreeFlightControls');
+  return { default: module.FreeFlightControls };
+});
+
+const LazyEffects = lazy(async () => {
+  const module = await import('./Effects');
+  return { default: module.Effects };
+});
 
 export const Scene = () => {
   const navigationMode = useStore((s) => s.navigationMode);
@@ -50,7 +66,9 @@ export const Scene = () => {
 
       <TimeManager />
       <OrbitLines />
-      <ConstellationLines />
+      <Suspense fallback={null}>
+        <LazyConstellationLines />
+      </Suspense>
       <Suspense fallback={null}>
         <Planets />
       </Suspense>
@@ -62,9 +80,17 @@ export const Scene = () => {
       <SkyFocusCamera />
       <PlanetOrbitControls />
       <GlobalZoom />
-      <BodyPickers />
-      {navigationMode === 'free' && <FreeFlightControls />}
-      <Effects />
+      <Suspense fallback={null}>
+        <LazyBodyPickers />
+      </Suspense>
+      {navigationMode === 'free' && (
+        <Suspense fallback={null}>
+          <LazyFreeFlightControls />
+        </Suspense>
+      )}
+      <Suspense fallback={null}>
+        <LazyEffects />
+      </Suspense>
     </Canvas>
   );
 };

@@ -57,11 +57,6 @@ export const DEFAULT_LOCALE: Locale = 'sv';
 
 export const SUPPORTED_LOCALES: readonly Locale[] = ['sv', 'en'];
 
-export const LOCALE_LABELS: Record<Locale, string> = {
-  sv: 'Svenska',
-  en: 'English',
-};
-
 export const detectLocale = (): Locale => {
   if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
   const lang = navigator.language.toLowerCase();

@@ -23,7 +23,6 @@ const buildOrbitPoints = (radius: number): readonly Vector3[] => {
 export const OrbitLines = () => {
   const viewMode = useStore((s) => s.viewMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
 
   const orbits = useMemo<readonly OrbitLineData[]>(
     () =>
@@ -36,7 +35,7 @@ export const OrbitLines = () => {
 
   const opacity = viewMode === "overview" ? 0.03 : 0.08;
 
-  if (selectedConstellation || selectedUniversePreset !== "solarSystem") {
+  if (selectedConstellation) {
     return null;
   }
 

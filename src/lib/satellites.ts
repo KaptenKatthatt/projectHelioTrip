@@ -38,7 +38,7 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
     radius: 0.08,
     color: '#d8deea',
     orbitRadius: 1.9,
-    periodDays: 0.75,
+    periodDays: 1,
     inclination: 51.6 * DEG,
     ascendingNode: 0,
     phase: 0,

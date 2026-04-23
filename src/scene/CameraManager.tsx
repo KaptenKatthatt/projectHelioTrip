@@ -183,11 +183,13 @@ export const CameraManager = () => {
 
   const travelId = useStore((s) => s.travelId);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const navigationMode = useStore((s) => s.navigationMode);
   const setCameraPosition = useStore((s) => s.setCameraPosition);
   const arrive = useStore((s) => s.arrive);
 
   const travelRef = useRef<Travel | null>(null);
   const arrivedRef = useRef<Arrived | null>(null);
+  const previousNavigationModeRef = useRef(navigationMode);
 
   const tmpPos = useMemo(() => new Vector3(), []);
   const tmpEndPos = useMemo(() => new Vector3(), []);
@@ -261,6 +263,19 @@ export const CameraManager = () => {
     tmpEndPos,
     tmpScratch,
   ]);
+
+  useEffect(() => {
+    const previous = previousNavigationModeRef.current;
+    previousNavigationModeRef.current = navigationMode;
+    if (previous !== 'free' || navigationMode !== 'cinematic') return;
+
+    /**
+     * Leaving free-flight with ESC should keep the exact camera pose.
+     * If an old "overview arrived" marker remains, CameraManager would
+     * otherwise snap back to OVERVIEW_POSITION on the next frame.
+     */
+    arrivedRef.current = null;
+  }, [navigationMode]);
 
   useFrame(() => {
     if (useStore.getState().navigationMode === 'free') return;
