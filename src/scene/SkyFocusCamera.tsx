@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import { MOONS } from '../lib/moons';
@@ -78,7 +78,7 @@ export const SkyFocusCamera = () => {
   const lookAtRef = useMemo(() => new Vector3(), []);
   const lastSkyFocusIdRef = useRef(-1);
 
-  const getBodySpheres = (): BodySphere[] => {
+  const getBodySpheres = useCallback((): BodySphere[] => {
     const bodies: BodySphere[] = [];
     for (const planet of PLANETS) {
       bodies.push({
@@ -93,35 +93,38 @@ export const SkyFocusCamera = () => {
       });
     }
     return bodies;
-  };
+  }, []);
 
-  const findSafeEndPosition = (startPos: Vector3, direction: Vector3): Vector3 => {
-    const bodies = getBodySpheres();
-    let distance = INTRO_MOVE_DISTANCE;
-    const end = new Vector3();
+  const findSafeEndPosition = useCallback(
+    (startPos: Vector3, direction: Vector3): Vector3 => {
+      const bodies = getBodySpheres();
+      let distance = INTRO_MOVE_DISTANCE;
+      const end = new Vector3();
 
-    while (distance >= MIN_SAFE_MOVE_DISTANCE) {
-      end.copy(startPos).addScaledVector(direction, distance);
-      let hit = false;
-      for (const body of bodies) {
-        if (
-          segmentIntersectsSphere(
-            startPos,
-            end,
-            body.center,
-            body.radius,
-            tmpClosestRef.current,
-          )
-        ) {
-          hit = true;
-          break;
+      while (distance >= MIN_SAFE_MOVE_DISTANCE) {
+        end.copy(startPos).addScaledVector(direction, distance);
+        let hit = false;
+        for (const body of bodies) {
+          if (
+            segmentIntersectsSphere(
+              startPos,
+              end,
+              body.center,
+              body.radius,
+              tmpClosestRef.current,
+            )
+          ) {
+            hit = true;
+            break;
+          }
         }
+        if (!hit) return end;
+        distance *= 0.5;
       }
-      if (!hit) return end;
-      distance *= 0.5;
-    }
-    return startPos.clone();
-  };
+      return startPos.clone();
+    },
+    [getBodySpheres],
+  );
 
   useEffect(() => {
     if (!selectedConstellation) {
@@ -150,7 +153,13 @@ export const SkyFocusCamera = () => {
     transition.endPos.copy(findSafeEndPosition(transition.startPos, transition.endDir));
 
     setIsTraveling(true);
-  }, [camera, selectedConstellation, skyFocusId, setIsTraveling]);
+  }, [
+    camera,
+    selectedConstellation,
+    skyFocusId,
+    setIsTraveling,
+    findSafeEndPosition,
+  ]);
 
   useFrame(() => {
     const transition = introRef.current;

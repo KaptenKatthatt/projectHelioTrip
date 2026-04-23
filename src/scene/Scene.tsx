@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Stars } from '@react-three/drei';
+import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
 import { GlobalZoom } from './GlobalZoom';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
@@ -36,6 +36,8 @@ const LazyEffects = lazy(async () => {
 
 export const Scene = () => {
   const navigationMode = useStore((s) => s.navigationMode);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const showSolarBodies = selectedConstellation === null;
 
   return (
     <Canvas
@@ -74,12 +76,16 @@ export const Scene = () => {
       <Suspense fallback={null}>
         <LazyConstellationLines />
       </Suspense>
-      <Suspense fallback={null}>
-        <Planets />
-      </Suspense>
-      <Moons />
-      <Satellites />
-      <AsteroidBelt />
+      {showSolarBodies ? (
+        <>
+          <Suspense fallback={null}>
+            <Planets />
+          </Suspense>
+          <Moons />
+          <Satellites />
+          <AsteroidBelt />
+        </>
+      ) : null}
 
       <CameraManager />
       <SkyFocusCamera />

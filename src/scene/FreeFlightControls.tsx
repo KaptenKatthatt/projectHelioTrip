@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { PointerLockControls } from '@react-three/drei';
 import { Vector3 } from 'three';
 import { useKeyboardMovement } from '../hooks/useKeyboardMovement';
 import { PLANETS } from '../lib/planets';
 import { MOONS } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
+import { StdlibPointerLockControls } from './controls/StdlibPointerLockControls';
 
 /**
  * WASD speed scales with distance to the nearest body's surface so the
@@ -81,9 +81,9 @@ export const FreeFlightControls = () => {
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
-   * clicks Autopilot without pressing ESC first), drei's cleanup only
-   * calls `controls.disconnect()` and leaves the browser-level lock
-   * intact — which would hide the cursor indefinitely.
+   * clicks Autopilot without pressing ESC first), disconnecting the
+   * controls can leave the browser-level lock intact — which would hide
+   * the cursor indefinitely.
    */
   useEffect(() => {
     return () => {
@@ -260,10 +260,10 @@ export const FreeFlightControls = () => {
   });
 
   /**
-   * Scope drei's auto-lock click listener to the canvas only. Without
-   * this, ANY click on the page (including UI buttons) would request
-   * pointer lock — which hides the cursor right after clicking e.g.
-   * the Autopilot button.
+   * Scope the auto-lock click listener to the canvas only. Without this,
+   * ANY click on the page (including UI buttons) would request pointer
+   * lock — which hides the cursor right after clicking e.g. the Autopilot
+   * button.
    */
-  return <PointerLockControls selector="canvas" />;
+  return <StdlibPointerLockControls selector="canvas" />;
 };

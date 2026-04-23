@@ -28,6 +28,7 @@ export const GlobalZoom = () => {
   const isTraveling = useStore((s) => s.isTraveling);
 
   const targetFovRef = useRef(DEFAULT_FOV);
+  const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
 
   const enabled =
     viewMode === 'overview' &&
@@ -35,13 +36,19 @@ export const GlobalZoom = () => {
     !isTraveling;
 
   useEffect(() => {
+    perspectiveCameraRef.current =
+      camera instanceof PerspectiveCamera ? camera : null;
+  }, [camera]);
+
+  useEffect(() => {
     if (!enabled) {
       targetFovRef.current = DEFAULT_FOV;
       return;
     }
 
-    if (camera instanceof PerspectiveCamera) {
-      targetFovRef.current = camera.fov;
+    const perspectiveCamera = perspectiveCameraRef.current;
+    if (perspectiveCamera) {
+      targetFovRef.current = perspectiveCamera.fov;
     }
 
     const canvas = gl.domElement;
@@ -58,17 +65,18 @@ export const GlobalZoom = () => {
     return () => {
       canvas.removeEventListener('wheel', onWheel);
     };
-  }, [enabled, camera, gl]);
+  }, [enabled, gl]);
 
   useFrame((_, delta) => {
-    if (!(camera instanceof PerspectiveCamera)) return;
+    const perspectiveCamera = perspectiveCameraRef.current;
+    if (!perspectiveCamera) return;
     const target = targetFovRef.current;
-    const current = camera.fov;
+    const current = perspectiveCamera.fov;
     if (Math.abs(target - current) < 0.01) return;
 
     const smoothing = 1 - Math.pow(FOV_SMOOTHING, delta);
-    camera.fov = current + (target - current) * smoothing;
-    camera.updateProjectionMatrix();
+    perspectiveCamera.fov = current + (target - current) * smoothing;
+    perspectiveCamera.updateProjectionMatrix();
   });
 
   return null;

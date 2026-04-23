@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
+import { StdlibOrbitControls } from './controls/StdlibOrbitControls';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
 const MAX_DISTANCE_MULTIPLIER = 60;
 const DAMPING_FACTOR = 0.08;
 
-type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
+type OrbitControlsRef = ComponentRef<typeof StdlibOrbitControls>;
 
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
@@ -49,13 +49,11 @@ export const PlanetOrbitControls = () => {
   }, [activeBody]);
 
   /**
-   * Priority -2 runs BEFORE drei's OrbitControls internal useFrame
+   * Priority -2 runs BEFORE OrbitControls' internal `useFrame` update
    * (priority -1). On the first frame after arrival we must set
-   * `controls.target` to the body's world position before drei calls
-   * `controls.update()`, otherwise drei reads the default `target =
-   * (0,0,0)`, recomputes the spherical offset from the origin, and
-   * snaps `camera.lookAt(target)` toward the Sun — which makes the
-   * freshly-arrived camera appear to jump away from the planet.
+   * `controls.target` to the body's world position before the controls
+   * call `update()`, otherwise the default `target = (0,0,0)` makes the
+   * camera appear to jump away from the planet.
    */
   useFrame(() => {
     if (!enabled || !activeBody) return;
@@ -75,7 +73,7 @@ export const PlanetOrbitControls = () => {
   }, -2);
 
   return (
-    <OrbitControls
+    <StdlibOrbitControls
       ref={controlsRef}
       enabled={enabled}
       enableDamping

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei/core/Texture';
 import {
   BufferAttribute,
   BufferGeometry,

@@ -20,8 +20,25 @@ export default defineConfig({
             return 'vendor-r3f';
           }
 
+          if (id.includes('/three-stdlib/')) {
+            return 'vendor-stdlib';
+          }
+
           if (id.includes('@react-three/drei')) {
             if (id.includes('/core/')) {
+              if (id.includes('/Stars')) return 'vendor-drei-stars';
+              if (
+                id.includes('/OrbitControls') ||
+                id.includes('/PointerLockControls')
+              ) {
+                return 'vendor-drei-controls';
+              }
+              if (id.includes('/Html') || id.includes('/Line')) {
+                return 'vendor-drei-ui3d';
+              }
+              if (id.includes('/Texture') || id.includes('/useTexture')) {
+                return 'vendor-drei-textures';
+              }
               return 'vendor-drei-core';
             }
             if (id.includes('/web/')) {

@@ -1,4 +1,4 @@
-import { useTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei/core/Texture';
 import { SRGBColorSpace, type Texture } from 'three';
 import type { PlanetId } from './planets';
 import type { MoonId } from './moons';

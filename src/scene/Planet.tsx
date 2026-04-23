@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei/core/Texture';
 import { Color, type Group } from 'three';
 import type { PlanetId } from '../lib/planets';
 import { getLivePosition } from '../lib/positionsBus';

@@ -1,4 +1,4 @@
-import { useTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei/core/Texture';
 import type { PlanetId } from '../lib/planets';
 import { configureColorMap, getCloudTextures } from '../lib/textures';
 

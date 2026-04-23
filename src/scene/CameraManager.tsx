@@ -11,8 +11,8 @@ import {
 } from '../lib/bodies';
 import { getLivePosition } from '../lib/positionsBus';
 
-const AIM_DURATION_MS = 700;
-const FLY_DURATION_MS = 2800;
+const AIM_DURATION_MS = 1600;
+const FLY_DURATION_MS = 3400;
 const TOTAL_DURATION_MS = AIM_DURATION_MS + FLY_DURATION_MS;
 const AIM_FRACTION = AIM_DURATION_MS / TOTAL_DURATION_MS;
 
@@ -48,8 +48,7 @@ type Arrived =
   | { kind: 'body'; bodyId: BodyId; viewDistance: number }
   | { kind: 'overview' };
 
-const easeInOutCubic = (x: number): number =>
-  x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeInOutSine = (x: number): number => -(Math.cos(Math.PI * x) - 1) / 2;
 
 /**
  * Launch-and-glide easing: slow takeoff, acceleration through the middle,
@@ -191,13 +190,13 @@ export const CameraManager = () => {
   const arrivedRef = useRef<Arrived | null>(null);
   const previousNavigationModeRef = useRef(navigationMode);
 
-  const tmpPos = useMemo(() => new Vector3(), []);
   const tmpEndPos = useMemo(() => new Vector3(), []);
   const tmpTargetPos = useMemo(() => new Vector3(), []);
   const tmpScratch = useMemo(() => new Vector3(), []);
   const tmpDir = useMemo(() => new Vector3(), []);
   const tmpInterpDir = useMemo(() => new Vector3(), []);
   const tmpLookAt = useMemo(() => new Vector3(), []);
+  const arcPosRef = useRef(new Vector3());
 
   const [{ t }, api] = useSpring(() => ({
     t: 0,
@@ -287,7 +286,7 @@ export const CameraManager = () => {
       resolveTarget(travel, tmpTargetPos);
 
       if (progress <= AIM_FRACTION) {
-        const aim = easeInOutCubic(progress / AIM_FRACTION);
+        const aim = easeInOutSine(progress / AIM_FRACTION);
 
         tmpDir
           .copy(tmpTargetPos)
@@ -311,12 +310,12 @@ export const CameraManager = () => {
       );
 
       resolveEndPos(travel, tmpEndPos, tmpScratch);
-      tmpPos.lerpVectors(travel.startPos, tmpEndPos, fly);
+      arcPosRef.current.lerpVectors(travel.startPos, tmpEndPos, fly);
       const arcHeight =
         travel.startPos.distanceTo(tmpEndPos) * ARC_HEIGHT_FACTOR;
-      tmpPos.y += Math.sin(fly * Math.PI) * arcHeight;
+      arcPosRef.current.y += Math.sin(fly * Math.PI) * arcHeight;
 
-      camera.position.copy(tmpPos);
+      camera.position.copy(arcPosRef.current);
       camera.up.copy(WORLD_UP);
       camera.lookAt(tmpTargetPos);
       return;

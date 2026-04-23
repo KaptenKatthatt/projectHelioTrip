@@ -1,4 +1,4 @@
-import { Line } from '@react-three/drei';
+import { Line } from '@react-three/drei/core/Line';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import {

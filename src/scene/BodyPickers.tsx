@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
-import { Html, useCursor } from '@react-three/drei';
+import { Html } from '@react-three/drei/web/Html';
+import { useCursor } from '@react-three/drei/web/useCursor';
 import { PerspectiveCamera, Vector3, type Group, type Mesh } from 'three';
 import { PLANETS } from '../lib/planets';
 import { MOONS } from '../lib/moons';
@@ -84,12 +85,17 @@ export const BodyPickers = () => {
   const [displayedId, setDisplayedId] = useState<BodyId | null>(null);
   useEffect(() => {
     if (hoveredId !== null) {
-      setDisplayedId(hoveredId);
+      const timeout = setTimeout(() => setDisplayedId(hoveredId), 0);
+      return () => clearTimeout(timeout);
+    }
+
+    if (displayedId === null) {
       return;
     }
+
     const timeout = setTimeout(() => setDisplayedId(null), LABEL_UNMOUNT_MS);
     return () => clearTimeout(timeout);
-  }, [hoveredId]);
+  }, [hoveredId, displayedId]);
 
   if (!enabled) return null;
 
