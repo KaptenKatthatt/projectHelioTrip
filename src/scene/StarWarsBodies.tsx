@@ -63,11 +63,7 @@ export const StarWarsBodies = () => {
   );
 
   const textureDefs = useMemo(
-    () =>
-      bodies.map((body) => {
-        const textures = getStarWarsSurfaceTextures(body.id);
-        return textures?.enabled ? textures : undefined;
-      }),
+    () => bodies.map((body) => getStarWarsSurfaceTextures(body.id)),
     [bodies],
   );
   const diffuseUrls = useMemo(

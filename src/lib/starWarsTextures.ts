@@ -1,7 +1,6 @@
 import type { StarWarsBodyId } from './starWarsSystems';
 
 export type StarWarsSurfaceTextures = {
-  enabled?: boolean;
   diffuse: string;
   normal?: string;
   roughness?: string;
@@ -10,31 +9,27 @@ export type StarWarsSurfaceTextures = {
 const swBase = (body: StarWarsBodyId, file: string): string =>
   `/textures/star-wars/${body}/${file}`;
 
-const sw = (body: StarWarsBodyId): StarWarsSurfaceTextures => ({
-  enabled: false,
-  diffuse: swBase(body, 'diffuse.jpg'),
-});
-
+/**
+ * V1 uses local placeholder textures to validate the full pipeline.
+ * Replace paths with final licensed assets per body when available.
+ */
 export const STAR_WARS_TEXTURES: Partial<
   Record<StarWarsBodyId, StarWarsSurfaceTextures>
 > = {
-  'death-star': {
-    enabled: true,
-    diffuse: swBase('death-star', 'diffuse.jpg'),
-  },
-  alderaan: sw('alderaan'),
-  yavin: sw('yavin'),
-  'yavin-4': sw('yavin-4'),
-  hoth: sw('hoth'),
-  endor: sw('endor'),
-  'kef-bir': sw('kef-bir'),
-  coruscant: sw('coruscant'),
-  naboo: sw('naboo'),
-  tatooine: sw('tatooine'),
-  kamino: sw('kamino'),
-  geonosis: sw('geonosis'),
-  kashyyyk: sw('kashyyyk'),
-  mustafar: sw('mustafar'),
+  'death-star': { diffuse: '/textures/moon/diffuse.jpg' },
+  alderaan: { diffuse: '/textures/earth/diffuse.jpg' },
+  yavin: { diffuse: '/textures/jupiter/diffuse.jpg' },
+  'yavin-4': { diffuse: '/textures/earth/diffuse.jpg' },
+  hoth: { diffuse: '/textures/moon/diffuse.jpg' },
+  endor: { diffuse: '/textures/earth/diffuse.jpg' },
+  'kef-bir': { diffuse: '/textures/neptune/diffuse.jpg' },
+  coruscant: { diffuse: '/textures/mercury/diffuse.jpg' },
+  naboo: { diffuse: '/textures/earth/diffuse.jpg' },
+  tatooine: { diffuse: '/textures/mars/diffuse.jpg' },
+  kamino: { diffuse: '/textures/neptune/diffuse.jpg' },
+  geonosis: { diffuse: '/textures/mars/diffuse.jpg' },
+  kashyyyk: { diffuse: '/textures/earth/diffuse.jpg' },
+  mustafar: { diffuse: '/textures/mars/diffuse.jpg' },
 };
 
 export const getStarWarsSurfaceTextures = (

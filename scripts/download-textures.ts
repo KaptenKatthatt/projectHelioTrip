@@ -3,7 +3,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STAR_WARS_TEXTURE_SOURCES } from './starWarsTextureSources';
 
 type Source =
   | { kind: 'copy'; url: string }
@@ -74,17 +73,6 @@ const TEXTURES: readonly TextureEntry[] = [
   },
 ];
 
-const STAR_WARS_TEXTURES: readonly TextureEntry[] = Object.entries(
-  STAR_WARS_TEXTURE_SOURCES,
-).flatMap(([bodyId, sources]) =>
-  sources.map((source) => ({
-    target: `star-wars/${bodyId}/${source.targetFile}`,
-    source: { kind: source.kind, url: source.url } as Source,
-  })),
-);
-
-const ALL_TEXTURES: readonly TextureEntry[] = [...TEXTURES, ...STAR_WARS_TEXTURES];
-
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const OUT_DIR = resolve(ROOT, 'public', 'textures');
 
@@ -126,8 +114,8 @@ const writeTexture = async (entry: TextureEntry): Promise<void> => {
 };
 
 const main = async (): Promise<void> => {
-  console.log(`Downloading ${ALL_TEXTURES.length} textures to ${OUT_DIR}`);
-  for (const entry of ALL_TEXTURES) {
+  console.log(`Downloading ${TEXTURES.length} textures to ${OUT_DIR}`);
+  for (const entry of TEXTURES) {
     try {
       await writeTexture(entry);
     } catch (err) {
