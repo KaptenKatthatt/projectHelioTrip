@@ -64,5 +64,8 @@ export const en: Translation = {
     universeMilkyWayOverview: 'Milky Way Overview',
     showConstellationLines: 'Show constellation lines',
     hideConstellationLines: 'Hide constellation lines',
+    starWarsObject: 'Object',
+    starWarsSystem: 'System',
+    starWarsTravelSoon: 'Texture pass for Star Wars objects comes next.',
   },
 };

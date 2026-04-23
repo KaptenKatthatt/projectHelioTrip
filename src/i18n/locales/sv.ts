@@ -64,5 +64,8 @@ export const sv: Translation = {
     universeMilkyWayOverview: 'Vintergatan (översikt)',
     showConstellationLines: 'Visa stjärnbildslinjer',
     hideConstellationLines: 'Dölj stjärnbildslinjer',
+    starWarsObject: 'Objekt',
+    starWarsSystem: 'System',
+    starWarsTravelSoon: 'Texturpass för Star Wars-objekt kommer i nästa steg.',
   },
 };

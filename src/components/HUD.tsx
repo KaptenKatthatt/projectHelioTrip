@@ -1,4 +1,5 @@
 import { useTranslation } from '../hooks/useTranslation';
+import { useStore } from '../store/useStore';
 import { FlightModeToggle } from './FlightModeToggle';
 import { FreeFlightHelp } from './FreeFlightHelp';
 import { FreeFlightHint } from './FreeFlightHint';
@@ -10,6 +11,11 @@ import { ViewModeToggle } from './ViewModeToggle';
 
 export const HUD = () => {
   const { t } = useTranslation();
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
+  const hideBottomMenu =
+    selectedConstellation !== null || selectedUniversePreset === 'starWars';
+
   return (
     <div className="pointer-events-none fixed inset-0 z-10 flex flex-col justify-between p-5 font-sans text-white sm:p-6">
       <header className="flex items-start justify-between gap-4">
@@ -36,7 +42,14 @@ export const HUD = () => {
         </div>
       </div>
 
-      <footer>
+      <footer
+        className={
+          'transition-opacity duration-500 ' +
+          (hideBottomMenu
+            ? 'pointer-events-none opacity-0'
+            : 'pointer-events-auto opacity-100')
+        }
+      >
         <TimeScrubber />
       </footer>
     </div>

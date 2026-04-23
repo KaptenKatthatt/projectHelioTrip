@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { PLANETS, type PlanetId } from '../lib/planets';
 import { MOONS, type MoonDefinition } from '../lib/moons';
 import { SATELLITES, type SatelliteDefinition } from '../lib/satellites';
+import { STAR_WARS_SYSTEMS, type StarWarsBodyId } from '../lib/starWarsSystems';
 import type { BodyId } from '../lib/bodies';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -19,12 +20,21 @@ type PlanetRow = {
 
 type ChildRow = {
   kind: 'child';
-  id: BodyId;
+  id: BodyId | StarWarsBodyId;
+  label?: string;
+  source: 'solar' | 'starWars';
   color: string;
   isLast: boolean;
 };
 
-type Row = PlanetRow | ChildRow;
+type SystemRow = {
+  kind: 'system';
+  id: string;
+  label: string;
+  color: string;
+};
+
+type Row = PlanetRow | ChildRow | SystemRow;
 
 const buildRows = (): readonly Row[] => {
   const moonsByParent = new Map<PlanetId, MoonDefinition[]>();
@@ -53,6 +63,7 @@ const buildRows = (): readonly Row[] => {
       rows.push({
         kind: 'child',
         id: s.id,
+        source: 'solar',
         color: s.color,
         isLast: i === total - 1,
       }),
@@ -61,8 +72,34 @@ const buildRows = (): readonly Row[] => {
       rows.push({
         kind: 'child',
         id: m.id,
+        source: 'solar',
         color: m.color,
         isLast: satellites.length + i === total - 1,
+      }),
+    );
+  }
+  return rows;
+};
+
+const buildStarWarsRows = (locale: 'sv' | 'en'): readonly Row[] => {
+  const rows: Row[] = [];
+  for (const system of STAR_WARS_SYSTEMS) {
+    rows.push({
+      kind: 'system',
+      id: system.id,
+      label: locale === 'sv' ? system.labelSv : system.labelEn,
+      color: system.color,
+    });
+
+    const total = system.bodies.length;
+    system.bodies.forEach((body, i) =>
+      rows.push({
+        kind: 'child',
+        id: body.id,
+        label: locale === 'sv' ? body.labelSv : body.labelEn,
+        source: 'starWars',
+        color: body.color,
+        isLast: i === total - 1,
       }),
     );
   }
@@ -74,11 +111,21 @@ export const PlanetSelector = ({
   className,
 }: PlanetSelectorProps) => {
   const { t, bodyName } = useTranslation();
+  const locale = useStore((s) => s.locale);
   const activeBody = useStore((s) => s.activeBody);
+  const selectedStarWarsBody = useStore((s) => s.selectedStarWarsBody);
   const viewMode = useStore((s) => s.viewMode);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
   const travelTo = useStore((s) => s.travelTo);
+  const travelToStarWars = useStore((s) => s.travelToStarWars);
 
-  const rows = useMemo(() => buildRows(), []);
+  const rows = useMemo(
+    () =>
+      selectedUniversePreset === 'starWars'
+        ? buildStarWarsRows(locale)
+        : buildRows(),
+    [locale, selectedUniversePreset],
+  );
 
   return (
     <nav
@@ -93,7 +140,29 @@ export const PlanetSelector = ({
         </h2>
       ) : null}
       {rows.map((row) => {
-        const isActive = viewMode === 'close' && activeBody === row.id;
+        const isActive =
+          row.kind === 'planet'
+            ? viewMode === 'close' && activeBody === row.id
+            : row.kind === 'child' && row.source === 'solar'
+              ? viewMode === 'close' && activeBody === row.id
+              : row.kind === 'child' && row.source === 'starWars'
+                ? selectedStarWarsBody === row.id
+              : false;
+
+        if (row.kind === 'system') {
+          return (
+            <div
+              key={row.id}
+              className="group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-white/75"
+            >
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white/20"
+                style={{ backgroundColor: row.color }}
+              />
+              <span className="truncate">{row.label}</span>
+            </div>
+          );
+        }
 
         if (row.kind === 'planet') {
           return (
@@ -117,11 +186,20 @@ export const PlanetSelector = ({
           );
         }
 
+        const childLabel =
+          row.source === 'starWars'
+            ? (row.label ?? '')
+            : bodyName(row.id as BodyId);
+
         return (
           <button
             key={row.id}
             type="button"
-            onClick={() => travelTo(row.id)}
+            onClick={
+              row.source === 'starWars'
+                ? () => travelToStarWars(row.id as StarWarsBodyId)
+                : () => travelTo(row.id as BodyId)
+            }
             className={
               'group relative flex items-center gap-2 rounded-lg py-1 pr-2.5 pl-6 text-left text-xs transition ' +
               (isActive
@@ -144,7 +222,7 @@ export const PlanetSelector = ({
               className="h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white/20"
               style={{ backgroundColor: row.color }}
             />
-            <span className="truncate">{bodyName(row.id)}</span>
+            <span className="truncate">{childLabel}</span>
           </button>
         );
       })}

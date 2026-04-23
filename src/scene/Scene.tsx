@@ -16,9 +16,12 @@ import { Satellites } from './Satellites';
 import { AsteroidBelt } from './AsteroidBelt';
 import { OrbitLines } from './OrbitLines';
 import { Effects } from './Effects';
+import { StarWarsBodies } from './StarWarsBodies';
 
 export const Scene = () => {
   const navigationMode = useStore((s) => s.navigationMode);
+  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
+  const isStarWars = selectedUniversePreset === 'starWars';
 
   return (
     <Canvas
@@ -51,12 +54,18 @@ export const Scene = () => {
       <TimeManager />
       <OrbitLines />
       <ConstellationLines />
-      <Suspense fallback={null}>
-        <Planets />
-      </Suspense>
-      <Moons />
-      <Satellites />
-      <AsteroidBelt />
+      {isStarWars ? (
+        <StarWarsBodies />
+      ) : (
+        <>
+          <Suspense fallback={null}>
+            <Planets />
+          </Suspense>
+          <Moons />
+          <Satellites />
+          <AsteroidBelt />
+        </>
+      )}
 
       <CameraManager />
       <SkyFocusCamera />

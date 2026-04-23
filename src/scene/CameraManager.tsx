@@ -10,6 +10,7 @@ import {
   type BodyId,
 } from '../lib/bodies';
 import { getLivePosition } from '../lib/positionsBus';
+import { getStarWarsBody, type StarWarsBodyId } from '../lib/starWarsSystems';
 
 const AIM_DURATION_MS = 700;
 const FLY_DURATION_MS = 2800;
@@ -36,16 +37,25 @@ type BodyTravel = {
   viewDistance: number;
 };
 
+type StarWarsTravel = {
+  kind: 'starWars';
+  startPos: Vector3;
+  startForward: Vector3;
+  bodyId: StarWarsBodyId;
+  viewDistance: number;
+};
+
 type OverviewTravel = {
   kind: 'overview';
   startPos: Vector3;
   startForward: Vector3;
 };
 
-type Travel = BodyTravel | OverviewTravel;
+type Travel = BodyTravel | StarWarsTravel | OverviewTravel;
 
 type Arrived =
   | { kind: 'body'; bodyId: BodyId; viewDistance: number }
+  | { kind: 'starWars'; bodyId: StarWarsBodyId; viewDistance: number }
   | { kind: 'overview' };
 
 const easeInOutCubic = (x: number): number =>
@@ -146,12 +156,37 @@ const resolveTarget = (travel: Travel, out: Vector3): void => {
     out.copy(OVERVIEW_TARGET);
     return;
   }
+  if (travel.kind === 'starWars') {
+    const body = getStarWarsBody(travel.bodyId);
+    if (!body) {
+      out.copy(OVERVIEW_TARGET);
+      return;
+    }
+    out.set(...body.position);
+    return;
+  }
   getBodyWorldPosition(travel.bodyId, out);
 };
 
 const resolveEndPos = (travel: Travel, out: Vector3, scratch: Vector3): void => {
   if (travel.kind === 'overview') {
     out.copy(OVERVIEW_POSITION);
+    return;
+  }
+  if (travel.kind === 'starWars') {
+    const body = getStarWarsBody(travel.bodyId);
+    if (!body) {
+      out.copy(OVERVIEW_POSITION);
+      return;
+    }
+    const bodyPos = scratch.set(...body.position);
+    const dist = Math.hypot(bodyPos.x, bodyPos.z);
+    const dirX = dist > 1e-6 ? bodyPos.x / dist : 1;
+    const dirZ = dist > 1e-6 ? bodyPos.z / dist : 0;
+    out
+      .set(dirX * -0.65, 0.45, dirZ * -0.65)
+      .setLength(travel.viewDistance)
+      .add(bodyPos);
     return;
   }
   getBodyWorldPosition(travel.bodyId, scratch);
@@ -167,6 +202,9 @@ const resolveEndPos = (travel: Travel, out: Vector3, scratch: Vector3): void => 
   }
   computePlanetEndPos(scratch, travel.viewDistance, out);
 };
+
+const computeStarWarsViewDistance = (radius: number): number =>
+  Math.max(7, radius * 8);
 
 const computeViewDistance = (bodyId: BodyId, radius: number): number => {
   if (getBodyParent(bodyId)) {
@@ -213,6 +251,19 @@ export const CameraManager = () => {
     let travel: Travel;
     if (state.viewMode === 'overview') {
       travel = { kind: 'overview', startPos, startForward };
+    } else if (
+      state.selectedUniversePreset === 'starWars' &&
+      state.selectedStarWarsBody
+    ) {
+      const body = getStarWarsBody(state.selectedStarWarsBody);
+      if (!body) return;
+      travel = {
+        kind: 'starWars',
+        startPos,
+        startForward,
+        bodyId: state.selectedStarWarsBody,
+        viewDistance: computeStarWarsViewDistance(body.radius),
+      };
     } else if (state.activeBody) {
       const body = getBody(state.activeBody);
       if (!body) return;
@@ -248,6 +299,12 @@ export const CameraManager = () => {
                 bodyId: current.bodyId,
                 viewDistance: current.viewDistance,
               }
+            : current.kind === 'starWars'
+              ? {
+                  kind: 'starWars',
+                  bodyId: current.bodyId,
+                  viewDistance: current.viewDistance,
+                }
             : { kind: 'overview' };
         travelRef.current = null;
       },
@@ -317,6 +374,33 @@ export const CameraManager = () => {
      * snap the camera back to the cinematic offset every frame.
      */
     if (arrived.kind === 'body') return;
+    if (arrived.kind === 'starWars') {
+      resolveTarget(
+        {
+          kind: 'starWars',
+          startPos: camera.position,
+          startForward: tmpDir,
+          bodyId: arrived.bodyId,
+          viewDistance: arrived.viewDistance,
+        },
+        tmpTargetPos,
+      );
+      resolveEndPos(
+        {
+          kind: 'starWars',
+          startPos: camera.position,
+          startForward: tmpDir,
+          bodyId: arrived.bodyId,
+          viewDistance: arrived.viewDistance,
+        },
+        tmpEndPos,
+        tmpScratch,
+      );
+      camera.position.copy(tmpEndPos);
+      camera.up.copy(WORLD_UP);
+      camera.lookAt(tmpTargetPos);
+      return;
+    }
     if (selectedConstellation) return;
 
     tmpTargetPos.copy(OVERVIEW_TARGET);

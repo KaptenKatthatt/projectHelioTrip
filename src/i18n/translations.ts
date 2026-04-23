@@ -49,6 +49,9 @@ export type Translation = {
     universeMilkyWayOverview: string;
     showConstellationLines: string;
     hideConstellationLines: string;
+    starWarsObject: string;
+    starWarsSystem: string;
+    starWarsTravelSoon: string;
   };
 };
 
