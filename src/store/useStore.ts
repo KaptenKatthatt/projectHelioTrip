@@ -2,12 +2,14 @@ import { Vector3 } from 'three';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { BodyId } from '../lib/bodies';
+import type { ConstellationMenuId } from '../lib/constellations';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 
 export type ViewMode = 'close' | 'overview';
 
 export type NavigationMode = 'cinematic' | 'free';
+export type UniversePreset = 'solarSystem' | 'starWars' | 'milkyWayOverview';
 
 export type SimulationState = {
   activeBody: BodyId | null;
@@ -20,6 +22,8 @@ export type SimulationState = {
   travelId: number;
   locale: Locale;
   navigationMode: NavigationMode;
+  selectedConstellation: ConstellationMenuId | null;
+  selectedUniversePreset: UniversePreset;
 };
 
 export type SimulationActions = {
@@ -37,6 +41,8 @@ export type SimulationActions = {
   setViewMode: (mode: ViewMode) => void;
   setLocale: (locale: Locale) => void;
   setNavigationMode: (mode: NavigationMode) => void;
+  setSelectedConstellation: (id: ConstellationMenuId | null) => void;
+  setSelectedUniversePreset: (preset: UniversePreset) => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -60,6 +66,8 @@ export const useStore = create<Store>()(
       travelId: 0,
       locale: detectLocale(),
       navigationMode: 'cinematic',
+      selectedConstellation: null,
+      selectedUniversePreset: 'solarSystem',
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -102,6 +110,11 @@ export const useStore = create<Store>()(
       setLocale: (locale) => set({ locale }),
 
       setNavigationMode: (mode) => set({ navigationMode: mode }),
+
+      setSelectedConstellation: (id) => set({ selectedConstellation: id }),
+
+      setSelectedUniversePreset: (preset) =>
+        set({ selectedUniversePreset: preset }),
     }),
     {
       name: 'heliotrip-preferences',

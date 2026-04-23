@@ -20,12 +20,8 @@ export const Scene = () => {
 
   return (
     <Canvas
-      camera={{ position: [0, 20, 80], fov: 55, near: 0.001, far: 8000 }}
-      gl={{
-        antialias: true,
-        powerPreference: 'high-performance',
-        logarithmicDepthBuffer: true,
-      }}
+      camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
+      gl={{ antialias: true, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
     >
       <color attach="background" args={['#05060a']} />

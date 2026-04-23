@@ -6,6 +6,11 @@ import { SATELLITES, type SatelliteDefinition } from '../lib/satellites';
 import type { BodyId } from '../lib/bodies';
 import { useTranslation } from '../hooks/useTranslation';
 
+type PlanetSelectorProps = {
+  readonly showHeading?: boolean;
+  readonly className?: string;
+};
+
 type PlanetRow = {
   kind: 'planet';
   id: PlanetId;
@@ -64,7 +69,10 @@ const buildRows = (): readonly Row[] => {
   return rows;
 };
 
-export const PlanetSelector = () => {
+export const PlanetSelector = ({
+  showHeading = true,
+  className,
+}: PlanetSelectorProps) => {
   const { t, bodyName } = useTranslation();
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
@@ -73,10 +81,17 @@ export const PlanetSelector = () => {
   const rows = useMemo(() => buildRows(), []);
 
   return (
-    <nav className="pointer-events-auto flex w-52 flex-col gap-0.5 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md">
-      <h2 className="px-2 pb-1 pt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
-        {t.ui.planets}
-      </h2>
+    <nav
+      className={
+        className ??
+        'pointer-events-auto flex w-52 flex-col gap-0.5 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md'
+      }
+    >
+      {showHeading ? (
+        <h2 className="px-2 pb-1 pt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+          {t.ui.planets}
+        </h2>
+      ) : null}
       {rows.map((row) => {
         const isActive = viewMode === 'close' && activeBody === row.id;
 
