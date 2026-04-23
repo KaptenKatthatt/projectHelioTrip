@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
-import { RepeatWrapping, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import { STAR_WARS_SYSTEMS, type StarWarsBodyId } from '../lib/starWarsSystems';
 import {
   configureColorMap,
@@ -16,31 +16,20 @@ type StarWarsRenderBody = {
   color: string;
   radius: number;
   position: Vector3;
-  rotation: readonly [number, number, number];
 };
 
 type MaterialPreset = {
   emissiveIntensity: number;
   roughness: number;
   metalness: number;
-  baseColor: string;
 };
 
 const getMaterialPreset = (id: StarWarsBodyId): MaterialPreset => {
   if (id === 'death-star') {
     return {
       emissiveIntensity: 0.1,
-      roughness: 0.31,
-      metalness: 0.78,
-      baseColor: '#e3e8ef',
-    };
-  }
-  if (id === 'alderaan') {
-    return {
-      emissiveIntensity: 0.04,
-      roughness: 0.88,
-      metalness: 0.04,
-      baseColor: '#ffffff',
+      roughness: 0.45,
+      metalness: 0.65,
     };
   }
   if (id === 'mustafar') {
@@ -48,14 +37,12 @@ const getMaterialPreset = (id: StarWarsBodyId): MaterialPreset => {
       emissiveIntensity: 0.34,
       roughness: 0.82,
       metalness: 0.08,
-      baseColor: '#ff8b62',
     };
   }
   return {
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0.18,
     roughness: 0.8,
     metalness: 0.05,
-    baseColor: '#ffffff',
   };
 };
 
@@ -70,10 +57,6 @@ export const StarWarsBodies = () => {
           color: body.color,
           radius: body.radius,
           position: new Vector3(...body.position),
-          rotation:
-            body.id === 'death-star'
-              ? ([0, 0.32, 0] as const)
-              : ([0, 0, 0] as const),
         })),
       ),
     [],
@@ -116,27 +99,6 @@ export const StarWarsBodies = () => {
     () => new Map(roughnessUrls.map((url, i) => [url, roughnessMaps[i]] as const)),
     [roughnessMaps, roughnessUrls],
   );
-  const diffuseMapByBody = useMemo(() => {
-    const map = new Map<StarWarsBodyId, ReturnType<typeof diffuseMapByUrl.get>>();
-    for (let i = 0; i < bodies.length; i += 1) {
-      const body = bodies[i];
-      if (!body) continue;
-      const tex = textureDefs[i];
-      if (!tex?.diffuse) continue;
-      const diffuse = diffuseMapByUrl.get(tex.diffuse);
-      if (!diffuse) continue;
-      if (body.id === 'death-star') {
-        diffuse.wrapS = RepeatWrapping;
-        diffuse.wrapT = RepeatWrapping;
-        diffuse.repeat.x = 1;
-        diffuse.repeat.y = 1;
-        diffuse.offset.x = 0.34;
-        diffuse.offset.y = 0.08;
-      }
-      map.set(body.id, diffuse);
-    }
-    return map;
-  }, [bodies, textureDefs, diffuseMapByUrl]);
 
   return (
     <group>
@@ -144,24 +106,24 @@ export const StarWarsBodies = () => {
         const isActive = selectedStarWarsBody === body.id;
         const material = getMaterialPreset(body.id);
         const tex = textureDefs[i];
-        const diffuseMap = diffuseMapByBody.get(body.id);
+        const diffuseMap = tex?.diffuse ? diffuseMapByUrl.get(tex.diffuse) : undefined;
         const normalMap = tex?.normal ? normalMapByUrl.get(tex.normal) : undefined;
         const roughnessMap = tex?.roughness
           ? roughnessMapByUrl.get(tex.roughness)
           : undefined;
         return (
           <group key={body.id} position={body.position}>
-            <mesh scale={body.radius} rotation={body.rotation}>
+            <mesh scale={body.radius}>
               <sphereGeometry args={GEOMETRY_ARGS} />
               <meshStandardMaterial
                 map={diffuseMap}
                 normalMap={normalMap}
                 roughnessMap={roughnessMap}
-                color={material.baseColor}
-                emissive={body.id === 'death-star' ? '#404754' : body.color}
+                color={body.color}
+                emissive={body.color}
                 emissiveIntensity={
                   isActive
-                    ? material.emissiveIntensity + 0.12
+                    ? material.emissiveIntensity + 0.22
                     : material.emissiveIntensity
                 }
                 roughness={material.roughness}

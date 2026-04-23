@@ -374,7 +374,33 @@ export const CameraManager = () => {
      * snap the camera back to the cinematic offset every frame.
      */
     if (arrived.kind === 'body') return;
-    if (arrived.kind === 'starWars') return;
+    if (arrived.kind === 'starWars') {
+      resolveTarget(
+        {
+          kind: 'starWars',
+          startPos: camera.position,
+          startForward: tmpDir,
+          bodyId: arrived.bodyId,
+          viewDistance: arrived.viewDistance,
+        },
+        tmpTargetPos,
+      );
+      resolveEndPos(
+        {
+          kind: 'starWars',
+          startPos: camera.position,
+          startForward: tmpDir,
+          bodyId: arrived.bodyId,
+          viewDistance: arrived.viewDistance,
+        },
+        tmpEndPos,
+        tmpScratch,
+      );
+      camera.position.copy(tmpEndPos);
+      camera.up.copy(WORLD_UP);
+      camera.lookAt(tmpTargetPos);
+      return;
+    }
     if (selectedConstellation) return;
 
     tmpTargetPos.copy(OVERVIEW_TARGET);

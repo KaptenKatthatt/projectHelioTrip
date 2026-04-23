@@ -5,7 +5,6 @@ import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
-import { getStarWarsBody } from '../lib/starWarsSystems';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
 const MAX_DISTANCE_MULTIPLIER = 60;
@@ -16,8 +15,6 @@ type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
   const activeBody = useStore((s) => s.activeBody);
-  const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
-  const selectedStarWarsBody = useStore((s) => s.selectedStarWarsBody);
   const isTraveling = useStore((s) => s.isTraveling);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
@@ -27,13 +24,9 @@ export const PlanetOrbitControls = () => {
   const tmpTarget = useMemo(() => new Vector3(), []);
   const tmpDelta = useMemo(() => new Vector3(), []);
 
-  const targetingSolarBody = selectedUniversePreset === 'solarSystem' && activeBody !== null;
-  const targetingStarWarsBody =
-    selectedUniversePreset === 'starWars' && selectedStarWarsBody !== null;
-
   const enabled =
     !isTraveling &&
-    (targetingSolarBody || targetingStarWarsBody) &&
+    activeBody !== null &&
     viewMode === 'close' &&
     navigationMode === 'cinematic';
 
@@ -45,25 +38,15 @@ export const PlanetOrbitControls = () => {
    */
   useEffect(() => {
     initializedRef.current = false;
-  }, [activeBody, selectedStarWarsBody, enabled]);
+  }, [activeBody, enabled]);
 
   useEffect(() => {
     const controls = controlsRef.current;
-    if (!controls) return;
-    const radius =
-      targetingSolarBody && activeBody
-        ? (getBodyRadius(activeBody) ?? 1)
-        : targetingStarWarsBody && selectedStarWarsBody
-          ? (getStarWarsBody(selectedStarWarsBody)?.radius ?? 1)
-          : 1;
+    if (!controls || !activeBody) return;
+    const radius = getBodyRadius(activeBody) ?? 1;
     controls.minDistance = Math.max(radius * MIN_DISTANCE_MULTIPLIER, 0.1);
     controls.maxDistance = radius * MAX_DISTANCE_MULTIPLIER;
-  }, [
-    activeBody,
-    selectedStarWarsBody,
-    targetingSolarBody,
-    targetingStarWarsBody,
-  ]);
+  }, [activeBody]);
 
   /**
    * Priority -2 runs BEFORE drei's OrbitControls internal useFrame
@@ -75,19 +58,11 @@ export const PlanetOrbitControls = () => {
    * freshly-arrived camera appear to jump away from the planet.
    */
   useFrame(() => {
-    if (!enabled) return;
+    if (!enabled || !activeBody) return;
     const controls = controlsRef.current;
     if (!controls) return;
 
-    if (targetingSolarBody && activeBody) {
-      getBodyWorldPosition(activeBody, tmpTarget);
-    } else if (targetingStarWarsBody && selectedStarWarsBody) {
-      const body = getStarWarsBody(selectedStarWarsBody);
-      if (!body) return;
-      tmpTarget.set(...body.position);
-    } else {
-      return;
-    }
+    getBodyWorldPosition(activeBody, tmpTarget);
 
     if (!initializedRef.current) {
       controls.target.copy(tmpTarget);
