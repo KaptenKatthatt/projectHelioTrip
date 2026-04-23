@@ -1,27 +1,23 @@
-import { useMemo } from 'react';
-import { BufferGeometry, Float32BufferAttribute } from 'three';
-import { PLANETS } from '../lib/planets';
-import { useStore } from '../store/useStore';
+import { useMemo } from "react";
+import { Line } from "@react-three/drei";
+import { Vector3 } from "three";
+import { PLANETS } from "../lib/planets";
+import { useStore } from "../store/useStore";
 
-const SEGMENTS = 256;
+const SEGMENTS = 512;
 
-type OrbitGeo = {
+type OrbitLineData = {
   id: string;
-  radius: number;
-  geometry: BufferGeometry;
+  points: readonly Vector3[];
 };
 
-const buildOrbit = (radius: number): BufferGeometry => {
-  const positions = new Float32Array((SEGMENTS + 1) * 3);
+const buildOrbitPoints = (radius: number): readonly Vector3[] => {
+  const points: Vector3[] = [];
   for (let i = 0; i <= SEGMENTS; i++) {
     const a = (i / SEGMENTS) * Math.PI * 2;
-    positions[i * 3] = Math.cos(a) * radius;
-    positions[i * 3 + 1] = 0;
-    positions[i * 3 + 2] = Math.sin(a) * radius;
+    points.push(new Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
   }
-  const g = new BufferGeometry();
-  g.setAttribute('position', new Float32BufferAttribute(positions, 3));
-  return g;
+  return points;
 };
 
 export const OrbitLines = () => {
@@ -29,36 +25,34 @@ export const OrbitLines = () => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const selectedUniversePreset = useStore((s) => s.selectedUniversePreset);
 
-  const orbits = useMemo<readonly OrbitGeo[]>(
+  const orbits = useMemo<readonly OrbitLineData[]>(
     () =>
-      PLANETS.filter((p) => p.id !== 'sun').map((p) => ({
+      PLANETS.filter((p) => p.id !== "sun").map((p) => ({
         id: p.id,
-        radius: p.position.length(),
-        geometry: buildOrbit(p.position.length()),
+        points: buildOrbitPoints(p.position.length()),
       })),
     [],
   );
 
-  const opacity = viewMode === 'overview' ? 0.45 : 0.1;
+  const opacity = viewMode === "overview" ? 0.03 : 0.08;
 
-  if (
-    selectedConstellation ||
-    selectedUniversePreset === 'milkyWayOverview'
-  ) {
+  if (selectedConstellation || selectedUniversePreset !== "solarSystem") {
     return null;
   }
 
   return (
     <group>
       {orbits.map((o) => (
-        <lineLoop key={o.id} geometry={o.geometry}>
-          <lineBasicMaterial
-            color="#7aa2ff"
-            transparent
-            opacity={opacity}
-            depthWrite={false}
-          />
-        </lineLoop>
+        <Line
+          key={o.id}
+          points={o.points}
+          color="#89adff"
+          transparent
+          opacity={opacity}
+          lineWidth={1.0}
+          depthWrite={false}
+          toneMapped={false}
+        />
       ))}
     </group>
   );

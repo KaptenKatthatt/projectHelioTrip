@@ -40,7 +40,7 @@ export const sv: Translation = {
     play: 'Spela',
     pause: 'Pausa',
     speed: 'Hastighet',
-    planets: 'Planeter',
+    planets: 'Vårt Solsystem',
     moons: 'Månar',
     resetTime: 'Nu',
     readOnWikipedia: 'Läs på Wikipedia',

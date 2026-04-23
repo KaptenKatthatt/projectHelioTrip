@@ -40,7 +40,7 @@ export const en: Translation = {
     play: 'Play',
     pause: 'Pause',
     speed: 'Speed',
-    planets: 'Planets',
+    planets: 'Our Solar System',
     moons: 'Moons',
     resetTime: 'Now',
     readOnWikipedia: 'Read on Wikipedia',
