@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { Euler, Vector3 } from 'three';
-import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
-import { useKeyboardMovement } from '../hooks/useKeyboardMovement';
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Euler, Vector3 } from "three";
+import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { useKeyboardMovement } from "../hooks/useKeyboardMovement";
 import {
   freeFlightTouchBus,
   resetFreeFlightTouch,
-} from '../lib/freeFlightTouchBus';
-import { PLANETS } from '../lib/planets';
-import { MOONS } from '../lib/moons';
-import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
-import { useStore } from '../store/useStore';
-import { StdlibPointerLockControls } from './controls/StdlibPointerLockControls';
+} from "../lib/freeFlightTouchBus";
+import { PLANETS } from "../lib/planets";
+import { MOONS } from "../lib/moons";
+import { getLiveMoonOffset, getLivePosition } from "../lib/positionsBus";
+import { useStore } from "../store/useStore";
+import { StdlibPointerLockControls } from "./controls/StdlibPointerLockControls";
 
 /**
  * WASD speed scales with distance to the nearest body's surface so the
@@ -44,27 +44,27 @@ const SOFT_ZONE_RADIUS_MIN = 1.5;
 
 const MOVE_TOUCH_DEADZONE = 0.12;
 const LOOK_TOUCH_DEADZONE = 0.14;
-const LOOK_YAW_SPEED = 1.0;
-const LOOK_PITCH_SPEED = 1.0;
+const LOOK_YAW_SPEED = 0.7;
+const LOOK_PITCH_SPEED = 0.7;
 const PI_2 = Math.PI / 2;
 
 type CollisionBody =
-  | { kind: 'planet'; id: (typeof PLANETS)[number]['id']; radius: number }
+  | { kind: "planet"; id: (typeof PLANETS)[number]["id"]; radius: number }
   | {
-      kind: 'moon';
-      id: (typeof MOONS)[number]['id'];
-      parent: (typeof PLANETS)[number]['id'];
+      kind: "moon";
+      id: (typeof MOONS)[number]["id"];
+      parent: (typeof PLANETS)[number]["id"];
       radius: number;
     };
 
 const COLLISION_BODIES: readonly CollisionBody[] = [
   ...PLANETS.map((planet) => ({
-    kind: 'planet' as const,
+    kind: "planet" as const,
     id: planet.id,
     radius: planet.radius,
   })),
   ...MOONS.map((moon) => ({
-    kind: 'moon' as const,
+    kind: "moon" as const,
     id: moon.id,
     parent: moon.parent,
     radius: moon.radius,
@@ -90,7 +90,7 @@ export const FreeFlightControls = () => {
   const center = useMemo(() => new Vector3(), []);
   const normal = useMemo(() => new Vector3(), []);
   const radial = useMemo(() => new Vector3(), []);
-  const eulerScratch = useMemo(() => new Euler(0, 0, 0, 'YXZ'), []);
+  const eulerScratch = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -128,13 +128,13 @@ export const FreeFlightControls = () => {
           travelTo(activeBody);
           return;
         }
-        setNavigationMode('cinematic');
+        setNavigationMode("cinematic");
       }
     };
 
-    document.addEventListener('pointerlockchange', onPointerLockChange);
+    document.addEventListener("pointerlockchange", onPointerLockChange);
     return () => {
-      document.removeEventListener('pointerlockchange', onPointerLockChange);
+      document.removeEventListener("pointerlockchange", onPointerLockChange);
     };
   }, [activeBody, setNavigationMode, travelTo]);
 
@@ -150,14 +150,7 @@ export const FreeFlightControls = () => {
 
     desired.set(0, 0, 0);
     if (allowKeyboardMove) {
-      const {
-        forward: fwd,
-        back,
-        left,
-        right: rgt,
-        up,
-        down,
-      } = input.current;
+      const { forward: fwd, back, left, right: rgt, up, down } = input.current;
 
       if (fwd) desired.addScaledVector(forward, 1);
       if (back) desired.addScaledVector(forward, -1);
@@ -174,7 +167,10 @@ export const FreeFlightControls = () => {
         const inv = 1 / tlen;
         const nx = tx * inv;
         const ny = ty * inv;
-        const mag = Math.min(1, (tlen - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE));
+        const mag = Math.min(
+          1,
+          (tlen - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE),
+        );
         desired.addScaledVector(right, nx * mag);
         desired.addScaledVector(forward, ny * mag);
       }
@@ -184,7 +180,7 @@ export const FreeFlightControls = () => {
       const { boost } = input.current;
       let nearestSurface = Infinity;
       for (const body of COLLISION_BODIES) {
-        if (body.kind === 'planet') {
+        if (body.kind === "planet") {
           center.copy(getLivePosition(body.id));
         } else {
           center
@@ -229,10 +225,12 @@ export const FreeFlightControls = () => {
       );
       const softLimit = limit + softZone;
 
-      if (body.kind === 'planet') {
+      if (body.kind === "planet") {
         center.copy(getLivePosition(body.id));
       } else {
-        center.copy(getLivePosition(body.parent)).add(getLiveMoonOffset(body.id));
+        center
+          .copy(getLivePosition(body.parent))
+          .add(getLiveMoonOffset(body.id));
       }
 
       normal.copy(camera.position).sub(center);
@@ -254,10 +252,7 @@ export const FreeFlightControls = () => {
         if (inward < 0) {
           const depth =
             softZone > 1e-6
-              ? Math.min(
-                  1,
-                  Math.max(0, (softLimit - currentDist) / softZone),
-                )
+              ? Math.min(1, Math.max(0, (softLimit - currentDist) / softZone))
               : 1;
           const damping = depth * depth * (3 - 2 * depth);
           moveDelta.addScaledVector(normal, -inward * damping);
