@@ -2,6 +2,7 @@ import { useTexture } from '@react-three/drei/core/Texture';
 import { SRGBColorSpace, type Texture } from 'three';
 import type { PlanetId } from './planets';
 import type { MoonId } from './moons';
+import { getGraphicsPreset } from './graphicsTier';
 
 export type SurfaceTextures = {
   diffuse: string;
@@ -63,26 +64,28 @@ export const getCloudTextures = (id: PlanetId): CloudTextures | undefined =>
  * `useTexture`, which types its onLoad callback as `Texture | Texture[]`.
  */
 export const configureColorMap = (tex: Texture | Texture[]): void => {
+  const maxAniso = getGraphicsPreset().textureAnisotropy;
   if (Array.isArray(tex)) {
     for (const t of tex) {
       t.colorSpace = SRGBColorSpace;
-      t.anisotropy = 8;
+      t.anisotropy = maxAniso;
     }
     return;
   }
   tex.colorSpace = SRGBColorSpace;
-  tex.anisotropy = 8;
+  tex.anisotropy = maxAniso;
 };
 
 /** Data maps (normal, roughness, etc.) stay in linear space. */
 export const configureDataMap = (tex: Texture | Texture[]): void => {
+  const maxAniso = getGraphicsPreset().textureAnisotropy;
   if (Array.isArray(tex)) {
     for (const t of tex) {
-      t.anisotropy = 8;
+      t.anisotropy = maxAniso;
     }
     return;
   }
-  tex.anisotropy = 8;
+  tex.anisotropy = maxAniso;
 };
 
 const collectUrls = (): string[] => {

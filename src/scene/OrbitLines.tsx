@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { Line } from "@react-three/drei";
 import { Vector3 } from "three";
+import { getGraphicsPreset } from "../lib/graphicsTier";
 import { PLANETS } from "../lib/planets";
 import { useStore } from "../store/useStore";
 
-const SEGMENTS = 512;
+const SEGMENTS = getGraphicsPreset().orbitLineSegments;
 
 type OrbitLineData = {
   id: string;

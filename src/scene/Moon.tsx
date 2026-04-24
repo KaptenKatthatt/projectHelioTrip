@@ -5,13 +5,19 @@ import { type Group } from 'three';
 import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
+import { getGraphicsPreset } from '../lib/graphicsTier';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
 
 type Props = {
   moon: MoonDefinition;
 };
 
-const GEOMETRY_ARGS: [number, number, number] = [1, 48, 32];
+const MOON_SPHERE = getGraphicsPreset().cloudSphere;
+const GEOMETRY_ARGS: [number, number, number] = [
+  1,
+  MOON_SPHERE[0],
+  MOON_SPHERE[1],
+];
 const TAU = Math.PI * 2;
 const MS_PER_HOUR = 3_600_000;
 

@@ -5,6 +5,7 @@ import { Color, type Group } from 'three';
 import type { PlanetId } from '../lib/planets';
 import { getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
+import { getGraphicsPreset } from '../lib/graphicsTier';
 import {
   configureColorMap,
   configureDataMap,
@@ -21,7 +22,14 @@ type Props = {
 };
 
 const SUN_HDR = new Color(6.0, 4.2, 1.1);
-const GEOMETRY_ARGS: [number, number, number] = [1, 64, 48];
+const PLANET_SPHERE = getGraphicsPreset().planetSphere;
+const GEOMETRY_ARGS: [number, number, number] = [
+  1,
+  PLANET_SPHERE[0],
+  PLANET_SPHERE[1],
+];
+/** Sun stays high-poly on all tiers so bloom + texture read like desktop. */
+const SUN_SPHERE_ARGS: [number, number, number] = [1, 64, 48];
 const TAU = Math.PI * 2;
 const MS_PER_HOUR = 3_600_000;
 
@@ -87,9 +95,10 @@ const Body = ({ id, radius, color }: BodyProps) => {
 
 const FlatBody = ({ id, radius, color }: BodyProps) => {
   const isSun = id === 'sun';
+  const sphereArgs = isSun ? SUN_SPHERE_ARGS : GEOMETRY_ARGS;
   return (
     <mesh castShadow={!isSun} receiveShadow={!isSun} scale={radius}>
-      <sphereGeometry args={GEOMETRY_ARGS} />
+      <sphereGeometry args={sphereArgs} />
       {isSun ? (
         <meshBasicMaterial color={SUN_HDR} toneMapped={false} />
       ) : (
@@ -116,7 +125,7 @@ const SunBody = ({
 
   return (
     <mesh scale={radius}>
-      <sphereGeometry args={GEOMETRY_ARGS} />
+      <sphereGeometry args={SUN_SPHERE_ARGS} />
       <meshBasicMaterial map={map} color={SUN_HDR} toneMapped={false} />
     </mesh>
   );

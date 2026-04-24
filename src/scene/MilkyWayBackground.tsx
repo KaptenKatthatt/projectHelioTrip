@@ -2,6 +2,7 @@ import { useMemo, type ReactElement } from "react";
 import { useTexture } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { BackSide, Color, SRGBColorSpace } from "three";
+import { getGraphicsPreset } from "../lib/graphicsTier";
 
 /** 7680×4320; kräver `maxTextureSize` ≥ 7680. Fil i `public/`, inte gitignored `public/textures/`. */
 const TEXTURE_PATH_HIGH = "/8k-milky-way-stars-in-night-sky-video.jpg";
@@ -22,9 +23,10 @@ const MilkyWayMesh = ({ texturePath }: MilkyWayMeshProps): ReactElement => {
 
   const tint = useMemo(() => new Color("#d7deff"), []);
 
+  const [mwW, mwH] = getGraphicsPreset().milkyWaySphere;
   return (
     <mesh rotation={[0.02, Math.PI * 0.64, 0]} renderOrder={-20}>
-      <sphereGeometry args={[3200, 64, 64]} />
+      <sphereGeometry args={[3200, mwW, mwH]} />
       <meshBasicMaterial
         map={texture}
         side={BackSide}

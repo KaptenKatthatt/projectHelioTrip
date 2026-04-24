@@ -1,8 +1,38 @@
-# ProjectHelioTrip
+# 🪐 HelioTrip
 
-Vite + React 19 + TypeScript + React Three Fiber solar system visualization.
+**HelioTrip** is an **edutainment** experience for **all ages** — a playful way to explore the solar system and learn through immersion, not homework vibes. 🌌✨
 
-## Getting started
+Pilot your view in **3D first-person** and drift through space: zoom past planets, follow orbits, and get a feel for scale and motion. It works beautifully on **desktop** and **mobile**, so you can explore from the couch or on the go. 📱🖥️
+
+On **touch devices**, use **pinch to zoom** to move closer or pull back — natural, camera-style control while you fly. 🤏🔭
+
+---
+
+## 🚀 Features
+
+- **First-person 3D flight** through a solar-system scene
+- **Responsive**: full experience on **mobile** and **desktop**
+- **Pinch to zoom** on mobile for comfortable framing
+- **Edutainment**: learn by exploring; designed to be approachable for kids, parents, and curious adults alike
+
+---
+
+## 🛸 Tech stack
+
+| Layer | Technology |
+| ----- | ---------- |
+| App & bundling | [Vite](https://vitejs.dev/) |
+| UI | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
+| 3D | [Three.js](https://threejs.org/) via [React Three Fiber](https://r3f.docs.pmnd.rs/), [Drei](https://github.com/pmndrs/drei), [@react-three/postprocessing](https://github.com/pmndrs/react-postprocessing) |
+| Motion | [@react-spring/three](https://github.com/pmndrs/react-spring) |
+| Styling | [Tailwind CSS](https://tailwindcss.com/) |
+| State | [Zustand](https://github.com/pmndrs/zustand) |
+| API (dev) | [Hono](https://hono.dev/) |
+| Icons | [Lucide](https://lucide.dev/) |
+
+---
+
+## 🌍 Getting started
 
 ```bash
 npm install
@@ -10,83 +40,10 @@ npm run textures   # one-time: downloads CC BY 4.0 planet textures
 npm run dev
 ```
 
-`npm run textures` pulls diffuse/normal/roughness maps (plus Earth clouds) from
-[Solar System Scope](https://www.solarsystemscope.com/textures/) and
-`threejs.org/examples` into `public/textures/`. The folder is gitignored; rerun
-the script after a fresh clone.
+`npm run textures` pulls diffuse/normal/roughness maps (plus Earth clouds) from [Solar System Scope](https://www.solarsystemscope.com/textures/) and `threejs.org/examples` into `public/textures/`. That folder is gitignored — run the script again after a fresh clone.
+
+The dev script runs the Vite frontend together with the local API watcher (`concurrently`).
 
 ---
 
-## Template notes
-
-This project was bootstrapped from the Vite React TS template.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*Clear skies and smooth orbits.* 🛰️🌠

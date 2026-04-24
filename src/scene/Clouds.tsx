@@ -1,5 +1,6 @@
 import { useTexture } from '@react-three/drei/core/Texture';
 import type { PlanetId } from '../lib/planets';
+import { getGraphicsPreset } from '../lib/graphicsTier';
 import { configureColorMap, getCloudTextures } from '../lib/textures';
 
 type Props = {
@@ -9,7 +10,12 @@ type Props = {
 
 const CLOUD_SCALE_FACTOR = 1.012;
 const CLOUD_OPACITY = 0.45;
-const GEOMETRY_ARGS: [number, number, number] = [1, 48, 32];
+const CLOUD_SPHERE = getGraphicsPreset().cloudSphere;
+const GEOMETRY_ARGS: [number, number, number] = [
+  1,
+  CLOUD_SPHERE[0],
+  CLOUD_SPHERE[1],
+];
 
 export const Clouds = ({ planetId, radius }: Props) => {
   const textures = getCloudTextures(planetId);

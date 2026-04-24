@@ -2,8 +2,9 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { MathUtils, Object3D, type InstancedMesh } from 'three';
 import { AU_SCALE } from '../lib/constants';
+import { getGraphicsPreset } from '../lib/graphicsTier';
 
-const COUNT = 3000;
+const COUNT = getGraphicsPreset().asteroidCount;
 const INNER_RADIUS_AU = 2.2;
 const OUTER_RADIUS_AU = 3.2;
 const BELT_HEIGHT_AU = 0.08;

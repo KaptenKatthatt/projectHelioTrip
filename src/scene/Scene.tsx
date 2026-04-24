@@ -9,6 +9,11 @@ import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
 import {
+  getCanvasDprCap,
+  getGraphicsPreset,
+  getGraphicsTier,
+} from '../lib/graphicsTier';
+import {
   INITIAL_OVERVIEW_CAMERA_POSITION,
   INITIAL_OVERVIEW_FOV,
 } from '../lib/initialCamera';
@@ -45,6 +50,10 @@ export const Scene = () => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
 
+  const graphicsTier = getGraphicsTier();
+  const graphicsPreset = getGraphicsPreset();
+  const dprCap = getCanvasDprCap(graphicsTier);
+
   return (
     <Canvas
       camera={{
@@ -57,8 +66,13 @@ export const Scene = () => {
         near: 0.1,
         far: 8000,
       }}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
-      dpr={[1, 2]}
+      gl={{
+        antialias: graphicsPreset.antialias,
+        powerPreference: 'high-performance',
+        stencil: false,
+        depth: true,
+      }}
+      dpr={dprCap}
     >
       <color attach="background" args={['#05060a']} />
 
@@ -75,9 +89,9 @@ export const Scene = () => {
           <MilkyWayBackground />
         ) : (
           <Stars
-            radius={2500}
+            radius={graphicsPreset.starsRadius}
             depth={400}
-            count={12000}
+            count={graphicsPreset.starsCount}
             factor={6}
             saturation={0}
             fade
