@@ -54,6 +54,16 @@ export type Translation = {
     bodyInfo: string;
     timeControls: string;
     start: string;
+    aboutOpen: string;
+    aboutTitle: string;
+    aboutClose: string;
+    aboutP1: string;
+    aboutP2: string;
+    aboutP3: string;
+    aboutP4: string;
+    aboutAttribution: string;
+    footerLinkAuthor: string;
+    footerLinkGithub: string;
   };
 };
 

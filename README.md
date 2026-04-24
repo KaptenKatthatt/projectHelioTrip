@@ -23,6 +23,14 @@ On **touch devices**, use **pinch to zoom** to move closer or pull back — natu
 
 ---
 
+## 📖 In-app About (for this repo)
+
+When you run HelioTrip, the footer has an **info (ℹ️) button** that opens a short **About** dialog — the same ideas as this README, but written for someone sitting in the app.
+
+In a few sentences it explains that HelioTrip is **edutainment for all ages**, that you **fly in first person** on **desktop and mobile**, that **time runs forward** at **playable speeds** (not a scrubber — play/pause and presets), that **pinch** (and wheel) **zoom** works, and that the UI is **bilingual (Swedish / English)** with optional **constellation** lines. Copy lives in `src/i18n/locales/en.ts` and `sv.ts` under the `about*` keys if you want to tweak the wording.
+
+---
+
 ## 🛸 Tech stack
 
 | Layer | Technology |

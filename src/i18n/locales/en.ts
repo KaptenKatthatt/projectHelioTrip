@@ -69,5 +69,19 @@ export const en: Translation = {
     bodyInfo: "Info",
     timeControls: "Time",
     start: "Start",
+    aboutOpen: "About this app",
+    aboutTitle: "About HelioTrip",
+    aboutClose: "Close",
+    aboutP1:
+      "HelioTrip is edutainment for all ages: explore our cosmic neighborhood in playful 3D, at your own pace — no homework pressure, just curiosity.",
+    aboutP2:
+      "Fly in first person on desktop or mobile. Use the menu to travel to a planet or moon, or switch to rocket mode and steer yourself. When you press play, time in the solar system runs forward — pick a speed so one real second can mean anything from a gentle quarter-day up to a whole simulated year, and watch the orbits glide.",
+    aboutP3:
+      "On a phone or tablet, pinch with two fingers to zoom, a bit like on a map. On a computer, the mouse wheel zooms the wide view; in rocket mode you fly with the keyboard and click the scene to look around.",
+    aboutP4:
+      "The app speaks Swedish and English — use the little buttons in the menu to switch. You can also visit famous constellations and turn the star-to-star lines on or off to practice spotting patterns in the sky.",
+    aboutAttribution: "Created by Jonas Olson 2026, www.jonasolson.se.",
+    footerLinkAuthor: "Jonas Olson — website (opens in a new tab)",
+    footerLinkGithub: "HelioTrip source on GitHub (opens in a new tab)",
   },
 };

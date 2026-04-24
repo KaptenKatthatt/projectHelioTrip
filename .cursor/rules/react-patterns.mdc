@@ -1,24 +1,24 @@
 ---
-description: React 19-mönster, funktionella komponenter och R3F-prestanda
+description: React 19 patterns, functional components, and R3F performance
 globs: **/*.tsx
 alwaysApply: false
 ---
 
 # React 19 & R3F
 
-## Komponenter
-- ENDAST funktionella komponenter. Inga klasskomponenter.
-- `ref` som vanlig prop (ingen `forwardRef` – det behövs inte i React 19).
-- `use()` för att konsumera promises/context där det passar.
-- Actions + `useActionState` / `useOptimistic` vid formulär/mutationer.
-- Bryt ut återanvändbar logik till custom hooks (`useXxx`).
+## Components
+- ONLY functional components. No class components.
+- `ref` as a normal prop (no `forwardRef` – not needed in React 19).
+- `use()` to consume promises/context where it fits.
+- Actions + `useActionState` / `useOptimistic` for forms/mutations.
+- Extract reusable logic into custom hooks (`useXxx`).
 
-## Rendering-prestanda
-- `useMemo` för tunga beräkningar; `useCallback` endast när barn är memoade.
-- Undvik inline-objektliteraler som props till memoade barn.
+## Rendering performance
+- `useMemo` for heavy work; `useCallback` only when children are memoized.
+- Avoid inline object literals as props to memoized children.
 
 ## R3F
-- Ingen allokering i `useFrame` – återanvänd `Vector3`/`Quaternion`-instanser utanför loopen.
-- `useGLTF` / `useTexture` för assets; anropa `.preload()` där det går.
-- Använd `<Instances>` för många likadana meshes.
-- Föredra `<Suspense>` + drei-loaders framför manuell laddning.
+- No allocation in `useFrame` – reuse `Vector3`/`Quaternion` instances outside the loop.
+- `useGLTF` / `useTexture` for assets; call `.preload()` where appropriate.
+- Use `<Instances>` for many identical meshes.
+- Prefer `<Suspense>` + drei loaders over manual loading.

@@ -7,6 +7,8 @@ import { FlightModeToggle } from './FlightModeToggle';
 import { FreeFlightHelp } from './FreeFlightHelp';
 import { FreeFlightHint } from './FreeFlightHint';
 import { FreeFlightMobileControls } from './FreeFlightMobileControls';
+import { AboutDialog } from './AboutDialog';
+import { FooterIconLinks } from './FooterIconLinks';
 import { LanguageToggle } from './LanguageToggle';
 import { NavigationAccordion } from './NavigationAccordion';
 import { PlanetPanel } from './PlanetPanel';
@@ -124,7 +126,9 @@ export const HUD = () => {
           />
           <div className="pointer-events-auto flex items-center gap-2">
             <FlightModeToggle />
+            <AboutDialog />
             <LanguageToggle />
+            <FooterIconLinks />
           </div>
         </div>
       </footer>

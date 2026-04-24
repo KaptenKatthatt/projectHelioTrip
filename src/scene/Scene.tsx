@@ -74,10 +74,6 @@ export const Scene = () => {
         depth: true,
       }}
       dpr={dprCap}
-      resize={{
-        scroll: false,
-        debounce: { scroll: 0, resize: 0 },
-      }}
     >
       <ViewportResizeSync />
       <color attach="background" args={['#05060a']} />

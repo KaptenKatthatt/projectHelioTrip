@@ -1,14 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { Vector3 } from 'three';
-import { MOONS } from '../lib/moons';
-import { PLANETS } from '../lib/planets';
-import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
-import { useStore } from '../store/useStore';
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Vector3 } from "three";
+import { MOONS } from "../lib/moons";
+import { PLANETS } from "../lib/planets";
+import { getLiveMoonOffset, getLivePosition } from "../lib/positionsBus";
+import { useStore } from "../store/useStore";
 
 const WORLD_UP = new Vector3(0, 1, 0);
-const INTRO_DURATION_MS = 3000;
-const INTRO_MOVE_DISTANCE = 220;
+/** Max time for sky-focus pan; constellation lines wait until this finishes. */
+const INTRO_DURATION_MS = 1500;
+/** Min duration so small moves still ease smoothly. */
+const MIN_INTRO_DURATION_MS = 380;
+/**
+ * Max forward move along the pitched view ray. `findSafeEndPosition` shortens
+ * this when the segment would clip a body; keep the cap modest so the pan
+ * stops once the path clears planets instead of drifting across empty space.
+ */
+const INTRO_MOVE_DISTANCE = 88;
 const INTRO_PITCH_RAD = 0.42;
 const LOOK_AT_DISTANCE = 100;
 const BODY_PADDING = 1.2;
@@ -17,6 +25,7 @@ const MIN_SAFE_MOVE_DISTANCE = 8;
 type IntroTransition = {
   active: boolean;
   startedAtMs: number;
+  durationMs: number;
   startPos: Vector3;
   endPos: Vector3;
   startDir: Vector3;
@@ -40,10 +49,7 @@ const closestPointOnSegment = (
   out.subVectors(end, start);
   const lenSq = out.lengthSq();
   if (lenSq <= 1e-8) return out.copy(start);
-  const t = Math.max(
-    0,
-    Math.min(1, point.clone().sub(start).dot(out) / lenSq),
-  );
+  const t = Math.max(0, Math.min(1, point.clone().sub(start).dot(out) / lenSq));
   return out.copy(start).addScaledVector(out, t);
 };
 
@@ -53,7 +59,8 @@ const segmentIntersectsSphere = (
   center: Vector3,
   radius: number,
   tmp: Vector3,
-): boolean => closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
+): boolean =>
+  closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
 
 export const SkyFocusCamera = () => {
   const camera = useThree((s) => s.camera);
@@ -70,6 +77,7 @@ export const SkyFocusCamera = () => {
   const introRef = useRef<IntroTransition>({
     active: false,
     startedAtMs: 0,
+    durationMs: INTRO_DURATION_MS,
     startPos: new Vector3(),
     endPos: new Vector3(),
     startDir: new Vector3(),
@@ -88,7 +96,9 @@ export const SkyFocusCamera = () => {
     }
     for (const moon of MOONS) {
       bodies.push({
-        center: getLivePosition(moon.parent).clone().add(getLiveMoonOffset(moon.id)),
+        center: getLivePosition(moon.parent)
+          .clone()
+          .add(getLiveMoonOffset(moon.id)),
         radius: moon.radius + BODY_PADDING,
       });
     }
@@ -150,7 +160,19 @@ export const SkyFocusCamera = () => {
       .copy(transition.startDir)
       .applyAxisAngle(tmpRightRef.current, INTRO_PITCH_RAD)
       .normalize();
-    transition.endPos.copy(findSafeEndPosition(transition.startPos, transition.endDir));
+    transition.endPos.copy(
+      findSafeEndPosition(transition.startPos, transition.endDir),
+    );
+
+    const pathLength = transition.startPos.distanceTo(transition.endPos);
+    const scaled =
+      pathLength < 1e-4
+        ? MIN_INTRO_DURATION_MS
+        : (INTRO_DURATION_MS * pathLength) / INTRO_MOVE_DISTANCE;
+    transition.durationMs = Math.max(
+      MIN_INTRO_DURATION_MS,
+      Math.min(INTRO_DURATION_MS, scaled),
+    );
 
     setIsTraveling(true);
   }, [
@@ -165,7 +187,7 @@ export const SkyFocusCamera = () => {
     const transition = introRef.current;
     if (!transition.active) return;
 
-    if (navigationMode === 'free' || viewMode !== 'overview') {
+    if (navigationMode === "free" || viewMode !== "overview") {
       transition.active = false;
       setIsTraveling(false);
       return;
@@ -173,7 +195,7 @@ export const SkyFocusCamera = () => {
 
     const progress = Math.min(
       1,
-      (performance.now() - transition.startedAtMs) / INTRO_DURATION_MS,
+      (performance.now() - transition.startedAtMs) / transition.durationMs,
     );
     const eased = easeInOutCubic(progress);
 
@@ -183,7 +205,9 @@ export const SkyFocusCamera = () => {
       .lerp(transition.endDir, eased)
       .normalize();
     camera.position.lerpVectors(transition.startPos, transition.endPos, eased);
-    lookAtRef.copy(camera.position).addScaledVector(tmpDirRef.current, LOOK_AT_DISTANCE);
+    lookAtRef
+      .copy(camera.position)
+      .addScaledVector(tmpDirRef.current, LOOK_AT_DISTANCE);
     camera.up.copy(WORLD_UP);
     camera.lookAt(lookAtRef);
 
@@ -195,4 +219,3 @@ export const SkyFocusCamera = () => {
 
   return null;
 };
-
