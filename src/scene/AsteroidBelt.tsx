@@ -36,6 +36,7 @@ const generateOrbits = (count: number): readonly AsteroidOrbit[] => {
 
 export const AsteroidBelt = () => {
   const meshRef = useRef<InstancedMesh>(null);
+  const elapsedRef = useRef(0);
   const dummy = useMemo(() => new Object3D(), []);
   const asteroids = useMemo(() => generateOrbits(COUNT), []);
 
@@ -57,10 +58,11 @@ export const AsteroidBelt = () => {
     mesh.instanceMatrix.needsUpdate = true;
   }, [asteroids, dummy]);
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    const t = clock.getElapsedTime();
+    elapsedRef.current += delta;
+    const t = elapsedRef.current;
     let i = 0;
     for (const a of asteroids) {
       const angle = a.offset + t * a.orbitalSpeed;

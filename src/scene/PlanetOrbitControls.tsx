@@ -4,6 +4,7 @@ import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
+import { planetSurfaceDragState } from '../lib/planetSurfaceDrag';
 import { StdlibOrbitControls } from './controls/StdlibOrbitControls';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
@@ -59,6 +60,9 @@ export const PlanetOrbitControls = () => {
     if (!enabled || !activeBody) return;
     const controls = controlsRef.current;
     if (!controls) return;
+
+    controls.enableRotate = !planetSurfaceDragState.active;
+    controls.enableZoom = !planetSurfaceDragState.active;
 
     getBodyWorldPosition(activeBody, tmpTarget);
 

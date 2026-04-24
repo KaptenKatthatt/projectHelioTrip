@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "patch-package",
     "dev": "concurrently -k -n web,api -c blue,magenta \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "vite",
     "dev:api": "tsx watch scripts/dev-server.ts",
@@ -16,7 +17,7 @@
   "dependencies": {
     "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.0",
+    "@react-three/fiber": "9.6.0",
     "@react-three/postprocessing": "^3.0.4",
     "hono": "^4.12.14",
     "lucide-react": "^1.8.0",
@@ -40,6 +41,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.21.0",
     "typescript": "~6.0.2",

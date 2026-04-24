@@ -5,6 +5,7 @@ import { type Group } from 'three';
 import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
+import { getBodyManualSpinY } from '../lib/planetSurfaceDrag';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
 
 type Props = {
@@ -47,7 +48,7 @@ export const Moon = ({ moon }: Props) => {
     if (spin) {
       const simMs = useStore.getState().simulationTime.getTime();
       const phase = (simMs / periodMs) % 1;
-      spin.rotation.y = phase * TAU;
+      spin.rotation.y = phase * TAU + getBodyManualSpinY(moon.id);
     }
   });
 
