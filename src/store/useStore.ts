@@ -135,6 +135,7 @@ export const useStore = create<Store>()(
       focusSkyTarget: (id) =>
         set((state) => ({
           selectedConstellation: id,
+          isPlaying: false,
           isTraveling: state.selectedConstellation === null,
           viewMode: 'overview',
           travelId:

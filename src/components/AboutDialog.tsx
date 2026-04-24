@@ -27,7 +27,7 @@ export const AboutDialog = () => {
         aria-expanded={open}
         aria-controls={open ? titleId : undefined}
         aria-label={t.ui.aboutOpen}
-        className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10"
+        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10"
       >
         <Info className="h-4 w-4" aria-hidden />
       </button>

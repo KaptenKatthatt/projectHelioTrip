@@ -12,7 +12,7 @@ import { FooterIconLinks } from './FooterIconLinks';
 import { LanguageToggle } from './LanguageToggle';
 import { NavigationAccordion } from './NavigationAccordion';
 import { PlanetPanel } from './PlanetPanel';
-import { TimeScrubber } from './TimeScrubber';
+import { TimePlaybackControls } from './TimePlaybackControls';
 
 export const HUD = () => {
   const { t, bodyName } = useTranslation();
@@ -118,13 +118,13 @@ export const HUD = () => {
 
       <footer className="pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-center">
-          <TimeScrubber
+          <TimePlaybackControls
             className={
               'pointer-events-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md ' +
               (mobileLayout ? '' : 'sm:w-auto sm:px-4')
             }
           />
-          <div className="pointer-events-auto flex items-center gap-2">
+          <div className="pointer-events-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 sm:w-auto">
             <FlightModeToggle />
             <AboutDialog />
             <LanguageToggle />
