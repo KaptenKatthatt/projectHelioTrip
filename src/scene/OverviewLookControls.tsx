@@ -20,12 +20,26 @@ export const OverviewLookControls = () => {
 
   const dragActiveRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });
+  /** Pointers currently down on the canvas (for pinch vs orbit). */
+  const canvasPointerIdsRef = useRef(new Set<number>());
   const euler = useMemo(() => new Euler(0, 0, 0, 'YXZ'), []);
 
   useEffect(() => {
     const canvas = gl.domElement;
 
+    const pointerOnCanvas = (event: PointerEvent): boolean =>
+      event.target === canvas ||
+      (event.target instanceof Node && canvas.contains(event.target));
+
     const onPointerDown = (event: PointerEvent): void => {
+      if (pointerOnCanvas(event)) {
+        const hadPointer = canvasPointerIdsRef.current.size > 0;
+        canvasPointerIdsRef.current.add(event.pointerId);
+        if (hadPointer && enabled) {
+          dragActiveRef.current = false;
+          canvas.style.cursor = '';
+        }
+      }
       if (!enabled || event.button !== 0) return;
       const target = event.target;
       if (target instanceof HTMLElement) {
@@ -34,6 +48,7 @@ export const OverviewLookControls = () => {
         );
         if (interactive) return;
       }
+      if (canvasPointerIdsRef.current.size > 1) return;
       dragActiveRef.current = true;
       lastPointerRef.current = { x: event.clientX, y: event.clientY };
       canvas.style.cursor = 'grabbing';
@@ -41,6 +56,7 @@ export const OverviewLookControls = () => {
 
     const onPointerMove = (event: PointerEvent): void => {
       if (!enabled || !dragActiveRef.current) return;
+      if (canvasPointerIdsRef.current.size > 1) return;
       const dx = event.clientX - lastPointerRef.current.x;
       const dy = event.clientY - lastPointerRef.current.y;
       lastPointerRef.current = { x: event.clientX, y: event.clientY };
@@ -57,16 +73,22 @@ export const OverviewLookControls = () => {
       canvas.style.cursor = '';
     };
 
+    const onPointerUp = (event: PointerEvent): void => {
+      canvasPointerIdsRef.current.delete(event.pointerId);
+      endDrag();
+    };
+
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', endDrag);
-    window.addEventListener('pointercancel', endDrag);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
 
     return () => {
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', endDrag);
-      window.removeEventListener('pointercancel', endDrag);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      canvasPointerIdsRef.current.clear();
       canvas.style.cursor = '';
     };
   }, [camera, enabled, euler, gl]);

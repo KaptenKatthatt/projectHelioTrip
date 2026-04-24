@@ -22,6 +22,18 @@ const MIN_FOV = 15;
 const MAX_FOV = 75;
 const FOV_WHEEL_STEP = 2;
 const FOV_SMOOTHING = 0.001;
+/** ~28 px change in pinch span ≈ one mouse-wheel notch (see {@link FOV_WHEEL_STEP}). */
+const PINCH_FOV_DEG_PER_PX = FOV_WHEEL_STEP / 28;
+
+const clampFov = (fov: number): number =>
+  Math.min(MAX_FOV, Math.max(MIN_FOV, fov));
+
+const touchDistance = (touches: TouchList): number => {
+  const a = touches.item(0);
+  const b = touches.item(1);
+  if (!a || !b) return 0;
+  return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+};
 
 export const GlobalZoom = () => {
   const camera = useThree((s) => s.camera);
@@ -58,15 +70,55 @@ export const GlobalZoom = () => {
     const onWheel = (event: WheelEvent): void => {
       event.preventDefault();
       const step = Math.sign(event.deltaY) * FOV_WHEEL_STEP;
-      targetFovRef.current = Math.min(
-        MAX_FOV,
-        Math.max(MIN_FOV, targetFovRef.current + step),
+      targetFovRef.current = clampFov(targetFovRef.current + step);
+    };
+
+    let pinchAnchorSpan = 0;
+    let pinchAnchorFov = DEFAULT_FOV;
+
+    const beginPinchIfNeeded = (touches: TouchList): void => {
+      if (touches.length !== 2) return;
+      pinchAnchorSpan = touchDistance(touches);
+      pinchAnchorFov = targetFovRef.current;
+    };
+
+    const onTouchStart = (event: TouchEvent): void => {
+      beginPinchIfNeeded(event.touches);
+    };
+
+    const onTouchMove = (event: TouchEvent): void => {
+      if (event.touches.length !== 2) return;
+      if (pinchAnchorSpan <= 0) {
+        beginPinchIfNeeded(event.touches);
+        return;
+      }
+      event.preventDefault();
+      const span = touchDistance(event.touches);
+      targetFovRef.current = clampFov(
+        pinchAnchorFov + (pinchAnchorSpan - span) * PINCH_FOV_DEG_PER_PX,
       );
     };
 
+    const endPinch = (): void => {
+      pinchAnchorSpan = 0;
+    };
+
+    const onTouchEnd = (event: TouchEvent): void => {
+      if (event.touches.length < 2) endPinch();
+    };
+
     canvas.addEventListener('wheel', onWheel, { passive: false });
+    canvas.addEventListener('touchstart', onTouchStart, { passive: true });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd);
+    canvas.addEventListener('touchcancel', onTouchEnd);
+
     return () => {
       canvas.removeEventListener('wheel', onWheel);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      canvas.removeEventListener('touchcancel', onTouchEnd);
     };
   }, [enabled, gl]);
 

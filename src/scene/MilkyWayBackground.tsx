@@ -1,13 +1,22 @@
 import { useMemo, type ReactElement } from "react";
 import { useTexture } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { BackSide, Color, SRGBColorSpace } from "three";
 
-const TEXTURE_PATH = "/textures/milky-way-8k.jpg";
+/** 8192×4096 — fine on desktop; exceeds `maxTextureSize` on many mobile GPUs. */
+const TEXTURE_PATH_8K = "/textures/milky-way-8k.jpg";
+/** 2048×1024 — safe fallback when the device cannot sample 8K textures. */
+const TEXTURE_PATH_FALLBACK = "/textures/galaxy/2k_stars_milky_way.jpg";
 
-useTexture.preload(TEXTURE_PATH);
+useTexture.preload(TEXTURE_PATH_8K);
+useTexture.preload(TEXTURE_PATH_FALLBACK);
 
-export const MilkyWayBackground = (): ReactElement => {
-  const texture = useTexture(TEXTURE_PATH, (loadedTexture) => {
+type MilkyWayMeshProps = {
+  readonly texturePath: string;
+};
+
+const MilkyWayMesh = ({ texturePath }: MilkyWayMeshProps): ReactElement => {
+  const texture = useTexture(texturePath, (loadedTexture) => {
     loadedTexture.colorSpace = SRGBColorSpace;
   });
 
@@ -28,4 +37,12 @@ export const MilkyWayBackground = (): ReactElement => {
       />
     </mesh>
   );
+};
+
+export const MilkyWayBackground = (): ReactElement => {
+  const maxTextureSize = useThree((s) => s.gl.capabilities.maxTextureSize);
+  const texturePath =
+    maxTextureSize >= 8192 ? TEXTURE_PATH_8K : TEXTURE_PATH_FALLBACK;
+
+  return <MilkyWayMesh key={texturePath} texturePath={texturePath} />;
 };
