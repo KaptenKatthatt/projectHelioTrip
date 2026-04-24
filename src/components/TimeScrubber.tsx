@@ -1,4 +1,5 @@
 import { Pause, Play } from 'lucide-react';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { SolarSystemStartIcon } from './SolarSystemStartIcon';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -11,6 +12,7 @@ type TimeScrubberProps = {
 
 export const TimeScrubber = ({ className }: TimeScrubberProps) => {
   const { t } = useTranslation();
+  const mobileLayout = useIsMobileLayout();
 
   const isPlaying = useStore((s) => s.isPlaying);
   const togglePlay = useStore((s) => s.togglePlay);
@@ -22,10 +24,17 @@ export const TimeScrubber = ({ className }: TimeScrubberProps) => {
     <div
       className={
         className ??
-        'pointer-events-auto mx-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md sm:px-4'
+        'pointer-events-auto mx-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md ' +
+        (mobileLayout ? '' : 'sm:px-4')
       }
     >
-      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+      <div
+        className={
+          mobileLayout
+            ? 'flex flex-wrap items-center gap-2'
+            : 'flex flex-wrap items-center gap-2 sm:flex-nowrap'
+        }
+      >
         <button
           type="button"
           onClick={resetSolarSystemStart}

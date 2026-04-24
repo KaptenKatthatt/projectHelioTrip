@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CONSTELLATION_MENU_ITEMS } from '../lib/constellations';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
+import { matchesMobileLayout } from '../lib/mobileLayoutMedia';
 import { useTranslation } from '../hooks/useTranslation';
 import { PlanetSelector } from './PlanetSelector';
 
@@ -8,9 +10,10 @@ type SectionId = 'planets' | 'constellations';
 
 export const NavigationAccordion = () => {
   const { locale, t } = useTranslation();
+  const mobileLayout = useIsMobileLayout();
   const [openSection, setOpenSection] = useState<SectionId | null>(() => {
     if (typeof window === 'undefined') return null;
-    return window.matchMedia('(min-width: 640px)').matches ? 'planets' : null;
+    return matchesMobileLayout() ? null : 'planets';
   });
 
   const selectedConstellation = useStore((s) => s.selectedConstellation);
@@ -34,8 +37,7 @@ export const NavigationAccordion = () => {
       const nextBody = state.activeBody;
       if (nextBody === prevBody) return;
       prevBody = nextBody;
-      if (typeof window === 'undefined') return;
-      if (window.matchMedia('(min-width: 640px)').matches) return;
+      if (!matchesMobileLayout()) return;
       setOpenSection(null);
     });
   }, []);
@@ -45,7 +47,12 @@ export const NavigationAccordion = () => {
   };
 
   return (
-    <nav className="pointer-events-auto relative flex w-full flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md sm:w-56">
+    <nav
+      className={
+        'pointer-events-auto relative flex w-full flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md ' +
+        (mobileLayout ? '' : 'sm:w-56')
+      }
+    >
       {openSection !== null ? (
         <button
           type="button"

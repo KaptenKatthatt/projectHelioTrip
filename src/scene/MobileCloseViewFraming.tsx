@@ -1,13 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { PerspectiveCamera } from 'three';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { CAMERA_TRAVEL_TOTAL_DURATION_MS } from './CameraManager';
 import { useStore } from '../store/useStore';
-
-/** Matches `NavigationAccordion` / `(min-width: 640px)` desktop breakpoint. */
-const isMobileViewport = (): boolean =>
-  typeof window !== 'undefined' &&
-  !window.matchMedia('(min-width: 640px)').matches;
 
 /** Shift close-up framing upward on narrow screens (fraction of canvas height). */
 const CLOSE_VIEW_VERTICAL_SHIFT = 0.1;
@@ -29,6 +25,7 @@ const smoothstep = (t: number): number => t * t * (3 - 2 * t);
 export const MobileCloseViewFraming = (): null => {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
+  const isMobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
   const isTraveling = useStore((s) => s.isTraveling);
   const viewMode = useStore((s) => s.viewMode);
@@ -36,7 +33,7 @@ export const MobileCloseViewFraming = (): null => {
   const travelId = useStore((s) => s.travelId);
 
   const enabled =
-    isMobileViewport() &&
+    isMobileLayout &&
     activeBody !== null &&
     viewMode === 'close' &&
     navigationMode === 'cinematic';

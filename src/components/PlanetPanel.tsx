@@ -10,6 +10,7 @@ import { getBody } from '../lib/bodies';
 import { MOON_AU_SCALE } from '../lib/moons';
 import { AU_SCALE } from '../lib/constants';
 import { getWikipediaUrl } from '../lib/wikipedia';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useTranslation } from '../hooks/useTranslation';
 
 type Row = {
@@ -19,6 +20,7 @@ type Row = {
 
 export const PlanetPanel = () => {
   const { t, planetName, bodyName, locale } = useTranslation();
+  const mobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
@@ -94,7 +96,12 @@ export const PlanetPanel = () => {
   const name = bodyName(activeBody);
 
   return (
-    <aside className="pointer-events-auto w-full max-w-sm rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-md sm:p-5">
+    <aside
+      className={
+        'pointer-events-auto w-full max-w-sm rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md ' +
+        (mobileLayout ? 'p-4' : 'p-4 sm:p-5')
+      }
+    >
       <div className="flex items-center gap-3">
         <span
           className="h-3 w-3 rounded-full ring-1 ring-white/20"
