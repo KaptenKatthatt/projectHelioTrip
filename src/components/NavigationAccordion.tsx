@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CONSTELLATION_MENU_ITEMS } from '../lib/constellations';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -8,8 +8,12 @@ type SectionId = 'planets' | 'constellations';
 
 export const NavigationAccordion = () => {
   const { locale, t } = useTranslation();
-  const [openSection, setOpenSection] = useState<SectionId | null>('planets');
+  const [openSection, setOpenSection] = useState<SectionId | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return window.matchMedia('(min-width: 640px)').matches ? 'planets' : null;
+  });
 
+  const activeBody = useStore((s) => s.activeBody);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
   const focusSkyTarget = useStore((s) => s.focusSkyTarget);
@@ -24,18 +28,58 @@ export const NavigationAccordion = () => {
       })),
     [locale],
   );
+  const prevActiveBodyRef = useRef(activeBody);
+  const prevSelectedConstellationRef = useRef(selectedConstellation);
+
+  useEffect(() => {
+    const activeBodyChanged = prevActiveBodyRef.current !== activeBody;
+    const constellationChanged =
+      prevSelectedConstellationRef.current !== selectedConstellation;
+    if (activeBodyChanged || constellationChanged) {
+      setOpenSection(null);
+    }
+    prevActiveBodyRef.current = activeBody;
+    prevSelectedConstellationRef.current = selectedConstellation;
+  }, [activeBody, selectedConstellation]);
 
   const toggleSection = (section: SectionId): void => {
     setOpenSection((current) => (current === section ? null : section));
   };
 
   return (
-    <nav className="pointer-events-auto flex w-56 flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md">
+    <nav className="pointer-events-auto relative flex w-full flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md sm:w-56">
+      {openSection !== null ? (
+        <button
+          type="button"
+          onClick={() => setOpenSection(null)}
+          aria-label={t.ui.minimizePanel}
+          className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-black/55 text-white/80 backdrop-blur-md transition hover:bg-white/15 hover:text-white"
+        >
+          <span className="text-lg leading-none">⌄</span>
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => toggleSection('planets')}
+        className={
+          'rounded-lg px-2.5 py-2 pr-12 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
+          (openSection === 'planets'
+            ? 'bg-white/12 text-white/85'
+            : 'text-white/45 hover:bg-white/8 hover:text-white/70')
+        }
+      >
+        {t.ui.planets}
+      </button>
+      {openSection === 'planets' ? (
+        <PlanetSelector className="flex w-full flex-col gap-0.5" showHeading={false} />
+      ) : null}
+
       <button
         type="button"
         onClick={() => toggleSection('constellations')}
         className={
-          'rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
+          'rounded-lg px-2.5 py-2 pr-12 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
           (openSection === 'constellations'
             ? 'bg-white/12 text-white/85'
             : 'text-white/45 hover:bg-white/8 hover:text-white/70')
@@ -94,22 +138,6 @@ export const NavigationAccordion = () => {
             );
           })}
         </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={() => toggleSection('planets')}
-        className={
-          'rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition ' +
-          (openSection === 'planets'
-            ? 'bg-white/12 text-white/85'
-            : 'text-white/45 hover:bg-white/8 hover:text-white/70')
-        }
-      >
-        {t.ui.planets}
-      </button>
-      {openSection === 'planets' ? (
-        <PlanetSelector className="flex w-full flex-col gap-0.5" showHeading={false} />
       ) : null}
     </nav>
   );

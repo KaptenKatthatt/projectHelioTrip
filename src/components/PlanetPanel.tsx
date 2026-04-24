@@ -22,7 +22,6 @@ export const PlanetPanel = () => {
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
-  const simulationTime = useStore((s) => s.simulationTime);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceFromParentAu, setDistanceFromParentAu] = useState(0);
@@ -76,10 +75,6 @@ export const PlanetPanel = () => {
   const body = getBody(activeBody);
   if (!body) return null;
 
-  const dateFmt = new Intl.DateTimeFormat(locale === 'sv' ? 'sv-SE' : 'en-US', {
-    dateStyle: 'long',
-  });
-
   const rows: Row[] = [];
   if (body.kind === 'moon' || body.kind === 'satellite') {
     rows.push({ label: t.ui.parent, value: planetName(body.def.parent) });
@@ -96,15 +91,10 @@ export const PlanetPanel = () => {
     label: t.ui.radius,
     value: `${body.def.radius.toFixed(2)} u`,
   });
-  rows.push({
-    label: t.ui.simDate,
-    value: dateFmt.format(simulationTime),
-  });
-
   const name = bodyName(activeBody);
 
   return (
-    <aside className="pointer-events-auto w-80 rounded-2xl border border-white/10 bg-black/40 p-5 backdrop-blur-md">
+    <aside className="pointer-events-auto w-full max-w-sm rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-md sm:p-5">
       <div className="flex items-center gap-3">
         <span
           className="h-3 w-3 rounded-full ring-1 ring-white/20"

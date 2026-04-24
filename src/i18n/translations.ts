@@ -17,8 +17,6 @@ export type Translation = {
     arriving: string;
     language: string;
     loading: string;
-    overview: string;
-    closeup: string;
     distance: string;
     radius: string;
     simDate: string;
@@ -28,6 +26,7 @@ export type Translation = {
     planets: string;
     moons: string;
     resetTime: string;
+    resetToToday: string;
     readOnWikipedia: string;
     parent: string;
     distanceFromParent: string;
@@ -48,6 +47,10 @@ export type Translation = {
     universeMilkyWayOverview: string;
     showConstellationLines: string;
     hideConstellationLines: string;
+    minimizePanel: string;
+    expandPanel: string;
+    bodyInfo: string;
+    timeControls: string;
   };
 };
 

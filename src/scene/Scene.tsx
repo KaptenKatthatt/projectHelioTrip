@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
 import { GlobalZoom } from './GlobalZoom';
+import { OverviewLookControls } from './OverviewLookControls';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
@@ -90,6 +91,7 @@ export const Scene = () => {
       <CameraManager />
       <SkyFocusCamera />
       <PlanetOrbitControls />
+      <OverviewLookControls />
       <GlobalZoom />
       <Suspense fallback={null}>
         <LazyBodyPickers />
