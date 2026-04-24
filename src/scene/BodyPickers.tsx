@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
-import {
-  beginPlanetSurfaceDrag,
-  endPlanetSurfaceDrag,
-  planetSurfaceDragState,
-} from '../lib/planetSurfaceDrag';
-import { Html } from '@react-three/drei/web/Html';
-import { useCursor } from '@react-three/drei/web/useCursor';
+import { Html, useCursor } from '@react-three/drei';
 import { PerspectiveCamera, Vector3, type Group, type Mesh } from 'three';
 import { PLANETS } from '../lib/planets';
 import { MOONS } from '../lib/moons';
@@ -55,12 +49,6 @@ export const BodyPickers = () => {
   useCursor(hoveredId !== null);
 
   const enabled = !isTraveling && navigationMode !== 'free';
-
-  useEffect(() => {
-    if (enabled) return;
-    if (!planetSurfaceDragState.active) return;
-    endPlanetSurfaceDrag();
-  }, [enabled]);
 
   const pickables = useMemo<readonly PickableEntry[]>(() => {
     const list: PickableEntry[] = PLANETS.map((p) => ({
@@ -153,8 +141,6 @@ const PickableBody = ({
   const camera = useThree((s) => s.camera);
   const screenHeight = useThree((s) => s.size.height);
   const scratch = useMemo(() => new Vector3(), []);
-  const activeBody = useStore((s) => s.activeBody);
-  const viewMode = useStore((s) => s.viewMode);
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -186,29 +172,12 @@ const PickableBody = ({
     onHoverLeave(id);
   }, [id, onHoverLeave]);
 
-  const handlePointerDown = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      downPosRef.current = { x: event.clientX, y: event.clientY };
-      if (
-        viewMode === 'close' &&
-        activeBody === id &&
-        event.nativeEvent.isPrimary
-      ) {
-        beginPlanetSurfaceDrag(
-          id,
-          event.clientX,
-          event.nativeEvent.pointerId,
-        );
-      }
-    },
-    [activeBody, id, viewMode],
-  );
+  const handlePointerDown = useCallback((event: ThreeEvent<PointerEvent>) => {
+    downPosRef.current = { x: event.clientX, y: event.clientY };
+  }, []);
 
   const handlePointerUp = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
-      if (viewMode === 'close' && activeBody === id) {
-        endPlanetSurfaceDrag();
-      }
       const down = downPosRef.current;
       downPosRef.current = null;
       if (!down) return;
@@ -220,15 +189,12 @@ const PickableBody = ({
       event.stopPropagation();
       onSelect(id);
     },
-    [activeBody, id, onSelect, viewMode],
+    [id, onSelect],
   );
 
   const handlePointerCancel = useCallback(() => {
-    if (viewMode === 'close' && activeBody === id) {
-      endPlanetSurfaceDrag();
-    }
     downPosRef.current = null;
-  }, [activeBody, id, viewMode]);
+  }, []);
 
   return (
     <mesh

@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
-import { planetSurfaceDragState } from '../lib/planetSurfaceDrag';
-import { StdlibOrbitControls } from './controls/StdlibOrbitControls';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
 const MAX_DISTANCE_MULTIPLIER = 60;
 const DAMPING_FACTOR = 0.08;
 
-type OrbitControlsRef = ComponentRef<typeof StdlibOrbitControls>;
+type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
 
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
@@ -61,9 +60,6 @@ export const PlanetOrbitControls = () => {
     const controls = controlsRef.current;
     if (!controls) return;
 
-    controls.enableRotate = !planetSurfaceDragState.active;
-    controls.enableZoom = !planetSurfaceDragState.active;
-
     getBodyWorldPosition(activeBody, tmpTarget);
 
     if (!initializedRef.current) {
@@ -77,7 +73,7 @@ export const PlanetOrbitControls = () => {
   }, -2);
 
   return (
-    <StdlibOrbitControls
+    <OrbitControls
       ref={controlsRef}
       enabled={enabled}
       enableDamping

@@ -10,7 +10,6 @@ import {
   configureDataMap,
   getSurfaceTextures,
 } from '../lib/textures';
-import { getBodyManualSpinY } from '../lib/planetSurfaceDrag';
 import { Clouds } from './Clouds';
 import { Rings } from './Rings';
 
@@ -45,7 +44,7 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
     if (spin) {
       const simMs = useStore.getState().simulationTime.getTime();
       const phase = (simMs / periodMs) % 1;
-      spin.rotation.y = phase * TAU + getBodyManualSpinY(id);
+      spin.rotation.y = phase * TAU;
     }
   });
 
