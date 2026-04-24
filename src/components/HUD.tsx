@@ -28,10 +28,6 @@ export const HUD = () => {
           </h1>
           <p className="hidden text-xs text-white/50 sm:block">{t.tagline}</p>
         </div>
-        <div className="flex items-center gap-2 self-start">
-          <FlightModeToggle />
-          <LanguageToggle />
-        </div>
       </header>
 
       {showPlanetPanel ? (
@@ -80,14 +76,13 @@ export const HUD = () => {
       </div>
 
       <footer className="pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        <CollapsibleHudPanel
-          title={t.ui.timeControls}
-          className="relative"
-          collapseLabel={t.ui.minimizePanel}
-          expandLabel={t.ui.expandPanel}
-        >
-          <TimeScrubber />
-        </CollapsibleHudPanel>
+        <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-center">
+          <TimeScrubber className="pointer-events-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md sm:w-auto sm:px-4" />
+          <div className="pointer-events-auto flex items-center gap-2">
+            <FlightModeToggle />
+            <LanguageToggle />
+          </div>
+        </div>
       </footer>
     </div>
   );

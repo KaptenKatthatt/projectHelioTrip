@@ -19,6 +19,7 @@ export type SimulationState = {
   isPlaying: boolean;
   viewMode: ViewMode;
   travelId: number;
+  overviewCameraResetId: number;
   locale: Locale;
   navigationMode: NavigationMode;
   selectedConstellation: ConstellationId | null;
@@ -33,6 +34,8 @@ export type SimulationActions = {
   setSimulationTime: (time: Date) => void;
   travelTo: (id: BodyId) => void;
   travelToOverview: () => void;
+  /** Solar system overview: sun selected, exit sky/constellation, reset FOV, cinematic travel. */
+  resetSolarSystemStart: () => void;
   arrive: () => void;
   resetSimulationTime: () => void;
   setTimeScale: (scale: number) => void;
@@ -65,6 +68,7 @@ export const useStore = create<Store>()(
       isPlaying: false,
       viewMode: 'overview',
       travelId: 0,
+      overviewCameraResetId: 0,
       locale: detectLocale(),
       navigationMode: 'cinematic',
       selectedConstellation: null,
@@ -96,6 +100,17 @@ export const useStore = create<Store>()(
           viewMode: 'overview',
           travelId: state.travelId + 1,
           navigationMode: 'cinematic',
+        })),
+
+      resetSolarSystemStart: () =>
+        set((state) => ({
+          activeBody: 'sun',
+          selectedConstellation: null,
+          isTraveling: true,
+          viewMode: 'overview',
+          travelId: state.travelId + 1,
+          navigationMode: 'cinematic',
+          overviewCameraResetId: state.overviewCameraResetId + 1,
         })),
 
       arrive: () => set({ isTraveling: false }),

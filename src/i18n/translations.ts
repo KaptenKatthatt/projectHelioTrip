@@ -23,6 +23,7 @@ export type Translation = {
     play: string;
     pause: string;
     speed: string;
+    speedDaysPerSecond: string;
     planets: string;
     moons: string;
     resetTime: string;
@@ -51,6 +52,7 @@ export type Translation = {
     expandPanel: string;
     bodyInfo: string;
     timeControls: string;
+    start: string;
   };
 };
 

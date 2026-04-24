@@ -38,6 +38,7 @@ export const en: Translation = {
     play: "Play",
     pause: "Pause",
     speed: "Speed",
+    speedDaysPerSecond: "Speed (days/s)",
     planets: "Our Solar System",
     moons: "Moons",
     resetTime: "Now",
@@ -66,5 +67,6 @@ export const en: Translation = {
     expandPanel: "Expand panel",
     bodyInfo: "Info",
     timeControls: "Time",
+    start: "Start",
   },
 };

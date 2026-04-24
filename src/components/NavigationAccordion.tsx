@@ -33,14 +33,23 @@ export const NavigationAccordion = () => {
 
   useEffect(() => {
     const activeBodyChanged = prevActiveBodyRef.current !== activeBody;
-    const constellationChanged =
-      prevSelectedConstellationRef.current !== selectedConstellation;
-    if (activeBodyChanged || constellationChanged) {
+    prevActiveBodyRef.current = activeBody;
+    if (!activeBodyChanged) return;
+    if (typeof window === 'undefined') return;
+    const isDesktop = window.matchMedia('(min-width: 640px)').matches;
+    if (!isDesktop) {
       setOpenSection(null);
     }
-    prevActiveBodyRef.current = activeBody;
+  }, [activeBody]);
+
+  useEffect(() => {
+    const constellationChanged =
+      prevSelectedConstellationRef.current !== selectedConstellation;
+    if (constellationChanged) {
+      setOpenSection(null);
+    }
     prevSelectedConstellationRef.current = selectedConstellation;
-  }, [activeBody, selectedConstellation]);
+  }, [selectedConstellation]);
 
   const toggleSection = (section: SectionId): void => {
     setOpenSection((current) => (current === section ? null : section));

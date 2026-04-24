@@ -38,6 +38,7 @@ export const sv: Translation = {
     play: "Spela",
     pause: "Pausa",
     speed: "Hastighet",
+    speedDaysPerSecond: "Hastighet (dag/s)",
     planets: "Vårt Solsystem",
     moons: "Månar",
     resetTime: "Nu",
@@ -66,5 +67,6 @@ export const sv: Translation = {
     expandPanel: "Visa panel",
     bodyInfo: "Info",
     timeControls: "Tid",
+    start: "Start",
   },
 };

@@ -26,6 +26,7 @@ export const GlobalZoom = () => {
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
   const isTraveling = useStore((s) => s.isTraveling);
+  const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
 
   const targetFovRef = useRef(DEFAULT_FOV);
   const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
@@ -41,14 +42,13 @@ export const GlobalZoom = () => {
   }, [camera]);
 
   useEffect(() => {
+    targetFovRef.current = DEFAULT_FOV;
+  }, [overviewCameraResetId]);
+
+  useEffect(() => {
     if (!enabled) {
       targetFovRef.current = DEFAULT_FOV;
       return;
-    }
-
-    const perspectiveCamera = perspectiveCameraRef.current;
-    if (perspectiveCamera) {
-      targetFovRef.current = perspectiveCamera.fov;
     }
 
     const canvas = gl.domElement;
