@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { useSpring } from '@react-spring/three';
-import { Vector3 } from 'three';
-import { useStore } from '../store/useStore';
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useSpring } from "@react-spring/three";
+import { Vector3 } from "three";
+import { useStore } from "../store/useStore";
 import {
   getBody,
   getBodyParent,
   getBodyWorldPosition,
   type BodyId,
-} from '../lib/bodies';
-import { getLivePosition } from '../lib/positionsBus';
+} from "../lib/bodies";
+import { getLivePosition } from "../lib/positionsBus";
+import {
+  INITIAL_OVERVIEW_CAMERA_POSITION,
+  INITIAL_OVERVIEW_TARGET,
+} from "../lib/initialCamera";
 
 const AIM_DURATION_MS = 1600;
 const FLY_DURATION_MS = 3400;
@@ -24,12 +28,12 @@ const MOON_VIEW_DISTANCE_MIN = 2.5;
 const LOOK_AT_DISTANCE = 100;
 const NEAR_ANTIPODAL_THRESHOLD = 0.9995;
 
-const OVERVIEW_POSITION = new Vector3(0.001, 900, 0.001);
-const OVERVIEW_TARGET = new Vector3(0, 0, 0);
+const OVERVIEW_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
+const OVERVIEW_TARGET = INITIAL_OVERVIEW_TARGET.clone();
 const WORLD_UP = new Vector3(0, 1, 0);
 
 type BodyTravel = {
-  kind: 'body';
+  kind: "body";
   startPos: Vector3;
   startForward: Vector3;
   bodyId: BodyId;
@@ -37,7 +41,7 @@ type BodyTravel = {
 };
 
 type OverviewTravel = {
-  kind: 'overview';
+  kind: "overview";
   startPos: Vector3;
   startForward: Vector3;
 };
@@ -45,8 +49,8 @@ type OverviewTravel = {
 type Travel = BodyTravel | OverviewTravel;
 
 type Arrived =
-  | { kind: 'body'; bodyId: BodyId; viewDistance: number }
-  | { kind: 'overview' };
+  | { kind: "body"; bodyId: BodyId; viewDistance: number }
+  | { kind: "overview" };
 
 const easeInOutSine = (x: number): number => -(Math.cos(Math.PI * x) - 1) / 2;
 
@@ -101,11 +105,7 @@ const computePlanetEndPos = (
   const tangentX = -dirZ;
   const tangentZ = dirX;
 
-  out.set(
-    dirX * -0.5 + tangentX * 0.75,
-    0.45,
-    dirZ * -0.5 + tangentZ * 0.75,
-  );
+  out.set(dirX * -0.5 + tangentX * 0.75, 0.45, dirZ * -0.5 + tangentZ * 0.75);
   out.setLength(viewDistance);
   out.add(planetPos);
 };
@@ -141,15 +141,19 @@ const computeChildBodyEndPos = (
 };
 
 const resolveTarget = (travel: Travel, out: Vector3): void => {
-  if (travel.kind === 'overview') {
+  if (travel.kind === "overview") {
     out.copy(OVERVIEW_TARGET);
     return;
   }
   getBodyWorldPosition(travel.bodyId, out);
 };
 
-const resolveEndPos = (travel: Travel, out: Vector3, scratch: Vector3): void => {
-  if (travel.kind === 'overview') {
+const resolveEndPos = (
+  travel: Travel,
+  out: Vector3,
+  scratch: Vector3,
+): void => {
+  if (travel.kind === "overview") {
     out.copy(OVERVIEW_POSITION);
     return;
   }
@@ -169,7 +173,10 @@ const resolveEndPos = (travel: Travel, out: Vector3, scratch: Vector3): void => 
 
 const computeViewDistance = (bodyId: BodyId, radius: number): number => {
   if (getBodyParent(bodyId)) {
-    return Math.max(MOON_VIEW_DISTANCE_MIN, radius * MOON_VIEW_DISTANCE_MULTIPLIER);
+    return Math.max(
+      MOON_VIEW_DISTANCE_MIN,
+      radius * MOON_VIEW_DISTANCE_MULTIPLIER,
+    );
   }
   return Math.max(
     PLANET_VIEW_DISTANCE_MIN,
@@ -212,13 +219,13 @@ export const CameraManager = () => {
     camera.getWorldDirection(startForward);
 
     let travel: Travel;
-    if (state.viewMode === 'overview') {
-      travel = { kind: 'overview', startPos, startForward };
+    if (state.viewMode === "overview") {
+      travel = { kind: "overview", startPos, startForward };
     } else if (state.activeBody) {
       const body = getBody(state.activeBody);
       if (!body) return;
       travel = {
-        kind: 'body',
+        kind: "body",
         startPos,
         startForward,
         bodyId: state.activeBody,
@@ -243,30 +250,22 @@ export const CameraManager = () => {
         setCameraPosition(tmpEndPos);
         arrive();
         arrivedRef.current =
-          current.kind === 'body'
+          current.kind === "body"
             ? {
-                kind: 'body',
+                kind: "body",
                 bodyId: current.bodyId,
                 viewDistance: current.viewDistance,
               }
-            : { kind: 'overview' };
+            : { kind: "overview" };
         travelRef.current = null;
       },
     });
-  }, [
-    travelId,
-    camera,
-    api,
-    setCameraPosition,
-    arrive,
-    tmpEndPos,
-    tmpScratch,
-  ]);
+  }, [travelId, camera, api, setCameraPosition, arrive, tmpEndPos, tmpScratch]);
 
   useEffect(() => {
     const previous = previousNavigationModeRef.current;
     previousNavigationModeRef.current = navigationMode;
-    if (previous !== 'free' || navigationMode !== 'cinematic') return;
+    if (previous !== "free" || navigationMode !== "cinematic") return;
 
     /**
      * Leaving free-flight with ESC should keep the exact camera pose.
@@ -277,7 +276,7 @@ export const CameraManager = () => {
   }, [navigationMode]);
 
   useFrame(() => {
-    if (useStore.getState().navigationMode === 'free') return;
+    if (useStore.getState().navigationMode === "free") return;
 
     const travel = travelRef.current;
 
@@ -288,10 +287,7 @@ export const CameraManager = () => {
       if (progress <= AIM_FRACTION) {
         const aim = easeInOutSine(progress / AIM_FRACTION);
 
-        tmpDir
-          .copy(tmpTargetPos)
-          .sub(travel.startPos)
-          .normalize();
+        tmpDir.copy(tmpTargetPos).sub(travel.startPos).normalize();
 
         slerpDirections(travel.startForward, tmpDir, aim, tmpInterpDir);
 
@@ -330,7 +326,7 @@ export const CameraManager = () => {
      * Writing `camera.position` here would fight OrbitControls and
      * snap the camera back to the cinematic offset every frame.
      */
-    if (arrived.kind === 'body') return;
+    if (arrived.kind === "body") return;
     if (selectedConstellation) return;
 
     tmpTargetPos.copy(OVERVIEW_TARGET);

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from 'three';
+import { INITIAL_OVERVIEW_FOV } from '../lib/initialCamera';
 import { useStore } from '../store/useStore';
 
 /**
@@ -13,8 +14,10 @@ import { useStore } from '../store/useStore';
  * When not in overview, the FOV is smoothly lerped back to the default
  * so users never end up stuck with a weird FOV after traveling to a
  * planet.
+ *
+ * Default matches {@link INITIAL_OVERVIEW_FOV} / Canvas in Scene.
  */
-const DEFAULT_FOV = 55;
+const DEFAULT_FOV = INITIAL_OVERVIEW_FOV;
 const MIN_FOV = 15;
 const MAX_FOV = 75;
 const FOV_WHEEL_STEP = 2;

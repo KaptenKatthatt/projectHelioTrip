@@ -7,6 +7,10 @@ import { OverviewLookControls } from './OverviewLookControls';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
+import {
+  INITIAL_OVERVIEW_CAMERA_POSITION,
+  INITIAL_OVERVIEW_FOV,
+} from '../lib/initialCamera';
 import { useStore } from '../store/useStore';
 import { Planets } from './Planets';
 import { Moons } from './Moons';
@@ -42,7 +46,16 @@ export const Scene = () => {
 
   return (
     <Canvas
-      camera={{ position: [0, 20, 80], fov: 55, near: 0.1, far: 8000 }}
+      camera={{
+        position: [
+          INITIAL_OVERVIEW_CAMERA_POSITION.x,
+          INITIAL_OVERVIEW_CAMERA_POSITION.y,
+          INITIAL_OVERVIEW_CAMERA_POSITION.z,
+        ],
+        fov: INITIAL_OVERVIEW_FOV,
+        near: 0.1,
+        far: 8000,
+      }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
     >

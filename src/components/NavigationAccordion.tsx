@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CONSTELLATION_MENU_ITEMS } from '../lib/constellations';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -13,7 +13,6 @@ export const NavigationAccordion = () => {
     return window.matchMedia('(min-width: 640px)').matches ? 'planets' : null;
   });
 
-  const activeBody = useStore((s) => s.activeBody);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
   const focusSkyTarget = useStore((s) => s.focusSkyTarget);
@@ -28,28 +27,18 @@ export const NavigationAccordion = () => {
       })),
     [locale],
   );
-  const prevActiveBodyRef = useRef(activeBody);
-  const prevSelectedConstellationRef = useRef(selectedConstellation);
 
   useEffect(() => {
-    const activeBodyChanged = prevActiveBodyRef.current !== activeBody;
-    prevActiveBodyRef.current = activeBody;
-    if (!activeBodyChanged) return;
-    if (typeof window === 'undefined') return;
-    const isDesktop = window.matchMedia('(min-width: 640px)').matches;
-    if (!isDesktop) {
+    let prevBody = useStore.getState().activeBody;
+    return useStore.subscribe((state) => {
+      const nextBody = state.activeBody;
+      if (nextBody === prevBody) return;
+      prevBody = nextBody;
+      if (typeof window === 'undefined') return;
+      if (window.matchMedia('(min-width: 640px)').matches) return;
       setOpenSection(null);
-    }
-  }, [activeBody]);
-
-  useEffect(() => {
-    const constellationChanged =
-      prevSelectedConstellationRef.current !== selectedConstellation;
-    if (constellationChanged) {
-      setOpenSection(null);
-    }
-    prevSelectedConstellationRef.current = selectedConstellation;
-  }, [selectedConstellation]);
+    });
+  }, []);
 
   const toggleSection = (section: SectionId): void => {
     setOpenSection((current) => (current === section ? null : section));
@@ -112,7 +101,10 @@ export const NavigationAccordion = () => {
               >
                 <button
                   type="button"
-                  onClick={() => focusSkyTarget(item.id)}
+                  onClick={() => {
+                    focusSkyTarget(item.id);
+                    setOpenSection(null);
+                  }}
                   className="min-w-0 flex-1 text-left"
                 >
                   <span className="truncate">{item.label}</span>

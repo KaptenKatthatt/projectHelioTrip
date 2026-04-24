@@ -5,6 +5,7 @@ import type { BodyId } from '../lib/bodies';
 import type { ConstellationId } from '../lib/constellations';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
+import { INITIAL_OVERVIEW_CAMERA_POSITION } from '../lib/initialCamera';
 
 export type ViewMode = 'close' | 'overview';
 
@@ -34,7 +35,7 @@ export type SimulationActions = {
   setSimulationTime: (time: Date) => void;
   travelTo: (id: BodyId) => void;
   travelToOverview: () => void;
-  /** Solar system overview: sun selected, exit sky/constellation, reset FOV, cinematic travel. */
+  /** Overview + initial framing (same as first load): clear body/constellation, reset FOV, travel. */
   resetSolarSystemStart: () => void;
   arrive: () => void;
   resetSimulationTime: () => void;
@@ -51,7 +52,7 @@ export type SimulationActions = {
 
 export type Store = SimulationState & SimulationActions;
 
-const DEFAULT_CAMERA_POSITION = new Vector3(0, 20, 80);
+const DEFAULT_CAMERA_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
 
 type PersistedState = {
   locale: Locale;
@@ -104,7 +105,7 @@ export const useStore = create<Store>()(
 
       resetSolarSystemStart: () =>
         set((state) => ({
-          activeBody: 'sun',
+          activeBody: null,
           selectedConstellation: null,
           isTraveling: true,
           viewMode: 'overview',
