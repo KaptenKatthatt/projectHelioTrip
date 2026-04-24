@@ -39,7 +39,7 @@ export const sv: Translation = {
     pause: "Pausa",
     speed: "Hastighet",
     speedDaysPerSecond: "Hastighet (dag/s)",
-    planets: "Vårt Solsystem",
+    planets: "Våra Planeter",
     moons: "Månar",
     resetTime: "Nu",
     resetToToday: "Tillbaka till idag",
