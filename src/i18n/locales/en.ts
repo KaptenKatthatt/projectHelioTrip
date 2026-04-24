@@ -50,6 +50,7 @@ export const en: Translation = {
     freeFlight: "Free flight",
     clickToFly: "Click to fly",
     escToRelease: "ESC to release cursor",
+    freeFlightTouchHint: "Use the sticks to move and look",
     controls: "Controls",
     controlMove: "Move",
     controlUpDown: "Up / Down",

@@ -35,6 +35,7 @@ export type Translation = {
     freeFlight: string;
     clickToFly: string;
     escToRelease: string;
+    freeFlightTouchHint: string;
     controls: string;
     controlMove: string;
     controlUpDown: string;

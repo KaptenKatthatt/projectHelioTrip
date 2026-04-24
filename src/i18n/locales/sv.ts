@@ -50,6 +50,7 @@ export const sv: Translation = {
     freeFlight: "Fritt flyg",
     clickToFly: "Klicka för att flyga",
     escToRelease: "ESC för att släppa muspekaren",
+    freeFlightTouchHint: "Använd spakarna för att flyga och titta",
     controls: "Kontroller",
     controlMove: "Rörelse",
     controlUpDown: "Upp / Ner",

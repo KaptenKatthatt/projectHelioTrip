@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Vector3 } from 'three';
+import { Euler, Vector3 } from 'three';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useKeyboardMovement } from '../hooks/useKeyboardMovement';
+import {
+  freeFlightTouchBus,
+  resetFreeFlightTouch,
+} from '../lib/freeFlightTouchBus';
 import { PLANETS } from '../lib/planets';
 import { MOONS } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
@@ -37,6 +42,12 @@ const CAMERA_COLLISION_MARGIN = 0.3;
 const SOFT_ZONE_RADIUS_FACTOR = 0.6;
 const SOFT_ZONE_RADIUS_MIN = 1.5;
 
+const MOVE_TOUCH_DEADZONE = 0.12;
+const LOOK_TOUCH_DEADZONE = 0.14;
+const LOOK_YAW_SPEED = 2.15;
+const LOOK_PITCH_SPEED = 2.15;
+const PI_2 = Math.PI / 2;
+
 type CollisionBody =
   | { kind: 'planet'; id: (typeof PLANETS)[number]['id']; radius: number }
   | {
@@ -65,6 +76,7 @@ export const FreeFlightControls = () => {
   const activeBody = useStore((s) => s.activeBody);
   const travelTo = useStore((s) => s.travelTo);
   const setNavigationMode = useStore((s) => s.setNavigationMode);
+  const isMobile = useIsMobileLayout();
 
   const input = useKeyboardMovement(true);
   const wasLockedRef = useRef(false);
@@ -78,6 +90,7 @@ export const FreeFlightControls = () => {
   const center = useMemo(() => new Vector3(), []);
   const normal = useMemo(() => new Vector3(), []);
   const radial = useMemo(() => new Vector3(), []);
+  const eulerScratch = useMemo(() => new Euler(0, 0, 0, 'YXZ'), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -86,7 +99,9 @@ export const FreeFlightControls = () => {
    * the cursor indefinitely.
    */
   useEffect(() => {
+    resetFreeFlightTouch();
     return () => {
+      resetFreeFlightTouch();
       if (document.pointerLockElement) {
         document.exitPointerLock();
       }
@@ -127,12 +142,14 @@ export const FreeFlightControls = () => {
     if (delta <= 0) return;
 
     const locked = document.pointerLockElement !== null;
+    const pointerDrivingDesktop = locked && !isMobile;
+    const allowKeyboardMove = pointerDrivingDesktop || isMobile;
 
     camera.getWorldDirection(forward);
     right.crossVectors(forward, WORLD_UP).normalize();
 
     desired.set(0, 0, 0);
-    if (locked) {
+    if (allowKeyboardMove) {
       const {
         forward: fwd,
         back,
@@ -140,7 +157,6 @@ export const FreeFlightControls = () => {
         right: rgt,
         up,
         down,
-        boost,
       } = input.current;
 
       if (fwd) desired.addScaledVector(forward, 1);
@@ -149,34 +165,48 @@ export const FreeFlightControls = () => {
       if (left) desired.addScaledVector(right, -1);
       if (up) desired.addScaledVector(WORLD_UP, 1);
       if (down) desired.addScaledVector(WORLD_UP, -1);
+    }
 
-      if (desired.lengthSq() > 0) {
-        let nearestSurface = Infinity;
-        for (const body of COLLISION_BODIES) {
-          if (body.kind === 'planet') {
-            center.copy(getLivePosition(body.id));
-          } else {
-            center
-              .copy(getLivePosition(body.parent))
-              .add(getLiveMoonOffset(body.id));
-          }
-          const surfaceDist = center.distanceTo(camera.position) - body.radius;
-          if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
-        }
-        if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
-        nearestSurface = Math.max(nearestSurface, MIN_SURFACE_DISTANCE);
-
-        const dynamicSpeed = Math.min(
-          MAX_SPEED,
-          Math.max(
-            MIN_SPEED,
-            BASE_SPEED *
-              Math.pow(nearestSurface / REFERENCE_DISTANCE, SPEED_EXPONENT),
-          ),
-        );
-        const speed = dynamicSpeed * (boost ? BOOST_MULTIPLIER : 1);
-        desired.normalize().multiplyScalar(speed);
+    if (isMobile) {
+      const { x: tx, y: ty } = freeFlightTouchBus.move;
+      const tlen = Math.hypot(tx, ty);
+      if (tlen >= MOVE_TOUCH_DEADZONE) {
+        const inv = 1 / tlen;
+        const nx = tx * inv;
+        const ny = ty * inv;
+        const mag = Math.min(1, (tlen - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE));
+        desired.addScaledVector(right, nx * mag);
+        desired.addScaledVector(forward, ny * mag);
       }
+    }
+
+    if (desired.lengthSq() > 0) {
+      const { boost } = input.current;
+      let nearestSurface = Infinity;
+      for (const body of COLLISION_BODIES) {
+        if (body.kind === 'planet') {
+          center.copy(getLivePosition(body.id));
+        } else {
+          center
+            .copy(getLivePosition(body.parent))
+            .add(getLiveMoonOffset(body.id));
+        }
+        const surfaceDist = center.distanceTo(camera.position) - body.radius;
+        if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
+      }
+      if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
+      nearestSurface = Math.max(nearestSurface, MIN_SURFACE_DISTANCE);
+
+      const dynamicSpeed = Math.min(
+        MAX_SPEED,
+        Math.max(
+          MIN_SPEED,
+          BASE_SPEED *
+            Math.pow(nearestSurface / REFERENCE_DISTANCE, SPEED_EXPONENT),
+        ),
+      );
+      const speed = dynamicSpeed * (boost ? BOOST_MULTIPLIER : 1);
+      desired.normalize().multiplyScalar(speed);
     }
 
     /**
@@ -257,6 +287,25 @@ export const FreeFlightControls = () => {
     }
 
     camera.position.copy(nextPosition);
+
+    if (isMobile) {
+      const { x: lx, y: ly } = freeFlightTouchBus.look;
+      const llen = Math.hypot(lx, ly);
+      if (llen >= LOOK_TOUCH_DEADZONE) {
+        const inv = 1 / llen;
+        const nx = lx * inv;
+        const ny = ly * inv;
+        const mag = Math.min(
+          1,
+          (llen - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE),
+        );
+        eulerScratch.setFromQuaternion(camera.quaternion);
+        eulerScratch.y -= nx * mag * LOOK_YAW_SPEED * delta;
+        eulerScratch.x -= ny * mag * LOOK_PITCH_SPEED * delta;
+        eulerScratch.x = Math.max(-PI_2, Math.min(PI_2, eulerScratch.x));
+        camera.quaternion.setFromEuler(eulerScratch);
+      }
+    }
   });
 
   /**
@@ -265,5 +314,5 @@ export const FreeFlightControls = () => {
    * lock — which hides the cursor right after clicking e.g. the Autopilot
    * button.
    */
-  return <StdlibPointerLockControls selector="canvas" />;
+  return <StdlibPointerLockControls selector="canvas" enabled={!isMobile} />;
 };

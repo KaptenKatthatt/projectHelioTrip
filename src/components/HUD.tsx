@@ -5,6 +5,7 @@ import { CollapsibleHudPanel } from './CollapsibleHudPanel';
 import { FlightModeToggle } from './FlightModeToggle';
 import { FreeFlightHelp } from './FreeFlightHelp';
 import { FreeFlightHint } from './FreeFlightHint';
+import { FreeFlightMobileControls } from './FreeFlightMobileControls';
 import { LanguageToggle } from './LanguageToggle';
 import { NavigationAccordion } from './NavigationAccordion';
 import { PlanetPanel } from './PlanetPanel';
@@ -59,6 +60,7 @@ export const HUD = () => {
       <FreeFlightHint />
 
       <div className="flex flex-1 flex-col justify-end gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+        <FreeFlightMobileControls />
         <NavigationAccordion />
         <div className="hidden w-full flex-col items-stretch gap-3 sm:flex sm:w-auto sm:items-end">
           {showPlanetPanel ? (
