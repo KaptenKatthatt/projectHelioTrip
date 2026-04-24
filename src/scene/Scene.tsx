@@ -4,6 +4,7 @@ import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
 import { GlobalZoom } from './GlobalZoom';
 import { MobileCloseViewFraming } from './MobileCloseViewFraming';
+import { ViewportResizeSync } from './ViewportResizeSync';
 import { OverviewLookControls } from './OverviewLookControls';
 import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
@@ -73,7 +74,12 @@ export const Scene = () => {
         depth: true,
       }}
       dpr={dprCap}
+      resize={{
+        scroll: false,
+        debounce: { scroll: 0, resize: 0 },
+      }}
     >
+      <ViewportResizeSync />
       <color attach="background" args={['#05060a']} />
 
       <ambientLight intensity={0.25} color="#b3c2ff" />

@@ -32,8 +32,12 @@ export const MobileCloseViewFraming = (): null => {
   const navigationMode = useStore((s) => s.navigationMode);
   const travelId = useStore((s) => s.travelId);
 
+  /** View offset targets portrait HUD; in landscape it skews projection on wide phones. */
+  const portraitCanvas = size.width <= size.height;
+
   const enabled =
     isMobileLayout &&
+    portraitCanvas &&
     activeBody !== null &&
     viewMode === 'close' &&
     navigationMode === 'cinematic';
