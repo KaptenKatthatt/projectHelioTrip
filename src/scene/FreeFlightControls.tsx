@@ -44,8 +44,8 @@ const SOFT_ZONE_RADIUS_MIN = 1.5;
 
 const MOVE_TOUCH_DEADZONE = 0.12;
 const LOOK_TOUCH_DEADZONE = 0.14;
-const LOOK_YAW_SPEED = 2.15;
-const LOOK_PITCH_SPEED = 2.15;
+const LOOK_YAW_SPEED = 1.0;
+const LOOK_PITCH_SPEED = 1.0;
 const PI_2 = Math.PI / 2;
 
 type CollisionBody =
