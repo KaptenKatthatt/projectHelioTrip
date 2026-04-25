@@ -1,13 +1,13 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { HUD } from './components/HUD';
-import { LoadingScreen } from './components/LoadingScreen';
-import { useStore } from './store/useStore';
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { HUD } from "./components/HUD";
+import { LoadingScreen } from "./components/LoadingScreen";
+import { useStore } from "./store/useStore";
 
 /** Minsta tid laddningsskärmen visas (ms). Öka för längre “splash”, sänk för snabbare borttagning. */
-const MIN_LOADING_MS = 3000;
+const MIN_LOADING_MS = 5000;
 
 const LazyScene = lazy(async () => {
-  const { Scene } = await import('./scene/Scene');
+  const { Scene } = await import("./scene/Scene");
   return {
     default: (props: { readonly onSceneReady?: () => void }) => (
       <Scene {...props} />

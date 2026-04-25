@@ -16,6 +16,14 @@ function resolvePublicSiteOrigin(
   ).replace(/\/$/, '');
   if (explicit) return explicit;
 
+  // Stable production hostname (no scheme); set on all Vercel builds — good for og:image URLs.
+  const vercelProduction = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelProduction) {
+    return vercelProduction.startsWith('http')
+      ? vercelProduction.replace(/\/$/, '')
+      : `https://${vercelProduction.replace(/\/$/, '')}`;
+  }
+
   const cf = process.env.CF_PAGES_URL?.trim();
   if (cf) return cf.replace(/\/$/, '');
 
@@ -34,7 +42,7 @@ function resolvePublicSiteOrigin(
 
   if (mode === 'production') {
     throw new Error(
-      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets CF_PAGES_URL, VERCEL_URL, or Netlify URL vars. See .env.example.',
+      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL (Vercel), CF_PAGES_URL, or Netlify URL vars. See .env.example.',
     );
   }
 
