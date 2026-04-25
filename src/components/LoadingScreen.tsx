@@ -16,7 +16,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
   useEffect(() => {
     if (!dismiss || dismissedRef.current) return;
 
-    const fallbackMs = 600;
+    const fallbackMs = 900;
     const timer = window.setTimeout(() => {
       if (dismissedRef.current) return;
       dismissedRef.current = true;
@@ -56,7 +56,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
       <div className={styles.track} aria-hidden>
         <div className={styles.shipWrap}>
           <Rocket
-            className="size-9 text-sky-300"
+            className={styles.shipIcon}
             strokeWidth={1.75}
             aria-hidden
           />
