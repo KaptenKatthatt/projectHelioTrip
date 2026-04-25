@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { HUD } from "./components/HUD";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { useStore } from "./store/useStore";
@@ -49,6 +50,7 @@ export const App = () => {
         <LazyScene onSceneReady={handleSceneReady} />
       </Suspense>
       <HUD />
+      <Analytics />
     </>
   );
 };
