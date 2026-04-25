@@ -12,8 +12,9 @@ import { HUD } from "./components/HUD";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { SceneErrorBoundary } from "./components/SceneErrorBoundary";
 import { useStore } from "./store/useStore";
+import { parseShareLink } from "./lib/shareLink";
 
-/** Minsta tid laddningsskärmen visas (ms). Öka för längre “splash”, sänk för snabbare borttagning. */
+/** Minimum time the loading screen is shown (ms). Increase for a longer "splash", decrease for faster dismissal. */
 const MIN_LOADING_MS = 5000;
 /** Failsafe: dismiss loading even if WebGL init never fires onSceneReady. */
 const SCENE_READY_FALLBACK_MS = 12000;
@@ -62,6 +63,18 @@ export const App = () => {
   useEffect(() => {
     appStartMsRef.current =
       typeof performance !== "undefined" ? performance.now() : Date.now();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const snapshot = parseShareLink(window.location.search);
+    if (!snapshot) return;
+    useStore.getState().restoreFromShareLink(snapshot);
+    // Strip the share params from the URL once restored so reloads
+    // don't keep re-applying them and accidentally fire analytics.
+    const cleanUrl =
+      window.location.origin + window.location.pathname + window.location.hash;
+    window.history.replaceState(null, "", cleanUrl);
   }, []);
 
   useEffect(() => {

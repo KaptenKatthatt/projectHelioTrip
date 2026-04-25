@@ -4,6 +4,7 @@ import { Stars } from "@react-three/drei/core/Stars";
 import { CameraManager } from "./CameraManager";
 import { GlobalZoom } from "./GlobalZoom";
 import { MobileCloseViewFraming } from "./MobileCloseViewFraming";
+import { MobileViewOffset } from "./MobileViewOffset";
 import { ViewportResizeSync } from "./ViewportResizeSync";
 import { OverviewLookControls } from "./OverviewLookControls";
 import { SkyFocusCamera } from "./SkyFocusCamera";
@@ -102,6 +103,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
+      <MobileViewOffset />
       <color attach="background" args={["#05060a"]} />
 
       <ambientLight intensity={0.25} color="#b3c2ff" />

@@ -1,65 +1,76 @@
-import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
-import { useTranslation } from '../hooks/useTranslation';
-import { getBodyColor } from '../lib/bodies';
-import { useStore } from '../store/useStore';
-import { CollapsibleHudPanel } from './CollapsibleHudPanel';
-import { FlightModeToggle } from './FlightModeToggle';
-import { FreeFlightHelp } from './FreeFlightHelp';
-import { FreeFlightHint } from './FreeFlightHint';
-import { FreeFlightMobileControls } from './FreeFlightMobileControls';
-import { AboutDialog } from './AboutDialog';
-import { FooterIconLinks } from './FooterIconLinks';
-import { LanguageToggle } from './LanguageToggle';
-import { NavigationAccordion } from './NavigationAccordion';
-import { PlanetPanel } from './PlanetPanel';
-import { TimePlaybackControls } from './TimePlaybackControls';
+import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { useTranslation } from "../hooks/useTranslation";
+import { getBodyColor } from "../lib/bodies";
+import { useStore } from "../store/useStore";
+import { CollapsibleHudPanel } from "./CollapsibleHudPanel";
+import { FlightModeToggle } from "./FlightModeToggle";
+import { FreeFlightHelp } from "./FreeFlightHelp";
+import { FreeFlightHint } from "./FreeFlightHint";
+import { FreeFlightMobileControls } from "./FreeFlightMobileControls";
+import { AboutDialog } from "./AboutDialog";
+import { FooterIconLinks } from "./FooterIconLinks";
+import { LanguageToggle } from "./LanguageToggle";
+import { NavigationAccordion } from "./NavigationAccordion";
+import { PlanetPanel } from "./PlanetPanel";
+import { TimePlaybackControls } from "./TimePlaybackControls";
+import { GameModeSwitcher } from "./GameModeSwitcher";
+import { MissionCard } from "./MissionCard";
+import { ProgressPanel } from "./ProgressPanel";
+import { AchievementToast } from "./AchievementToast";
+import { ShareLinkButton } from "./ShareLinkButton";
 
 export const HUD = () => {
   const { t, bodyName } = useTranslation();
   const mobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
-  const showPlanetPanel = activeBody !== null && viewMode !== 'overview';
+  const navigationMode = useStore((s) => s.navigationMode);
+  const gameMode = useStore((s) => s.gameMode);
+  const activeMissionId = useStore((s) => s.activeMissionId);
+  const showPlanetPanel = activeBody !== null && viewMode !== "overview";
+  const showMissionUi = gameMode !== "explore";
+  const isFreeFlight = navigationMode === "free";
   const mobileBodyTitle =
     activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
   const mobileBodyColor = activeBody !== null ? getBodyColor(activeBody) : null;
 
+  // On mobile during free flight we keep the joystick zone clear by
+  // hiding the mission/progress tray. It returns automatically once the
+  // user goes back to cinematic.
+  const showMobileMissionTray = mobileLayout && showMissionUi && !isFreeFlight;
+
   return (
     <div
       className={
-        'pointer-events-none fixed inset-0 z-10 flex flex-col justify-between font-sans text-white ' +
-        (mobileLayout ? 'p-3' : 'p-3 sm:p-5')
+        "pointer-events-none fixed inset-0 z-10 flex flex-col justify-between font-sans text-white " +
+        (mobileLayout ? "p-3" : "p-3 sm:p-5")
       }
     >
       <header
         className={
           mobileLayout
-            ? 'flex flex-col gap-3'
-            : 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'
+            ? "flex flex-col gap-3"
+            : "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
         }
       >
         <div className="pointer-events-auto">
           <h1
             className={
               mobileLayout
-                ? 'text-base font-semibold tracking-tight'
-                : 'text-base font-semibold tracking-tight sm:text-lg'
+                ? "text-base font-semibold tracking-tight"
+                : "text-base font-semibold tracking-tight sm:text-lg"
             }
           >
             {t.appTitle}
           </h1>
-          <p
-            className={
-              mobileLayout ? 'hidden' : 'text-xs text-white/50'
-            }
-          >
+          <p className={mobileLayout ? "hidden" : "text-xs text-white/50"}>
             {t.tagline}
           </p>
         </div>
       </header>
 
       {showPlanetPanel ? (
-        <div className={mobileLayout ? '' : 'hidden'}>
+        <div className={mobileLayout ? "" : "hidden"}>
           <CollapsibleHudPanel
             key={activeBody}
             title={mobileBodyTitle}
@@ -84,13 +95,36 @@ export const HUD = () => {
         </div>
       ) : null}
 
+      {showMobileMissionTray ? (
+        <div className="mt-2">
+          <CollapsibleHudPanel
+            title={
+              activeMissionId
+                ? t.phase3.missionCard.activeMission
+                : t.phase3.missionCard.pickMission
+            }
+            collapsedTitleClassName="truncate text-sm font-semibold tracking-tight text-white"
+            className="relative w-full"
+            defaultCollapsed
+            collapseLabel={t.ui.minimizePanel}
+            expandLabel={t.ui.expandPanel}
+            collapseOnExpandedHeaderClick
+          >
+            <div className="flex flex-col gap-3">
+              <MissionCard compact />
+              <ProgressPanel compact />
+            </div>
+          </CollapsibleHudPanel>
+        </div>
+      ) : null}
+
       <FreeFlightHint />
 
       <div
         className={
           mobileLayout
-            ? 'flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-y-auto'
-            : 'flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-y-auto sm:flex-row sm:items-end sm:justify-between sm:gap-6'
+            ? "flex flex-1 flex-col justify-end gap-3"
+            : "flex flex-1 flex-col justify-end gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6"
         }
       >
         <FreeFlightMobileControls />
@@ -98,8 +132,8 @@ export const HUD = () => {
         <div
           className={
             mobileLayout
-              ? 'hidden'
-              : 'flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end'
+              ? "hidden"
+              : "flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end"
           }
         >
           {showPlanetPanel ? (
@@ -112,6 +146,8 @@ export const HUD = () => {
               <PlanetPanel />
             </CollapsibleHudPanel>
           ) : null}
+          {showMissionUi ? <MissionCard className="w-full max-w-sm" /> : null}
+          <ProgressPanel className="w-full max-w-sm" />
           <FreeFlightHelp />
         </div>
       </div>
@@ -120,18 +156,22 @@ export const HUD = () => {
         <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-center">
           <TimePlaybackControls
             className={
-              'pointer-events-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md ' +
-              (mobileLayout ? '' : 'sm:w-auto sm:px-4')
+              "pointer-events-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md " +
+              (mobileLayout ? "" : "sm:w-auto sm:px-4")
             }
           />
           <div className="pointer-events-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 sm:w-auto">
+            <GameModeSwitcher compact={mobileLayout} />
             <FlightModeToggle />
+            <ShareLinkButton />
             <AboutDialog />
             <LanguageToggle />
             <FooterIconLinks />
           </div>
         </div>
       </footer>
+
+      <AchievementToast />
     </div>
   );
 };

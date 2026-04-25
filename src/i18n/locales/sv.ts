@@ -91,4 +91,78 @@ export const sv: Translation = {
     footerLinkAuthor: "Jonas Olson — webbplats (öppnas i ny flik)",
     footerLinkGithub: "HelioTrip på GitHub (öppnas i ny flik)",
   },
+  phase3: {
+    gameMode: {
+      label: "Läge",
+      explore: "Utforska",
+      learn: "Lär",
+      challenge: "Uppdrag",
+      exploreDescription: "Fritt läge utan mål.",
+      learnDescription: "Guidade turer med korta förklaringar.",
+      challengeDescription: "Uppdrag med tydliga mål och progression.",
+    },
+    missionCard: {
+      activeMission: "Aktivt uppdrag",
+      noMission: "Inget aktivt uppdrag",
+      pickMission: "Välj ett uppdrag",
+      stepProgress: "Steg {current}/{total}",
+      stepCompleted: "Steg klart",
+      missionCompleted: "Uppdrag klart!",
+      abandon: "Avbryt",
+      backToExplore: "Till Utforska",
+    },
+    progressPanel: {
+      title: "Framsteg",
+      visited: "Besökta kroppar",
+      achievementsTitle: "Upplåst",
+      noAchievements: "Inga upplåsningar än.",
+    },
+    shareLink: {
+      copyLabel: "Dela vy",
+      copied: "Länk kopierad",
+      restoredToast: "Vyn återställd från länk",
+    },
+    achievements: {
+      first_planet: "Första planeten",
+      first_moon: "Första månen",
+      first_satellite: "Första satelliten",
+      first_constellation: "Första stjärnbilden",
+      first_free_flight: "Första fri flygning",
+      first_mission_completed: "Första klara uppdraget",
+      unlocked: "Upplåst",
+    },
+    missions: {
+      solar_system_start: {
+        title: "Solsystemstart",
+        description: "Besök Jorden och därefter Mars.",
+      },
+      jupiter_moons: {
+        title: "Månar runt Jupiter",
+        description: "Hitta Io, Europa och Ganymedes.",
+      },
+      time_travel_short: {
+        title: "Tidsresa kort",
+        description: "Skruva upp tiden till minst 30 dygn per sekund.",
+      },
+      iss_hunt: {
+        title: "ISS-jakten",
+        description: "Hitta rymdstationen ISS.",
+      },
+      free_flight_loop: {
+        title: "Fri flygning",
+        description: "Aktivera fri flygning och återgå till autopilot.",
+      },
+    },
+    steps: {
+      "solar_system_start.visit_earth": "Res till Jorden",
+      "solar_system_start.visit_mars": "Res sedan till Mars",
+      "jupiter_moons.visit_io": "Hitta Io",
+      "jupiter_moons.visit_europa": "Hitta Europa",
+      "jupiter_moons.visit_ganymede": "Hitta Ganymedes",
+      "time_travel_short.speed_up": "Sätt hastigheten till 30 d/s eller mer",
+      "iss_hunt.visit_iss": "Hitta ISS",
+      "free_flight_loop.enter_free": "Aktivera fri flygning",
+      "free_flight_loop.return_cinematic": "Återgå till autopilot",
+    },
+  },
 };

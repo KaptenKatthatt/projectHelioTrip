@@ -73,6 +73,55 @@ export type Translation = {
     footerLinkAuthor: string;
     footerLinkGithub: string;
   };
+  phase3: {
+    gameMode: {
+      label: string;
+      explore: string;
+      learn: string;
+      challenge: string;
+      exploreDescription: string;
+      learnDescription: string;
+      challengeDescription: string;
+    };
+    missionCard: {
+      activeMission: string;
+      noMission: string;
+      pickMission: string;
+      stepProgress: string;
+      stepCompleted: string;
+      missionCompleted: string;
+      abandon: string;
+      backToExplore: string;
+    };
+    progressPanel: {
+      title: string;
+      visited: string;
+      achievementsTitle: string;
+      noAchievements: string;
+    };
+    shareLink: {
+      copyLabel: string;
+      copied: string;
+      restoredToast: string;
+    };
+    achievements: {
+      first_planet: string;
+      first_moon: string;
+      first_satellite: string;
+      first_constellation: string;
+      first_free_flight: string;
+      first_mission_completed: string;
+      unlocked: string;
+    };
+    missions: {
+      solar_system_start: { title: string; description: string };
+      jupiter_moons: { title: string; description: string };
+      time_travel_short: { title: string; description: string };
+      iss_hunt: { title: string; description: string };
+      free_flight_loop: { title: string; description: string };
+    };
+    steps: Record<string, string>;
+  };
 };
 
 export const translations: Record<Locale, Translation> = { en, sv };

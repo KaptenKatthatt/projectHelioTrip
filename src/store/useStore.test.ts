@@ -9,6 +9,15 @@ type AnalyticsSpies = {
   constellationOpened: ReturnType<typeof vi.fn>;
   playbackToggled: ReturnType<typeof vi.fn>;
   resetToSolarSystemStart: ReturnType<typeof vi.fn>;
+  modeChanged: ReturnType<typeof vi.fn>;
+  missionStarted: ReturnType<typeof vi.fn>;
+  missionStepCompleted: ReturnType<typeof vi.fn>;
+  missionCompleted: ReturnType<typeof vi.fn>;
+  missionAbandoned: ReturnType<typeof vi.fn>;
+  checklistProgress: ReturnType<typeof vi.fn>;
+  achievementUnlocked: ReturnType<typeof vi.fn>;
+  shareLinkCreated: ReturnType<typeof vi.fn>;
+  shareLinkRestored: ReturnType<typeof vi.fn>;
 };
 
 const loadStore = async () => {
@@ -22,6 +31,15 @@ const loadStore = async () => {
     constellationOpened: vi.fn(),
     playbackToggled: vi.fn(),
     resetToSolarSystemStart: vi.fn(),
+    modeChanged: vi.fn(),
+    missionStarted: vi.fn(),
+    missionStepCompleted: vi.fn(),
+    missionCompleted: vi.fn(),
+    missionAbandoned: vi.fn(),
+    checklistProgress: vi.fn(),
+    achievementUnlocked: vi.fn(),
+    shareLinkCreated: vi.fn(),
+    shareLinkRestored: vi.fn(),
   };
 
   vi.doMock("../lib/analytics", () => ({
@@ -32,6 +50,15 @@ const loadStore = async () => {
       constellationOpened: spies.constellationOpened,
       playbackToggled: spies.playbackToggled,
       resetToSolarSystemStart: spies.resetToSolarSystemStart,
+      modeChanged: spies.modeChanged,
+      missionStarted: spies.missionStarted,
+      missionStepCompleted: spies.missionStepCompleted,
+      missionCompleted: spies.missionCompleted,
+      missionAbandoned: spies.missionAbandoned,
+      checklistProgress: spies.checklistProgress,
+      achievementUnlocked: spies.achievementUnlocked,
+      shareLinkCreated: spies.shareLinkCreated,
+      shareLinkRestored: spies.shareLinkRestored,
     },
   }));
 

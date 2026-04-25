@@ -52,7 +52,7 @@ export const NavigationAccordion = () => {
   return (
     <nav
       className={
-        "pointer-events-auto relative flex w-full flex-col gap-1 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
+        "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-y-auto rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
         (mobileLayout ? "" : "sm:w-56")
       }
     >

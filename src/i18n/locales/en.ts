@@ -91,4 +91,78 @@ export const en: Translation = {
     footerLinkAuthor: "Jonas Olson — website (opens in a new tab)",
     footerLinkGithub: "HelioTrip source on GitHub (opens in a new tab)",
   },
+  phase3: {
+    gameMode: {
+      label: "Mode",
+      explore: "Explore",
+      learn: "Learn",
+      challenge: "Challenge",
+      exploreDescription: "Free roaming, no objectives.",
+      learnDescription: "Guided tours with short explanations.",
+      challengeDescription: "Missions with clear goals and progression.",
+    },
+    missionCard: {
+      activeMission: "Active mission",
+      noMission: "No active mission",
+      pickMission: "Pick a mission",
+      stepProgress: "Step {current}/{total}",
+      stepCompleted: "Step done",
+      missionCompleted: "Mission complete!",
+      abandon: "Abandon",
+      backToExplore: "Back to Explore",
+    },
+    progressPanel: {
+      title: "Progress",
+      visited: "Bodies visited",
+      achievementsTitle: "Unlocked",
+      noAchievements: "No unlocks yet.",
+    },
+    shareLink: {
+      copyLabel: "Share view",
+      copied: "Link copied",
+      restoredToast: "View restored from link",
+    },
+    achievements: {
+      first_planet: "First planet",
+      first_moon: "First moon",
+      first_satellite: "First satellite",
+      first_constellation: "First constellation",
+      first_free_flight: "First free flight",
+      first_mission_completed: "First mission complete",
+      unlocked: "Unlocked",
+    },
+    missions: {
+      solar_system_start: {
+        title: "Solar System Start",
+        description: "Visit Earth, then Mars.",
+      },
+      jupiter_moons: {
+        title: "Moons of Jupiter",
+        description: "Find Io, Europa and Ganymede.",
+      },
+      time_travel_short: {
+        title: "Short time jump",
+        description: "Push time to at least 30 days per second.",
+      },
+      iss_hunt: {
+        title: "ISS hunt",
+        description: "Find the International Space Station.",
+      },
+      free_flight_loop: {
+        title: "Free flight loop",
+        description: "Enter free flight and return to autopilot.",
+      },
+    },
+    steps: {
+      "solar_system_start.visit_earth": "Travel to Earth",
+      "solar_system_start.visit_mars": "Then travel to Mars",
+      "jupiter_moons.visit_io": "Find Io",
+      "jupiter_moons.visit_europa": "Find Europa",
+      "jupiter_moons.visit_ganymede": "Find Ganymede",
+      "time_travel_short.speed_up": "Set speed to 30 d/s or higher",
+      "iss_hunt.visit_iss": "Find the ISS",
+      "free_flight_loop.enter_free": "Activate free flight",
+      "free_flight_loop.return_cinematic": "Return to autopilot",
+    },
+  },
 };
