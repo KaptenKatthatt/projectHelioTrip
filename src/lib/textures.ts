@@ -1,7 +1,9 @@
 import { useTexture } from '@react-three/drei/core/Texture';
 import { SRGBColorSpace, type Texture } from 'three';
-import type { PlanetId } from './planets';
+import { MOONS } from './moons';
 import type { MoonId } from './moons';
+import { PLANETS } from './planets';
+import type { PlanetId } from './planets';
 import { getGraphicsPreset } from './graphicsTier';
 
 export type SurfaceTextures = {

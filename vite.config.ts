@@ -4,9 +4,46 @@ import tailwindcss from '@tailwindcss/vite';
 
 const API_PORT = process.env.API_PORT ?? '3001';
 
+/** Open Graph / Twitter require absolute image URLs; Facebook rejects root-relative paths. */
+function resolvePublicSiteOrigin(
+  mode: string,
+  env: Record<string, string>,
+): string {
+  const explicit = (
+    env.VITE_PUBLIC_SITE_URL ??
+    process.env.VITE_PUBLIC_SITE_URL ??
+    ''
+  ).replace(/\/$/, '');
+  if (explicit) return explicit;
+
+  const cf = process.env.CF_PAGES_URL?.trim();
+  if (cf) return cf.replace(/\/$/, '');
+
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    return vercel.startsWith('http')
+      ? vercel.replace(/\/$/, '')
+      : `https://${vercel.replace(/\/$/, '')}`;
+  }
+
+  if (process.env.NETLIFY === 'true') {
+    const netlify =
+      process.env.DEPLOY_PRIME_URL?.trim() || process.env.URL?.trim();
+    if (netlify) return netlify.replace(/\/$/, '');
+  }
+
+  if (mode === 'production') {
+    throw new Error(
+      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets CF_PAGES_URL, VERCEL_URL, or Netlify URL vars. See .env.example.',
+    );
+  }
+
+  return '';
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const publicSiteUrl = (env.VITE_PUBLIC_SITE_URL ?? '').replace(/\/$/, '');
+  const publicSiteUrl = resolvePublicSiteOrigin(mode, env);
 
   return {
   plugins: [
