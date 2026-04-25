@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'crypto';
 import {
   fetchHorizonsVectors,
   HorizonsError,

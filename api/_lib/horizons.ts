@@ -53,8 +53,8 @@ export const fetchHorizonsVectors = async (
   let response: Response;
   try {
     response = await fetch(url, { headers: { accept: 'application/json' } });
-  } catch (cause) {
-    throw new HorizonsError('Failed to reach NASA Horizons', { cause });
+  } catch {
+    throw new HorizonsError('Failed to reach NASA Horizons');
   }
 
   if (!response.ok) {
