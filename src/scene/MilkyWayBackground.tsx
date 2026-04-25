@@ -358,7 +358,9 @@ const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
   return { positions, colors, sizes };
 };
 
-const buildMicroStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
+const buildMicroStarCloud = (
+  quality: MilkyWayQualityPreset,
+): PointCloudData => {
   const positions = new Float32Array(quality.overlayMicroStarCount * 3);
   const colors = new Float32Array(quality.overlayMicroStarCount * 3);
   const sizes = new Float32Array(quality.overlayMicroStarCount);
