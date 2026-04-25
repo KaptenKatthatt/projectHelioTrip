@@ -1,52 +1,52 @@
-import { Suspense, lazy, useCallback, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { CameraManager } from './CameraManager';
-import { GlobalZoom } from './GlobalZoom';
-import { MobileCloseViewFraming } from './MobileCloseViewFraming';
-import { ViewportResizeSync } from './ViewportResizeSync';
-import { OverviewLookControls } from './OverviewLookControls';
-import { SkyFocusCamera } from './SkyFocusCamera';
-import { TimeManager } from './TimeManager';
+import { Suspense, lazy, useCallback, useEffect, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { CameraManager } from "./CameraManager";
+import { GlobalZoom } from "./GlobalZoom";
+import { MobileCloseViewFraming } from "./MobileCloseViewFraming";
+import { ViewportResizeSync } from "./ViewportResizeSync";
+import { OverviewLookControls } from "./OverviewLookControls";
+import { SkyFocusCamera } from "./SkyFocusCamera";
+import { TimeManager } from "./TimeManager";
 import {
   getCanvasDprCap,
   getGraphicsPreset,
   getGraphicsTier,
-} from '../lib/graphicsTier';
+} from "../lib/graphicsTier";
 import {
   INITIAL_OVERVIEW_CAMERA_POSITION,
   INITIAL_OVERVIEW_FOV,
-} from '../lib/initialCamera';
-import { useStore } from '../store/useStore';
-import { Planets } from './Planets';
-import { Moons } from './Moons';
-import { Satellites } from './Satellites';
-import { AsteroidBelt } from './AsteroidBelt';
-import { OrbitLines } from './OrbitLines';
-import { MilkyWayBackground } from './MilkyWayBackground';
-import { scheduleDeferredTexturePreloads } from '../lib/texturePreload';
+} from "../lib/initialCamera";
+import { useStore } from "../store/useStore";
+import { Planets } from "./Planets";
+import { Moons } from "./Moons";
+import { Satellites } from "./Satellites";
+import { AsteroidBelt } from "./AsteroidBelt";
+import { OrbitLines } from "./OrbitLines";
+import { MilkyWayBackground } from "./MilkyWayBackground";
+import { scheduleDeferredTexturePreloads } from "../lib/texturePreload";
 
 const LazyBodyPickers = lazy(async () => {
-  const module = await import('./BodyPickers');
+  const module = await import("./BodyPickers");
   return { default: module.BodyPickers };
 });
 
 const LazyConstellationLines = lazy(async () => {
-  const module = await import('./ConstellationLines');
+  const module = await import("./ConstellationLines");
   return { default: module.ConstellationLines };
 });
 
 const LazyFreeFlightControls = lazy(async () => {
-  const module = await import('./FreeFlightControls');
+  const module = await import("./FreeFlightControls");
   return { default: module.FreeFlightControls };
 });
 
 const LazyEffects = lazy(async () => {
-  const module = await import('./Effects');
+  const module = await import("./Effects");
   return { default: module.Effects };
 });
 
 const LazyPlanetOrbitControls = lazy(async () => {
-  const module = await import('./PlanetOrbitControls');
+  const module = await import("./PlanetOrbitControls");
   return { default: module.PlanetOrbitControls };
 });
 
@@ -67,7 +67,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
   const needsPlanetOrbitControls = useStore(
-    (s) => s.activeBody !== null && s.viewMode === 'close',
+    (s) => s.activeBody !== null && s.viewMode === "close",
   );
 
   const graphicsTier = getGraphicsTier();
@@ -92,7 +92,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       }}
       gl={{
         antialias: graphicsPreset.antialias,
-        powerPreference: 'high-performance',
+        powerPreference: "high-performance",
         stencil: false,
         depth: true,
       }}
@@ -100,7 +100,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
-      <color attach="background" args={['#05060a']} />
+      <color attach="background" args={["#05060a"]} />
 
       <ambientLight intensity={0.25} color="#b3c2ff" />
       <pointLight
@@ -143,7 +143,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       <Suspense fallback={null}>
         <LazyBodyPickers />
       </Suspense>
-      {navigationMode === 'free' && (
+      {navigationMode === "free" && (
         <Suspense fallback={null}>
           <LazyFreeFlightControls />
         </Suspense>
