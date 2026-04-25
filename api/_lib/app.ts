@@ -5,7 +5,7 @@ import {
   fetchHorizonsVectors,
   HorizonsError,
   type HorizonsVectorResult,
-} from './horizons';
+} from './horizons.js';
 import {
   HORIZONS_COMMAND_IDS,
   isMoonId,
@@ -13,13 +13,13 @@ import {
   MOON_IDS,
   MOON_META,
   PLANET_IDS,
-} from './planets';
+} from './planets.js';
 import {
   eventValueFromPayload,
   isAnalyticsEventName,
   readAnalyticsSummary,
   recordAnalyticsEvent,
-} from './analyticsStore';
+} from './analyticsStore.js';
 
 export type PlanetEphemerisResponse = {
   id: string;
