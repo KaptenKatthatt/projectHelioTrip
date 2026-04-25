@@ -7,6 +7,8 @@ import { useStore } from "./store/useStore";
 
 /** Minsta tid laddningsskärmen visas (ms). Öka för längre “splash”, sänk för snabbare borttagning. */
 const MIN_LOADING_MS = 5000;
+/** Failsafe: dismiss loading even if WebGL init never fires onSceneReady. */
+const SCENE_READY_FALLBACK_MS = 12000;
 
 const LazyScene = lazy(async () => {
   const { Scene } = await import("./scene/Scene");
@@ -39,6 +41,19 @@ export const App = () => {
     const t = window.setTimeout(() => setMinGateDone(true), MIN_LOADING_MS);
     return () => window.clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (sceneReady) return;
+    const fallback = window.setTimeout(() => {
+      console.error("Scene ready fallback fired", {
+        feature: "scene_ready_fallback",
+        fallbackDelayMs: SCENE_READY_FALLBACK_MS,
+        sceneReadyBeforeFallback: sceneReady,
+      });
+      setSceneReady(true);
+    }, SCENE_READY_FALLBACK_MS);
+    return () => window.clearTimeout(fallback);
+  }, [sceneReady]);
 
   const dismissOverlay = minGateDone && sceneReady;
 

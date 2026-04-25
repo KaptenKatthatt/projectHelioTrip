@@ -1,7 +1,7 @@
 import { handle } from 'hono/vercel';
-import { buildApp } from './_lib/app';
+import { buildApp } from './_lib/app.js';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const app = buildApp();
 
