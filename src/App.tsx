@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { HUD } from "./components/HUD";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { useStore } from "./store/useStore";
@@ -51,6 +52,7 @@ export const App = () => {
       </Suspense>
       <HUD />
       <Analytics />
+      <SpeedInsights />
     </>
   );
 };
