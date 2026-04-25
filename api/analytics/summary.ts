@@ -14,6 +14,20 @@ const hasValidToken = (provided: string | undefined): boolean => {
 };
 
 const app = new Hono();
+const SUMMARY_TIMEOUT_MS = 8000;
+
+const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('summary_timeout')), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId !== null) clearTimeout(timeoutId);
+  }
+};
+
 app.get('*', async (c) => {
   const token = c.req.header('x-analytics-token')?.trim() || undefined;
   if (!hasValidToken(token)) {
@@ -21,11 +35,17 @@ app.get('*', async (c) => {
   }
   try {
     const analyticsStore = await import('../_lib/analyticsStore.js');
-    const summary = await analyticsStore.readAnalyticsSummary();
+    const summary = await withTimeout(
+      analyticsStore.readAnalyticsSummary(),
+      SUMMARY_TIMEOUT_MS,
+    );
     c.header('Cache-Control', 'no-store');
     return c.json(summary);
   } catch (error) {
     console.error('Failed to read analytics summary', error);
+    if (error instanceof Error && error.message === 'summary_timeout') {
+      return c.json({ error: 'upstream_timeout' }, 504);
+    }
     return c.json({ error: 'internal' }, 500);
   }
 });
