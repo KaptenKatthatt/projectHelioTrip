@@ -22,37 +22,81 @@ type AnalyticsSummary = {
   byEvent: EventSummary[];
   byDay: DaySummary[];
 };
+const NBR_TIMES_ACTIVATED_LABEL = 'nbr_times_activated';
+const BREAKDOWN_PREVIEW_LIMIT = 6;
+const DAILY_PREVIEW_LIMIT = 14;
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isEventBreakdown = (value: unknown): value is EventBreakdown =>
+  isObject(value) &&
+  typeof value.value === 'string' &&
+  typeof value.count === 'number' &&
+  Number.isFinite(value.count);
+
+const isEventSummary = (value: unknown): value is EventSummary =>
+  isObject(value) &&
+  typeof value.name === 'string' &&
+  typeof value.total === 'number' &&
+  Number.isFinite(value.total) &&
+  Array.isArray(value.breakdown) &&
+  value.breakdown.every(isEventBreakdown);
+
+const isDaySummary = (value: unknown): value is DaySummary =>
+  isObject(value) &&
+  typeof value.date === 'string' &&
+  typeof value.total === 'number' &&
+  Number.isFinite(value.total);
+
+const isAnalyticsSummary = (value: unknown): value is AnalyticsSummary =>
+  isObject(value) &&
+  typeof value.updatedAt === 'string' &&
+  (value.storage === 'supabase' || value.storage === 'local-file') &&
+  Array.isArray(value.byEvent) &&
+  value.byEvent.every(isEventSummary) &&
+  Array.isArray(value.byDay) &&
+  value.byDay.every(isDaySummary);
+
+const formatBreakdownLabel = (value: string): string =>
+  value === 'none' ? NBR_TIMES_ACTIVATED_LABEL : value;
 
 export const AdminAnalyticsPage = () => {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    const controller = new AbortController();
     const load = async () => {
       try {
-        const token = new URLSearchParams(window.location.search).get('token');
-        const endpoint = token
-          ? `/api/analytics/summary?token=${encodeURIComponent(token)}`
-          : '/api/analytics/summary';
-        const response = await fetch(endpoint);
+        const response = await fetch('/api/analytics/summary', {
+          credentials: 'include',
+          signal: controller.signal,
+        });
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        const data = (await response.json()) as AnalyticsSummary;
-        if (mounted) setSummary(data);
-      } catch (err) {
-        if (mounted) {
-          const message = err instanceof Error ? err.message : 'unknown_error';
-          setError(message);
+        const raw = await response.json();
+        if (!isAnalyticsSummary(raw)) {
+          throw new Error('invalid_analytics_summary_payload');
         }
+        const data = raw;
+        if (!controller.signal.aborted) {
+          setSummary(data);
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (controller.signal.aborted) return;
+        const message = err instanceof Error ? err.message : 'unknown_error';
+        setError(message);
       }
     };
     void load();
-    return () => {
-      mounted = false;
-    };
+    return () => controller.abort();
   }, []);
+
+  const visibleByDay = summary?.byDay.slice(0, DAILY_PREVIEW_LIMIT) ?? [];
+  const hiddenByDayCount = summary ? Math.max(summary.byDay.length - DAILY_PREVIEW_LIMIT, 0) : 0;
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 text-white">
@@ -88,23 +132,38 @@ export const AdminAnalyticsPage = () => {
             {summary.byEvent.length === 0 ? (
               <p className="text-sm text-white/70">No events yet.</p>
             ) : (
-              summary.byEvent.map((event) => (
-                <article key={event.name} className="rounded-xl border border-white/10 bg-white/5 p-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium">{event.name}</h3>
-                    <span className="text-sm text-white/80">{event.total}</span>
-                  </div>
-                  {event.breakdown.length > 0 ? (
-                    <ul className="mt-2 space-y-1 text-sm text-white/70">
-                      {event.breakdown.slice(0, 6).map((item) => (
-                        <li key={`${event.name}-${item.value}`}>
-                          {item.value === 'none' ? 'nbr_times_activated' : item.value}: {item.count}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              ))
+              summary.byEvent.map((event) => {
+                const visibleBreakdown = event.breakdown.slice(0, BREAKDOWN_PREVIEW_LIMIT);
+                const hiddenBreakdownCount = Math.max(
+                  event.breakdown.length - BREAKDOWN_PREVIEW_LIMIT,
+                  0,
+                );
+                return (
+                  <article key={event.name} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">{event.name}</h3>
+                      <span className="text-sm text-white/80">{event.total}</span>
+                    </div>
+                    {event.breakdown.length > 0 ? (
+                      <ul className="mt-2 space-y-1 text-sm text-white/70">
+                        {visibleBreakdown.map((item) => (
+                          <li key={`${event.name}-${item.value}`}>
+                            {formatBreakdownLabel(item.value)}: {item.count}
+                          </li>
+                        ))}
+                        {hiddenBreakdownCount > 0 ? (
+                          <li
+                            className="text-white/50"
+                            aria-label={`${hiddenBreakdownCount} more breakdown values not shown`}
+                          >
+                            +{hiddenBreakdownCount} more
+                          </li>
+                        ) : null}
+                      </ul>
+                    ) : null}
+                  </article>
+                );
+              })
             )}
           </section>
 
@@ -114,12 +173,20 @@ export const AdminAnalyticsPage = () => {
               <p className="text-sm text-white/70">No daily data yet.</p>
             ) : (
               <ul className="space-y-1 text-sm text-white/80">
-                {summary.byDay.slice(0, 14).map((row) => (
+                {visibleByDay.map((row) => (
                   <li key={row.date} className="flex justify-between">
                     <span>{row.date}</span>
                     <span>{row.total}</span>
                   </li>
                 ))}
+                {hiddenByDayCount > 0 ? (
+                  <li
+                    className="text-white/50"
+                    aria-label={`${hiddenByDayCount} more daily rows not shown`}
+                  >
+                    +{hiddenByDayCount} more
+                  </li>
+                ) : null}
               </ul>
             )}
           </section>

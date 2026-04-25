@@ -43,6 +43,11 @@ export const App = () => {
   useEffect(() => {
     if (sceneReady) return;
     const fallback = window.setTimeout(() => {
+      console.error("Scene ready fallback fired", {
+        feature: "scene_ready_fallback",
+        fallbackDelayMs: SCENE_READY_FALLBACK_MS,
+        sceneReadyBeforeFallback: sceneReady,
+      });
       setSceneReady(true);
     }, SCENE_READY_FALLBACK_MS);
     return () => window.clearTimeout(fallback);

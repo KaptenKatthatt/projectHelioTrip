@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { timingSafeEqual } from 'node:crypto';
 import {
   fetchHorizonsVectors,
   HorizonsError,
@@ -57,9 +58,14 @@ const parseDate = (raw: string | undefined): Date | null => {
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
 
-const hasValidAnalyticsToken = (provided: string | undefined): boolean =>
-  ANALYTICS_ADMIN_TOKEN.length === 0 ||
-  (typeof provided === 'string' && provided === ANALYTICS_ADMIN_TOKEN);
+const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
+  if (ANALYTICS_ADMIN_TOKEN.length === 0) return false;
+  if (typeof provided !== 'string') return false;
+  const expectedBuffer = Buffer.from(ANALYTICS_ADMIN_TOKEN, 'utf8');
+  const providedBuffer = Buffer.from(provided, 'utf8');
+  if (expectedBuffer.length !== providedBuffer.length) return false;
+  return timingSafeEqual(expectedBuffer, providedBuffer);
+};
 
 export const buildApp = (): Hono => {
   const app = new Hono().basePath('/api');
@@ -72,7 +78,7 @@ export const buildApp = (): Hono => {
 
   app.post('/analytics/event', async (c) => {
     const body = await c.req.json().catch(() => null);
-    if (!body || typeof body !== 'object') {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return c.json({ error: 'invalid_payload' }, 400);
     }
 
@@ -88,19 +94,27 @@ export const buildApp = (): Hono => {
         : {};
 
     const value = eventValueFromPayload(payload);
-    await recordAnalyticsEvent(name, value);
+    try {
+      await recordAnalyticsEvent(name, value);
+    } catch (error) {
+      console.error('Failed to record analytics event', { name, value, error });
+    }
     return c.json({ ok: true });
   });
 
   app.get('/analytics/summary', async (c) => {
-    const queryToken = c.req.query('token');
-    const headerToken = c.req.header('x-analytics-token');
-    if (!hasValidAnalyticsToken(queryToken ?? headerToken)) {
+    const headerToken = c.req.header('x-analytics-token')?.trim() || undefined;
+    if (!hasValidAnalyticsToken(headerToken)) {
       return c.json({ error: 'forbidden' }, 403);
     }
-    const summary = await readAnalyticsSummary();
-    c.header('Cache-Control', 'no-store');
-    return c.json(summary);
+    try {
+      const summary = await readAnalyticsSummary();
+      c.header('Cache-Control', 'no-store');
+      return c.json(summary);
+    } catch (error) {
+      console.error('Failed to read analytics summary', error);
+      return c.json({ error: 'internal' }, 500);
+    }
   });
 
   app.get('/planets/:id', async (c) => {

@@ -34,7 +34,7 @@ export const sv: Translation = {
     language: "Språk",
     loading: "Laddar…",
     distanceFromSun: "Avstånd från Solen",
-    distanceToEarth: "Avstånd från Jorden",
+    distanceFromEarth: "Avstånd från Jorden",
     orbitPeriodAroundSun: "Omloppstid runt Solen",
     orbitPeriodAroundEarth: "Omloppstid runt Jorden",
     circumferenceRelativeToEarth: "Omkrets",

@@ -41,8 +41,8 @@ export const analytics = {
   constellationOpened(constellationId: ConstellationId): void {
     sendEvent('constellation_opened', { constellation_id: constellationId });
   },
-  playbackToggled(isPlaying: boolean): void {
-    sendEvent(isPlaying ? 'pause_clicked' : 'play_clicked');
+  playbackToggled(wasPlaying: boolean): void {
+    sendEvent(wasPlaying ? 'pause_clicked' : 'play_clicked');
   },
   resetToSolarSystemStart(): void {
     sendEvent('solar_system_start_clicked');

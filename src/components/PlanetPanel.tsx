@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import {
@@ -12,6 +12,7 @@ import { getWikipediaUrl } from '../lib/wikipedia';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useTranslation } from '../hooks/useTranslation';
 import { PLANET_ORBITAL_ELEMENTS } from '../lib/orbitalElements';
+import type { PlanetId } from '../lib/planets';
 
 type Row = {
   label: string;
@@ -33,31 +34,30 @@ export const PlanetPanel = () => {
     const body = getBody(activeBody);
     if (!body) return;
 
+    const computeAndSetDistances = (
+      parentId: PlanetId,
+      offset: { x: number; y: number; z: number },
+    ) => {
+      const parent = getLivePosition(parentId);
+      const worldX = parent.x + offset.x;
+      const worldY = parent.y + offset.y;
+      const worldZ = parent.z + offset.z;
+      const earth = getLivePosition('earth');
+      setDistanceFromSunAu(Math.hypot(worldX, worldY, worldZ) / AU_SCALE);
+      setDistanceToEarthAu(
+        Math.hypot(worldX - earth.x, worldY - earth.y, worldZ - earth.z) /
+          AU_SCALE,
+      );
+    };
+
     let raf = 0;
     const tick = () => {
       if (body.kind === 'moon') {
-        const offset = getLiveMoonOffset(body.def.id);
-        const parent = getLivePosition(body.def.parent);
-        const worldX = parent.x + offset.x;
-        const worldY = parent.y + offset.y;
-        const worldZ = parent.z + offset.z;
-        const earth = getLivePosition('earth');
-        setDistanceFromSunAu(Math.hypot(worldX, worldY, worldZ) / AU_SCALE);
-        setDistanceToEarthAu(
-          Math.hypot(worldX - earth.x, worldY - earth.y, worldZ - earth.z) /
-            AU_SCALE,
-        );
+        computeAndSetDistances(body.def.parent, getLiveMoonOffset(body.def.id));
       } else if (body.kind === 'satellite') {
-        const offset = getLiveSatelliteOffset(body.def.id);
-        const parent = getLivePosition(body.def.parent);
-        const worldX = parent.x + offset.x;
-        const worldY = parent.y + offset.y;
-        const worldZ = parent.z + offset.z;
-        const earth = getLivePosition('earth');
-        setDistanceFromSunAu(Math.hypot(worldX, worldY, worldZ) / AU_SCALE);
-        setDistanceToEarthAu(
-          Math.hypot(worldX - earth.x, worldY - earth.y, worldZ - earth.z) /
-            AU_SCALE,
+        computeAndSetDistances(
+          body.def.parent,
+          getLiveSatelliteOffset(body.def.id),
         );
       } else {
         const pos = getLivePosition(body.def.id);
@@ -92,23 +92,36 @@ export const PlanetPanel = () => {
   const kmToMiles = (valueKm: number): number => valueKm * 0.621371192;
   const usesMiles = locale === 'en';
   const distanceUnit = usesMiles ? 'miles' : 'km';
-  const distanceFormatter = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
-  });
-  const ratioFormatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1,
-  });
-  const orbitPeriodFormatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-  const orbitHoursFormatter = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1,
-  });
+  const {
+    distanceFormatter,
+    ratioFormatter,
+    orbitPeriodFormatter,
+    orbitHoursFormatter,
+  } = useMemo(
+    () => ({
+      distanceFormatter: new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 0,
+      }),
+      ratioFormatter: new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      }),
+      orbitPeriodFormatter: new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+      orbitHoursFormatter: new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      }),
+    }),
+    [locale],
+  );
   const orbitPeriodUnit = locale === 'en' ? 'days' : 'dygn';
-  const orbitHoursUnit = locale === 'en' ? 'hours' : 'timme';
+  const getHoursUnit = (hours: number): string => {
+    if (locale === 'en') return hours === 1 ? 'hour' : 'hours';
+    return hours === 1 ? 'timme' : 'timmar';
+  };
   const formatOrbitPeriod = (days: number): string => {
     if (days <= 365) return `${orbitPeriodFormatter.format(days)} ${orbitPeriodUnit}`;
 
@@ -120,7 +133,13 @@ export const PlanetPanel = () => {
 
     const yearLabel = locale === 'en' ? (years === 1 ? 'year' : 'years') : 'år';
     const monthLabel =
-      locale === 'en' ? (months === 1 ? 'month' : 'months') : 'månader';
+      locale === 'en'
+        ? months === 1
+          ? 'month'
+          : 'months'
+        : months === 1
+          ? 'månad'
+          : 'månader';
     const dayLabel =
       locale === 'en'
         ? remainingDays === 1
@@ -162,7 +181,7 @@ export const PlanetPanel = () => {
     orbitalPeriodDays !== undefined &&
     orbitalPeriodDays > 365;
 
-  const earthCircumferenceRatio = body.def.radius;
+  const radiusScale = body.def.radius;
 
   const rows: Row[] = [];
   rows.push({
@@ -170,7 +189,7 @@ export const PlanetPanel = () => {
     value: `${distanceFormatter.format(displayDistanceFromSun)} ${distanceUnit}`,
   });
   rows.push({
-    label: t.ui.distanceToEarth,
+    label: t.ui.distanceFromEarth,
     value: `${distanceFormatter.format(displayDistanceToEarth)} ${distanceUnit}`,
   });
   rows.push({
@@ -180,14 +199,14 @@ export const PlanetPanel = () => {
         : t.ui.orbitPeriodAroundSun,
     value:
       issOrbitalPeriodHours !== undefined
-        ? `${orbitHoursFormatter.format(issOrbitalPeriodHours)} ${orbitHoursUnit}`
+        ? `${orbitHoursFormatter.format(issOrbitalPeriodHours)} ${getHoursUnit(issOrbitalPeriodHours)}`
         : orbitalPeriodDays !== undefined
         ? formatOrbitPeriod(orbitalPeriodDays)
         : '—',
   });
   rows.push({
     label: t.ui.circumferenceRelativeToEarth,
-    value: `${planetName('earth')} x ${ratioFormatter.format(earthCircumferenceRatio)}`,
+    value: `${planetName('earth')} x ${ratioFormatter.format(radiusScale)}`,
   });
   const name = bodyName(activeBody);
 

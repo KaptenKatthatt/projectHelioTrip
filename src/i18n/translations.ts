@@ -20,7 +20,7 @@ export type Translation = {
     language: string;
     loading: string;
     distanceFromSun: string;
-    distanceToEarth: string;
+    distanceFromEarth: string;
     orbitPeriodAroundSun: string;
     orbitPeriodAroundEarth: string;
     circumferenceRelativeToEarth: string;
