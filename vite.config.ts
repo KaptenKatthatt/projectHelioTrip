@@ -59,6 +59,14 @@ function resolvePublicSiteOrigin(
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const publicSiteUrl = resolvePublicSiteOrigin(mode, env);
+  const facebookAppId = (
+    env.VITE_FACEBOOK_APP_ID ??
+    process.env.VITE_FACEBOOK_APP_ID ??
+    ''
+  ).trim();
+  const facebookAppIdMeta = facebookAppId
+    ? `<meta property="fb:app_id" content="${facebookAppId}" />`
+    : '';
 
   return {
   plugins: [
@@ -67,7 +75,9 @@ export default defineConfig(({ mode }) => {
     {
       name: 'html-public-site-url',
       transformIndexHtml(html) {
-        return html.replaceAll('__PUBLIC_SITE_URL__', publicSiteUrl);
+        return html
+          .replaceAll('__PUBLIC_SITE_URL__', publicSiteUrl)
+          .replace('__FB_APP_ID_META__', facebookAppIdMeta);
       },
     },
   ],
