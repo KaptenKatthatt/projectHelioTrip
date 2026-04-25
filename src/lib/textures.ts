@@ -1,7 +1,8 @@
-import { useTexture } from '@react-three/drei/core/Texture';
 import { SRGBColorSpace, type Texture } from 'three';
-import type { PlanetId } from './planets';
+import { MOONS } from './moons';
 import type { MoonId } from './moons';
+import { PLANETS } from './planets';
+import type { PlanetId } from './planets';
 import { getGraphicsPreset } from './graphicsTier';
 
 export type SurfaceTextures = {
@@ -18,34 +19,34 @@ const base = (body: PlanetId | MoonId, file: string): string =>
   `/textures/${body}/${file}`;
 
 export const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
-  sun: { diffuse: base('sun', 'diffuse.jpg') },
-  mercury: { diffuse: base('mercury', 'diffuse.jpg') },
-  venus: { diffuse: base('venus', 'diffuse.jpg') },
+  sun: { diffuse: base('sun', 'diffuse.webp') },
+  mercury: { diffuse: base('mercury', 'diffuse.webp') },
+  venus: { diffuse: base('venus', 'diffuse.webp') },
   earth: {
-    diffuse: base('earth', 'diffuse.jpg'),
-    normal: base('earth', 'normal.jpg'),
-    roughness: base('earth', 'roughness.jpg'),
+    diffuse: base('earth', 'diffuse.webp'),
+    normal: base('earth', 'normal.webp'),
+    roughness: base('earth', 'roughness.webp'),
   },
-  mars: { diffuse: base('mars', 'diffuse.jpg') },
-  jupiter: { diffuse: base('jupiter', 'diffuse.jpg') },
-  saturn: { diffuse: base('saturn', 'diffuse.jpg') },
-  uranus: { diffuse: base('uranus', 'diffuse.jpg') },
-  neptune: { diffuse: base('neptune', 'diffuse.jpg') },
-  pluto: { diffuse: base('pluto', 'diffuse.jpg') },
+  mars: { diffuse: base('mars', 'diffuse.webp') },
+  jupiter: { diffuse: base('jupiter', 'diffuse.webp') },
+  saturn: { diffuse: base('saturn', 'diffuse.webp') },
+  uranus: { diffuse: base('uranus', 'diffuse.webp') },
+  neptune: { diffuse: base('neptune', 'diffuse.webp') },
+  pluto: { diffuse: base('pluto', 'diffuse.webp') },
 };
 
 export const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {
-  moon: { diffuse: base('moon', 'diffuse.jpg') },
-  io: { diffuse: base('io', 'diffuse.jpg') },
-  europa: { diffuse: base('europa', 'diffuse.jpg') },
-  ganymede: { diffuse: base('ganymede', 'diffuse.jpg') },
-  callisto: { diffuse: base('callisto', 'diffuse.jpg') },
-  titan: { diffuse: base('titan', 'diffuse.jpg') },
-  triton: { diffuse: base('triton', 'diffuse.jpg') },
+  moon: { diffuse: base('moon', 'diffuse.webp') },
+  io: { diffuse: base('io', 'diffuse.webp') },
+  europa: { diffuse: base('europa', 'diffuse.webp') },
+  ganymede: { diffuse: base('ganymede', 'diffuse.webp') },
+  callisto: { diffuse: base('callisto', 'diffuse.webp') },
+  titan: { diffuse: base('titan', 'diffuse.webp') },
+  triton: { diffuse: base('triton', 'diffuse.webp') },
 };
 
 export const CLOUD_TEXTURES: Partial<Record<PlanetId, CloudTextures>> = {
-  earth: { diffuse: base('earth', 'clouds.png') },
+  earth: { diffuse: base('earth', 'clouds.webp') },
 };
 
 export const getSurfaceTextures = (
@@ -88,26 +89,36 @@ export const configureDataMap = (tex: Texture | Texture[]): void => {
   tex.anisotropy = maxAniso;
 };
 
-const collectUrls = (): string[] => {
-  const urls = new Set<string>();
-  const surfaces: Partial<Record<string, SurfaceTextures>>[] = [
-    PLANET_TEXTURES,
-    MOON_TEXTURES,
-  ];
-  for (const map of surfaces) {
-    for (const entry of Object.values(map)) {
-      if (!entry) continue;
-      urls.add(entry.diffuse);
-      if (entry.normal) urls.add(entry.normal);
-      if (entry.roughness) urls.add(entry.roughness);
-    }
-  }
-  for (const entry of Object.values(CLOUD_TEXTURES)) {
-    if (entry) urls.add(entry.diffuse);
-  }
-  return Array.from(urls);
-};
+/**
+ * Stable load order: planets (inner → outer), then moons, then cloud maps.
+ * Used by `scheduleDeferredTexturePreloads` so the GPU can warm big textures
+ * without competing with first paint.
+ */
+export const collectOrderedSurfaceTextureUrls = (): readonly string[] => {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (url: string | undefined): void => {
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    out.push(url);
+  };
 
-for (const url of collectUrls()) {
-  useTexture.preload(url);
-}
+  for (const { id } of PLANETS) {
+    const entry = PLANET_TEXTURES[id];
+    if (!entry) continue;
+    push(entry.diffuse);
+    push(entry.normal);
+    push(entry.roughness);
+  }
+  for (const { id } of MOONS) {
+    const entry = MOON_TEXTURES[id];
+    if (!entry) continue;
+    push(entry.diffuse);
+    push(entry.normal);
+    push(entry.roughness);
+  }
+  for (const clouds of Object.values(CLOUD_TEXTURES)) {
+    if (clouds) push(clouds.diffuse);
+  }
+  return out;
+};

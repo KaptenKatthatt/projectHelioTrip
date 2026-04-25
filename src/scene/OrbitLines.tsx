@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Line } from "@react-three/drei";
+import { Line } from '@react-three/drei/core/Line';
 import { Vector3 } from "three";
 import { getGraphicsPreset } from "../lib/graphicsTier";
 import { PLANETS } from "../lib/planets";

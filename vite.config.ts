@@ -4,9 +4,61 @@ import tailwindcss from '@tailwindcss/vite';
 
 const API_PORT = process.env.API_PORT ?? '3001';
 
+const normalizeHostUrl = (raw: string | undefined): string => {
+  const trimmed = raw?.trim() ?? '';
+  if (!trimmed) return '';
+  const noTrailingSlash = trimmed.replace(/\/$/, '');
+  return noTrailingSlash.startsWith('http')
+    ? noTrailingSlash
+    : `https://${noTrailingSlash}`;
+};
+
+/** Open Graph / Twitter require absolute image URLs; Facebook rejects root-relative paths. */
+function resolvePublicSiteOrigin(
+  mode: string,
+  env: Record<string, string>,
+): string {
+  const explicit = (
+    env.VITE_PUBLIC_SITE_URL ??
+    process.env.VITE_PUBLIC_SITE_URL ??
+    ''
+  ).replace(/\/$/, '');
+  if (explicit) return explicit;
+
+  // Stable production hostname (no scheme); set on all Vercel builds — good for og:image URLs.
+  const vercelProduction = normalizeHostUrl(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  );
+  if (vercelProduction) {
+    return vercelProduction;
+  }
+
+  const cf = process.env.CF_PAGES_URL?.trim();
+  if (cf) return cf.replace(/\/$/, '');
+
+  const vercel = normalizeHostUrl(process.env.VERCEL_URL);
+  if (vercel) {
+    return vercel;
+  }
+
+  if (process.env.NETLIFY === 'true') {
+    const netlify =
+      process.env.DEPLOY_PRIME_URL?.trim() || process.env.URL?.trim();
+    if (netlify) return netlify.replace(/\/$/, '');
+  }
+
+  if (mode === 'production') {
+    throw new Error(
+      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL (Vercel), CF_PAGES_URL, or Netlify URL vars. See .env.example.',
+    );
+  }
+
+  return '';
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const publicSiteUrl = (env.VITE_PUBLIC_SITE_URL ?? '').replace(/\/$/, '');
+  const publicSiteUrl = resolvePublicSiteOrigin(mode, env);
 
   return {
   plugins: [

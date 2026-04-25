@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 type Source =
   | { kind: 'copy'; url: string }
@@ -96,10 +97,78 @@ const invertJpeg = (input: Buffer): Buffer =>
     maxBuffer: 64 * 1024 * 1024,
   });
 
+const rasterToWebpPath = (rasterPath: string): string =>
+  rasterPath.replace(/\.(jpe?g|png)$/i, '.webp');
+
+/**
+ * High-quality WebP for WebGL: lossy for JPEG sources, strong alpha for PNG
+ * (rings, clouds). The app loads `.webp` paths; JPG/PNG remain as authoring sources.
+ */
+const writeWebpSibling = async (
+  rasterPath: string,
+  payload: Buffer,
+): Promise<void> => {
+  const webpPath = rasterToWebpPath(rasterPath);
+  if (webpPath === rasterPath) return;
+
+  const lower = rasterPath.toLowerCase();
+  const isPng = lower.endsWith('.png');
+  const pipeline = sharp(payload);
+  if (isPng) {
+    await pipeline
+      .webp({ quality: 96, alphaQuality: 100, effort: 5 })
+      .toFile(webpPath);
+  } else {
+    await pipeline.webp({ quality: 92, effort: 5 }).toFile(webpPath);
+  }
+  const { size } = await stat(webpPath);
+  console.log(
+    `ok     ${relative(OUT_DIR, webpPath)} (${(size / 1024).toFixed(0)} KB)`,
+  );
+};
+
+async function* walkRasterFiles(dir: string): AsyncGenerator<string> {
+  if (!existsSync(dir)) return;
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const e of entries) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) {
+      yield* walkRasterFiles(p);
+    } else if (e.isFile() && /\.(jpe?g|png)$/i.test(p)) {
+      yield p;
+    }
+  }
+}
+
+/**
+ * For folders with only legacy JPG/PNG (e.g. hand-placed moon textures), emit WebP
+ * siblings so the runtime paths in `src/lib/textures.ts` resolve.
+ */
+const ensureWebpForAllRasters = async (): Promise<void> => {
+  for await (const rasterPath of walkRasterFiles(OUT_DIR)) {
+    const webpPath = rasterToWebpPath(rasterPath);
+    if (existsSync(webpPath)) continue;
+    try {
+      const payload = await readFile(rasterPath);
+      await writeWebpSibling(rasterPath, payload);
+    } catch (err) {
+      console.error(
+        `fail   ${relative(OUT_DIR, rasterPath)}: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
+};
+
 const writeTexture = async (entry: TextureEntry): Promise<void> => {
   const outPath = resolve(OUT_DIR, entry.target);
+  const webpPath = rasterToWebpPath(outPath);
+
   if (existsSync(outPath)) {
     console.log(`skip   ${entry.target} (already present)`);
+    if (!existsSync(webpPath)) {
+      const payload = await readFile(outPath);
+      await writeWebpSibling(outPath, payload);
+    }
     return;
   }
 
@@ -111,10 +180,13 @@ const writeTexture = async (entry: TextureEntry): Promise<void> => {
   console.log(
     `ok     ${entry.target} (${(payload.byteLength / 1024).toFixed(0)} KB)`,
   );
+  await writeWebpSibling(outPath, payload);
 };
 
 const main = async (): Promise<void> => {
-  console.log(`Downloading ${TEXTURES.length} textures to ${OUT_DIR}`);
+  console.log(
+    `Downloading ${TEXTURES.length} textures to ${OUT_DIR}; writing high-quality WebP siblings for the app.`,
+  );
   for (const entry of TEXTURES) {
     try {
       await writeTexture(entry);
@@ -124,6 +196,7 @@ const main = async (): Promise<void> => {
       );
     }
   }
+  await ensureWebpForAllRasters();
 };
 
 main().catch((err) => {
