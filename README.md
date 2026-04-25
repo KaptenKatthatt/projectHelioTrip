@@ -33,17 +33,17 @@ In a few sentences it explains that HelioTrip is **edutainment for all ages**, t
 
 ## 🛸 Tech stack
 
-| Layer | Technology |
-| ----- | ---------- |
-| App & bundling | [Vite](https://vitejs.dev/) |
-| UI | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
-| Locales | **Swedish** & **English** (`src/i18n/`) |
-| 3D | [Three.js](https://threejs.org/) via [React Three Fiber](https://r3f.docs.pmnd.rs/), [Drei](https://github.com/pmndrs/drei), [@react-three/postprocessing](https://github.com/pmndrs/react-postprocessing) |
-| Motion | [@react-spring/three](https://github.com/pmndrs/react-spring) |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) |
-| State | [Zustand](https://github.com/pmndrs/zustand) |
-| API (dev) | [Hono](https://hono.dev/) |
-| Icons | [Lucide](https://lucide.dev/) |
+| Layer          | Technology                                                                                                                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App & bundling | [Vite](https://vitejs.dev/)                                                                                                                                                                                |
+| UI             | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)                                                                                                                             |
+| Locales        | **Swedish** & **English** (`src/i18n/`)                                                                                                                                                                    |
+| 3D             | [Three.js](https://threejs.org/) via [React Three Fiber](https://r3f.docs.pmnd.rs/), [Drei](https://github.com/pmndrs/drei), [@react-three/postprocessing](https://github.com/pmndrs/react-postprocessing) |
+| Motion         | [@react-spring/three](https://github.com/pmndrs/react-spring)                                                                                                                                              |
+| Styling        | [Tailwind CSS](https://tailwindcss.com/)                                                                                                                                                                   |
+| State          | [Zustand](https://github.com/pmndrs/zustand)                                                                                                                                                               |
+| API (dev)      | [Hono](https://hono.dev/)                                                                                                                                                                                  |
+| Icons          | [Lucide](https://lucide.dev/)                                                                                                                                                                              |
 
 ---
 
@@ -61,4 +61,55 @@ The dev script runs the Vite frontend together with the local API watcher (`conc
 
 ---
 
-*Clear skies and smooth orbits.* 🛰️🌠
+## 📊 Anonymous analytics events
+
+HelioTrip tracks a small set of anonymous custom events through its own API:
+
+- `planet_selected` (`body_id`)
+- `language_changed` (`locale`)
+- `free_flight_activated`
+- `constellation_opened` (`constellation_id`)
+- `play_clicked` / `pause_clicked`
+- `solar_system_start_clicked`
+
+No user id, login id, cookie id, or custom fingerprint is sent. IP addresses may be logged by the hosting infrastructure but are not stored in the analytics database.
+
+Events are posted to `POST /api/analytics/event` and aggregated by day/event/value. In production, add server-side throttling/ingress rate limiting for this endpoint (for example at your CDN, reverse proxy, or platform edge) to reduce abuse and write amplification.
+
+You can view the stats in-app at:
+
+- `/admin/analytics`
+
+The analytics dashboard shows:
+
+- event totals grouped by event type
+- top values per event (for example selected planet / constellation / locale)
+- daily totals (last days)
+- active storage source (`Supabase` or `Local file fallback`)
+
+### Persist analytics on Supabase (free)
+
+By default, analytics are stored in a local file (or `/tmp` on serverless platforms like Vercel, where data is lost between function invocations).
+To persist data, connect Supabase:
+
+1. Create a Supabase project (free tier).
+2. Run `supabase/analytics_events_daily.sql` in Supabase SQL editor.
+3. Add environment variables in Vercel (Production + Preview):
+   - `SUPABASE_URL`
+   - `SUPABASE_SECRET_KEY`
+   - optional `ANALYTICS_SUPABASE_TABLE` (default `analytics_events_daily`)
+   - optional `ANALYTICS_SUPABASE_INCREMENT_RPC` (default `increment_analytics_event`)
+   - `ANALYTICS_ADMIN_TOKEN` (strongly recommended for production; protects `/api/analytics/summary`)
+4. Redeploy.
+
+After that, `/api/analytics/event` writes to Supabase and `/admin/analytics` reads from Supabase.
+If `ANALYTICS_ADMIN_TOKEN` is set, the analytics summary endpoint requires that token via one of:
+
+- `Authorization: Bearer YOUR_TOKEN`
+- a secure HTTP-only cookie (for example `analytics_admin_token`)
+
+Security note: `POST /api/analytics/event` is a write endpoint that stores aggregated analytics in Supabase (when configured), so you should keep the dashboard read endpoint protected in production. `GET /api/analytics/summary` is protected by `ANALYTICS_ADMIN_TOKEN` when configured. Validate the token in your server-side admin route handler from auth headers/cookies (not from `req.query`) to avoid token leakage via URLs, logs, or browser history.
+
+---
+
+_Clear skies and smooth orbits._ 🛰️🌠

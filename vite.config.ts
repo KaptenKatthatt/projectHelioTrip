@@ -64,9 +64,16 @@ export default defineConfig(({ mode }) => {
     process.env.VITE_FACEBOOK_APP_ID ??
     ''
   ).trim();
-  const facebookAppIdMeta = facebookAppId
-    ? `<meta property="fb:app_id" content="${facebookAppId}" />`
-    : '';
+  const isValidFacebookAppId = /^\d+$/.test(facebookAppId);
+  if (facebookAppId && !isValidFacebookAppId) {
+    console.warn(
+      'Ignoring VITE_FACEBOOK_APP_ID because it is not a numeric Facebook App ID.',
+    );
+  }
+  const facebookAppIdMeta =
+    facebookAppId && isValidFacebookAppId
+      ? `<meta property="fb:app_id" content="${facebookAppId}" />`
+      : '';
 
   return {
   plugins: [
