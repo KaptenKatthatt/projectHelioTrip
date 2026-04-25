@@ -1,9 +1,10 @@
 import { handle } from 'hono/vercel';
-import { buildApp } from './_lib/app.js';
+import { Hono } from 'hono';
 
 export const runtime = 'nodejs';
 
-const app = buildApp();
+const app = new Hono();
+app.get('*', (c) => c.json({ status: 'ok' }));
 
 export const GET = handle(app);
 export default handle(app);
