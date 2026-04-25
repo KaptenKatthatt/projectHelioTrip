@@ -22,6 +22,14 @@ export const TimePlaybackControls = ({
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const timePlaybackDisabled = selectedConstellation !== null;
+  const playButtonPreset = TIME_SPEED_PRESETS[2] ?? timeScale;
+
+  const handlePlayToggle = () => {
+    if (!isPlaying) {
+      setTimeScale(playButtonPreset);
+    }
+    togglePlay();
+  };
 
   return (
     <div
@@ -49,7 +57,7 @@ export const TimePlaybackControls = ({
         </button>
         <button
           type="button"
-          onClick={togglePlay}
+          onClick={handlePlayToggle}
           disabled={timePlaybackDisabled}
           aria-label={isPlaying ? t.ui.pause : t.ui.play}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
