@@ -1,8 +1,4 @@
-import { handle } from 'hono/vercel';
-import { Hono } from 'hono';
 import { timingSafeEqual } from 'crypto';
-
-export const runtime = 'nodejs';
 
 const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
 const hasValidToken = (provided: string | undefined): boolean => {
@@ -13,7 +9,6 @@ const hasValidToken = (provided: string | undefined): boolean => {
   return timingSafeEqual(expected, received);
 };
 
-const app = new Hono();
 const SUMMARY_TIMEOUT_MS = 8000;
 
 const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
@@ -28,27 +23,58 @@ const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
   }
 };
 
-app.get('*', async (c) => {
-  const token = c.req.header('x-analytics-token')?.trim() || undefined;
-  if (!hasValidToken(token)) {
-    return c.json({ error: 'forbidden' }, 403);
+type NodeRequest = {
+  method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+};
+
+type NodeResponse = {
+  status: (code: number) => NodeResponse;
+  json: (body: unknown) => void;
+  setHeader: (name: string, value: string) => void;
+};
+
+const readHeader = (
+  headers: NodeRequest['headers'],
+  key: string,
+): string | undefined => {
+  const raw = headers?.[key.toLowerCase()];
+  if (typeof raw === 'string') return raw;
+  if (Array.isArray(raw)) return raw[0];
+  return undefined;
+};
+
+export default async function handler(
+  req: NodeRequest,
+  res: NodeResponse,
+): Promise<void> {
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'method_not_allowed' });
+    return;
   }
+
+  const token = readHeader(req.headers, 'x-analytics-token')?.trim();
+  if (!hasValidToken(token)) {
+    res.status(403).json({ error: 'forbidden' });
+    return;
+  }
+
   try {
     const analyticsStore = await import('../_lib/analyticsStore.js');
     const summary = await withTimeout(
       analyticsStore.readAnalyticsSummary(),
       SUMMARY_TIMEOUT_MS,
     );
-    c.header('Cache-Control', 'no-store');
-    return c.json(summary);
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json(summary);
+    return;
   } catch (error) {
     console.error('Failed to read analytics summary', error);
     if (error instanceof Error && error.message === 'summary_timeout') {
-      return c.json({ error: 'upstream_timeout' }, 504);
+      res.status(504).json({ error: 'upstream_timeout' });
+      return;
     }
-    return c.json({ error: 'internal' }, 500);
+    res.status(500).json({ error: 'internal' });
+    return;
   }
-});
-
-export const GET = handle(app);
-export default handle(app);
+}

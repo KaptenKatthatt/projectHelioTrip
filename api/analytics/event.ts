@@ -1,23 +1,38 @@
-import { handle } from 'hono/vercel';
-import { Hono } from 'hono';
 import type { AnalyticsEventName } from '../_lib/analyticsStore.js';
 
-export const runtime = 'nodejs';
+type NodeRequest = {
+  method?: string;
+  body?: unknown;
+};
 
-const app = new Hono();
-app.post('*', async (c) => {
+type NodeResponse = {
+  status: (code: number) => NodeResponse;
+  json: (body: unknown) => void;
+};
+
+export default async function handler(
+  req: NodeRequest,
+  res: NodeResponse,
+): Promise<void> {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'method_not_allowed' });
+    return;
+  }
+
   const analyticsStore = await import('../_lib/analyticsStore.js');
-  const body = await c.req.json().catch(() => null);
+  const body = req.body;
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    return c.json({ error: 'invalid_payload' }, 400);
+    res.status(400).json({ error: 'invalid_payload' });
+    return;
   }
 
-  const name = body.name;
+  const name = (body as Record<string, unknown>).name;
   if (typeof name !== 'string' || !analyticsStore.isAnalyticsEventName(name)) {
-    return c.json({ error: 'invalid_event_name' }, 400);
+    res.status(400).json({ error: 'invalid_event_name' });
+    return;
   }
 
-  const payloadRaw = body.payload;
+  const payloadRaw = (body as Record<string, unknown>).payload;
   const payload =
     payloadRaw && typeof payloadRaw === 'object'
       ? (payloadRaw as Record<string, unknown>)
@@ -29,8 +44,5 @@ app.post('*', async (c) => {
   } catch (error) {
     console.error('Failed to record analytics event', { name, value, error });
   }
-  return c.json({ ok: true });
-});
-
-export const POST = handle(app);
-export default handle(app);
+  res.status(200).json({ ok: true });
+}

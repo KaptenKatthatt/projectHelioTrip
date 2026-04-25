@@ -1,10 +1,10 @@
-import { handle } from 'hono/vercel';
-import { Hono } from 'hono';
+type NodeResponse = {
+  status: (code: number) => NodeResponse;
+  json: (body: unknown) => void;
+  setHeader: (name: string, value: string) => void;
+};
 
-export const runtime = 'nodejs';
-
-const app = new Hono();
-app.get('*', (c) => c.json({ status: 'ok' }));
-
-export const GET = handle(app);
-export default handle(app);
+export default function handler(_: unknown, res: NodeResponse): void {
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).json({ status: 'ok' });
+}
