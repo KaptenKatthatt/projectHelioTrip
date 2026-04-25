@@ -55,6 +55,11 @@ const parseDate = (raw: string | undefined): Date | null => {
 };
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
+const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
+
+const hasValidAnalyticsToken = (provided: string | undefined): boolean =>
+  ANALYTICS_ADMIN_TOKEN.length === 0 ||
+  (typeof provided === 'string' && provided === ANALYTICS_ADMIN_TOKEN);
 
 export const buildApp = (): Hono => {
   const app = new Hono().basePath('/api');
@@ -88,6 +93,11 @@ export const buildApp = (): Hono => {
   });
 
   app.get('/analytics/summary', async (c) => {
+    const queryToken = c.req.query('token');
+    const headerToken = c.req.header('x-analytics-token');
+    if (!hasValidAnalyticsToken(queryToken ?? headerToken)) {
+      return c.json({ error: 'forbidden' }, 403);
+    }
     const summary = await readAnalyticsSummary();
     c.header('Cache-Control', 'no-store');
     return c.json(summary);

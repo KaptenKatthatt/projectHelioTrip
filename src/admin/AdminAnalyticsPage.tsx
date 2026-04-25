@@ -18,6 +18,7 @@ type DaySummary = {
 
 type AnalyticsSummary = {
   updatedAt: string;
+  storage: 'supabase' | 'local-file';
   byEvent: EventSummary[];
   byDay: DaySummary[];
 };
@@ -30,7 +31,11 @@ export const AdminAnalyticsPage = () => {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await fetch('/api/analytics/summary');
+        const token = new URLSearchParams(window.location.search).get('token');
+        const endpoint = token
+          ? `/api/analytics/summary?token=${encodeURIComponent(token)}`
+          : '/api/analytics/summary';
+        const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -56,6 +61,11 @@ export const AdminAnalyticsPage = () => {
         <p className="text-sm text-white/70">
           Anonymous event stats from <code>/api/analytics/event</code>.
         </p>
+        {summary ? (
+          <p className="text-xs text-white/60">
+            Storage: {summary.storage === 'supabase' ? 'Supabase' : 'Local file fallback'}
+          </p>
+        ) : null}
       </header>
 
       {error ? (
@@ -88,7 +98,7 @@ export const AdminAnalyticsPage = () => {
                     <ul className="mt-2 space-y-1 text-sm text-white/70">
                       {event.breakdown.slice(0, 6).map((item) => (
                         <li key={`${event.name}-${item.value}`}>
-                          {item.value}: {item.count}
+                          {item.value === 'none' ? 'nbr_times_activated' : item.value}: {item.count}
                         </li>
                       ))}
                     </ul>

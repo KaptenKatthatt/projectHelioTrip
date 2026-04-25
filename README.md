@@ -80,6 +80,13 @@ You can view the stats in-app at:
 
 - `/admin/analytics`
 
+The analytics dashboard shows:
+
+- event totals grouped by event type
+- top values per event (for example selected planet / constellation / locale)
+- daily totals (last days)
+- active storage source (`Supabase` or `Local file fallback`)
+
 ### Persist analytics on Supabase (free)
 
 By default, analytics are stored in a local file (or `/tmp` on Vercel), which is temporary.
@@ -89,11 +96,16 @@ To persist data, connect Supabase:
 2. Run `supabase/analytics_events_daily.sql` in Supabase SQL editor.
 3. Add environment variables in Vercel (Production + Preview):
    - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_SECRET_KEY`
    - optional `ANALYTICS_SUPABASE_TABLE` (default `analytics_events_daily`)
+   - optional `ANALYTICS_SUPABASE_INCREMENT_RPC` (default `increment_analytics_event`)
+   - optional `ANALYTICS_ADMIN_TOKEN` (protects `/api/analytics/summary`)
 4. Redeploy.
 
 After that, `/api/analytics/event` writes to Supabase and `/admin/analytics` reads from Supabase.
+If you set `ANALYTICS_ADMIN_TOKEN`, open analytics with:
+
+- `/admin/analytics?token=YOUR_TOKEN`
 
 ---
 

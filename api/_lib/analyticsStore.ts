@@ -36,10 +36,16 @@ let cache: AnalyticsStore | null = null;
 let supabaseClient: SupabaseClient | null = null;
 
 const SUPABASE_URL = process.env.SUPABASE_URL?.trim() ?? '';
-const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? '';
+const SUPABASE_SECRET_KEY = (
+  process.env.SUPABASE_SECRET_KEY ??
+  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  ''
+).trim();
 const SUPABASE_TABLE = process.env.ANALYTICS_SUPABASE_TABLE?.trim() || 'analytics_events_daily';
-const HAS_SUPABASE = SUPABASE_URL.length > 0 && SUPABASE_SERVICE_ROLE_KEY.length > 0;
+const HAS_SUPABASE = SUPABASE_URL.length > 0 && SUPABASE_SECRET_KEY.length > 0;
+const SUPABASE_INCREMENT_RPC =
+  process.env.ANALYTICS_SUPABASE_INCREMENT_RPC?.trim() ||
+  'increment_analytics_event';
 
 const safeReadStore = async (): Promise<AnalyticsStore> => {
   if (cache) return cache;
@@ -65,7 +71,7 @@ const safeReadStore = async (): Promise<AnalyticsStore> => {
 const getSupabaseClient = (): SupabaseClient | null => {
   if (!HAS_SUPABASE) return null;
   if (supabaseClient) return supabaseClient;
-  supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  supabaseClient = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -83,7 +89,7 @@ const isoDay = (): string => new Date().toISOString().slice(0, 10);
 
 const normalizeValue = (raw: string | undefined): string => {
   const value = (raw ?? '').trim();
-  return value.length > 0 ? value.slice(0, 64) : 'none';
+  return value.length > 0 ? value.slice(0, 64) : EMPTY_VALUE_LABEL;
 };
 
 const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
@@ -95,6 +101,7 @@ const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
   'pause_clicked',
   'solar_system_start_clicked',
 ]);
+const EMPTY_VALUE_LABEL = 'nbr_times_activated';
 
 export const isAnalyticsEventName = (raw: string): raw is AnalyticsEventName =>
   VALID_EVENT_NAMES.has(raw as AnalyticsEventName);
@@ -124,7 +131,7 @@ export const eventValueFromPayload = (
   if (typeof locale === 'string') return normalizeValue(locale);
   const value = payload.value;
   if (typeof value === 'string') return normalizeValue(value);
-  return 'none';
+  return EMPTY_VALUE_LABEL;
 };
 
 export const recordAnalyticsEvent = async (
@@ -135,6 +142,14 @@ export const recordAnalyticsEvent = async (
     const supabase = getSupabaseClient();
     if (supabase) {
       const date = isoDay();
+      const { error } = await supabase.rpc(SUPABASE_INCREMENT_RPC, {
+        p_date: date,
+        p_name: name,
+        p_value: value,
+      });
+      if (!error) return;
+
+      // Backward fallback if RPC is not yet deployed.
       const { data: existing, error: existingError } = await supabase
         .from(SUPABASE_TABLE)
         .select('count')
@@ -188,6 +203,7 @@ type EventSummary = {
 
 export type AnalyticsSummaryResponse = {
   updatedAt: string;
+  storage: 'supabase' | 'local-file';
   byEvent: EventSummary[];
   byDay: DailySummary[];
 };
@@ -242,7 +258,7 @@ export const readAnalyticsSummary = async (): Promise<AnalyticsSummaryResponse> 
       .map(([date, total]) => ({ date, total }))
       .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-    return { updatedAt, byEvent, byDay };
+    return { updatedAt, storage: 'supabase', byEvent, byDay };
   }
 
   const store = await safeReadStore();
@@ -275,6 +291,7 @@ export const readAnalyticsSummary = async (): Promise<AnalyticsSummaryResponse> 
 
   return {
     updatedAt: store.updatedAt,
+    storage: 'local-file',
     byEvent,
     byDay,
   };
