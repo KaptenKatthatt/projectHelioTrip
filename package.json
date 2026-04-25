@@ -21,6 +21,7 @@
     "@react-three/postprocessing": "^3.0.4",
     "@supabase/supabase-js": "^2.104.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "hono": "^4.12.14",
     "lucide-react": "^1.8.0",
     "postprocessing": "^6.39.1",
