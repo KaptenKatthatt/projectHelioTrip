@@ -49,69 +49,54 @@
 
 .shipWrap {
   position: absolute;
-  top: 50%;
+  top: 0;
+  left: 0;
   width: 3rem;
   height: 3rem;
-  margin-top: -1.5rem;
-  margin-left: -1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.65))
-    drop-shadow(0 0 28px rgba(168, 85, 247, 0.35));
-  /* Snabb, “coin-op”-känsla: tydlig slinga + hård sväng innan kanten */
-  animation: helioShipArcade 2.75s cubic-bezier(0.45, 0.02, 0.2, 1) infinite;
-  will-change: left, transform;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.45));
+  animation: helioShipArcade 3.1s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+  will-change: transform;
+  transform: translate3d(8vw, calc(50% - 24px), 0) rotate(50deg) scale(1.05);
+  backface-visibility: hidden;
 }
 
 @keyframes helioShipArcade {
   0% {
-    left: 7%;
-    transform: translateY(calc(-50% - 26px)) rotate(52deg) scale(1.08);
+    transform: translate3d(8vw, calc(50% - 24px), 0) rotate(50deg) scale(1.05);
   }
-  /* Tidig “loop”-kurva */
   18% {
-    left: 28%;
-    transform: translateY(calc(-50% + 22px)) rotate(18deg) scale(1);
+    transform: translate3d(30vw, calc(50% + 20px), 0) rotate(15deg) scale(1);
   }
   38% {
-    left: 58%;
-    transform: translateY(calc(-50% - 18px)) rotate(-32deg) scale(1.05);
+    transform: translate3d(56vw, calc(50% - 16px), 0) rotate(-28deg) scale(1.04);
   }
-  /* Full fart mot höger, nästan kanten */
   46% {
-    left: 84%;
-    transform: translateY(calc(-50% + 6px)) rotate(-48deg) scale(1.12);
+    transform: translate3d(74vw, calc(50% + 8px), 0) rotate(-44deg) scale(1.1);
   }
-  /* Hård barrel-roll / vändning innan skärmkant */
   52% {
-    left: 78%;
-    transform: translateY(calc(-50% - 8px)) rotate(210deg) scale(1.14);
+    transform: translate3d(70vw, calc(50% - 10px), 0) rotate(205deg) scale(1.12);
   }
   58% {
-    left: 70%;
-    transform: translateY(calc(-50% + 14px)) rotate(255deg) scale(1.06);
+    transform: translate3d(62vw, calc(50% + 14px), 0) rotate(252deg) scale(1.05);
   }
-  /* Hemflygning med svängig höjd */
   72% {
-    left: 38%;
-    transform: translateY(calc(-50% - 28px)) rotate(310deg) scale(1.02);
+    transform: translate3d(40vw, calc(50% - 24px), 0) rotate(312deg) scale(1.02);
   }
   88% {
-    left: 14%;
-    transform: translateY(calc(-50% + 12px)) rotate(375deg) scale(1.08);
+    transform: translate3d(14vw, calc(50% + 12px), 0) rotate(374deg) scale(1.07);
   }
   100% {
-    left: 7%;
-    transform: translateY(calc(-50% - 26px)) rotate(412deg) scale(1.08);
+    transform: translate3d(8vw, calc(50% - 24px), 0) rotate(410deg) scale(1.05);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .shipWrap {
     animation: none;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(45deg);
+    transform: translate3d(50vw, 50%, 0) rotate(45deg);
   }
 }
 
