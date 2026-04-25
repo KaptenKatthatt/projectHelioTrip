@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 
 type EventBreakdown = {
   value: string;
@@ -25,6 +26,7 @@ type AnalyticsSummary = {
 const NBR_TIMES_ACTIVATED_LABEL = 'nbr_times_activated';
 const BREAKDOWN_PREVIEW_LIMIT = 6;
 const DAILY_PREVIEW_LIMIT = 14;
+const TOKEN_STORAGE_KEY = 'heliotrip.analytics.adminToken';
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -62,64 +64,91 @@ const formatBreakdownLabel = (value: string): string =>
   value === 'none' ? NBR_TIMES_ACTIVATED_LABEL : value;
 
 export const AdminAnalyticsPage = () => {
+  const [token, setToken] = useState('');
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const load = async () => {
-      try {
-        const response = await fetch('/api/analytics/summary', {
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const raw = await response.json();
-        if (!isAnalyticsSummary(raw)) {
-          throw new Error('invalid_analytics_summary_payload');
-        }
-        const data = raw;
-        if (!controller.signal.aborted) {
-          setSummary(data);
-        }
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
-        if (controller.signal.aborted) return;
-        const message = err instanceof Error ? err.message : 'unknown_error';
-        setError(message);
-      }
-    };
-    void load();
-    return () => controller.abort();
+    const stored = window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? '';
+    setToken(stored);
   }, []);
 
-  const visibleByDay = summary?.byDay.slice(0, DAILY_PREVIEW_LIMIT) ?? [];
-  const hiddenByDayCount = summary ? Math.max(summary.byDay.length - DAILY_PREVIEW_LIMIT, 0) : 0;
+  const hasToken = token.trim().length > 0;
+
+  const fetchSummary = async (inputToken: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    setSummary(null);
+    try {
+      const response = await fetch('/api/analytics/summary', {
+        headers: { 'x-analytics-token': inputToken.trim() },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const raw = await response.json();
+      if (!isAnalyticsSummary(raw)) {
+        throw new Error('invalid_analytics_summary_payload');
+      }
+      setSummary(raw);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown_error';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = token.trim();
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, trimmed);
+    void fetchSummary(trimmed);
+  };
+
+  const byEvent = useMemo(() => summary?.byEvent ?? [], [summary]);
+  const byDay = useMemo(() => summary?.byDay ?? [], [summary]);
+  
+  const visibleByDay = byDay.slice(0, DAILY_PREVIEW_LIMIT);
+  const hiddenByDayCount = Math.max(byDay.length - DAILY_PREVIEW_LIMIT, 0);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 text-white">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">HelioTrip analytics</h1>
         <p className="text-sm text-white/70">
-          Anonymous event stats from <code>/api/analytics/event</code>.
+          Open this page with your admin token.
         </p>
-        {summary ? (
-          <p className="text-xs text-white/60">
-            Storage: {summary.storage === 'supabase' ? 'Supabase' : 'Local file fallback'}
-          </p>
-        ) : null}
       </header>
 
+      <form
+        onSubmit={onSubmit}
+        className="space-y-3 rounded-2xl border border-white/15 bg-black/30 p-4"
+      >
+        <label className="block space-y-2">
+          <span className="text-sm text-white/80">Analytics admin token</span>
+          <input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="w-full rounded-md border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-white/40"
+            placeholder="Enter ANALYTICS_ADMIN_TOKEN"
+            autoComplete="off"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={!hasToken || loading}
+          className="rounded-md border border-white/30 px-3 py-2 text-sm enabled:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? 'Loading…' : 'Load analytics'}
+        </button>
+      </form>
       {error ? (
         <p className="rounded-xl border border-red-400/40 bg-red-500/10 p-3 text-sm">
           Could not load analytics: {error}
         </p>
-      ) : null}
-
-      {!summary && !error ? (
-        <p className="text-sm text-white/70">Loading…</p>
       ) : null}
 
       {summary ? (
@@ -129,17 +158,23 @@ export const AdminAnalyticsPage = () => {
             <p className="text-xs text-white/60">
               Updated: {summary.updatedAt ? new Date(summary.updatedAt).toLocaleString() : 'n/a'}
             </p>
-            {summary.byEvent.length === 0 ? (
+            <p className="text-xs text-white/60">
+              Storage: {summary.storage === 'supabase' ? 'Supabase' : 'Local file fallback'}
+            </p>
+            {byEvent.length === 0 ? (
               <p className="text-sm text-white/70">No events yet.</p>
             ) : (
-              summary.byEvent.map((event) => {
+              byEvent.map((event) => {
                 const visibleBreakdown = event.breakdown.slice(0, BREAKDOWN_PREVIEW_LIMIT);
                 const hiddenBreakdownCount = Math.max(
                   event.breakdown.length - BREAKDOWN_PREVIEW_LIMIT,
                   0,
                 );
                 return (
-                  <article key={event.name} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <article
+                    key={event.name}
+                    className="rounded-xl border border-white/10 bg-white/5 p-3"
+                  >
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium">{event.name}</h3>
                       <span className="text-sm text-white/80">{event.total}</span>
@@ -169,7 +204,7 @@ export const AdminAnalyticsPage = () => {
 
           <section className="space-y-2 rounded-2xl border border-white/15 bg-black/30 p-4">
             <h2 className="text-lg font-semibold">Last days</h2>
-            {summary.byDay.length === 0 ? (
+            {byDay.length === 0 ? (
               <p className="text-sm text-white/70">No daily data yet.</p>
             ) : (
               <ul className="space-y-1 text-sm text-white/80">

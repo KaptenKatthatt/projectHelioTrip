@@ -23,7 +23,10 @@ type AnalyticsStore = {
   aggregates: AnalyticsAggregate[];
 };
 
-const EMPTY_STORE: AnalyticsStore = { updatedAt: new Date(0).toISOString(), aggregates: [] };
+const EMPTY_STORE: AnalyticsStore = {
+  updatedAt: new Date(0).toISOString(),
+  aggregates: [],
+};
 
 const STORE_FILE = process.env.ANALYTICS_FILE
   ? path.resolve(process.env.ANALYTICS_FILE)
@@ -72,7 +75,6 @@ export const invalidateAnalyticsStoreCache = (): void => {
   cache = null;
   cacheLoadedAtMs = 0;
 };
-
 const isRpcNotDeployedError = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') return false;
   const maybeCode = 'code' in error ? (error.code as string | undefined) : undefined;
@@ -130,6 +132,7 @@ const persistStore = async (store: AnalyticsStore): Promise<void> => {
 
 // Use UTC day buckets so analytics aggregation is stable across server timezones.
 const utcDay = (): string => new Date().toISOString().slice(0, 10);
+const EMPTY_VALUE_LABEL = 'nbr_times_activated';
 
 const normalizeValue = (raw: string | undefined): string => {
   const value = (raw ?? '').trim();
@@ -145,7 +148,6 @@ const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
   'pause_clicked',
   'solar_system_start_clicked',
 ]);
-const EMPTY_VALUE_LABEL = 'nbr_times_activated';
 
 export const isAnalyticsEventName = (raw: string): raw is AnalyticsEventName =>
   VALID_EVENT_NAMES.has(raw as AnalyticsEventName);
