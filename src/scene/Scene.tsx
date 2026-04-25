@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
@@ -6,7 +6,6 @@ import { GlobalZoom } from './GlobalZoom';
 import { MobileCloseViewFraming } from './MobileCloseViewFraming';
 import { ViewportResizeSync } from './ViewportResizeSync';
 import { OverviewLookControls } from './OverviewLookControls';
-import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
 import {
@@ -47,10 +46,30 @@ const LazyEffects = lazy(async () => {
   return { default: module.Effects };
 });
 
-export const Scene = () => {
+const LazyPlanetOrbitControls = lazy(async () => {
+  const module = await import('./PlanetOrbitControls');
+  return { default: module.PlanetOrbitControls };
+});
+
+export type SceneProps = {
+  /** Fires once after the WebGL renderer is created (first interactive shell). */
+  readonly onSceneReady?: () => void;
+};
+
+export const Scene = ({ onSceneReady }: SceneProps) => {
+  const sceneReadyFiredRef = useRef(false);
+  const handleCanvasCreated = useCallback(() => {
+    if (sceneReadyFiredRef.current) return;
+    sceneReadyFiredRef.current = true;
+    onSceneReady?.();
+  }, [onSceneReady]);
+
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
+  const needsPlanetOrbitControls = useStore(
+    (s) => s.activeBody !== null && s.viewMode === 'close',
+  );
 
   const graphicsTier = getGraphicsTier();
   const graphicsPreset = getGraphicsPreset();
@@ -79,6 +98,7 @@ export const Scene = () => {
         depth: true,
       }}
       dpr={dprCap}
+      onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
       <color attach="background" args={['#05060a']} />
@@ -125,7 +145,11 @@ export const Scene = () => {
 
       <CameraManager />
       <SkyFocusCamera />
-      <PlanetOrbitControls />
+      {needsPlanetOrbitControls ? (
+        <Suspense fallback={null}>
+          <LazyPlanetOrbitControls />
+        </Suspense>
+      ) : null}
       <OverviewLookControls />
       <GlobalZoom />
       <MobileCloseViewFraming />

@@ -45,7 +45,7 @@ export const RING_DEFINITIONS: Partial<Record<PlanetId, RingDefinition>> = {
     innerScale: 1.5,
     outerScale: 2.4,
     tilt: deg(26.73),
-    texture: '/textures/saturn/ring.png',
+    texture: '/textures/saturn/ring.webp',
     color: '#d7c29a',
     opacity: 1,
     spin: 0.015,

@@ -9,6 +9,8 @@ export type Locale = 'en' | 'sv';
 export type Translation = {
   appTitle: string;
   tagline: string;
+  /** Full headline on the boot loading overlay (LCP / shell). */
+  loadingScreenTitle: string;
   planets: Record<PlanetId, string>;
   moons: Record<MoonId, string>;
   satellites: Record<SatelliteId, string>;

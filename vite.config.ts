@@ -4,6 +4,15 @@ import tailwindcss from '@tailwindcss/vite';
 
 const API_PORT = process.env.API_PORT ?? '3001';
 
+const normalizeHostUrl = (raw: string | undefined): string => {
+  const trimmed = raw?.trim() ?? '';
+  if (!trimmed) return '';
+  const noTrailingSlash = trimmed.replace(/\/$/, '');
+  return noTrailingSlash.startsWith('http')
+    ? noTrailingSlash
+    : `https://${noTrailingSlash}`;
+};
+
 /** Open Graph / Twitter require absolute image URLs; Facebook rejects root-relative paths. */
 function resolvePublicSiteOrigin(
   mode: string,
@@ -16,14 +25,20 @@ function resolvePublicSiteOrigin(
   ).replace(/\/$/, '');
   if (explicit) return explicit;
 
+  // Stable production hostname (no scheme); set on all Vercel builds — good for og:image URLs.
+  const vercelProduction = normalizeHostUrl(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  );
+  if (vercelProduction) {
+    return vercelProduction;
+  }
+
   const cf = process.env.CF_PAGES_URL?.trim();
   if (cf) return cf.replace(/\/$/, '');
 
-  const vercel = process.env.VERCEL_URL?.trim();
+  const vercel = normalizeHostUrl(process.env.VERCEL_URL);
   if (vercel) {
-    return vercel.startsWith('http')
-      ? vercel.replace(/\/$/, '')
-      : `https://${vercel.replace(/\/$/, '')}`;
+    return vercel;
   }
 
   if (process.env.NETLIFY === 'true') {
@@ -34,7 +49,7 @@ function resolvePublicSiteOrigin(
 
   if (mode === 'production') {
     throw new Error(
-      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets CF_PAGES_URL, VERCEL_URL, or Netlify URL vars. See .env.example.',
+      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL (Vercel), CF_PAGES_URL, or Netlify URL vars. See .env.example.',
     );
   }
 

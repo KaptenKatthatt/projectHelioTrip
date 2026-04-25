@@ -1,0 +1,137 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  opacity: 1;
+  visibility: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 50% 20%,
+      rgba(30, 58, 120, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 90% 60% at 80% 100%,
+      rgba(80, 40, 100, 0.2),
+      transparent 50%
+    ),
+    #05060a;
+  color: #e6e6f0;
+  transition:
+    opacity 0.72s ease,
+    visibility 0.72s ease;
+}
+
+.root[data-dismiss="true"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  max-width: 36rem;
+  text-align: center;
+  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.sub {
+  margin: 0 0 2.25rem;
+  font-size: 0.8125rem;
+  color: rgba(230, 230, 240, 0.55);
+}
+
+.track {
+  width: 100%;
+  height: 8rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shipWrap {
+  width: 6rem;
+  height: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45));
+  animation: shipPulse 2s ease-in-out infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+  backface-visibility: hidden;
+}
+
+@keyframes shipPulse {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+}
+
+@keyframes shipLaunchUp {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, -140vh, 0) scale(1.14);
+  }
+}
+
+.root[data-dismiss="true"] .shipWrap {
+  opacity: 1;
+  animation: shipLaunchUp 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.shipIcon {
+  width: 4.5rem;
+  height: 4.5rem;
+  color: rgb(125 211 252);
+  transform: rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shipWrap {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  .root[data-dismiss="true"] .shipWrap {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, -140vh, 0) scale(1.14);
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
