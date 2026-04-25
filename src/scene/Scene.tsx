@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
 import { GlobalZoom } from './GlobalZoom';
 import { MobileCloseViewFraming } from './MobileCloseViewFraming';
@@ -112,19 +111,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       />
 
       <Suspense fallback={null}>
-        {navigationMode === 'free' ? (
-          <MilkyWayBackground />
-        ) : (
-          <Stars
-            radius={graphicsPreset.starsRadius}
-            depth={400}
-            count={graphicsPreset.starsCount}
-            factor={6}
-            saturation={0}
-            fade
-            speed={0.3}
-          />
-        )}
+        <MilkyWayBackground />
       </Suspense>
 
       <TimeManager />

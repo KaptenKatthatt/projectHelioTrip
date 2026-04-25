@@ -3,28 +3,29 @@
  * Evaluated once per page load (safe for SSR: defaults to `high` until `window` exists).
  */
 
-export type GraphicsTier = 'high' | 'medium' | 'low';
+export type GraphicsTier = "high" | "medium" | "low";
 
 let cachedTier: GraphicsTier | null = null;
 
 const detectTier = (): GraphicsTier => {
-  if (typeof window === 'undefined') return 'high';
+  if (typeof window === "undefined") return "high";
 
   const nav = navigator as Navigator & {
     connection?: { saveData?: boolean };
   };
-  if (nav.connection?.saveData === true) return 'low';
+  if (nav.connection?.saveData === true) return "low";
 
   const mobileLike =
-    window.matchMedia('(pointer: coarse)').matches ||
-    window.matchMedia('(max-width: 768px)').matches;
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.matchMedia("(max-width: 768px)").matches;
 
-  if (!mobileLike) return 'high';
+  if (!mobileLike) return "high";
 
-  const cores = typeof navigator.hardwareConcurrency === 'number'
-    ? navigator.hardwareConcurrency
-    : 4;
-  return cores >= 6 ? 'medium' : 'low';
+  const cores =
+    typeof navigator.hardwareConcurrency === "number"
+      ? navigator.hardwareConcurrency
+      : 4;
+  return cores >= 6 ? "medium" : "low";
 };
 
 export const getGraphicsTier = (): GraphicsTier => {
@@ -35,10 +36,10 @@ export const getGraphicsTier = (): GraphicsTier => {
 
 /** Caps devicePixelRatio for Canvas `dpr` to reduce fill rate on phones/tablets. */
 export const getCanvasDprCap = (tier: GraphicsTier): number => {
-  if (typeof window === 'undefined') return 2;
+  if (typeof window === "undefined") return 2;
   const raw = window.devicePixelRatio || 1;
-  if (tier === 'high') return Math.min(raw, 2);
-  if (tier === 'medium') return Math.min(raw, 1.5);
+  if (tier === "high") return Math.min(raw, 2);
+  if (tier === "medium") return Math.min(raw, 1.5);
   return 1;
 };
 
@@ -53,7 +54,7 @@ export type GraphicsPreset = {
   readonly orbitLineSegments: number;
   readonly milkyWaySphere: readonly [number, number];
   readonly textureAnisotropy: number;
-  readonly effectsMode: 'full' | 'reduced';
+  readonly effectsMode: "full" | "reduced";
   readonly effectComposerMsaa: number;
   readonly antialias: boolean;
 };
@@ -68,7 +69,7 @@ export const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
     orbitLineSegments: 512,
     milkyWaySphere: [64, 64],
     textureAnisotropy: 8,
-    effectsMode: 'full',
+    effectsMode: "full",
     effectComposerMsaa: 4,
     antialias: true,
   },
@@ -78,11 +79,11 @@ export const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
     asteroidCount: 1200,
     planetSphere: [48, 36],
     cloudSphere: [32, 24],
-    orbitLineSegments: 256,
+    orbitLineSegments: 320,
     milkyWaySphere: [48, 48],
     textureAnisotropy: 4,
-    effectsMode: 'reduced',
-    effectComposerMsaa: 0,
+    effectsMode: "reduced",
+    effectComposerMsaa: 2,
     antialias: true,
   },
   low: {
@@ -91,12 +92,12 @@ export const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
     asteroidCount: 400,
     planetSphere: [32, 24],
     cloudSphere: [24, 16],
-    orbitLineSegments: 128,
+    orbitLineSegments: 256,
     milkyWaySphere: [32, 32],
     textureAnisotropy: 2,
     /** Same Bloom/tone map as desktop; skip only DoF (very heavy on low-end). */
-    effectsMode: 'reduced',
-    effectComposerMsaa: 0,
+    effectsMode: "reduced",
+    effectComposerMsaa: 2,
     antialias: true,
   },
 };
