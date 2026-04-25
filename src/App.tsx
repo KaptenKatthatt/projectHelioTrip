@@ -1,8 +1,16 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { HUD } from "./components/HUD";
 import { LoadingScreen } from "./components/LoadingScreen";
+import { SceneErrorBoundary } from "./components/SceneErrorBoundary";
 import { useStore } from "./store/useStore";
 
 /** Minsta tid laddningsskärmen visas (ms). Öka för längre “splash”, sänk för snabbare borttagning. */
@@ -21,11 +29,20 @@ const LazyScene = lazy(async () => {
 
 export const App = () => {
   const locale = useStore((s) => s.locale);
+  const appStartMsRef = useRef<number | null>(null);
   const [minGateDone, setMinGateDone] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [gateMounted, setGateMounted] = useState(true);
+  const [sceneMountKey, setSceneMountKey] = useState(0);
 
   const handleSceneReady = useCallback(() => {
+    const now =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const startedAt = appStartMsRef.current;
+    console.info("HelioTrip scene ready", {
+      metric: "scene_ready_ms",
+      value: startedAt === null ? 0 : Math.round(now - startedAt),
+    });
     setSceneReady(true);
   }, []);
 
@@ -33,9 +50,19 @@ export const App = () => {
     setGateMounted(false);
   }, []);
 
+  const handleRetryScene = useCallback(() => {
+    setSceneReady(false);
+    setSceneMountKey((value) => value + 1);
+  }, []);
+
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+
+  useEffect(() => {
+    appStartMsRef.current =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+  }, []);
 
   useEffect(() => {
     const t = window.setTimeout(() => setMinGateDone(true), MIN_LOADING_MS);
@@ -62,9 +89,11 @@ export const App = () => {
       {gateMounted ? (
         <LoadingScreen dismiss={dismissOverlay} onDismissed={handleDismissed} />
       ) : null}
-      <Suspense fallback={null}>
-        <LazyScene onSceneReady={handleSceneReady} />
-      </Suspense>
+      <SceneErrorBoundary onRetry={handleRetryScene}>
+        <Suspense fallback={null}>
+          <LazyScene key={sceneMountKey} onSceneReady={handleSceneReady} />
+        </Suspense>
+      </SceneErrorBoundary>
       <HUD />
       <Analytics />
       <SpeedInsights />

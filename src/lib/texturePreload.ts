@@ -1,6 +1,7 @@
-import { useTexture } from '@react-three/drei/core/Texture';
-import { RING_DEFINITIONS } from './rings';
-import { collectOrderedSurfaceTextureUrls } from './textures';
+import { useTexture } from "@react-three/drei/core/Texture";
+import { getGraphicsTier, type GraphicsTier } from "./graphicsTier";
+import { RING_DEFINITIONS } from "./rings";
+import { collectOrderedSurfaceTextureUrls } from "./textures";
 
 const collectRingTextureUrls = (): readonly string[] => {
   const out: string[] = [];
@@ -24,19 +25,40 @@ const dedupeAppend = (
   return out;
 };
 
+const DATA_MAP_PATTERN = /\/(normal|roughness)\.webp$/i;
+
+const shouldPreloadUrlForTier = (url: string, tier: GraphicsTier): boolean => {
+  if (!DATA_MAP_PATTERN.test(url)) return true;
+  if (tier === "high") return true;
+  if (tier === "medium") return !url.includes("/roughness.webp");
+  return false;
+};
+
+const preloadBatchSize = (tier: GraphicsTier): number => {
+  if (tier === "high") return 6;
+  if (tier === "medium") return 4;
+  return 2;
+};
+
 /**
  * After first paint, queues `useTexture.preload` one URL per idle slice so
  * we do not open ~30 parallel downloads during initial navigation (LCP / SI).
  */
 export const scheduleDeferredTexturePreloads = (): void => {
+  const tier = getGraphicsTier();
   const urls = dedupeAppend(
-    collectOrderedSurfaceTextureUrls(),
-    collectRingTextureUrls(),
+    collectOrderedSurfaceTextureUrls().filter((url) =>
+      shouldPreloadUrlForTier(url, tier),
+    ),
+    collectRingTextureUrls().filter((url) =>
+      shouldPreloadUrlForTier(url, tier),
+    ),
   );
+  const batchSize = preloadBatchSize(tier);
   let index = 0;
 
   const schedule = (cb: () => void): void => {
-    if (typeof requestIdleCallback !== 'undefined') {
+    if (typeof requestIdleCallback !== "undefined") {
       requestIdleCallback(
         () => {
           cb();
@@ -49,10 +71,13 @@ export const scheduleDeferredTexturePreloads = (): void => {
   };
 
   const pump = (): void => {
-    const url = urls[index];
-    if (url === undefined) return;
-    useTexture.preload(url);
-    index += 1;
+    if (index >= urls.length) return;
+    for (let i = 0; i < batchSize; i += 1) {
+      const url = urls[index];
+      if (url === undefined) break;
+      useTexture.preload(url);
+      index += 1;
+    }
     schedule(pump);
   };
 
