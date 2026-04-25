@@ -19,34 +19,34 @@ const base = (body: PlanetId | MoonId, file: string): string =>
   `/textures/${body}/${file}`;
 
 export const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
-  sun: { diffuse: base('sun', 'diffuse.jpg') },
-  mercury: { diffuse: base('mercury', 'diffuse.jpg') },
-  venus: { diffuse: base('venus', 'diffuse.jpg') },
+  sun: { diffuse: base('sun', 'diffuse.webp') },
+  mercury: { diffuse: base('mercury', 'diffuse.webp') },
+  venus: { diffuse: base('venus', 'diffuse.webp') },
   earth: {
-    diffuse: base('earth', 'diffuse.jpg'),
-    normal: base('earth', 'normal.jpg'),
-    roughness: base('earth', 'roughness.jpg'),
+    diffuse: base('earth', 'diffuse.webp'),
+    normal: base('earth', 'normal.webp'),
+    roughness: base('earth', 'roughness.webp'),
   },
-  mars: { diffuse: base('mars', 'diffuse.jpg') },
-  jupiter: { diffuse: base('jupiter', 'diffuse.jpg') },
-  saturn: { diffuse: base('saturn', 'diffuse.jpg') },
-  uranus: { diffuse: base('uranus', 'diffuse.jpg') },
-  neptune: { diffuse: base('neptune', 'diffuse.jpg') },
-  pluto: { diffuse: base('pluto', 'diffuse.jpg') },
+  mars: { diffuse: base('mars', 'diffuse.webp') },
+  jupiter: { diffuse: base('jupiter', 'diffuse.webp') },
+  saturn: { diffuse: base('saturn', 'diffuse.webp') },
+  uranus: { diffuse: base('uranus', 'diffuse.webp') },
+  neptune: { diffuse: base('neptune', 'diffuse.webp') },
+  pluto: { diffuse: base('pluto', 'diffuse.webp') },
 };
 
 export const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {
-  moon: { diffuse: base('moon', 'diffuse.jpg') },
-  io: { diffuse: base('io', 'diffuse.jpg') },
-  europa: { diffuse: base('europa', 'diffuse.jpg') },
-  ganymede: { diffuse: base('ganymede', 'diffuse.jpg') },
-  callisto: { diffuse: base('callisto', 'diffuse.jpg') },
-  titan: { diffuse: base('titan', 'diffuse.jpg') },
-  triton: { diffuse: base('triton', 'diffuse.jpg') },
+  moon: { diffuse: base('moon', 'diffuse.webp') },
+  io: { diffuse: base('io', 'diffuse.webp') },
+  europa: { diffuse: base('europa', 'diffuse.webp') },
+  ganymede: { diffuse: base('ganymede', 'diffuse.webp') },
+  callisto: { diffuse: base('callisto', 'diffuse.webp') },
+  titan: { diffuse: base('titan', 'diffuse.webp') },
+  triton: { diffuse: base('triton', 'diffuse.webp') },
 };
 
 export const CLOUD_TEXTURES: Partial<Record<PlanetId, CloudTextures>> = {
-  earth: { diffuse: base('earth', 'clouds.png') },
+  earth: { diffuse: base('earth', 'clouds.webp') },
 };
 
 export const getSurfaceTextures = (

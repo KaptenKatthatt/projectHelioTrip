@@ -6,7 +6,6 @@ import { GlobalZoom } from './GlobalZoom';
 import { MobileCloseViewFraming } from './MobileCloseViewFraming';
 import { ViewportResizeSync } from './ViewportResizeSync';
 import { OverviewLookControls } from './OverviewLookControls';
-import { PlanetOrbitControls } from './PlanetOrbitControls';
 import { SkyFocusCamera } from './SkyFocusCamera';
 import { TimeManager } from './TimeManager';
 import {
@@ -47,10 +46,18 @@ const LazyEffects = lazy(async () => {
   return { default: module.Effects };
 });
 
+const LazyPlanetOrbitControls = lazy(async () => {
+  const module = await import('./PlanetOrbitControls');
+  return { default: module.PlanetOrbitControls };
+});
+
 export const Scene = () => {
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
+  const needsPlanetOrbitControls = useStore(
+    (s) => s.activeBody !== null && s.viewMode === 'close',
+  );
 
   const graphicsTier = getGraphicsTier();
   const graphicsPreset = getGraphicsPreset();
@@ -125,7 +132,11 @@ export const Scene = () => {
 
       <CameraManager />
       <SkyFocusCamera />
-      <PlanetOrbitControls />
+      {needsPlanetOrbitControls ? (
+        <Suspense fallback={null}>
+          <LazyPlanetOrbitControls />
+        </Suspense>
+      ) : null}
       <OverviewLookControls />
       <GlobalZoom />
       <MobileCloseViewFraming />
