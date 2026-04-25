@@ -14,12 +14,7 @@ import {
   MOON_META,
   PLANET_IDS,
 } from './planets.js';
-import {
-  eventValueFromPayload,
-  isAnalyticsEventName,
-  readAnalyticsSummary,
-  recordAnalyticsEvent,
-} from './analyticsStore.js';
+import type { AnalyticsEventName } from './analyticsStore.js';
 
 export type PlanetEphemerisResponse = {
   id: string;
@@ -77,13 +72,17 @@ export const buildApp = (): Hono => {
   );
 
   app.post('/analytics/event', async (c) => {
+    const analyticsStore = await import('./analyticsStore.js');
     const body = await c.req.json().catch(() => null);
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return c.json({ error: 'invalid_payload' }, 400);
     }
 
     const name = body.name;
-    if (typeof name !== 'string' || !isAnalyticsEventName(name)) {
+    if (
+      typeof name !== 'string' ||
+      !analyticsStore.isAnalyticsEventName(name)
+    ) {
       return c.json({ error: 'invalid_event_name' }, 400);
     }
 
@@ -93,9 +92,9 @@ export const buildApp = (): Hono => {
         ? (payloadRaw as Record<string, unknown>)
         : {};
 
-    const value = eventValueFromPayload(payload);
+    const value = analyticsStore.eventValueFromPayload(payload);
     try {
-      await recordAnalyticsEvent(name, value);
+      await analyticsStore.recordAnalyticsEvent(name as AnalyticsEventName, value);
     } catch (error) {
       console.error('Failed to record analytics event', { name, value, error });
     }
@@ -103,12 +102,13 @@ export const buildApp = (): Hono => {
   });
 
   app.get('/analytics/summary', async (c) => {
+    const analyticsStore = await import('./analyticsStore.js');
     const headerToken = c.req.header('x-analytics-token')?.trim() || undefined;
     if (!hasValidAnalyticsToken(headerToken)) {
       return c.json({ error: 'forbidden' }, 403);
     }
     try {
-      const summary = await readAnalyticsSummary();
+      const summary = await analyticsStore.readAnalyticsSummary();
       c.header('Cache-Control', 'no-store');
       return c.json(summary);
     } catch (error) {
