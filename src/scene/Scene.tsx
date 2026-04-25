@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
@@ -51,7 +51,19 @@ const LazyPlanetOrbitControls = lazy(async () => {
   return { default: module.PlanetOrbitControls };
 });
 
-export const Scene = () => {
+export type SceneProps = {
+  /** Fires once after the WebGL renderer is created (first interactive shell). */
+  readonly onSceneReady?: () => void;
+};
+
+export const Scene = ({ onSceneReady }: SceneProps) => {
+  const sceneReadyFiredRef = useRef(false);
+  const handleCanvasCreated = useCallback(() => {
+    if (sceneReadyFiredRef.current) return;
+    sceneReadyFiredRef.current = true;
+    onSceneReady?.();
+  }, [onSceneReady]);
+
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
@@ -86,6 +98,7 @@ export const Scene = () => {
         depth: true,
       }}
       dpr={dprCap}
+      onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
       <color attach="background" args={['#05060a']} />

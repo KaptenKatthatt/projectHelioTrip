@@ -3,6 +3,7 @@ import type { Translation } from "../translations";
 export const sv: Translation = {
   appTitle: "HelioTrip",
   tagline: "Utforska solsystemet",
+  loadingScreenTitle: "HelioTrip — Utforska solsystemet i 3D",
   planets: {
     sun: "Solen",
     mercury: "Merkurius",
