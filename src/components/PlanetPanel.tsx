@@ -7,11 +7,11 @@ import {
   getLiveSatelliteOffset,
 } from '../lib/positionsBus';
 import { getBody } from '../lib/bodies';
-import { MOON_AU_SCALE } from '../lib/moons';
 import { AU_SCALE } from '../lib/constants';
 import { getWikipediaUrl } from '../lib/wikipedia';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useTranslation } from '../hooks/useTranslation';
+import { PLANET_ORBITAL_ELEMENTS } from '../lib/orbitalElements';
 
 type Row = {
   label: string;
@@ -26,7 +26,7 @@ export const PlanetPanel = () => {
   const isTraveling = useStore((s) => s.isTraveling);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
-  const [distanceFromParentAu, setDistanceFromParentAu] = useState(0);
+  const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
 
   useEffect(() => {
     if (!activeBody) return;
@@ -38,28 +38,39 @@ export const PlanetPanel = () => {
       if (body.kind === 'moon') {
         const offset = getLiveMoonOffset(body.def.id);
         const parent = getLivePosition(body.def.parent);
-        setDistanceFromParentAu(offset.length() / MOON_AU_SCALE);
-        setDistanceFromSunAu(
-          Math.hypot(
-            parent.x + offset.x,
-            parent.y + offset.y,
-            parent.z + offset.z,
-          ) / AU_SCALE,
+        const worldX = parent.x + offset.x;
+        const worldY = parent.y + offset.y;
+        const worldZ = parent.z + offset.z;
+        const earth = getLivePosition('earth');
+        setDistanceFromSunAu(Math.hypot(worldX, worldY, worldZ) / AU_SCALE);
+        setDistanceToEarthAu(
+          Math.hypot(worldX - earth.x, worldY - earth.y, worldZ - earth.z) /
+            AU_SCALE,
         );
       } else if (body.kind === 'satellite') {
         const offset = getLiveSatelliteOffset(body.def.id);
         const parent = getLivePosition(body.def.parent);
-        setDistanceFromParentAu(offset.length() / MOON_AU_SCALE);
-        setDistanceFromSunAu(
-          Math.hypot(
-            parent.x + offset.x,
-            parent.y + offset.y,
-            parent.z + offset.z,
-          ) / AU_SCALE,
+        const worldX = parent.x + offset.x;
+        const worldY = parent.y + offset.y;
+        const worldZ = parent.z + offset.z;
+        const earth = getLivePosition('earth');
+        setDistanceFromSunAu(Math.hypot(worldX, worldY, worldZ) / AU_SCALE);
+        setDistanceToEarthAu(
+          Math.hypot(worldX - earth.x, worldY - earth.y, worldZ - earth.z) /
+            AU_SCALE,
         );
       } else {
         const pos = getLivePosition(body.def.id);
         setDistanceFromSunAu(pos.length() / AU_SCALE);
+        if (body.def.id === 'earth') {
+          setDistanceToEarthAu(0);
+        } else {
+          const earth = getLivePosition('earth');
+          setDistanceToEarthAu(
+            Math.hypot(pos.x - earth.x, pos.y - earth.y, pos.z - earth.z) /
+              AU_SCALE,
+          );
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -77,28 +88,113 @@ export const PlanetPanel = () => {
   const body = getBody(activeBody);
   if (!body) return null;
 
+  const auToKm = (valueAu: number): number => valueAu * 149_597_870.7;
+  const kmToMiles = (valueKm: number): number => valueKm * 0.621371192;
+  const usesMiles = locale === 'en';
+  const distanceUnit = usesMiles ? 'miles' : 'km';
+  const distanceFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+  });
+  const ratioFormatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
+  const orbitPeriodFormatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const orbitHoursFormatter = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
+  const orbitPeriodUnit = locale === 'en' ? 'days' : 'dygn';
+  const orbitHoursUnit = locale === 'en' ? 'hours' : 'timme';
+  const formatOrbitPeriod = (days: number): string => {
+    if (days <= 365) return `${orbitPeriodFormatter.format(days)} ${orbitPeriodUnit}`;
+
+    const totalDays = Math.round(days);
+    const years = Math.floor(totalDays / 365);
+    const afterYears = totalDays % 365;
+    const months = Math.floor(afterYears / 30);
+    const remainingDays = afterYears % 30;
+
+    const yearLabel = locale === 'en' ? (years === 1 ? 'year' : 'years') : 'år';
+    const monthLabel =
+      locale === 'en' ? (months === 1 ? 'month' : 'months') : 'månader';
+    const dayLabel =
+      locale === 'en'
+        ? remainingDays === 1
+          ? 'day'
+          : 'days'
+        : remainingDays === 1
+          ? 'dygn'
+          : 'dygn';
+
+    const parts: string[] = [];
+    if (years > 0) parts.push(`${years} ${yearLabel}`);
+    if (months > 0) parts.push(`${months} ${monthLabel}`);
+    if (remainingDays > 0 || parts.length === 0) {
+      parts.push(`${remainingDays} ${dayLabel}`);
+    }
+    return parts.join(' ');
+  };
+
+  const distanceFromSunKm = auToKm(distanceFromSunAu);
+  const distanceToEarthKm = auToKm(distanceToEarthAu);
+  const displayDistanceFromSun = usesMiles
+    ? kmToMiles(distanceFromSunKm)
+    : distanceFromSunKm;
+  const displayDistanceToEarth = usesMiles
+    ? kmToMiles(distanceToEarthKm)
+    : distanceToEarthKm;
+
+  const orbitalPeriodDays =
+    body.kind === 'planet'
+      ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
+      : PLANET_ORBITAL_ELEMENTS[body.def.parent]?.periodDays;
+  const issRealOrbitalPeriodHours = 92 / 60;
+  const issOrbitalPeriodHours =
+    body.kind === 'satellite' && body.def.id === 'iss'
+      ? issRealOrbitalPeriodHours
+      : undefined;
+  const hasLongOrbitPeriod =
+    issOrbitalPeriodHours === undefined &&
+    orbitalPeriodDays !== undefined &&
+    orbitalPeriodDays > 365;
+
+  const earthCircumferenceRatio = body.def.radius;
+
   const rows: Row[] = [];
-  if (body.kind === 'moon' || body.kind === 'satellite') {
-    rows.push({ label: t.ui.parent, value: planetName(body.def.parent) });
-    rows.push({
-      label: t.ui.distanceFromParent,
-      value: `${distanceFromParentAu.toFixed(5)} AU`,
-    });
-  }
   rows.push({
-    label: t.ui.distance,
-    value: `${distanceFromSunAu.toFixed(3)} AU`,
+    label: t.ui.distanceFromSun,
+    value: `${distanceFormatter.format(displayDistanceFromSun)} ${distanceUnit}`,
   });
   rows.push({
-    label: t.ui.radius,
-    value: `${body.def.radius.toFixed(2)} u`,
+    label: t.ui.distanceToEarth,
+    value: `${distanceFormatter.format(displayDistanceToEarth)} ${distanceUnit}`,
+  });
+  rows.push({
+    label:
+      issOrbitalPeriodHours !== undefined
+        ? t.ui.orbitPeriodAroundEarth
+        : t.ui.orbitPeriodAroundSun,
+    value:
+      issOrbitalPeriodHours !== undefined
+        ? `${orbitHoursFormatter.format(issOrbitalPeriodHours)} ${orbitHoursUnit}`
+        : orbitalPeriodDays !== undefined
+        ? formatOrbitPeriod(orbitalPeriodDays)
+        : '—',
+  });
+  rows.push({
+    label: t.ui.circumferenceRelativeToEarth,
+    value: `${planetName('earth')} x ${ratioFormatter.format(earthCircumferenceRatio)}`,
   });
   const name = bodyName(activeBody);
 
   return (
     <aside
       className={
-        'pointer-events-auto w-full max-w-sm rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md ' +
+        `pointer-events-auto w-full ${hasLongOrbitPeriod ? 'max-w-lg' : 'max-w-md'} rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md ` +
         (mobileLayout ? 'p-4' : 'p-4 sm:p-5')
       }
     >
@@ -119,7 +215,7 @@ export const PlanetPanel = () => {
             className="flex items-center justify-between gap-4"
           >
             <dt className="text-white/55">{r.label}</dt>
-            <dd className="font-mono text-white">{r.value}</dd>
+            <dd className="font-mono text-white sm:whitespace-nowrap">{r.value}</dd>
           </div>
         ))}
       </dl>

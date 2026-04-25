@@ -13,6 +13,12 @@ import {
   MOON_META,
   PLANET_IDS,
 } from './planets';
+import {
+  eventValueFromPayload,
+  isAnalyticsEventName,
+  readAnalyticsSummary,
+  recordAnalyticsEvent,
+} from './analyticsStore';
 
 export type PlanetEphemerisResponse = {
   id: string;
@@ -58,6 +64,34 @@ export const buildApp = (): Hono => {
   app.get('/health', (c) =>
     c.json({ status: 'ok', planets: PLANET_IDS, moons: MOON_IDS }),
   );
+
+  app.post('/analytics/event', async (c) => {
+    const body = await c.req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return c.json({ error: 'invalid_payload' }, 400);
+    }
+
+    const name = body.name;
+    if (typeof name !== 'string' || !isAnalyticsEventName(name)) {
+      return c.json({ error: 'invalid_event_name' }, 400);
+    }
+
+    const payloadRaw = body.payload;
+    const payload =
+      payloadRaw && typeof payloadRaw === 'object'
+        ? (payloadRaw as Record<string, unknown>)
+        : {};
+
+    const value = eventValueFromPayload(payload);
+    await recordAnalyticsEvent(name, value);
+    return c.json({ ok: true });
+  });
+
+  app.get('/analytics/summary', async (c) => {
+    const summary = await readAnalyticsSummary();
+    c.header('Cache-Control', 'no-store');
+    return c.json(summary);
+  });
 
   app.get('/planets/:id', async (c) => {
     const id = c.req.param('id').toLowerCase();

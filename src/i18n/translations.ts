@@ -19,8 +19,11 @@ export type Translation = {
     arriving: string;
     language: string;
     loading: string;
-    distance: string;
-    radius: string;
+    distanceFromSun: string;
+    distanceToEarth: string;
+    orbitPeriodAroundSun: string;
+    orbitPeriodAroundEarth: string;
+    circumferenceRelativeToEarth: string;
     simDate: string;
     play: string;
     pause: string;

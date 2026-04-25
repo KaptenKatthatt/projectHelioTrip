@@ -6,6 +6,7 @@ import type { ConstellationId } from '../lib/constellations';
 import { detectLocale, isLocale } from '../i18n/translations';
 import type { Locale } from '../i18n/translations';
 import { INITIAL_OVERVIEW_CAMERA_POSITION } from '../lib/initialCamera';
+import { analytics } from '../lib/analytics';
 
 export type ViewMode = 'close' | 'overview';
 
@@ -85,7 +86,8 @@ export const useStore = create<Store>()(
 
       setSimulationTime: (time) => set({ simulationTime: time }),
 
-      travelTo: (id) =>
+      travelTo: (id) => {
+        analytics.planetSelected(id);
         set((state) => ({
           activeBody: id,
           isTraveling: true,
@@ -93,7 +95,8 @@ export const useStore = create<Store>()(
           travelId: state.travelId + 1,
           navigationMode: 'cinematic',
           selectedConstellation: null,
-        })),
+        }));
+      },
 
       travelToOverview: () =>
         set((state) => ({
@@ -103,7 +106,8 @@ export const useStore = create<Store>()(
           navigationMode: 'cinematic',
         })),
 
-      resetSolarSystemStart: () =>
+      resetSolarSystemStart: () => {
+        analytics.resetToSolarSystemStart();
         set((state) => ({
           activeBody: null,
           selectedConstellation: null,
@@ -112,7 +116,8 @@ export const useStore = create<Store>()(
           travelId: state.travelId + 1,
           navigationMode: 'cinematic',
           overviewCameraResetId: state.overviewCameraResetId + 1,
-        })),
+        }));
+      },
 
       arrive: () => set({ isTraveling: false }),
 
@@ -122,32 +127,53 @@ export const useStore = create<Store>()(
 
       setIsPlaying: (playing) => set({ isPlaying: playing }),
 
-      togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+      togglePlay: () =>
+        set((state) => {
+          analytics.playbackToggled(state.isPlaying);
+          return { isPlaying: !state.isPlaying };
+        }),
 
       setViewMode: (mode) => set({ viewMode: mode }),
 
-      setLocale: (locale) => set({ locale }),
+      setLocale: (locale) =>
+        set((state) => {
+          if (state.locale !== locale) {
+            analytics.languageChanged(locale);
+          }
+          return { locale };
+        }),
 
-      setNavigationMode: (mode) => set({ navigationMode: mode }),
+      setNavigationMode: (mode) =>
+        set((state) => {
+          if (mode === 'free' && state.navigationMode !== 'free') {
+            analytics.freeFlightActivated();
+          }
+          return { navigationMode: mode };
+        }),
 
       setSelectedConstellation: (id) => set({ selectedConstellation: id }),
 
       focusSkyTarget: (id) =>
-        set((state) => ({
-          selectedConstellation: id,
-          isPlaying: false,
-          isTraveling: state.selectedConstellation === null,
-          viewMode: 'overview',
-          travelId:
-            state.selectedConstellation === null
-              ? state.travelId + 1
-              : state.travelId,
-          navigationMode: 'cinematic',
-          skyFocusId:
-            state.selectedConstellation === null
-              ? state.skyFocusId + 1
-              : state.skyFocusId,
-        })),
+        set((state) => {
+          if (state.selectedConstellation !== id) {
+            analytics.constellationOpened(id);
+          }
+          return {
+            selectedConstellation: id,
+            isPlaying: false,
+            isTraveling: state.selectedConstellation === null,
+            viewMode: 'overview',
+            travelId:
+              state.selectedConstellation === null
+                ? state.travelId + 1
+                : state.travelId,
+            navigationMode: 'cinematic',
+            skyFocusId:
+              state.selectedConstellation === null
+                ? state.skyFocusId + 1
+                : state.skyFocusId,
+          };
+        }),
 
       toggleConstellationLinesVisible: () =>
         set((state) => ({

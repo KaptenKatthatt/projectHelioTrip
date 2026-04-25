@@ -61,4 +61,40 @@ The dev script runs the Vite frontend together with the local API watcher (`conc
 
 ---
 
+## 📊 Anonymous analytics events
+
+HelioTrip tracks a small set of anonymous custom events through its own API:
+
+- `planet_selected` (`body_id`)
+- `language_changed` (`locale`)
+- `free_flight_activated`
+- `constellation_opened` (`constellation_id`)
+- `play_clicked` / `pause_clicked`
+- `solar_system_start_clicked`
+
+No user id, login id, cookie id, or custom fingerprint is sent.
+
+Events are posted to `POST /api/analytics/event` and aggregated by day/event/value.
+
+You can view the stats in-app at:
+
+- `/admin/analytics`
+
+### Persist analytics on Supabase (free)
+
+By default, analytics are stored in a local file (or `/tmp` on Vercel), which is temporary.
+To persist data, connect Supabase:
+
+1. Create a Supabase project (free tier).
+2. Run `supabase/analytics_events_daily.sql` in Supabase SQL editor.
+3. Add environment variables in Vercel (Production + Preview):
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - optional `ANALYTICS_SUPABASE_TABLE` (default `analytics_events_daily`)
+4. Redeploy.
+
+After that, `/api/analytics/event` writes to Supabase and `/admin/analytics` reads from Supabase.
+
+---
+
 *Clear skies and smooth orbits.* 🛰️🌠

@@ -1,0 +1,281 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+
+export type AnalyticsEventName =
+  | 'planet_selected'
+  | 'language_changed'
+  | 'free_flight_activated'
+  | 'constellation_opened'
+  | 'play_clicked'
+  | 'pause_clicked'
+  | 'solar_system_start_clicked';
+
+type AnalyticsAggregate = {
+  date: string;
+  name: AnalyticsEventName;
+  value: string;
+  count: number;
+};
+
+type AnalyticsStore = {
+  updatedAt: string;
+  aggregates: AnalyticsAggregate[];
+};
+
+const EMPTY_STORE: AnalyticsStore = { updatedAt: new Date(0).toISOString(), aggregates: [] };
+
+const STORE_FILE = process.env.ANALYTICS_FILE
+  ? path.resolve(process.env.ANALYTICS_FILE)
+  : process.env.VERCEL
+    ? '/tmp/heliotrip-analytics.json'
+    : path.join(process.cwd(), '.analytics', 'events.json');
+
+let writeQueue: Promise<void> = Promise.resolve();
+let cache: AnalyticsStore | null = null;
+let supabaseClient: SupabaseClient | null = null;
+
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim() ?? '';
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? '';
+const SUPABASE_TABLE = process.env.ANALYTICS_SUPABASE_TABLE?.trim() || 'analytics_events_daily';
+const HAS_SUPABASE = SUPABASE_URL.length > 0 && SUPABASE_SERVICE_ROLE_KEY.length > 0;
+
+const safeReadStore = async (): Promise<AnalyticsStore> => {
+  if (cache) return cache;
+  try {
+    const content = await readFile(STORE_FILE, 'utf8');
+    const parsed = JSON.parse(content) as Partial<AnalyticsStore>;
+    const rawAggregates = Array.isArray(parsed.aggregates) ? parsed.aggregates : [];
+    const store: AnalyticsStore = {
+      updatedAt:
+        typeof parsed.updatedAt === 'string'
+          ? parsed.updatedAt
+          : new Date(0).toISOString(),
+      aggregates: rawAggregates.filter(isAnalyticsAggregate),
+    };
+    cache = store;
+    return store;
+  } catch {
+    cache = { ...EMPTY_STORE };
+    return cache;
+  }
+};
+
+const getSupabaseClient = (): SupabaseClient | null => {
+  if (!HAS_SUPABASE) return null;
+  if (supabaseClient) return supabaseClient;
+  supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+  return supabaseClient;
+};
+
+const persistStore = async (store: AnalyticsStore): Promise<void> => {
+  await mkdir(path.dirname(STORE_FILE), { recursive: true });
+  await writeFile(STORE_FILE, JSON.stringify(store), 'utf8');
+};
+
+const isoDay = (): string => new Date().toISOString().slice(0, 10);
+
+const normalizeValue = (raw: string | undefined): string => {
+  const value = (raw ?? '').trim();
+  return value.length > 0 ? value.slice(0, 64) : 'none';
+};
+
+const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
+  'planet_selected',
+  'language_changed',
+  'free_flight_activated',
+  'constellation_opened',
+  'play_clicked',
+  'pause_clicked',
+  'solar_system_start_clicked',
+]);
+
+export const isAnalyticsEventName = (raw: string): raw is AnalyticsEventName =>
+  VALID_EVENT_NAMES.has(raw as AnalyticsEventName);
+
+const isAnalyticsAggregate = (entry: unknown): entry is AnalyticsAggregate => {
+  if (!entry || typeof entry !== 'object') return false;
+  const candidate = entry as Partial<AnalyticsAggregate>;
+  return (
+    typeof candidate.date === 'string' &&
+    typeof candidate.name === 'string' &&
+    isAnalyticsEventName(candidate.name) &&
+    typeof candidate.value === 'string' &&
+    typeof candidate.count === 'number' &&
+    Number.isFinite(candidate.count) &&
+    candidate.count > 0
+  );
+};
+
+export const eventValueFromPayload = (
+  payload: Record<string, unknown>,
+): string => {
+  const constellationId = payload.constellation_id;
+  if (typeof constellationId === 'string') return normalizeValue(constellationId);
+  const bodyId = payload.body_id;
+  if (typeof bodyId === 'string') return normalizeValue(bodyId);
+  const locale = payload.locale;
+  if (typeof locale === 'string') return normalizeValue(locale);
+  const value = payload.value;
+  if (typeof value === 'string') return normalizeValue(value);
+  return 'none';
+};
+
+export const recordAnalyticsEvent = async (
+  name: AnalyticsEventName,
+  value: string,
+): Promise<void> => {
+  writeQueue = writeQueue.then(async () => {
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      const date = isoDay();
+      const { data: existing, error: existingError } = await supabase
+        .from(SUPABASE_TABLE)
+        .select('count')
+        .eq('date', date)
+        .eq('name', name)
+        .eq('value', value)
+        .maybeSingle<{ count: number }>();
+      if (existingError) throw existingError;
+
+      const nextCount = (existing?.count ?? 0) + 1;
+      const { error: upsertError } = await supabase.from(SUPABASE_TABLE).upsert(
+        {
+          date,
+          name,
+          value,
+          count: nextCount,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'date,name,value' },
+      );
+      if (upsertError) throw upsertError;
+      return;
+    }
+
+    const store = await safeReadStore();
+    const day = isoDay();
+    const existing = store.aggregates.find(
+      (entry) => entry.date === day && entry.name === name && entry.value === value,
+    );
+    if (existing) {
+      existing.count += 1;
+    } else {
+      store.aggregates.push({ date: day, name, value, count: 1 });
+    }
+    store.updatedAt = new Date().toISOString();
+    await persistStore(store);
+  });
+  await writeQueue;
+};
+
+type DailySummary = {
+  date: string;
+  total: number;
+};
+
+type EventSummary = {
+  name: AnalyticsEventName;
+  total: number;
+  breakdown: Array<{ value: string; count: number }>;
+};
+
+export type AnalyticsSummaryResponse = {
+  updatedAt: string;
+  byEvent: EventSummary[];
+  byDay: DailySummary[];
+};
+
+export const readAnalyticsSummary = async (): Promise<AnalyticsSummaryResponse> => {
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from(SUPABASE_TABLE)
+      .select('date,name,value,count,updated_at')
+      .order('date', { ascending: false })
+      .limit(5000);
+    if (error) throw error;
+
+    const rows = (data ?? []).filter((entry) =>
+      isAnalyticsAggregate(entry),
+    ) as Array<
+      AnalyticsAggregate & {
+        updated_at?: string | null;
+      }
+    >;
+
+    const byEventMap = new Map<AnalyticsEventName, EventSummary>();
+    const byDayMap = new Map<string, number>();
+    let updatedAt = new Date(0).toISOString();
+
+    for (const row of rows) {
+      byDayMap.set(row.date, (byDayMap.get(row.date) ?? 0) + row.count);
+
+      const eventSummary = byEventMap.get(row.name) ?? {
+        name: row.name,
+        total: 0,
+        breakdown: [],
+      };
+      eventSummary.total += row.count;
+      eventSummary.breakdown.push({ value: row.value, count: row.count });
+      byEventMap.set(row.name, eventSummary);
+
+      if (row.updated_at && row.updated_at > updatedAt) {
+        updatedAt = row.updated_at;
+      }
+    }
+
+    const byEvent = [...byEventMap.values()]
+      .map((event) => ({
+        ...event,
+        breakdown: event.breakdown.sort((a, b) => b.count - a.count),
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const byDay = [...byDayMap.entries()]
+      .map(([date, total]) => ({ date, total }))
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+    return { updatedAt, byEvent, byDay };
+  }
+
+  const store = await safeReadStore();
+
+  const eventMap = new Map<AnalyticsEventName, EventSummary>();
+  const dayMap = new Map<string, number>();
+  for (const entry of store.aggregates) {
+    dayMap.set(entry.date, (dayMap.get(entry.date) ?? 0) + entry.count);
+
+    const eventSummary = eventMap.get(entry.name) ?? {
+      name: entry.name,
+      total: 0,
+      breakdown: [],
+    };
+    eventSummary.total += entry.count;
+    eventSummary.breakdown.push({ value: entry.value, count: entry.count });
+    eventMap.set(entry.name, eventSummary);
+  }
+
+  const byEvent = [...eventMap.values()]
+    .map((event) => ({
+      ...event,
+      breakdown: event.breakdown.sort((a, b) => b.count - a.count),
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const byDay = [...dayMap.entries()]
+    .map(([date, total]) => ({ date, total }))
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  return {
+    updatedAt: store.updatedAt,
+    byEvent,
+    byDay,
+  };
+};
