@@ -70,6 +70,10 @@ export const AdminAnalyticsPage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    document.title = 'HelioTrip analytics';
+  }, []);
+
+  useEffect(() => {
     const stored = window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? '';
     setToken(stored);
   }, []);
