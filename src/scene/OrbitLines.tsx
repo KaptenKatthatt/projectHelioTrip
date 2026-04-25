@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
@@ -61,11 +61,19 @@ export const OrbitLines = () => {
   const [isCameraQualityBoosted, setIsCameraQualityBoosted] = useState(false);
   const [isCameraUltraQualityBoosted, setIsCameraUltraQualityBoosted] =
     useState(false);
+  const qualityBoostRef = useRef(false);
+  const ultraBoostRef = useRef(false);
 
   useEffect(() => {
     if (viewMode !== "overview") {
-      setIsCameraQualityBoosted(false);
-      setIsCameraUltraQualityBoosted(false);
+      if (qualityBoostRef.current) {
+        setIsCameraQualityBoosted(false);
+        qualityBoostRef.current = false;
+      }
+      if (ultraBoostRef.current) {
+        setIsCameraUltraQualityBoosted(false);
+        ultraBoostRef.current = false;
+      }
     }
   }, [viewMode]);
 
@@ -75,25 +83,32 @@ export const OrbitLines = () => {
     }
 
     const distance = camera.position.length();
-    setIsCameraQualityBoosted((prev) => {
-      if (!prev && distance >= CAMERA_QUALITY_DISTANCE_ENTER) {
-        return true;
-      }
-      if (prev && distance <= CAMERA_QUALITY_DISTANCE_EXIT) {
-        return false;
-      }
-      return prev;
-    });
+    let nextQualityBoost = qualityBoostRef.current;
+    if (!nextQualityBoost && distance >= CAMERA_QUALITY_DISTANCE_ENTER) {
+      nextQualityBoost = true;
+    } else if (nextQualityBoost && distance <= CAMERA_QUALITY_DISTANCE_EXIT) {
+      nextQualityBoost = false;
+    }
 
-    setIsCameraUltraQualityBoosted((prev) => {
-      if (!prev && distance >= CAMERA_ULTRA_QUALITY_DISTANCE_ENTER) {
-        return true;
-      }
-      if (prev && distance <= CAMERA_ULTRA_QUALITY_DISTANCE_EXIT) {
-        return false;
-      }
-      return prev;
-    });
+    if (nextQualityBoost !== qualityBoostRef.current) {
+      setIsCameraQualityBoosted(nextQualityBoost);
+      qualityBoostRef.current = nextQualityBoost;
+    }
+
+    let nextUltraBoost = ultraBoostRef.current;
+    if (!nextUltraBoost && distance >= CAMERA_ULTRA_QUALITY_DISTANCE_ENTER) {
+      nextUltraBoost = true;
+    } else if (
+      nextUltraBoost &&
+      distance <= CAMERA_ULTRA_QUALITY_DISTANCE_EXIT
+    ) {
+      nextUltraBoost = false;
+    }
+
+    if (nextUltraBoost !== ultraBoostRef.current) {
+      setIsCameraUltraQualityBoosted(nextUltraBoost);
+      ultraBoostRef.current = nextUltraBoost;
+    }
   });
 
   const maxSegmentMultiplier =

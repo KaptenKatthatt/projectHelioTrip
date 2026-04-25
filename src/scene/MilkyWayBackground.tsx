@@ -13,8 +13,8 @@ const MICRO_STAR_OVERLAY_RADIUS_BASE = 3198;
 const MICRO_STAR_OVERLAY_RADIUS_JITTER = 10;
 const NEBULA_RADIUS_BASE = 3180;
 const NEBULA_RADIUS_JITTER = 18;
-const STAR_BAND_BIAS_CHANCE = 0.62;
-const STAR_BAND_HALF_HEIGHT = 0.18;
+const STAR_BAND_BIAS_CHANCE = 0.3;
+const STAR_BAND_HALF_HEIGHT = 0.22;
 const NEBULA_BAND_HALF_HEIGHT = 0.12;
 const DEEP_SKY_OBJECT_RADIUS = 3174;
 
@@ -124,25 +124,36 @@ uniform float uPixelRatio;
 attribute vec3 color;
 attribute float size;
 varying vec3 vColor;
+varying float vPointSize;
 void main() {
   vColor = color;
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mvPosition;
-  gl_PointSize = size * uPixelRatio;
+  float pointSize = max(size * uPixelRatio, 1.15);
+  gl_PointSize = pointSize;
+  vPointSize = pointSize;
 }
 `;
 
 const STAR_FRAGMENT_SHADER = `
 uniform float uOpacity;
 varying vec3 vColor;
+varying float vPointSize;
 void main() {
   vec2 centered = gl_PointCoord - vec2(0.5);
   float dist = length(centered);
-  if (dist > 0.5) discard;
+  float edgeWidth = max(fwidth(dist), 0.7 / max(vPointSize, 1.0));
+  float disc = smoothstep(0.5 + edgeWidth, 0.5 - edgeWidth, dist);
+  if (disc <= 0.001) discard;
 
-  float core = smoothstep(0.145, 0.0, dist);
-  float glow = pow(smoothstep(0.36, 0.025, dist), 1.72);
-  float alpha = (core * 1.32 + glow * 0.24) * uOpacity;
+  float coreRadius = mix(0.19, 0.145, smoothstep(1.15, 2.0, vPointSize));
+  float glowRadius = mix(0.44, 0.36, smoothstep(1.15, 2.0, vPointSize));
+  float core = smoothstep(coreRadius + edgeWidth, coreRadius - edgeWidth, dist);
+  float glow = pow(
+    smoothstep(glowRadius + edgeWidth, 0.025, dist),
+    1.72
+  );
+  float alpha = disc * (core * 1.24 + glow * 0.18) * uOpacity;
   vec3 color = vColor * (0.985 + core * 0.96);
   gl_FragColor = vec4(color, alpha);
 }
@@ -330,7 +341,7 @@ const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
           STAR_BAND_HALF_HEIGHT,
           seededRandom(seed + 1),
         )
-      : sampleSkyLatitude(seed + 1, 0.88);
+      : sampleSkyLatitude(seed + 1, 0.96);
     const theta = seededRandom(seed + 2) * Math.PI * 2;
     const ringBias = lerp(0.35, 1, seededRandom(seed + 3));
     const radius =
@@ -368,7 +379,7 @@ const buildMicroStarCloud = (
 
   for (let i = 0; i < quality.overlayMicroStarCount; i++) {
     const seed = 50000 + i * 23;
-    const u = sampleSkyLatitude(seed + 1, 0.72);
+    const u = sampleSkyLatitude(seed + 1, 0.92);
     const theta = seededRandom(seed + 2) * Math.PI * 2;
     const radius =
       MICRO_STAR_OVERLAY_RADIUS_BASE +
