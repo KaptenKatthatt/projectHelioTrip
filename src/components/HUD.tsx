@@ -89,8 +89,8 @@ export const HUD = () => {
       <div
         className={
           mobileLayout
-            ? 'flex flex-1 flex-col justify-end gap-3'
-            : 'flex flex-1 flex-col justify-end gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6'
+            ? 'flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-y-auto'
+            : 'flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-y-auto sm:flex-row sm:items-end sm:justify-between sm:gap-6'
         }
       >
         <FreeFlightMobileControls />
