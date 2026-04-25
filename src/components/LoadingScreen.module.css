@@ -116,6 +116,12 @@
     opacity: 1;
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
+
+  .root[data-dismiss="true"] .shipWrap {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, -140vh, 0) scale(1.14);
+  }
 }
 
 .visuallyHidden {

@@ -12,6 +12,11 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
   const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
   const dismissedRef = useRef(false);
+  const onDismissedRef = useRef(onDismissed);
+
+  useEffect(() => {
+    onDismissedRef.current = onDismissed;
+  }, [onDismissed]);
 
   useEffect(() => {
     if (!dismiss || dismissedRef.current) return;
@@ -20,7 +25,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
     const timer = window.setTimeout(() => {
       if (dismissedRef.current) return;
       dismissedRef.current = true;
-      onDismissed();
+      onDismissedRef.current();
     }, fallbackMs);
 
     const el = rootRef.current;
@@ -29,7 +34,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
       if (dismissedRef.current) return;
       dismissedRef.current = true;
       window.clearTimeout(timer);
-      onDismissed();
+      onDismissedRef.current();
     };
 
     el?.addEventListener('transitionend', onEnd);
@@ -37,7 +42,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
       window.clearTimeout(timer);
       el?.removeEventListener('transitionend', onEnd);
     };
-  }, [dismiss, onDismissed]);
+  }, [dismiss]);
 
   return (
     <div

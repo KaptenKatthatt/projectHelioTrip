@@ -134,7 +134,7 @@ async function* walkRasterFiles(dir: string): AsyncGenerator<string> {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       yield* walkRasterFiles(p);
-    } else if (e.isFile() && /\.(jpe?g|png)$/i.test(p) && !/\.webp$/i.test(p)) {
+    } else if (e.isFile() && /\.(jpe?g|png)$/i.test(p)) {
       yield p;
     }
   }
