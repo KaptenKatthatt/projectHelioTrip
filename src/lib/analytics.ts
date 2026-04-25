@@ -12,18 +12,23 @@ type AnonymousEventName =
   | 'solar_system_start_clicked';
 
 type AnonymousEventPayload = Readonly<Record<string, string>>;
+let analyticsDisabledForSession = false;
 
 const sendEvent = (
   name: AnonymousEventName,
   payload: AnonymousEventPayload = {},
 ): void => {
   if (typeof window === 'undefined') return;
+  if (analyticsDisabledForSession) return;
   void fetch('/api/analytics/event', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     keepalive: true,
     body: JSON.stringify({ name, payload }),
   }).catch(() => {
+    // Ad blockers can reject analytics calls ("blocked by client").
+    // Stop trying for this tab session to avoid repeated console/network noise.
+    analyticsDisabledForSession = true;
     // no-op: analytics should never break UI flows
   });
 };
