@@ -1,7 +1,8 @@
-import { useEffect, useId, useState } from 'react';
-import { Info } from 'lucide-react';
-import { useTranslation } from '../hooks/useTranslation';
-import { AUTHOR_WEBSITE_URL } from '../lib/footerLinks';
+import { useEffect, useId, useState } from "react";
+import { Info } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
+import { AUTHOR_WEBSITE_URL } from "../lib/footerLinks";
+import { LanguageToggle } from "./LanguageToggle";
 
 export const AboutDialog = () => {
   const { t } = useTranslation();
@@ -12,10 +13,10 @@ export const AboutDialog = () => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
@@ -43,39 +44,45 @@ export const AboutDialog = () => {
             className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
           />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            aria-describedby={descId}
-            className="relative z-10 max-h-[min(32rem,85dvh)] w-full max-w-md overflow-y-auto rounded-2xl border border-white/10 bg-black/80 p-5 text-left text-sm text-white/90 shadow-xl backdrop-blur-md sm:max-h-[min(36rem,90vh)]"
-          >
-            <h2 id={titleId} className="text-base font-semibold tracking-tight text-white">
-              {t.ui.aboutTitle}
-            </h2>
-            <div id={descId} className="mt-4 space-y-3 text-white/75">
-              <p>{t.ui.aboutP1}</p>
-              <p>{t.ui.aboutP2}</p>
-              <p>{t.ui.aboutP3}</p>
-              <p>{t.ui.aboutP4}</p>
-              <p>
-                <a
-                  href={AUTHOR_WEBSITE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-white underline decoration-white/35 underline-offset-2 transition hover:decoration-white/70"
-                >
-                  {t.ui.aboutAttribution}
-                </a>
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-6 w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
+          <div className="relative z-10 flex w-full max-w-md flex-col items-end gap-2">
+            <LanguageToggle />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              aria-describedby={descId}
+              className="max-h-[min(32rem,85dvh)] w-full overflow-y-auto rounded-2xl border border-white/10 bg-black/80 p-5 text-left text-sm text-white/90 shadow-xl backdrop-blur-md sm:max-h-[min(36rem,90vh)]"
             >
-              {t.ui.aboutClose}
-            </button>
+              <h2
+                id={titleId}
+                className="text-base font-semibold tracking-tight text-white"
+              >
+                {t.ui.aboutTitle}
+              </h2>
+              <div id={descId} className="mt-4 space-y-3 text-white/75">
+                <p>{t.ui.aboutP1}</p>
+                <p>{t.ui.aboutP2}</p>
+                <p>{t.ui.aboutP3}</p>
+                <p>{t.ui.aboutP4}</p>
+                <p>
+                  <a
+                    href={AUTHOR_WEBSITE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-white underline decoration-white/35 underline-offset-2 transition hover:decoration-white/70"
+                  >
+                    {t.ui.aboutAttribution}
+                  </a>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="mt-6 w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
+              >
+                {t.ui.aboutClose}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

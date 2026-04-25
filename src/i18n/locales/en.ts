@@ -86,7 +86,7 @@ export const en: Translation = {
     aboutP3:
       "On a phone or tablet, pinch with two fingers to zoom, a bit like on a map. On a computer, the mouse wheel zooms the wide view; in rocket mode you fly with the keyboard and click the scene to look around.",
     aboutP4:
-      "The app speaks Swedish and English — use the little buttons in the menu to switch. You can also visit famous constellations and turn the star-to-star lines on or off to practice spotting patterns in the sky.",
+      "The app speaks Swedish and English — use the little buttons above the menu to switch. You can also visit famous constellations and turn the star-to-star lines on or off to practice spotting patterns in the sky.",
     aboutAttribution: "Created by Jonas Olson 2026, www.jonasolson.se.",
     footerLinkAuthor: "Jonas Olson — website (opens in a new tab)",
     footerLinkGithub: "HelioTrip source on GitHub (opens in a new tab)",

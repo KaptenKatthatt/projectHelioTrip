@@ -8,8 +8,6 @@ import { FreeFlightHelp } from "./FreeFlightHelp";
 import { FreeFlightHint } from "./FreeFlightHint";
 import { FreeFlightMobileControls } from "./FreeFlightMobileControls";
 import { AboutDialog } from "./AboutDialog";
-import { FooterIconLinks } from "./FooterIconLinks";
-import { LanguageToggle } from "./LanguageToggle";
 import { NavigationAccordion } from "./NavigationAccordion";
 import { PlanetPanel } from "./PlanetPanel";
 import { TimePlaybackControls } from "./TimePlaybackControls";
@@ -17,7 +15,6 @@ import { GameModeSwitcher } from "./GameModeSwitcher";
 import { MissionCard } from "./MissionCard";
 import { ProgressPanel } from "./ProgressPanel";
 import { AchievementToast } from "./AchievementToast";
-import { ShareLinkButton } from "./ShareLinkButton";
 
 export const HUD = () => {
   const { t, bodyName } = useTranslation();
@@ -163,10 +160,7 @@ export const HUD = () => {
           <div className="pointer-events-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 sm:w-auto">
             <GameModeSwitcher compact={mobileLayout} />
             <FlightModeToggle />
-            <ShareLinkButton />
             <AboutDialog />
-            <LanguageToggle />
-            <FooterIconLinks />
           </div>
         </div>
       </footer>

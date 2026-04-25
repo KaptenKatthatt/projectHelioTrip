@@ -80,10 +80,23 @@ export const NavigationAccordion = () => {
         {t.ui.planets}
       </button>
       {openSection === "planets" ? (
-        <PlanetSelector
-          className="flex w-full flex-col gap-0.5"
-          showHeading={false}
-        />
+        <div
+          className={
+            "min-h-0 " +
+            (mobileLayout
+              ? "max-h-[min(26rem,55dvh)] overflow-y-auto pr-1"
+              : "overflow-visible")
+          }
+        >
+          <PlanetSelector
+            className="flex w-full flex-col gap-0.5"
+            showHeading={false}
+            onSelect={() => {
+              if (!mobileLayout) return;
+              setOpenSection(null);
+            }}
+          />
+        </div>
       ) : null}
 
       <button

@@ -1,15 +1,17 @@
-import { Pause, Play } from 'lucide-react';
-import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
-import { SolarSystemStartIcon } from './SolarSystemStartIcon';
-import { useStore } from '../store/useStore';
-import { useTranslation } from '../hooks/useTranslation';
-import { TIME_SPEED_PRESETS } from '../lib/timePlayback';
+import { Pause, Play } from "lucide-react";
+import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { SolarSystemStartIcon } from "./SolarSystemStartIcon";
+import { useStore } from "../store/useStore";
+import { useTranslation } from "../hooks/useTranslation";
+import { TIME_SPEED_PRESETS } from "../lib/timePlayback";
 
 type TimePlaybackControlsProps = {
   readonly className?: string;
 };
 
-export const TimePlaybackControls = ({ className }: TimePlaybackControlsProps) => {
+export const TimePlaybackControls = ({
+  className,
+}: TimePlaybackControlsProps) => {
   const { t } = useTranslation();
   const mobileLayout = useIsMobileLayout();
 
@@ -25,15 +27,15 @@ export const TimePlaybackControls = ({ className }: TimePlaybackControlsProps) =
     <div
       className={
         className ??
-        'pointer-events-auto mx-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md ' +
-        (mobileLayout ? '' : 'sm:px-4')
+        "pointer-events-auto mx-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md " +
+          (mobileLayout ? "" : "sm:px-4")
       }
     >
       <div
         className={
           mobileLayout
-            ? 'flex flex-wrap items-center gap-2'
-            : 'flex flex-wrap items-center gap-2 sm:flex-nowrap'
+            ? "flex flex-wrap items-center gap-2"
+            : "flex flex-wrap items-center gap-2 sm:flex-nowrap"
         }
       >
         <button
@@ -60,23 +62,26 @@ export const TimePlaybackControls = ({ className }: TimePlaybackControlsProps) =
         </button>
 
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
-          {TIME_SPEED_PRESETS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setTimeScale(s)}
-              disabled={timePlaybackDisabled}
-              aria-pressed={timeScale === s}
-              className={
-                'rounded-lg px-2 py-1 font-mono text-xs transition disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ' +
-                (timeScale === s
-                  ? 'bg-white text-black disabled:hover:text-black'
-                  : 'text-white/60 hover:text-white disabled:hover:text-white/60')
-              }
-            >
-              {s < 1 ? s.toFixed(2) : s.toString()}
-            </button>
-          ))}
+          {TIME_SPEED_PRESETS.map((s, i) => {
+            const labels = ["0.25", "1", "3", "5", "10"];
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setTimeScale(s)}
+                disabled={timePlaybackDisabled}
+                aria-pressed={timeScale === s}
+                className={
+                  "rounded-lg px-2 py-1 font-mono text-xs transition disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent " +
+                  (timeScale === s
+                    ? "bg-white text-black disabled:hover:text-black"
+                    : "text-white/60 hover:text-white disabled:hover:text-white/60")
+                }
+              >
+                {labels[i] ?? (s < 1 ? s.toFixed(2) : s.toString())}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

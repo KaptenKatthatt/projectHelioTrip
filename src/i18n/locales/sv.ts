@@ -86,7 +86,7 @@ export const sv: Translation = {
     aboutP3:
       "På mobil och surfplatta nyp-zoomar du med två fingrar, ungefär som på en karta. På dator zoomar mushjulet i den vida utsikten; i raketläget flyger du med tangentbordet och klickar i bilden för att titta dig omkring.",
     aboutP4:
-      "Appen finns på svenska och engelska — byt med knapparna i menyn. Du kan också välja kända stjärnbilder och sätta på eller stänga av linjerna mellan stjärnorna för att öva på att känna igen dem på himlen.",
+      "Appen finns på svenska och engelska — byt med knapparna ovan. Du kan också välja kända stjärnbilder och sätta på eller stänga av linjerna mellan stjärnorna för att öva på att känna igen dem på himlen.",
     aboutAttribution: "Skapad av Jonas Olson 2026, www.jonasolson.se.",
     footerLinkAuthor: "Jonas Olson — webbplats (öppnas i ny flik)",
     footerLinkGithub: "HelioTrip på GitHub (öppnas i ny flik)",
