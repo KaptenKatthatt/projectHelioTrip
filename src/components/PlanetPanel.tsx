@@ -137,10 +137,9 @@ export const PlanetPanel = () => {
   const kmToMiles = (valueKm: number): number => valueKm * 0.621371192;
   const usesMiles = locale === "en";
   const distanceUnit = usesMiles ? "miles" : "km";
-  const orbitPeriodUnit = locale === "en" ? "days" : "dygn";
+  const orbitPeriodUnit = t.ui.unitDays;
   const getHoursUnit = (hours: number): string => {
-    if (locale === "en") return hours === 1 ? "hour" : "hours";
-    return hours === 1 ? "timme" : "timmar";
+    return hours === 1 ? t.ui.unitHour : t.ui.unitHours;
   };
   const formatOrbitPeriod = (days: number): string => {
     if (days <= 365)

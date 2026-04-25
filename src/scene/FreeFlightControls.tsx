@@ -91,6 +91,7 @@ export const FreeFlightControls = () => {
   const center = useMemo(() => new Vector3(), []);
   const normal = useMemo(() => new Vector3(), []);
   const radial = useMemo(() => new Vector3(), []);
+  const lookEuler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -288,12 +289,11 @@ export const FreeFlightControls = () => {
           1,
           (llen - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE),
         );
-        const euler = new Euler(0, 0, 0, "YXZ");
-        euler.setFromQuaternion(camera.quaternion);
-        euler.y -= nx * mag * LOOK_YAW_SPEED * delta;
-        euler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
-        euler.x = Math.max(-PI_2, Math.min(PI_2, euler.x));
-        camera.quaternion.setFromEuler(euler);
+        lookEuler.setFromQuaternion(camera.quaternion);
+        lookEuler.y -= nx * mag * LOOK_YAW_SPEED * delta;
+        lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
+        lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
+        camera.quaternion.setFromEuler(lookEuler);
       }
     }
   });

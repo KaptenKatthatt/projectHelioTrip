@@ -25,12 +25,13 @@ const dedupeAppend = (
   return out;
 };
 
-const DATA_MAP_PATTERN = /\/(normal|roughness)\.webp$/i;
+const DATA_MAP_PATTERN = /\/(normal|roughness)\.webp$/;
 
 const shouldPreloadUrlForTier = (url: string, tier: GraphicsTier): boolean => {
-  if (!DATA_MAP_PATTERN.test(url)) return true;
+  const lowerUrl = url.toLowerCase();
+  if (!DATA_MAP_PATTERN.test(lowerUrl)) return true;
   if (tier === "high") return true;
-  if (tier === "medium") return !url.includes("/roughness.webp");
+  if (tier === "medium") return !lowerUrl.includes("/roughness.webp");
   return false;
 };
 

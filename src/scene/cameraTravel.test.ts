@@ -65,7 +65,7 @@ describe("cameraTravel helpers", () => {
     expect(endOut.equals(OVERVIEW_POSITION)).toBe(true);
   });
 
-  it("computes longer view distances for planets than moons", () => {
+  it("computes non-shorter view distances for planets than moons", () => {
     const planetDistance = computeViewDistance("earth", 1);
     const moonDistance = computeViewDistance("moon", 1);
 
