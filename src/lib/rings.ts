@@ -1,4 +1,3 @@
-import { useTexture } from '@react-three/drei/core/Texture';
 import type { PlanetId } from './planets';
 import type { RingGap } from './ringTexture';
 
@@ -90,7 +89,3 @@ export const RING_DEFINITIONS: Partial<Record<PlanetId, RingDefinition>> = {
 
 export const getRingDefinition = (id: PlanetId): RingDefinition | undefined =>
   RING_DEFINITIONS[id];
-
-for (const def of Object.values(RING_DEFINITIONS)) {
-  if (def?.texture) useTexture.preload(def.texture);
-}

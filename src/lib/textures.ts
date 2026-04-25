@@ -1,4 +1,3 @@
-import { useTexture } from '@react-three/drei/core/Texture';
 import { SRGBColorSpace, type Texture } from 'three';
 import { MOONS } from './moons';
 import type { MoonId } from './moons';
@@ -90,26 +89,36 @@ export const configureDataMap = (tex: Texture | Texture[]): void => {
   tex.anisotropy = maxAniso;
 };
 
-const collectUrls = (): string[] => {
-  const urls = new Set<string>();
-  const surfaces: Partial<Record<string, SurfaceTextures>>[] = [
-    PLANET_TEXTURES,
-    MOON_TEXTURES,
-  ];
-  for (const map of surfaces) {
-    for (const entry of Object.values(map)) {
-      if (!entry) continue;
-      urls.add(entry.diffuse);
-      if (entry.normal) urls.add(entry.normal);
-      if (entry.roughness) urls.add(entry.roughness);
-    }
-  }
-  for (const entry of Object.values(CLOUD_TEXTURES)) {
-    if (entry) urls.add(entry.diffuse);
-  }
-  return Array.from(urls);
-};
+/**
+ * Stable load order: planets (inner → outer), then moons, then cloud maps.
+ * Used by `scheduleDeferredTexturePreloads` so the GPU can warm big textures
+ * without competing with first paint.
+ */
+export const collectOrderedSurfaceTextureUrls = (): readonly string[] => {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (url: string | undefined): void => {
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    out.push(url);
+  };
 
-for (const url of collectUrls()) {
-  useTexture.preload(url);
-}
+  for (const { id } of PLANETS) {
+    const entry = PLANET_TEXTURES[id];
+    if (!entry) continue;
+    push(entry.diffuse);
+    push(entry.normal);
+    push(entry.roughness);
+  }
+  for (const { id } of MOONS) {
+    const entry = MOON_TEXTURES[id];
+    if (!entry) continue;
+    push(entry.diffuse);
+    push(entry.normal);
+    push(entry.roughness);
+  }
+  for (const clouds of Object.values(CLOUD_TEXTURES)) {
+    if (clouds) push(clouds.diffuse);
+  }
+  return out;
+};

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useStore } from '../store/useStore';

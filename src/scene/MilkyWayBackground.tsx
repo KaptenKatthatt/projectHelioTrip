@@ -1,16 +1,13 @@
-import { useMemo, type ReactElement } from "react";
-import { useTexture } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { BackSide, Color, SRGBColorSpace } from "three";
-import { getGraphicsPreset } from "../lib/graphicsTier";
+import { useMemo, type ReactElement } from 'react';
+import { useTexture } from '@react-three/drei/core/Texture';
+import { useThree } from '@react-three/fiber';
+import { BackSide, Color, SRGBColorSpace } from 'three';
+import { getGraphicsPreset } from '../lib/graphicsTier';
 
 /** 7680×4320; kräver `maxTextureSize` ≥ 7680. Fil i `public/`, inte gitignored `public/textures/`. */
-const TEXTURE_PATH_HIGH = "/8k-milky-way-stars-in-night-sky-video.jpg";
+const TEXTURE_PATH_HIGH = '/8k-milky-way-stars-in-night-sky-video.jpg';
 /** 3920×1960; passar `maxTextureSize` 4096 (typisk mobil). */
-const TEXTURE_PATH_STANDARD = "/milkyWay-texture.jpg";
-
-useTexture.preload(TEXTURE_PATH_HIGH);
-useTexture.preload(TEXTURE_PATH_STANDARD);
+const TEXTURE_PATH_STANDARD = '/milkyWay-texture.jpg';
 
 type MilkyWayMeshProps = {
   readonly texturePath: string;
@@ -21,7 +18,7 @@ const MilkyWayMesh = ({ texturePath }: MilkyWayMeshProps): ReactElement => {
     loadedTexture.colorSpace = SRGBColorSpace;
   });
 
-  const tint = useMemo(() => new Color("#d7deff"), []);
+  const tint = useMemo(() => new Color('#d7deff'), []);
 
   const [mwW, mwH] = getGraphicsPreset().milkyWaySphere;
   return (

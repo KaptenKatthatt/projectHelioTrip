@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Stars } from '@react-three/drei/core/Stars';
 import { CameraManager } from './CameraManager';
@@ -25,6 +25,7 @@ import { Satellites } from './Satellites';
 import { AsteroidBelt } from './AsteroidBelt';
 import { OrbitLines } from './OrbitLines';
 import { MilkyWayBackground } from './MilkyWayBackground';
+import { scheduleDeferredTexturePreloads } from '../lib/texturePreload';
 
 const LazyBodyPickers = lazy(async () => {
   const module = await import('./BodyPickers');
@@ -54,6 +55,10 @@ export const Scene = () => {
   const graphicsTier = getGraphicsTier();
   const graphicsPreset = getGraphicsPreset();
   const dprCap = getCanvasDprCap(graphicsTier);
+
+  useEffect(() => {
+    scheduleDeferredTexturePreloads();
+  }, []);
 
   return (
     <Canvas
