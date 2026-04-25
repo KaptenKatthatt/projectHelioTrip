@@ -140,10 +140,10 @@ void main() {
   float dist = length(centered);
   if (dist > 0.5) discard;
 
-  float core = smoothstep(0.18, 0.0, dist);
-  float glow = pow(smoothstep(0.46, 0.02, dist), 1.35);
-  float alpha = (core * 1.22 + glow * 0.42) * uOpacity;
-  vec3 color = vColor * (0.94 + core * 1.08);
+  float core = smoothstep(0.145, 0.0, dist);
+  float glow = pow(smoothstep(0.36, 0.025, dist), 1.72);
+  float alpha = (core * 1.32 + glow * 0.24) * uOpacity;
+  vec3 color = vColor * (0.985 + core * 0.96);
   gl_FragColor = vec4(color, alpha);
 }
 `;
@@ -341,7 +341,10 @@ const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
     const [x, y, z] = toSpherePosition(radius, u, theta);
     const temperature = sampleStarTemperatureKelvin(seed + 5);
     const [red, green, blue] = kelvinToRgb(temperature);
-    const brightness = lerp(0.62, 1.32, Math.pow(seededRandom(seed + 6), 4));
+    const sizeRoll = Math.pow(seededRandom(seed + 7), 4.4);
+    const brightness =
+      lerp(0.62, 1.24, Math.pow(seededRandom(seed + 6), 4.4)) *
+      lerp(1, 0.88, sizeRoll);
 
     const offset = i * 3;
     positions[offset] = x;
@@ -350,9 +353,7 @@ const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
     colors[offset] = red * brightness;
     colors[offset + 1] = green * brightness;
     colors[offset + 2] = blue * brightness;
-    sizes[i] =
-      quality.overlayStarSize *
-      lerp(0.82, 2.1, Math.pow(seededRandom(seed + 7), 3.5));
+    sizes[i] = quality.overlayStarSize * lerp(0.72, 1.64, sizeRoll);
   }
 
   return { positions, colors, sizes };
@@ -386,7 +387,7 @@ const buildMicroStarCloud = (
     colors[offset + 2] = blue * brightness;
     sizes[i] =
       quality.overlayMicroStarSize *
-      lerp(0.65, 1.15, Math.pow(seededRandom(seed + 6), 2.1));
+      lerp(0.58, 0.96, Math.pow(seededRandom(seed + 6), 2.6));
   }
 
   return { positions, colors, sizes };
