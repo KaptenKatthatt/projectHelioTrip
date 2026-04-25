@@ -3,6 +3,7 @@ import { HUD } from './components/HUD';
 import { LoadingScreen } from './components/LoadingScreen';
 import { useStore } from './store/useStore';
 
+/** Minsta tid laddningsskärmen visas (ms). Öka för längre “splash”, sänk för snabbare borttagning. */
 const MIN_LOADING_MS = 3000;
 
 const LazyScene = lazy(async () => {
