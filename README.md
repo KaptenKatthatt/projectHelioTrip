@@ -61,6 +61,35 @@ The dev script runs the Vite frontend together with the local API watcher (`conc
 
 ---
 
+## ✅ CI and testing
+
+This project uses GitHub Actions CI and runs automatically on:
+
+- push to `main`
+- pull requests
+
+The CI workflow is in `.github/workflows/ci.yml` and runs:
+
+- `npm run lint`
+- `npm run test:unit`
+- `npm run test:e2e`
+
+Run the same checks locally:
+
+```bash
+npm run lint
+npm run test:unit
+npm run test:e2e
+```
+
+You can also run the combined test command:
+
+```bash
+npm run test:ci
+```
+
+---
+
 ## 📊 Anonymous analytics events
 
 HelioTrip tracks a small set of anonymous custom events through its own API:

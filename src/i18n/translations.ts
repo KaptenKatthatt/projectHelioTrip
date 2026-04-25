@@ -1,10 +1,10 @@
-import type { PlanetId } from '../lib/planets';
-import type { MoonId } from '../lib/moons';
-import type { SatelliteId } from '../lib/satellites';
-import { en } from './locales/en';
-import { sv } from './locales/sv';
+import type { PlanetId } from "../lib/planets";
+import type { MoonId } from "../lib/moons";
+import type { SatelliteId } from "../lib/satellites";
+import { en } from "./locales/en";
+import { sv } from "./locales/sv";
 
-export type Locale = 'en' | 'sv';
+export type Locale = "en" | "sv";
 
 export type Translation = {
   appTitle: string;
@@ -23,6 +23,9 @@ export type Translation = {
     distanceFromEarth: string;
     orbitPeriodAroundSun: string;
     orbitPeriodAroundEarth: string;
+    unitDays: string;
+    unitHour: string;
+    unitHours: string;
     circumferenceRelativeToEarth: string;
     simDate: string;
     play: string;
@@ -74,17 +77,17 @@ export type Translation = {
 
 export const translations: Record<Locale, Translation> = { en, sv };
 
-export const DEFAULT_LOCALE: Locale = 'sv';
+export const DEFAULT_LOCALE: Locale = "sv";
 
-export const SUPPORTED_LOCALES: readonly Locale[] = ['sv', 'en'];
+export const SUPPORTED_LOCALES: readonly Locale[] = ["sv", "en"];
 
 export const detectLocale = (): Locale => {
-  if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
+  if (typeof navigator === "undefined") return DEFAULT_LOCALE;
   const lang = navigator.language.toLowerCase();
-  if (lang.startsWith('sv')) return 'sv';
-  if (lang.startsWith('en')) return 'en';
+  if (lang.startsWith("sv")) return "sv";
+  if (lang.startsWith("en")) return "en";
   return DEFAULT_LOCALE;
 };
 
 export const isLocale = (value: unknown): value is Locale =>
-  value === 'sv' || value === 'en';
+  value === "sv" || value === "en";

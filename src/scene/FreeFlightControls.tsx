@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Euler, Vector3 } from "three";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useKeyboardMovement } from "../hooks/useKeyboardMovement";
+import { useEventListener } from "../hooks/useEventListener";
 import {
   freeFlightTouchBus,
   resetFreeFlightTouch,
@@ -90,7 +91,6 @@ export const FreeFlightControls = () => {
   const center = useMemo(() => new Vector3(), []);
   const normal = useMemo(() => new Vector3(), []);
   const radial = useMemo(() => new Vector3(), []);
-  const eulerScratch = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -109,34 +109,28 @@ export const FreeFlightControls = () => {
   }, []);
 
   /**
-   * ESC → Autopilot: when the pointer has been locked and then
-   * released (via ESC or `document.exitPointerLock()`), switch back
-   * to cinematic mode automatically so the user doesn't have to
-   * click Autopilot manually. We wait for the first lock event
-   * before reacting to unlocks — otherwise the initial "not yet
-   * locked" state on mount would immediately flip us back.
+   * ESC → Autopilot: when the pointer lock is released, switch back
+   * to cinematic mode after at least one successful lock session.
    */
-  useEffect(() => {
-    const onPointerLockChange = (): void => {
+  useEventListener(
+    document,
+    "pointerlockchange",
+    () => {
       const locked = document.pointerLockElement !== null;
       if (locked) {
         wasLockedRef.current = true;
         return;
       }
-      if (wasLockedRef.current) {
-        if (activeBody) {
-          travelTo(activeBody);
-          return;
-        }
-        setNavigationMode("cinematic");
+      if (!wasLockedRef.current) return;
+      if (activeBody) {
+        travelTo(activeBody);
+        return;
       }
-    };
-
-    document.addEventListener("pointerlockchange", onPointerLockChange);
-    return () => {
-      document.removeEventListener("pointerlockchange", onPointerLockChange);
-    };
-  }, [activeBody, setNavigationMode, travelTo]);
+      setNavigationMode("cinematic");
+    },
+    undefined,
+    true,
+  );
 
   useFrame((_, delta) => {
     if (delta <= 0) return;
@@ -294,11 +288,14 @@ export const FreeFlightControls = () => {
           1,
           (llen - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE),
         );
-        eulerScratch.setFromQuaternion(camera.quaternion);
-        eulerScratch.y -= nx * mag * LOOK_YAW_SPEED * delta;
-        eulerScratch.x -= ny * mag * LOOK_PITCH_SPEED * delta;
-        eulerScratch.x = Math.max(-PI_2, Math.min(PI_2, eulerScratch.x));
-        camera.quaternion.setFromEuler(eulerScratch);
+        const lookEuler = new Euler().setFromQuaternion(
+          camera.quaternion,
+          "YXZ",
+        );
+        lookEuler.y -= nx * mag * LOOK_YAW_SPEED * delta;
+        lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
+        lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
+        camera.quaternion.setFromEuler(lookEuler);
       }
     }
   });

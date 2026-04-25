@@ -1,9 +1,9 @@
-import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
-import { PerspectiveCamera } from 'three';
-import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
-import { CAMERA_TRAVEL_TOTAL_DURATION_MS } from './CameraManager';
-import { useStore } from '../store/useStore';
+import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { PerspectiveCamera } from "three";
+import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { CAMERA_TRAVEL_TOTAL_DURATION_MS } from "./CameraManager";
+import { useStore } from "../store/useStore";
 
 /** Shift close-up framing upward on narrow screens (fraction of canvas height). */
 const CLOSE_VIEW_VERTICAL_SHIFT = 0.1;
@@ -23,7 +23,7 @@ const smoothstep = (t: number): number => t * t * (3 - 2 * t);
  * Runs after {@link GlobalZoom} (priority 0) so FOV and offset stay in sync.
  */
 export const MobileCloseViewFraming = (): null => {
-  const camera = useThree((s) => s.camera);
+  const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
   const isMobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
@@ -39,8 +39,8 @@ export const MobileCloseViewFraming = (): null => {
     isMobileLayout &&
     portraitCanvas &&
     activeBody !== null &&
-    viewMode === 'close' &&
-    navigationMode === 'cinematic';
+    viewMode === "close" &&
+    navigationMode === "cinematic";
 
   const prevTravelIdRef = useRef(travelId);
   const prevFrameArrivedCloseRef = useRef(false);
@@ -49,6 +49,7 @@ export const MobileCloseViewFraming = (): null => {
 
   useEffect(() => {
     return () => {
+      const camera = get().camera;
       if (!(camera instanceof PerspectiveCamera)) return;
       if (camera.view?.enabled) {
         camera.clearViewOffset();
@@ -56,9 +57,10 @@ export const MobileCloseViewFraming = (): null => {
         camera.updateProjectionMatrix();
       }
     };
-  }, [camera, size.height, size.width]);
+  }, [get, size.height, size.width]);
 
   useFrame(() => {
+    const camera = get().camera;
     if (!(camera instanceof PerspectiveCamera)) return;
 
     if (!enabled) {
