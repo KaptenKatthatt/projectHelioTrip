@@ -18,10 +18,15 @@ type Row = {
   value: string;
 };
 
+type PlanetPanelProps = {
+  /** Hide the title row (e.g. mobile bottom sheet supplies its own header). */
+  readonly omitHeading?: boolean;
+};
+
 const DISTANCE_SAMPLE_MS = 160;
 const DISTANCE_EPSILON_AU = 0.00001;
 
-export const PlanetPanel = () => {
+export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
@@ -234,16 +239,19 @@ export const PlanetPanel = () => {
     <aside
       className={
         `pointer-events-auto w-full ${hasLongOrbitPeriod ? "max-w-lg" : "max-w-md"} rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md ` +
-        (mobileLayout ? "p-4" : "p-4 sm:p-5")
+        (mobileLayout ? "p-4" : "p-4 sm:p-5") +
+        (omitHeading ? " border-0 bg-transparent p-0 backdrop-blur-none sm:p-0" : "")
       }
     >
-      <div className="flex items-center gap-3">
-        <span
-          className="h-3 w-3 rounded-full ring-1 ring-white/20"
-          style={{ backgroundColor: body.def.color }}
-        />
-        <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
-      </div>
+      {!omitHeading ? (
+        <div className="flex items-center gap-3">
+          <span
+            className="h-3 w-3 rounded-full ring-1 ring-white/20"
+            style={{ backgroundColor: body.def.color }}
+          />
+          <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
+        </div>
+      ) : null}
       {isTraveling && (
         <p className="mt-1 text-xs text-white/50">{t.ui.arriving}</p>
       )}

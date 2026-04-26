@@ -98,7 +98,9 @@ describe("navigation and planet selection behavior", () => {
 
     render(<NavigationAccordion />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Our Solar System" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Expand panel: Our Solar System" }),
+    );
 
     const earthButton = screen.getByRole("button", { name: "Earth" });
     const scrollContainer = earthButton.parentElement?.parentElement;
@@ -136,7 +138,9 @@ describe("navigation and planet selection behavior", () => {
 
     render(<NavigationAccordion />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Our Solar System" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Expand panel: Our Solar System" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Earth" }));
 
     expect(screen.queryByRole("button", { name: "Earth" })).toBeNull();

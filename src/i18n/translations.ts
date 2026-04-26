@@ -72,6 +72,8 @@ export type Translation = {
     aboutAttribution: string;
     footerLinkAuthor: string;
     footerLinkGithub: string;
+    bottomNavStars: string;
+    bottomNavMore: string;
   };
   phase3: {
     gameMode: {

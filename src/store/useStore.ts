@@ -29,6 +29,7 @@ import {
   inferShareLinkContextType,
   type ShareLinkState,
 } from "../lib/shareLink";
+import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
 
 export type ViewMode = "close" | "overview";
 
@@ -229,7 +230,7 @@ export const useStore = create<Store>()(
       cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
       isTraveling: false,
       simulationTime: new Date(),
-      timeScale: 1,
+      timeScale: DEFAULT_TIME_SCALE,
       isPlaying: false,
       viewMode: "overview",
       travelId: 0,

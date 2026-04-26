@@ -4,7 +4,6 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Store } from "../store/useStore";
 import { useStore } from "../store/useStore";
-import { TIME_SPEED_PRESETS } from "../lib/timePlayback";
 import { TimePlaybackControls } from "./TimePlaybackControls";
 
 type MatchMediaController = {
@@ -86,15 +85,18 @@ describe("TimePlaybackControls", () => {
     vi.restoreAllMocks();
   });
 
-  it("selects the existing 3-speed preset when play is pressed", () => {
+  it("toggles play without changing the selected time scale", () => {
     render(<TimePlaybackControls />);
 
+    const timeScaleBefore = useStore.getState().timeScale;
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
 
     expect(useStore.getState().isPlaying).toBe(true);
-    expect(useStore.getState().timeScale).toBe(TIME_SPEED_PRESETS[2]);
+    expect(useStore.getState().timeScale).toBe(timeScaleBefore);
     expect(
-      screen.getByRole("button", { name: "3" }).getAttribute("aria-pressed"),
+      screen
+        .getByRole("button", { name: `${timeScaleBefore} d/s` })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
   });
 });

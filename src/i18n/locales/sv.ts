@@ -90,6 +90,8 @@ export const sv: Translation = {
     aboutAttribution: "Skapad av Jonas Olson 2026, www.jonasolson.se.",
     footerLinkAuthor: "Jonas Olson — webbplats (öppnas i ny flik)",
     footerLinkGithub: "HelioTrip på GitHub (öppnas i ny flik)",
+    bottomNavStars: "Stjärnor",
+    bottomNavMore: "Mer",
   },
   phase3: {
     gameMode: {

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useStore } from "../store/useStore";
 import { ACHIEVEMENT_IDS } from "../lib/missions/achievements";
@@ -8,11 +9,15 @@ import { SATELLITES } from "../lib/satellites";
 type ProgressPanelProps = {
   readonly className?: string;
   readonly compact?: boolean;
+  readonly showTitle?: boolean;
+  readonly visitedRowEnd?: ReactNode;
 };
 
 export const ProgressPanel = ({
   className,
   compact = false,
+  showTitle = true,
+  visitedRowEnd,
 }: ProgressPanelProps) => {
   const { t, bodyName } = useTranslation();
   const visitedBodies = useStore((s) => s.visitedBodies);
@@ -31,16 +36,25 @@ export const ProgressPanel = ({
         (className ?? "")
       }
     >
-      <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
-        {t.phase3.progressPanel.title}
-      </h3>
+      {showTitle ? (
+        <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+          {t.phase3.progressPanel.title}
+        </h3>
+      ) : null}
 
-      <div className="mt-2">
-        <div className="flex items-center justify-between text-xs text-white/65">
-          <span>{t.phase3.progressPanel.visited}</span>
-          <span className="font-mono text-white/85">
-            {visitedSet.size}/{totalBodies}
+      <div className={showTitle ? "mt-2" : ""}>
+        <div className="flex items-start justify-between gap-3">
+          <span className="text-sm font-medium text-white/80">
+            {t.phase3.progressPanel.visited}
           </span>
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="font-mono text-sm tabular-nums text-white/85">
+              {visitedSet.size}/{totalBodies}
+            </span>
+            {visitedRowEnd ? (
+              <div className="flex justify-end">{visitedRowEnd}</div>
+            ) : null}
+          </div>
         </div>
         {!compact ? (
           <div className="mt-2 flex flex-wrap gap-1">
