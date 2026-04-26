@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react';
+import { HudIconButton } from "./HudIconButton";
 
 type CollapsibleHudPanelProps = {
   readonly title: string;
@@ -109,15 +110,13 @@ export const CollapsibleHudPanel = ({
           />
         ) : null}
         {showExpandedToggle ? (
-          <button
-            type="button"
+          <HudIconButton
             onClick={() => setIsCollapsed(true)}
             aria-expanded="true"
-            aria-label={`${collapseLabel}: ${title}`}
-            className="pointer-events-auto absolute top-2 right-2 z-20 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-black/55 text-white/80 backdrop-blur-md transition hover:bg-white/15 hover:text-white"
-          >
-            <ToggleIcon expanded collapsedIcon={collapsedIcon} />
-          </button>
+            label={`${collapseLabel}: ${title}`}
+            className="pointer-events-auto absolute top-2 right-2 z-20"
+            icon={<ToggleIcon expanded collapsedIcon={collapsedIcon} />}
+          />
         ) : null}
         {children}
       </div>

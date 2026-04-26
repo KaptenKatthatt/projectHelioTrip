@@ -5,6 +5,7 @@ import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useStore } from "../store/useStore";
 import { matchesMobileLayout } from "../lib/mobileLayoutMedia";
 import { useTranslation } from "../hooks/useTranslation";
+import { HudIconButton } from "./HudIconButton";
 import { PlanetSelector } from "./PlanetSelector";
 
 type SectionId = "planets" | "constellations";
@@ -57,14 +58,12 @@ export const NavigationAccordion = () => {
       }
     >
       {openSection !== null ? (
-        <button
-          type="button"
+        <HudIconButton
           onClick={() => setOpenSection(null)}
-          aria-label={t.ui.minimizePanel}
-          className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-black/55 text-white/80 backdrop-blur-md transition hover:bg-white/15 hover:text-white"
-        >
-          <ChevronDown className="h-4 w-4" />
-        </button>
+          label={t.ui.minimizePanel}
+          className="absolute top-2 right-2 z-10"
+          icon={<ChevronDown className="h-4 w-4" />}
+        />
       ) : null}
 
       <button
