@@ -120,8 +120,8 @@ export const HUD = () => {
       <div
         className={
           mobileLayout
-            ? "flex flex-1 flex-col justify-end gap-3"
-            : "flex flex-1 flex-col justify-end gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6"
+            ? "flex min-h-0 flex-1 flex-col justify-end gap-3"
+            : "flex min-h-0 flex-1 flex-col justify-end gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6"
         }
       >
         <FreeFlightMobileControls />
@@ -130,7 +130,7 @@ export const HUD = () => {
           className={
             mobileLayout
               ? "hidden"
-              : "flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end"
+              : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
           }
         >
           {showPlanetPanel ? (
@@ -149,7 +149,7 @@ export const HUD = () => {
         </div>
       </div>
 
-      <footer className="pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <footer className="shrink-0 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-center">
           <TimePlaybackControls
             className={

@@ -52,7 +52,7 @@ export const NavigationAccordion = () => {
   return (
     <nav
       className={
-        "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-y-auto rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
+        "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
         (mobileLayout ? "" : "sm:w-56")
       }
     >
@@ -82,10 +82,10 @@ export const NavigationAccordion = () => {
       {openSection === "planets" ? (
         <div
           className={
-            "min-h-0 " +
+            "min-h-0 overflow-y-auto pr-1 " +
             (mobileLayout
-              ? "max-h-[min(26rem,55dvh)] overflow-y-auto pr-1"
-              : "overflow-visible")
+              ? "max-h-[min(26rem,55dvh)]"
+              : "max-h-[min(32rem,62dvh)]")
           }
         >
           <PlanetSelector
