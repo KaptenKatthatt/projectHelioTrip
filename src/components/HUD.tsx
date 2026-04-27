@@ -17,6 +17,7 @@ import { GameModeSwitcher } from "./GameModeSwitcher";
 import { LanguageToggle } from "./LanguageToggle";
 import { MissionCard } from "./MissionCard";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { ConstellationViewControls } from "./ConstellationViewControls";
 import { MobileTimePill } from "./MobileTimePill";
 import { NavigationAccordion } from "./NavigationAccordion";
 import { PlanetPanel } from "./PlanetPanel";
@@ -31,7 +32,10 @@ export const HUD = () => {
   const viewMode = useStore((s) => s.viewMode);
   const gameMode = useStore((s) => s.gameMode);
   const setGameMode = useStore((s) => s.setGameMode);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const isTraveling = useStore((s) => s.isTraveling);
   const showPlanetPanel = activeBody !== null && viewMode !== "overview";
+  const showPlanetInfoUi = showPlanetPanel && !isTraveling;
   const showMissionUi = gameMode !== "explore";
   const mobileBodyTitle =
     activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
@@ -40,26 +44,38 @@ export const HUD = () => {
   const [openNavSheet, setOpenNavSheet] = useState<MobileHudSheetId | null>(
     null,
   );
-  const [planetSheetOpen, setPlanetSheetOpen] = useState(false);
+  const planetSheetOpen = useStore((s) => s.mobilePlanetInfoSheetOpen);
+  const setMobilePlanetInfoSheetOpen = useStore(
+    (s) => s.setMobilePlanetInfoSheetOpen,
+  );
 
   useEffect(() => {
-    if (!mobileLayout) return;
+    if (!mobileLayout) {
+      setMobilePlanetInfoSheetOpen(false);
+      return;
+    }
     const id = window.requestAnimationFrame(() => {
-      if (showPlanetPanel) {
-        setPlanetSheetOpen(true);
+      if (showPlanetInfoUi) {
+        setMobilePlanetInfoSheetOpen(true);
         setOpenNavSheet(null);
       } else {
-        setPlanetSheetOpen(false);
+        setMobilePlanetInfoSheetOpen(false);
       }
     });
     return () => window.cancelAnimationFrame(id);
-  }, [mobileLayout, showPlanetPanel, activeBody, viewMode]);
+  }, [
+    mobileLayout,
+    showPlanetInfoUi,
+    activeBody,
+    viewMode,
+    setMobilePlanetInfoSheetOpen,
+  ]);
 
   const handleToggleNavSheet = (id: MobileHudSheetId): void => {
     const next = openNavSheet === id ? null : id;
     setOpenNavSheet(next);
     if (next !== null) {
-      setPlanetSheetOpen(false);
+      setMobilePlanetInfoSheetOpen(false);
     }
     if (next === "learn") {
       setGameMode("learn");
@@ -106,7 +122,7 @@ export const HUD = () => {
         </div>
       </header>
 
-      {!mobileLayout && showPlanetPanel ? (
+      {!mobileLayout && showPlanetInfoUi ? (
         <div>
           <CollapsibleHudPanel
             key={activeBody}
@@ -149,7 +165,7 @@ export const HUD = () => {
               : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
           }
         >
-          {showPlanetPanel ? (
+          {showPlanetInfoUi ? (
             <CollapsibleHudPanel
               title={t.ui.bodyInfo}
               className="relative w-full max-w-sm"
@@ -186,6 +202,9 @@ export const HUD = () => {
               }
             />
             <div className="pointer-events-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 sm:w-auto">
+              {selectedConstellation !== null ? (
+                <ConstellationViewControls />
+              ) : null}
               <GameModeSwitcher compact={false} />
               <FlightModeToggle />
               <AboutDialog />
@@ -203,6 +222,9 @@ export const HUD = () => {
                 openSheet={openNavSheet}
                 onToggleSheet={handleToggleNavSheet}
                 gameMode={gameMode}
+                starsContextActive={
+                  gameMode === "explore" && selectedConstellation !== null
+                }
               />
             </div>
           </div>
@@ -270,10 +292,14 @@ export const HUD = () => {
           </BottomSheet>
 
           <BottomSheet
-            open={planetSheetOpen && showPlanetPanel}
-            onClose={() => setPlanetSheetOpen(false)}
+            open={planetSheetOpen && showPlanetInfoUi}
+            onClose={() => setMobilePlanetInfoSheetOpen(false)}
             title={mobileBodyTitle}
             titleAccentColor={mobileBodyColor}
+            blurScrim={false}
+            blurPanel={false}
+            scrimBlocksPointerEvents={false}
+            slideFromBottom
             panelClassName="max-h-[min(92dvh,40rem)]"
           >
             <div className="p-3 pt-0">

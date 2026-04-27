@@ -31,7 +31,6 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   const mobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
-  const isTraveling = useStore((s) => s.isTraveling);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
@@ -238,9 +237,9 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   return (
     <aside
       className={
-        `pointer-events-auto w-full ${hasLongOrbitPeriod ? "max-w-lg" : "max-w-md"} rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md ` +
+        `pointer-events-auto w-full ${hasLongOrbitPeriod ? "max-w-lg" : "max-w-md"} rounded-2xl border border-white/10 bg-[#05060a] backdrop-blur-none ` +
         (mobileLayout ? "p-4" : "p-4 sm:p-5") +
-        (omitHeading ? " border-0 bg-transparent p-0 backdrop-blur-none sm:p-0" : "")
+        (omitHeading ? " border-0 p-0 backdrop-blur-none sm:p-0" : "")
       }
     >
       {!omitHeading ? (
@@ -252,17 +251,16 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
           <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
         </div>
       ) : null}
-      {isTraveling && (
-        <p className="mt-1 text-xs text-white/50">{t.ui.arriving}</p>
-      )}
-      <dl className="mt-4 space-y-2 text-sm">
+      <dl className={omitHeading ? "mt-0 space-y-2 text-sm" : "mt-4 space-y-2 text-sm"}>
         {rows.map((r) => (
           <div
             key={r.label}
-            className="flex items-center justify-between gap-4"
+            className="flex min-w-0 items-center justify-between gap-4 overflow-x-auto"
           >
-            <dt className="text-white/55">{r.label}</dt>
-            <dd className="font-mono text-white sm:whitespace-nowrap">
+            <dt className="shrink-0 whitespace-nowrap text-white/55">
+              {r.label}
+            </dt>
+            <dd className="shrink-0 whitespace-nowrap font-mono text-white">
               {r.value}
             </dd>
           </div>
@@ -272,7 +270,12 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
         type="button"
         onClick={openWikipedia}
         aria-label={`${t.ui.readOnWikipedia}: ${name}`}
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/90 transition hover:border-white/25 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        className={
+          "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-white/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
+          (mobileLayout && omitHeading
+            ? "bg-white/12 hover:border-white/25 hover:bg-white/16"
+            : "bg-white/5 hover:border-white/25 hover:bg-white/10")
+        }
       >
         <ExternalLink className="h-4 w-4" aria-hidden />
         {t.ui.readOnWikipedia}

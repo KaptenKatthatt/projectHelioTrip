@@ -7,6 +7,8 @@ type MobileBottomNavProps = {
   readonly openSheet: MobileHudSheetId | null;
   readonly onToggleSheet: (id: MobileHudSheetId) => void;
   readonly gameMode: GameMode;
+  /** When a constellation is focused (Stjärnor) but the bottom sheet is closed, highlight Stars instead of Explore. */
+  readonly starsContextActive: boolean;
 };
 
 const TABS: readonly {
@@ -25,11 +27,14 @@ const tabIsActive = (
   tabId: MobileHudSheetId,
   openSheet: MobileHudSheetId | null,
   gameMode: GameMode,
+  starsContextActive: boolean,
 ): boolean => {
   if (openSheet !== null) return openSheet === tabId;
   if (tabId === "learn") return gameMode === "learn";
   if (tabId === "challenge") return gameMode === "challenge";
-  if (tabId === "explore") return gameMode === "explore";
+  if (tabId === "explore")
+    return gameMode === "explore" && !starsContextActive;
+  if (tabId === "stars") return starsContextActive;
   return false;
 };
 
@@ -37,6 +42,7 @@ export const MobileBottomNav = ({
   openSheet,
   onToggleSheet,
   gameMode,
+  starsContextActive,
 }: MobileBottomNavProps) => {
   const { t } = useTranslation();
 
@@ -54,7 +60,12 @@ export const MobileBottomNav = ({
       className="pointer-events-auto flex w-full items-center justify-around border-t border-white/10 bg-black/60 px-1 pt-1 backdrop-blur-xl pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     >
       {TABS.map(({ id, icon: Icon, labelKey }) => {
-        const active = tabIsActive(id, openSheet, gameMode);
+        const active = tabIsActive(
+          id,
+          openSheet,
+          gameMode,
+          starsContextActive,
+        );
         return (
           <button
             key={id}

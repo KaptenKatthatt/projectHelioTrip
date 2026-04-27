@@ -6,25 +6,33 @@ import {
   BufferGeometry,
   Float32BufferAttribute,
   Group,
+  PerspectiveCamera,
   Quaternion,
   ShaderMaterial,
   Vector3,
 } from 'three';
+import { computeConstellationOrientation } from '../lib/constellationOrientation';
 import { CONSTELLATION_SHAPES } from '../lib/constellationShapes';
 import type { ConstellationId } from '../lib/constellations';
+import { getConstellationViewSpinOffsetRad } from '../lib/constellationViewSpinOffset';
+import { SKY_TARGET_DIRECTIONS } from '../lib/skyTargets';
 import { useStore } from '../store/useStore';
 
 const SKY_RADIUS = 2450;
+/** Mesh-local “into scene” after buildRenderData; aligned to true sky direction in useFrame. */
+const MESH_FORWARD = new Vector3(0, 0, -1);
+const qAlignScratch = new Quaternion();
+const qSpinScratch = new Quaternion();
+const axisScratch = new Vector3();
+const qTotalScratch = new Quaternion();
 const LINE_COLOR = '#8ec5ff';
 const STAR_SIZE = 8;
 const LINE_WIDTH = 1.2;
 const STAR_COLOR = new Vector3(0.85, 0.93, 1.0);
 const FADE_OUT_MS = 350;
-const FADE_IN_MS = 450;
+const FADE_IN_MS = 300;
 const FADE_OUT_SECONDS = FADE_OUT_MS / 1000;
 const FADE_IN_SECONDS = FADE_IN_MS / 1000;
-const CANONICAL_FORWARD = new Vector3(0, 0, -1);
-
 const STAR_VERTEX_SHADER = `
 uniform float uSize;
 uniform float uPixelRatio;
@@ -77,22 +85,15 @@ const toDirection = (raHours: number, decDeg: number): Vector3 => {
   ).normalize();
 };
 
-const buildRenderData = (selectedId: ConstellationId): RenderData => {
+const buildRenderData = (selectedId: ConstellationId, aspect: number): RenderData => {
   const shape = CONSTELLATION_SHAPES[selectedId];
+  const { quaternion: orient } = computeConstellationOrientation(shape, aspect);
 
   const starMap = new Map<string, Vector3>();
-  const centroid = new Vector3();
   for (const star of shape.stars) {
     const dir = toDirection(star.rightAscensionHours, star.declinationDeg);
-    centroid.add(dir);
+    dir.applyQuaternion(orient).multiplyScalar(SKY_RADIUS);
     starMap.set(star.id, dir);
-  }
-
-  if (centroid.lengthSq() <= 1e-8) centroid.copy(CANONICAL_FORWARD);
-  else centroid.normalize();
-  const align = new Quaternion().setFromUnitVectors(centroid, CANONICAL_FORWARD);
-  for (const dir of starMap.values()) {
-    dir.applyQuaternion(align).multiplyScalar(SKY_RADIUS);
   }
 
   const starPositions = new Float32Array(shape.stars.length * 3);
@@ -121,7 +122,12 @@ const buildRenderData = (selectedId: ConstellationId): RenderData => {
 
 export const ConstellationLines = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
+  const aspect =
+    camera instanceof PerspectiveCamera
+      ? camera.aspect
+      : size.width / Math.max(1, size.height);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
@@ -157,8 +163,6 @@ export const ConstellationLines = () => {
       return;
     }
 
-    if (isTraveling) return;
-
     if (!current) {
       displayedIdRef.current = selectedConstellation;
       setDisplayedId(selectedConstellation);
@@ -171,12 +175,12 @@ export const ConstellationLines = () => {
     if (current === selectedConstellation) return;
     nextIdRef.current = selectedConstellation;
     phaseRef.current = 'fadeOut';
-  }, [selectedConstellation, isTraveling]);
+  }, [selectedConstellation]);
 
   const renderData = useMemo(() => {
     if (!displayedId) return null;
-    return buildRenderData(displayedId);
-  }, [displayedId]);
+    return buildRenderData(displayedId, aspect);
+  }, [displayedId, aspect]);
 
   useEffect(
     () => () => {
@@ -225,9 +229,19 @@ export const ConstellationLines = () => {
     }
 
     const group = groupRef.current;
-    if (!group) return;
-    group.position.copy(camera.position);
-    group.quaternion.copy(camera.quaternion);
+    const id = displayedIdRef.current;
+    if (group && id) {
+      const targetDir = SKY_TARGET_DIRECTIONS[id];
+      qAlignScratch.setFromUnitVectors(MESH_FORWARD, targetDir);
+      const spin =
+        getConstellationViewSpinOffsetRad(id) +
+        useStore.getState().constellationUserSpinRad;
+      axisScratch.copy(targetDir);
+      qSpinScratch.setFromAxisAngle(axisScratch, spin);
+      qTotalScratch.multiplyQuaternions(qSpinScratch, qAlignScratch);
+      group.quaternion.copy(qTotalScratch);
+      group.position.set(0, 0, 0);
+    }
 
     const starMaterial = starMaterialRef.current;
     if (!starMaterial || !renderData) return;

@@ -4,20 +4,21 @@ import { Vector3 } from "three";
 import { MOONS } from "../lib/moons";
 import { PLANETS } from "../lib/planets";
 import { getLiveMoonOffset, getLivePosition } from "../lib/positionsBus";
+import { SKY_TARGET_DIRECTIONS } from "../lib/skyTargets";
 import { useStore } from "../store/useStore";
 
 const WORLD_UP = new Vector3(0, 1, 0);
-/** Max time for sky-focus pan; constellation lines wait until this finishes. */
-const INTRO_DURATION_MS = 1500;
+/** Upper bound for sky-focus pan duration (scaled by path length). */
+const INTRO_DURATION_MAX_MS = 780;
 /** Min duration so small moves still ease smoothly. */
-const MIN_INTRO_DURATION_MS = 380;
+const MIN_INTRO_DURATION_MS = 260;
 /**
- * Max forward move along the pitched view ray. `findSafeEndPosition` shortens
- * this when the segment would clip a body; keep the cap modest so the pan
- * stops once the path clears planets instead of drifting across empty space.
+ * Max forward move along the view ray. `findSafeEndPosition` shortens this when
+ * the segment would clip a body.
  */
-const INTRO_MOVE_DISTANCE = 88;
-const INTRO_PITCH_RAD = 0.42;
+const INTRO_FORWARD_CAP = 36;
+/** Path length used only to scale duration — smaller ⇒ longer eased time for the same move. */
+const INTRO_DURATION_PATH_REFERENCE = 70;
 const LOOK_AT_DISTANCE = 100;
 const BODY_PADDING = 1.2;
 const MIN_SAFE_MOVE_DISTANCE = 8;
@@ -37,8 +38,9 @@ type BodySphere = {
   radius: number;
 };
 
-const easeInOutCubic = (x: number): number =>
-  x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+/** Gentler than cubic — reads as a slower pan for the same duration. */
+const easeInOutSine = (x: number): number =>
+  -(Math.cos(Math.PI * x) - 1) / 2;
 
 const closestPointOnSegment = (
   start: Vector3,
@@ -73,11 +75,10 @@ export const SkyFocusCamera = () => {
   const currentDirRef = useRef(new Vector3());
   const tmpDirRef = useRef(new Vector3());
   const tmpClosestRef = useRef(new Vector3());
-  const tmpRightRef = useRef(new Vector3());
   const introRef = useRef<IntroTransition>({
     active: false,
     startedAtMs: 0,
-    durationMs: INTRO_DURATION_MS,
+    durationMs: INTRO_DURATION_MAX_MS,
     startPos: new Vector3(),
     endPos: new Vector3(),
     startDir: new Vector3(),
@@ -108,7 +109,7 @@ export const SkyFocusCamera = () => {
   const findSafeEndPosition = useCallback(
     (startPos: Vector3, direction: Vector3): Vector3 => {
       const bodies = getBodySpheres();
-      let distance = INTRO_MOVE_DISTANCE;
+      let distance = INTRO_FORWARD_CAP;
       const end = new Vector3();
 
       while (distance >= MIN_SAFE_MOVE_DISTANCE) {
@@ -155,10 +156,8 @@ export const SkyFocusCamera = () => {
     transition.startPos.copy(camera.position);
     transition.startDir.copy(currentDirRef.current);
 
-    tmpRightRef.current.crossVectors(transition.startDir, WORLD_UP).normalize();
     transition.endDir
-      .copy(transition.startDir)
-      .applyAxisAngle(tmpRightRef.current, INTRO_PITCH_RAD)
+      .copy(SKY_TARGET_DIRECTIONS[selectedConstellation])
       .normalize();
     transition.endPos.copy(
       findSafeEndPosition(transition.startPos, transition.endDir),
@@ -168,10 +167,10 @@ export const SkyFocusCamera = () => {
     const scaled =
       pathLength < 1e-4
         ? MIN_INTRO_DURATION_MS
-        : (INTRO_DURATION_MS * pathLength) / INTRO_MOVE_DISTANCE;
+        : (INTRO_DURATION_MAX_MS * pathLength) / INTRO_DURATION_PATH_REFERENCE;
     transition.durationMs = Math.max(
       MIN_INTRO_DURATION_MS,
-      Math.min(INTRO_DURATION_MS, scaled),
+      Math.min(INTRO_DURATION_MAX_MS, scaled),
     );
 
     setIsTraveling(true);
@@ -197,9 +196,10 @@ export const SkyFocusCamera = () => {
       1,
       (performance.now() - transition.startedAtMs) / transition.durationMs,
     );
-    const eased = easeInOutCubic(progress);
+    const eased = easeInOutSine(progress);
 
-    // Keep heading stable: only the intro pitch (upward) plus forward move.
+    // Lerp view toward the constellation’s sky direction; small forward drift
+    // along that ray keeps the path from clipping planets (see findSafeEndPosition).
     tmpDirRef.current
       .copy(transition.startDir)
       .lerp(transition.endDir, eased)

@@ -263,3 +263,25 @@ Before building a new component, check if an existing one already solves the pro
 - Create a new panel style instead of using one of the four surface variants in section 3
 - Hardcode pixel values in `style={{}}` for colors — use body.color from the data layer
 - Skip `backdrop-blur-md` on any new panel that uses `bg-black/40`
+
+---
+
+## 11. Constellation lines (IAU standard)
+
+**Constellation stick figures in the 3D sky are not simplified “connect-the-dots” patterns.** They must match the **standard IAU-referenced figures** (same line topology as the **Stellarium `western` skyculture** / `constellationship.fab` used in planetarium software).
+
+### Rules
+
+- **No hand-drawn or reduced star counts** for a constellation’s official figure. Do not substitute a “minimal” or educational shortcut when the standard defines more vertices and segments.
+- **Star positions** use **Hipparcos** (VizieR **I/311**), **J2000** equatorial coordinates (right ascension in hours, declination in degrees), consistent with the chosen catalog.
+- **Identifiers** in data use `hip` + Hipparcos number so every vertex maps unambiguously to the catalog.
+
+### Source of truth in the repo
+
+| File | Role |
+|------|------|
+| `src/lib/constellationShapes.ts` | The live stick figures and coordinates consumed by the scene |
+| `scripts/constellationship-iau-western.fab` | Copy of the **western** `constellationship` lines for the constellations the app includes |
+| `scripts/generateConstellationShapes.mjs` | Regenerates coordinates from **VizieR I/311** (requires network) |
+
+**When adding or changing constellations:** extend or edit the **fab** line list in line with the same **western/IAU** source, then regenerate or hand-merge into `constellationShapes.ts` using that pipeline — do not introduce ad-hoc segments that are not in the standard figure set for that constellation.

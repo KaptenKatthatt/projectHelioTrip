@@ -1,4 +1,10 @@
-import { useEffect, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 type BottomSheetProps = {
   readonly open: boolean;
@@ -7,7 +13,24 @@ type BottomSheetProps = {
   readonly title?: string;
   readonly titleAccentColor?: string | null;
   readonly panelClassName?: string;
+  /** When false, scrim does not blur the scene (e.g. planet info over the canvas). */
+  readonly blurScrim?: boolean;
+  /** When false, sheet panel is not frosted (only the scrim area shows the scene clearly). */
+  readonly blurPanel?: boolean;
+  /** Animate panel from below when opening (e.g. planet info after travel). */
+  readonly slideFromBottom?: boolean;
+  /**
+   * When false, the dimmed area does not capture pointers so the scene (e.g.
+   * orbit drag) stays interactive; only the sheet panel receives clicks.
+   * Escape still calls {@link onClose}.
+   */
+  readonly scrimBlocksPointerEvents?: boolean;
 };
+
+/** Delay before starting slide so the browser paints `translate-y-full` first. */
+const SLIDE_UP_ENTER_DELAY_MS = 32;
+/** Planet info sheet: visible slide (~0.3s). */
+const SLIDE_UP_DURATION_MS = 300;
 
 export const BottomSheet = ({
   open,
@@ -16,7 +39,29 @@ export const BottomSheet = ({
   title,
   titleAccentColor,
   panelClassName,
+  blurScrim = true,
+  blurPanel = true,
+  slideFromBottom = false,
+  scrimBlocksPointerEvents = true,
 }: BottomSheetProps) => {
+  const [panelEntered, setPanelEntered] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!open || !slideFromBottom) {
+      setPanelEntered(!slideFromBottom);
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPanelEntered(true);
+      return;
+    }
+    setPanelEntered(false);
+    const startId = window.setTimeout(() => {
+      setPanelEntered(true);
+    }, SLIDE_UP_ENTER_DELAY_MS);
+    return () => window.clearTimeout(startId);
+  }, [open, slideFromBottom]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent): void => {
@@ -28,27 +73,60 @@ export const BottomSheet = ({
 
   if (!open) return null;
 
-  const headerStyle =
-    titleAccentColor !== undefined && titleAccentColor !== null
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const panelSlideStyle: CSSProperties | undefined =
+    slideFromBottom && !reduceMotion
       ? {
-          background: `linear-gradient(to bottom, ${titleAccentColor}55, rgba(5, 6, 10, 0.35))`,
+          transform: panelEntered
+            ? "translate3d(0,0,0)"
+            : "translate3d(0,100%,0)",
+          transition: `transform ${SLIDE_UP_DURATION_MS}ms ease-out`,
+          backfaceVisibility: "hidden",
+          willChange: "transform",
         }
       : undefined;
 
+  const headerStyle =
+    titleAccentColor !== undefined && titleAccentColor !== null
+      ? {
+          background: `linear-gradient(to bottom, ${titleAccentColor}55, rgba(5, 6, 10, ${blurPanel ? 0.35 : 0.94}))`,
+        }
+      : undefined;
+
+  const scrimClass =
+    "absolute inset-0 transition " +
+    (blurScrim ? "bg-black/30 backdrop-blur-sm" : "bg-black/15");
+
   return (
-    <div className="pointer-events-auto fixed inset-0 z-[28] flex flex-col justify-end">
-      <button
-        type="button"
-        aria-label="Close panel"
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm transition"
-        onClick={onClose}
-      />
+    <div
+      className={
+        (scrimBlocksPointerEvents ? "pointer-events-auto " : "pointer-events-none ") +
+        "fixed inset-0 z-[28] flex flex-col justify-end isolate"
+      }
+    >
+      {scrimBlocksPointerEvents ? (
+        <button
+          type="button"
+          aria-label="Close panel"
+          className={scrimClass}
+          onClick={onClose}
+        />
+      ) : (
+        <div className={scrimClass + " pointer-events-none"} aria-hidden />
+      )}
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title ?? "Panel"}
+        style={panelSlideStyle}
         className={
-          "relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 bg-black/60 shadow-xl backdrop-blur-xl transition-transform duration-300 ease-out " +
+          "pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:!transform-none motion-reduce:!transition-none " +
+          (blurPanel
+            ? "bg-black/60 backdrop-blur-xl "
+            : "bg-[#05060a] backdrop-blur-none ") +
           (panelClassName ?? "")
         }
       >

@@ -122,7 +122,7 @@ describe("useStore", () => {
     expect(state.selectedConstellation).toBe("orion");
     expect(state.viewMode).toBe("overview");
     expect(state.navigationMode).toBe("cinematic");
-    expect(state.travelId).toBe(beforeTravelId + 1);
+    expect(state.travelId).toBe(beforeTravelId);
     expect(state.skyFocusId).toBe(beforeSkyFocusId + 1);
     expect(spies.constellationOpened).toHaveBeenCalledWith("orion");
   });

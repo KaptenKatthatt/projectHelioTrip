@@ -71,6 +71,8 @@ export const sv: Translation = {
     universeMilkyWayOverview: "Vintergatan (översikt)",
     showConstellationLines: "Visa stjärnbildslinjer",
     hideConstellationLines: "Dölj stjärnbildslinjer",
+    rotateConstellationLeft: "Rotera stjärnbilden moturs",
+    rotateConstellationRight: "Rotera stjärnbilden medurs",
     minimizePanel: "Minimera panel",
     expandPanel: "Visa panel",
     bodyInfo: "Mer information",
@@ -92,6 +94,11 @@ export const sv: Translation = {
     footerLinkGithub: "HelioTrip på GitHub (öppnas i ny flik)",
     bottomNavStars: "Stjärnor",
     bottomNavMore: "Mer",
+    constellationSeasonYearRound: "Hela året",
+    constellationSeasonWinter: "Vinter",
+    constellationSeasonSpring: "Vår",
+    constellationSeasonSummer: "Sommar",
+    constellationSeasonAutumn: "Höst",
   },
   phase3: {
     gameMode: {

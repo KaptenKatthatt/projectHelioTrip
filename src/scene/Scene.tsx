@@ -6,6 +6,7 @@ import { GlobalZoom } from "./GlobalZoom";
 import { MobileCloseViewFraming } from "./MobileCloseViewFraming";
 import { MobileViewOffset } from "./MobileViewOffset";
 import { ViewportResizeSync } from "./ViewportResizeSync";
+import { MobilePlanetInfoCanvasDismiss } from "./MobilePlanetInfoCanvasDismiss";
 import { OverviewLookControls } from "./OverviewLookControls";
 import { SkyFocusCamera } from "./SkyFocusCamera";
 import { TimeManager } from "./TimeManager";
@@ -103,6 +104,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
+      <MobilePlanetInfoCanvasDismiss />
       <MobileViewOffset />
       <color attach="background" args={["#05060a"]} />
 

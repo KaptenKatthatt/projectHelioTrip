@@ -5,7 +5,7 @@ import { TimePlaybackControls } from "./TimePlaybackControls";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { formatDaysPerSecond } from "../lib/timePlayback";
-import constellationLinesIcon from "../assets/constellation.png";
+import { ConstellationViewControls } from "./ConstellationViewControls";
 
 export const MobileTimePill = () => {
   const { t } = useTranslation();
@@ -14,12 +14,6 @@ export const MobileTimePill = () => {
   const togglePlay = useStore((s) => s.togglePlay);
   const timeScale = useStore((s) => s.timeScale);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const constellationLinesVisible = useStore(
-    (s) => s.constellationLinesVisible,
-  );
-  const toggleConstellationLinesVisible = useStore(
-    (s) => s.toggleConstellationLinesVisible,
-  );
   const inConstellationView = selectedConstellation !== null;
 
   useEffect(() => {
@@ -31,34 +25,7 @@ export const MobileTimePill = () => {
   return (
     <>
       {inConstellationView ? (
-        <button
-          type="button"
-          onClick={toggleConstellationLinesVisible}
-          aria-pressed={constellationLinesVisible}
-          aria-label={
-            constellationLinesVisible
-              ? t.ui.hideConstellationLines
-              : t.ui.showConstellationLines
-          }
-          title={
-            constellationLinesVisible
-              ? t.ui.hideConstellationLines
-              : t.ui.showConstellationLines
-          }
-          className={
-            "pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md text-white transition " +
-            (constellationLinesVisible
-              ? "bg-cyan-300/20 text-cyan-100 ring-1 ring-cyan-200/50 hover:bg-cyan-300/30"
-              : "hover:bg-white/10 text-white/80 hover:text-white")
-          }
-        >
-          <img
-            src={constellationLinesIcon}
-            alt=""
-            className="h-4 w-4 object-contain brightness-0 invert"
-            aria-hidden
-          />
-        </button>
+        <ConstellationViewControls />
       ) : (
         <div
           role="group"

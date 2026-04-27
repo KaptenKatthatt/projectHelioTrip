@@ -45,6 +45,12 @@ export const BodyPickers = () => {
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelTo = useStore((s) => s.travelTo);
+  const mobilePlanetInfoSheetOpen = useStore(
+    (s) => s.mobilePlanetInfoSheetOpen,
+  );
+  const setMobilePlanetInfoSheetOpen = useStore(
+    (s) => s.setMobilePlanetInfoSheetOpen,
+  );
 
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
@@ -72,9 +78,13 @@ export const BodyPickers = () => {
 
   const onSelect = useCallback(
     (id: BodyId) => {
+      if (mobilePlanetInfoSheetOpen) {
+        setMobilePlanetInfoSheetOpen(false);
+        return;
+      }
       travelTo(id);
     },
-    [travelTo],
+    [travelTo, mobilePlanetInfoSheetOpen, setMobilePlanetInfoSheetOpen],
   );
 
   /**

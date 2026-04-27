@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from 'three';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { getConstellationMinFovDegrees } from '../lib/constellationOrientation';
 import { INITIAL_OVERVIEW_FOV } from '../lib/initialCamera';
 import { useStore } from '../store/useStore';
 
@@ -19,9 +21,14 @@ import { useStore } from '../store/useStore';
  */
 const DEFAULT_FOV = INITIAL_OVERVIEW_FOV;
 const MIN_FOV = 15;
-const MAX_FOV = 75;
+/** Wide enough for constellation framing (Orion + view spin can need ~85°+ vertical). */
+const MAX_FOV = 92;
 const FOV_WHEEL_STEP = 2;
 const FOV_SMOOTHING = 0.001;
+/** Per-second lerp toward constellation framing FOV so the figure doesn’t stay clipped at first paint. */
+const FOV_CONSTELLATION_SETTLE_PER_SEC = 14;
+/** Portrait phone: extra zoom-out so the figure clears bottom nav and side clipping. */
+const CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT = 1.1;
 /** ~28 px change in pinch span ≈ one mouse-wheel notch (see {@link FOV_WHEEL_STEP}). */
 const PINCH_FOV_DEG_PER_PX = FOV_WHEEL_STEP / 28;
 
@@ -37,11 +44,14 @@ const touchDistance = (touches: TouchList): number => {
 
 export const GlobalZoom = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const gl = useThree((s) => s.gl);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const isMobileLayout = useIsMobileLayout();
 
   const targetFovRef = useRef(DEFAULT_FOV);
   const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
@@ -59,6 +69,42 @@ export const GlobalZoom = () => {
   useEffect(() => {
     targetFovRef.current = DEFAULT_FOV;
   }, [overviewCameraResetId]);
+
+  useEffect(() => {
+    if (
+      !selectedConstellation ||
+      viewMode !== 'overview' ||
+      navigationMode !== 'cinematic'
+    ) {
+      return;
+    }
+    if (!(camera instanceof PerspectiveCamera)) return;
+    let minF = getConstellationMinFovDegrees(
+      selectedConstellation,
+      camera.aspect,
+    );
+    if (!Number.isFinite(minF) || minF <= 0) {
+      minF = DEFAULT_FOV;
+    }
+    if (
+      isMobileLayout &&
+      camera.aspect > 0 &&
+      camera.aspect < 1
+    ) {
+      minF *= CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT;
+    }
+    targetFovRef.current = clampFov(
+      Math.max(targetFovRef.current, minF),
+    );
+  }, [
+    selectedConstellation,
+    viewMode,
+    navigationMode,
+    isMobileLayout,
+    camera,
+    size.width,
+    size.height,
+  ]);
 
   useEffect(() => {
     if (!enabled) {
@@ -125,12 +171,19 @@ export const GlobalZoom = () => {
   useFrame((_, delta) => {
     const perspectiveCamera = perspectiveCameraRef.current;
     if (!perspectiveCamera) return;
+
     const target = targetFovRef.current;
     const current = perspectiveCamera.fov;
     if (Math.abs(target - current) < 0.01) return;
 
-    const smoothing = 1 - Math.pow(FOV_SMOOTHING, delta);
-    perspectiveCamera.fov = current + (target - current) * smoothing;
+    const constellationFraming =
+      selectedConstellation &&
+      viewMode === 'overview' &&
+      navigationMode === 'cinematic';
+    const alpha = constellationFraming
+      ? Math.min(1, delta * FOV_CONSTELLATION_SETTLE_PER_SEC)
+      : 1 - Math.pow(FOV_SMOOTHING, delta);
+    perspectiveCamera.fov = current + (target - current) * alpha;
     perspectiveCamera.updateProjectionMatrix();
   });
 
