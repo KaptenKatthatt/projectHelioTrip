@@ -277,9 +277,11 @@ if (maxTan < 1e-6) {
 }
 ```
 
-### `MobileCloseViewFraming.tsx` — `size`-beroende i cleanup-effect
+### `PlanetViewportOffset.tsx` (tidigare `MobileCloseViewFraming`) — `size` i cleanup-effect
 
-Cleanup-effekten på rad 52–62 har `size.height` och `size.width` som beroenden men läser dem bara för att uppdatera `camera.aspect`. Om komponenten unmountas när `size` precis ändrats kan `aspect` sättas till fel värde. Lösning: läs `size` direkt från `get()` i cleanup istället för closure:
+**Valt beteende: (b) vid unmount används aktuell viewport** från R3F (`get().size`), inte den storlek som fanns när effekten senast körde. Då matchar kamerans `aspect` det canvas R3F rapporterar i samma moment som unmount, vilket undviker en fel `aspect` om canvas storlek hunnit ändras innan rensningen körs.
+
+Cleanup ska därför **inte** ha `size` i `useEffect`-dependencies; läs `camera` och `size` via `get()` i cleanup. Implementation i `PlanetViewportOffset.tsx` följer detta mönster:
 
 ```ts
 useEffect(() => {
@@ -294,6 +296,8 @@ useEffect(() => {
   };
 }, [get]); // inga size-beroenden
 ```
+
+*(Option (a) — återställa till den aspekt som gällde när effekten *mountade* — skulle kräva att `width`/`height` fångas i en ref när effekten körs och att cleanup använder de värdena; används inte här.)*
 
 ---
 
