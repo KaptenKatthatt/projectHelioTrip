@@ -17,9 +17,10 @@ export const MobileTimePill = () => {
   const inConstellationView = selectedConstellation !== null;
 
   useEffect(() => {
-    if (inConstellationView) {
+    if (!inConstellationView) return;
+    queueMicrotask(() => {
       setExpanded(false);
-    }
+    });
   }, [inConstellationView]);
 
   return (
@@ -41,7 +42,7 @@ export const MobileTimePill = () => {
             {isPlaying ? (
               <Pause className="h-4 w-4" aria-hidden />
             ) : (
-              <Play className="h-4 w-4 translate-x-[1px]" aria-hidden />
+              <Play className="h-4 w-4 translate-x-px" aria-hidden />
             )}
           </button>
           <button

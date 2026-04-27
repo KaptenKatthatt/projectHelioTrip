@@ -48,22 +48,22 @@ const ConstellationRotateHoldButton = ({
     }
   }, []);
 
-  const tick = useCallback(
-    (now: number) => {
+  const tick = useCallback((now: number) => {
+    function step(ts: number) {
       if (holdSignRef.current === 0) {
         rafRef.current = 0;
         return;
       }
       const last = lastTsRef.current;
-      lastTsRef.current = now;
-      const dt = Math.min(0.05, (now - last) / 1000);
+      lastTsRef.current = ts;
+      const dt = Math.min(0.05, (ts - last) / 1000);
       const d = holdSignRef.current * HOLD_ROTATION_SPEED_RAD_PER_SEC * dt;
       adjustConstellationSpin(d);
       appliedRef.current += d;
-      rafRef.current = requestAnimationFrame(tick);
-    },
-    [adjustConstellationSpin],
-  );
+      rafRef.current = requestAnimationFrame(step);
+    }
+    step(now);
+  }, [adjustConstellationSpin]);
 
   const onPointerDown = useCallback(
     (e: PointerEvent<HTMLButtonElement>) => {

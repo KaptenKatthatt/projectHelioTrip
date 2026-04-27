@@ -24,7 +24,10 @@ export const MobilePlanetInfoCanvasDismiss = (): null => {
   const enabled = mobileLayout && sheetOpen && showPlanetInfoUi;
 
   const setSheetOpenRef = useRef(setSheetOpen);
-  setSheetOpenRef.current = setSheetOpen;
+
+  useEffect(() => {
+    setSheetOpenRef.current = setSheetOpen;
+  }, [setSheetOpen]);
 
   useEffect(() => {
     if (!enabled) return;

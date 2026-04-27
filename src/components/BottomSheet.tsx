@@ -48,14 +48,20 @@ export const BottomSheet = ({
 
   useLayoutEffect(() => {
     if (!open || !slideFromBottom) {
-      setPanelEntered(!slideFromBottom);
+      queueMicrotask(() => {
+        setPanelEntered(!slideFromBottom);
+      });
       return;
     }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPanelEntered(true);
+      queueMicrotask(() => {
+        setPanelEntered(true);
+      });
       return;
     }
-    setPanelEntered(false);
+    queueMicrotask(() => {
+      setPanelEntered(false);
+    });
     const startId = window.setTimeout(() => {
       setPanelEntered(true);
     }, SLIDE_UP_ENTER_DELAY_MS);
