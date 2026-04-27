@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
-import { Euler } from 'three';
-import { useStore } from '../store/useStore';
+import { useEffect, useMemo, useRef } from "react";
+import { useThree } from "@react-three/fiber";
+import { Euler } from "three";
+import { useStore } from "../store/useStore";
 
 const LOOK_SENSITIVITY = 0.003;
 const MAX_PITCH = Math.PI / 2 - 0.05;
-
 export const OverviewLookControls = () => {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
@@ -14,18 +13,17 @@ export const OverviewLookControls = () => {
   const isTraveling = useStore((s) => s.isTraveling);
 
   const enabled =
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic' &&
-    !isTraveling;
+    viewMode === "overview" && navigationMode === "cinematic" && !isTraveling;
 
   const dragActiveRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   /** Pointers currently down on the canvas (for pinch vs orbit). */
   const canvasPointerIdsRef = useRef(new Set<number>());
-  const euler = useMemo(() => new Euler(0, 0, 0, 'YXZ'), []);
+  const euler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
 
   useEffect(() => {
     const canvas = gl.domElement;
+    const canvasPointerIds = canvasPointerIdsRef.current;
 
     const pointerOnCanvas = (event: PointerEvent): boolean =>
       event.target === canvas ||
@@ -33,11 +31,11 @@ export const OverviewLookControls = () => {
 
     const onPointerDown = (event: PointerEvent): void => {
       if (pointerOnCanvas(event)) {
-        const hadPointer = canvasPointerIdsRef.current.size > 0;
-        canvasPointerIdsRef.current.add(event.pointerId);
+        const hadPointer = canvasPointerIds.size > 0;
+        canvasPointerIds.add(event.pointerId);
         if (hadPointer && enabled) {
           dragActiveRef.current = false;
-          canvas.style.cursor = '';
+          canvas.style.cursor = "";
         }
       }
       if (!enabled || event.button !== 0) return;
@@ -48,15 +46,15 @@ export const OverviewLookControls = () => {
         );
         if (interactive) return;
       }
-      if (canvasPointerIdsRef.current.size > 1) return;
+      if (canvasPointerIds.size > 1) return;
       dragActiveRef.current = true;
       lastPointerRef.current = { x: event.clientX, y: event.clientY };
-      canvas.style.cursor = 'grabbing';
+      canvas.style.cursor = "grabbing";
     };
 
     const onPointerMove = (event: PointerEvent): void => {
       if (!enabled || !dragActiveRef.current) return;
-      if (canvasPointerIdsRef.current.size > 1) return;
+      if (canvasPointerIds.size > 1) return;
       const dx = event.clientX - lastPointerRef.current.x;
       const dy = event.clientY - lastPointerRef.current.y;
       lastPointerRef.current = { x: event.clientX, y: event.clientY };
@@ -70,26 +68,26 @@ export const OverviewLookControls = () => {
 
     const endDrag = (): void => {
       dragActiveRef.current = false;
-      canvas.style.cursor = '';
+      canvas.style.cursor = "";
     };
 
     const onPointerUp = (event: PointerEvent): void => {
-      canvasPointerIdsRef.current.delete(event.pointerId);
+      canvasPointerIds.delete(event.pointerId);
       endDrag();
     };
 
-    window.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    window.addEventListener('pointercancel', onPointerUp);
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
 
     return () => {
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
-      canvasPointerIdsRef.current.clear();
-      canvas.style.cursor = '';
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      canvasPointerIds.clear();
+      canvas.style.cursor = "";
     };
   }, [camera, enabled, euler, gl]);
 

@@ -41,6 +41,7 @@ const getConstellationDirection = (id: ConstellationId): Vector3 => {
 export const SKY_TARGET_DIRECTIONS: Record<ConstellationId, Vector3> = {
   orion: getConstellationDirection('orion'),
   ursaMajor: getConstellationDirection('ursaMajor'),
+  karlaVagnen: getConstellationDirection('karlaVagnen'),
   ursaMinor: getConstellationDirection('ursaMinor'),
   cassiopeia: getConstellationDirection('cassiopeia'),
   cygnus: getConstellationDirection('cygnus'),
@@ -49,10 +50,10 @@ export const SKY_TARGET_DIRECTIONS: Record<ConstellationId, Vector3> = {
   taurus: getConstellationDirection('taurus'),
   gemini: getConstellationDirection('gemini'),
   sagittarius: getConstellationDirection('sagittarius'),
-  crux: getConstellationDirection('crux'),
   canisMajor: getConstellationDirection('canisMajor'),
   pegasus: getConstellationDirection('pegasus'),
   andromeda: getConstellationDirection('andromeda'),
   aquarius: getConstellationDirection('aquarius'),
+  lyra: getConstellationDirection('lyra'),
 };
 

@@ -52,6 +52,7 @@ Användaren ska kunna utforska planeter med naturliga kamerakontroller i stil me
   - Memoisera tunga beräkningar.
   - Håll interaktionslogik deterministisk och enkel att felsöka.
 - Undvik breaking changes i befintliga kontroller utan att uppdatera detta dokument.
+- **Kodkommentarer ska alltid skrivas på engelska.** Detta gäller alla typer av kommentarer i källkod (`//`, `/* */`, JSDoc/TSDoc) i filer under `src/`, `api/`, `scripts/`, `e2e/` och övriga kodfiler. Användarvänd text (i18n-strängar, UI-texter) får självklart vara på svenska/engelska enligt lokalisering. Projektdokumentation (denna fil och andra `.md`) får vara på svenska.
 
 ## 6) Definition of Done per feature
 
