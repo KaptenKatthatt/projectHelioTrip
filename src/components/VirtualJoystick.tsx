@@ -1,15 +1,15 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from "react";
 import {
   freeFlightTouchBus,
   type FreeFlightTouchAxes,
-} from '../lib/freeFlightTouchBus';
+} from "../lib/freeFlightTouchBus";
 
 const BASE_PX = 118;
 const THUMB_PX = 46;
 
 type VirtualJoystickProps = {
-  /** `move`: Y+ = framåt (skärm upp). `look`: Y+ = titta nedåt (som mus nedåt). */
-  mode: 'move' | 'look';
+  /** `move`: Y+ = forward (screen up). `look`: Y+ = look down (like mouse down). */
+  mode: "move" | "look";
   className?: string;
 };
 
@@ -18,18 +18,21 @@ const writeAxes = (
   sx: number,
   sy: number,
   maxR: number,
-  mode: 'move' | 'look',
+  mode: "move" | "look",
 ): void => {
   const inv = maxR > 1e-6 ? 1 / maxR : 0;
   target.x = sx * inv;
-  if (mode === 'move') {
+  if (mode === "move") {
     target.y = -sy * inv;
   } else {
     target.y = sy * inv;
   }
 };
 
-export const VirtualJoystick = ({ mode, className = '' }: VirtualJoystickProps) => {
+export const VirtualJoystick = ({
+  mode,
+  className = "",
+}: VirtualJoystickProps) => {
   const baseRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
@@ -52,7 +55,8 @@ export const VirtualJoystick = ({ mode, className = '' }: VirtualJoystickProps) 
       const sx = dx * scale;
       const sy = dy * scale;
 
-      const bus = mode === 'move' ? freeFlightTouchBus.move : freeFlightTouchBus.look;
+      const bus =
+        mode === "move" ? freeFlightTouchBus.move : freeFlightTouchBus.look;
       writeAxes(bus, sx, sy, maxR, mode);
 
       thumb.style.left = `calc(50% + ${sx}px)`;
@@ -63,13 +67,14 @@ export const VirtualJoystick = ({ mode, className = '' }: VirtualJoystickProps) 
 
   const reset = useCallback((): void => {
     draggingRef.current = false;
-    const bus = mode === 'move' ? freeFlightTouchBus.move : freeFlightTouchBus.look;
+    const bus =
+      mode === "move" ? freeFlightTouchBus.move : freeFlightTouchBus.look;
     bus.x = 0;
     bus.y = 0;
     const thumb = thumbRef.current;
     if (thumb) {
-      thumb.style.left = '50%';
-      thumb.style.top = '50%';
+      thumb.style.left = "50%";
+      thumb.style.top = "50%";
     }
   }, [mode]);
 
@@ -99,7 +104,7 @@ export const VirtualJoystick = ({ mode, className = '' }: VirtualJoystickProps) 
       ref={baseRef}
       role="presentation"
       className={`touch-none select-none rounded-full border border-white/10 bg-black/40 backdrop-blur-md ${className}`}
-      style={{ width: BASE_PX, height: BASE_PX, touchAction: 'none' }}
+      style={{ width: BASE_PX, height: BASE_PX, touchAction: "none" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

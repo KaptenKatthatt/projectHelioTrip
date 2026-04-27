@@ -5,7 +5,6 @@ import { useStore } from "../store/useStore";
 
 const LOOK_SENSITIVITY = 0.003;
 const MAX_PITCH = Math.PI / 2 - 0.05;
-
 export const OverviewLookControls = () => {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);

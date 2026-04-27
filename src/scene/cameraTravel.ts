@@ -82,6 +82,24 @@ export const slerpDirections = (
   return out.normalize();
 };
 
+/**
+ * How far behind the planet along the radial direction the camera sits (world-space, unitless ratio).
+ * Combined with PLANET_SIDE_FACTOR this gives the camera a ~56° approach angle.
+ */
+const PLANET_BEHIND_FACTOR = 0.5;
+/** How far to the side of the planet along the tangent direction. */
+const PLANET_SIDE_FACTOR = 0.75;
+/**
+ * Camera height above the planet's equatorial plane in world-space units, before
+ * the vector is scaled to viewDistance. Increase to tilt the camera higher above
+ * the planet; decrease to look more level. Affects ALL platforms.
+ *
+ * For mobile portrait only: the additional 2D viewport shift that pushes the
+ * planet higher on screen without moving the camera is in PlanetViewportOffset.tsx
+ * (PLANET_VIEWPORT_UPSHIFT_FRACTION).
+ */
+const PLANET_CAMERA_HEIGHT = 0.45;
+
 export const computePlanetEndPos = (
   planetPos: Vector3,
   viewDistance: number,
@@ -94,7 +112,11 @@ export const computePlanetEndPos = (
   const tangentX = -dirZ;
   const tangentZ = dirX;
 
-  out.set(dirX * -0.5 + tangentX * 0.75, 0.45, dirZ * -0.5 + tangentZ * 0.75);
+  out.set(
+    dirX * -PLANET_BEHIND_FACTOR + tangentX * PLANET_SIDE_FACTOR,
+    PLANET_CAMERA_HEIGHT,
+    dirZ * -PLANET_BEHIND_FACTOR + tangentZ * PLANET_SIDE_FACTOR,
+  );
   out.setLength(viewDistance);
   out.add(planetPos);
 };

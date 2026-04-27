@@ -57,6 +57,8 @@ export type Translation = {
     universeMilkyWayOverview: string;
     showConstellationLines: string;
     hideConstellationLines: string;
+    rotateConstellationLeft: string;
+    rotateConstellationRight: string;
     minimizePanel: string;
     expandPanel: string;
     bodyInfo: string;
@@ -72,6 +74,62 @@ export type Translation = {
     aboutAttribution: string;
     footerLinkAuthor: string;
     footerLinkGithub: string;
+    bottomNavStars: string;
+    bottomNavMore: string;
+    constellationSeasonYearRound: string;
+    constellationSeasonWinter: string;
+    constellationSeasonSpring: string;
+    constellationSeasonSummer: string;
+    constellationSeasonAutumn: string;
+  };
+  phase3: {
+    gameMode: {
+      label: string;
+      explore: string;
+      learn: string;
+      challenge: string;
+      exploreDescription: string;
+      learnDescription: string;
+      challengeDescription: string;
+    };
+    missionCard: {
+      activeMission: string;
+      noMission: string;
+      pickMission: string;
+      stepProgress: string;
+      stepCompleted: string;
+      missionCompleted: string;
+      abandon: string;
+      backToExplore: string;
+    };
+    progressPanel: {
+      title: string;
+      visited: string;
+      achievementsTitle: string;
+      noAchievements: string;
+    };
+    shareLink: {
+      copyLabel: string;
+      copied: string;
+      restoredToast: string;
+    };
+    achievements: {
+      first_planet: string;
+      first_moon: string;
+      first_satellite: string;
+      first_constellation: string;
+      first_free_flight: string;
+      first_mission_completed: string;
+      unlocked: string;
+    };
+    missions: {
+      solar_system_start: { title: string; description: string };
+      jupiter_moons: { title: string; description: string };
+      time_travel_short: { title: string; description: string };
+      iss_hunt: { title: string; description: string };
+      free_flight_loop: { title: string; description: string };
+    };
+    steps: Record<string, string>;
   };
 };
 
