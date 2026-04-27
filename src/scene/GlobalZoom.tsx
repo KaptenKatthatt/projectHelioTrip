@@ -4,6 +4,7 @@ import { PerspectiveCamera } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { getConstellationMinFovDegrees } from '../lib/constellationOrientation';
 import { INITIAL_OVERVIEW_FOV } from '../lib/initialCamera';
+import { getConstellationTargetFovDeg } from '../lib/constellationViewSettings';
 import { useStore } from '../store/useStore';
 
 /**
@@ -18,6 +19,15 @@ import { useStore } from '../store/useStore';
  * planet.
  *
  * Default matches {@link INITIAL_OVERVIEW_FOV} / Canvas in Scene.
+ *
+ * CONSTELLATION ZOOM
+ * ------------------
+ * When a constellation is selected, two things happen on arrival (when
+ * isTraveling → false):
+ *   1. If CONSTELLATION_TARGET_FOV_DEG is set in constellationViewSettings.ts,
+ *      targetFovRef is set to that value.
+ *   2. targetFovRef is clamped so the full figure always fits in view.
+ * The user can then scroll/pinch to zoom further from that starting point.
  */
 const DEFAULT_FOV = INITIAL_OVERVIEW_FOV;
 const MIN_FOV = 15;
@@ -25,7 +35,7 @@ const MIN_FOV = 15;
 const MAX_FOV = 92;
 const FOV_WHEEL_STEP = 2;
 const FOV_SMOOTHING = 0.001;
-/** Per-second lerp toward constellation framing FOV so the figure doesn’t stay clipped at first paint. */
+/** Per-second lerp toward constellation framing FOV so the figure doesn't stay clipped at first paint. */
 const FOV_CONSTELLATION_SETTLE_PER_SEC = 14;
 /** Portrait phone: extra zoom-out so the figure clears bottom nav and side clipping. */
 const CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT = 1.1;
@@ -70,41 +80,49 @@ export const GlobalZoom = () => {
     targetFovRef.current = DEFAULT_FOV;
   }, [overviewCameraResetId]);
 
+  /**
+   * Apply constellation view settings once travel has completed (enabled = true).
+   *
+   * ORDERING NOTE: the [enabled, gl] effect below resets targetFovRef to DEFAULT_FOV
+   * when enabled becomes false (travel starts). This effect runs after that reset
+   * (defined later in the file) and re-applies the constellation FOV when enabled
+   * becomes true again (travel ends). The sequence is:
+   *   travel starts → enabled=false → FOV reset to DEFAULT
+   *   travel ends   → enabled=true  → this effect fires: apply target FOV or minF
+   *
+   * TWO PATHS:
+   *   A) CONSTELLATION_TARGET_FOV_DEG is set in constellationViewSettings.ts:
+   *      → Use that value directly, clamped only to [MIN_FOV, MAX_FOV].
+   *      → No minF enforcement: the user has explicitly chosen the zoom level.
+   *      → Small values zoom in tight (may clip the figure edges); large values
+   *        zoom out (more sky visible around the figure).
+   *   B) No configured FOV:
+   *      → Ensure targetFovRef is at least wide enough to show the full figure
+   *        (minF with a generous margin built in via FOV_MARGIN in
+   *        constellationOrientation.ts). Never zooms in below minF automatically.
+   *
+   * size.width/height is a dependency so path B stays correct on resize
+   * (e.g., phone rotation while viewing a constellation).
+   */
   useEffect(() => {
-    if (
-      !selectedConstellation ||
-      viewMode !== 'overview' ||
-      navigationMode !== 'cinematic'
-    ) {
+    if (!enabled || !selectedConstellation) return;
+    if (!(camera instanceof PerspectiveCamera)) return;
+
+    // Path A: explicit FOV override — applied directly, bypasses minF clamp.
+    const configured = getConstellationTargetFovDeg(selectedConstellation);
+    if (configured !== null) {
+      targetFovRef.current = clampFov(configured);
       return;
     }
-    if (!(camera instanceof PerspectiveCamera)) return;
-    let minF = getConstellationMinFovDegrees(
-      selectedConstellation,
-      camera.aspect,
-    );
-    if (!Number.isFinite(minF) || minF <= 0) {
-      minF = DEFAULT_FOV;
-    }
-    if (
-      isMobileLayout &&
-      camera.aspect > 0 &&
-      camera.aspect < 1
-    ) {
+
+    // Path B: no override — ensure the full figure is visible.
+    let minF = getConstellationMinFovDegrees(selectedConstellation, camera.aspect);
+    if (!Number.isFinite(minF) || minF <= 0) minF = DEFAULT_FOV;
+    if (isMobileLayout && camera.aspect > 0 && camera.aspect < 1) {
       minF *= CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT;
     }
-    targetFovRef.current = clampFov(
-      Math.max(targetFovRef.current, minF),
-    );
-  }, [
-    selectedConstellation,
-    viewMode,
-    navigationMode,
-    isMobileLayout,
-    camera,
-    size.width,
-    size.height,
-  ]);
+    targetFovRef.current = clampFov(Math.max(targetFovRef.current, minF));
+  }, [enabled, selectedConstellation, camera, isMobileLayout, size.width, size.height]);
 
   useEffect(() => {
     if (!enabled) {

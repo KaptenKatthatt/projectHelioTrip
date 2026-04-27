@@ -1,19 +1,45 @@
-import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
-import { PerspectiveCamera } from "three";
-import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
-import { useStore } from "../store/useStore";
-import { cameraTravelSpringProgressRef } from "./cameraTravelSpringProgress";
+/**
+ * WHAT THIS FILE DOES
+ * ===================
+ * Shifts the planet upward in the 2D viewport on narrow mobile screens.
+ *
+ * HOW
+ * ---
+ * Uses camera.setViewOffset() — a projection-matrix trick that does NOT move
+ * the camera in 3D space. It makes Three.js render as if the canvas were
+ * PLANET_VIEWPORT_UPSHIFT_FRACTION * canvasHeight pixels below the real canvas,
+ * which pushes the planet up without disturbing OrbitControls.
+ *
+ * WHEN TO CHANGE THIS
+ * -------------------
+ * - Planet feels too low on mobile portrait:  increase PLANET_VIEWPORT_UPSHIFT_FRACTION.
+ * - Planet feels too high:                    decrease it (min 0 = no shift).
+ * - Has no effect on desktop or landscape:    see the `enabled` guard below.
+ *
+ * RELATED
+ * -------
+ * - 3D camera height above the planet in world space: computePlanetEndPos() in
+ *   cameraTravel.ts (the PLANET_CAMERA_HEIGHT constant). Affects all platforms.
+ * - CSS canvas shift in overview mode: MobileViewOffset.tsx (translateY trick).
+ *   That component deliberately avoids setViewOffset to prevent conflicts.
+ */
 
-/** Shift close-up framing upward on narrow screens (fraction of canvas height). */
-const CLOSE_VIEW_VERTICAL_SHIFT = 0.1;
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import { PerspectiveCamera } from 'three';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useStore } from '../store/useStore';
+import { cameraTravelSpringProgressRef } from './cameraTravelSpringProgress';
+
+/** Fraction of canvas height to shift the planet upward in the 2D viewport. */
+const PLANET_VIEWPORT_UPSHIFT_FRACTION = 0.1;
 
 const smoothstep = (t: number): number => t * t * (3 - 2 * t);
 
 /**
  * In mobile portrait, the bottom HUD leaves the planet feeling too low.
  * Applies a projection {@link PerspectiveCamera.setViewOffset} so the planet
- * sits ~10% higher while keeping the orbit pivot on the body (unlike moving
+ * sits higher while keeping the orbit pivot on the body (unlike moving
  * `OrbitControls.target`).
  *
  * The offset ramps with the same spring progress as {@link CameraManager}
@@ -23,7 +49,7 @@ const smoothstep = (t: number): number => t * t * (3 - 2 * t);
  *
  * Runs after {@link GlobalZoom} (priority 0) so FOV and offset stay in sync.
  */
-export const MobileCloseViewFraming = (): null => {
+export const PlanetViewportOffset = (): null => {
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
   const isMobileLayout = useIsMobileLayout();
@@ -40,8 +66,8 @@ export const MobileCloseViewFraming = (): null => {
     isMobileLayout &&
     portraitCanvas &&
     activeBody !== null &&
-    viewMode === "close" &&
-    navigationMode === "cinematic";
+    viewMode === 'close' &&
+    navigationMode === 'cinematic';
 
   const prevTravelIdRef = useRef(travelId);
   const prevFrameArrivedCloseRef = useRef(false);
@@ -51,15 +77,15 @@ export const MobileCloseViewFraming = (): null => {
 
   useEffect(() => {
     return () => {
-      const camera = get().camera;
+      const { camera, size: currentSize } = get();
       if (!(camera instanceof PerspectiveCamera)) return;
       if (camera.view?.enabled) {
         camera.clearViewOffset();
-        camera.aspect = size.width / size.height;
+        camera.aspect = currentSize.width / currentSize.height;
         camera.updateProjectionMatrix();
       }
     };
-  }, [get, size.height, size.width]);
+  }, [get]);
 
   useFrame(() => {
     const camera = get().camera;
@@ -110,7 +136,7 @@ export const MobileCloseViewFraming = (): null => {
 
     const sheetOpen = useStore.getState().mobilePlanetInfoSheetOpen;
     const canShowPlanetInfo =
-      activeBody !== null && viewMode === "close" && !isTraveling;
+      activeBody !== null && viewMode === 'close' && !isTraveling;
 
     if (!canShowPlanetInfo) {
       preSheetCanvasRef.current = null;
@@ -124,7 +150,7 @@ export const MobileCloseViewFraming = (): null => {
       sheetOpen && preSheetCanvasRef.current !== null
         ? preSheetCanvasRef.current.h
         : h;
-    const offsetY = CLOSE_VIEW_VERTICAL_SHIFT * offsetBaseH * factor;
+    const offsetY = PLANET_VIEWPORT_UPSHIFT_FRACTION * offsetBaseH * factor;
 
     if (offsetY < 1e-4) {
       if (camera.view?.enabled) {

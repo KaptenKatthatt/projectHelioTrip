@@ -39,9 +39,11 @@ const maxHalfTanForRollPhi = (
     maxTan = Math.max(maxTan, ty, tx / safeAspect);
   }
   if (maxTan < 1e-6) {
+    console.warn('constellationOrientation: degenerate figure (all stars behind camera), using fallback FOV');
     maxTan = Math.tan((18 * Math.PI) / 180);
   }
   if (!Number.isFinite(maxTan) || maxTan < 1e-4) {
+    console.warn('constellationOrientation: non-finite maxTan, using fallback FOV');
     maxTan = Math.tan((24 * Math.PI) / 180);
   }
   return maxTan;
