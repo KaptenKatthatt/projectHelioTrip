@@ -71,6 +71,8 @@ export const en: Translation = {
     universeMilkyWayOverview: "Milky Way Overview",
     showConstellationLines: "Show constellation lines",
     hideConstellationLines: "Hide constellation lines",
+    rotateConstellationLeft: "Rotate constellation counter-clockwise",
+    rotateConstellationRight: "Rotate constellation clockwise",
     minimizePanel: "Minimize panel",
     expandPanel: "Expand panel",
     bodyInfo: "Info",
@@ -90,6 +92,13 @@ export const en: Translation = {
     aboutAttribution: "Created by Jonas Olson 2026, www.jonasolson.se.",
     footerLinkAuthor: "Jonas Olson — website (opens in a new tab)",
     footerLinkGithub: "HelioTrip source on GitHub (opens in a new tab)",
+    bottomNavStars: "Stars",
+    bottomNavMore: "More",
+    constellationSeasonYearRound: "Year-round",
+    constellationSeasonWinter: "Winter",
+    constellationSeasonSpring: "Spring",
+    constellationSeasonSummer: "Summer",
+    constellationSeasonAutumn: "Autumn",
   },
   phase3: {
     gameMode: {

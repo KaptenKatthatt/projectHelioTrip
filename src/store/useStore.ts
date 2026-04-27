@@ -29,6 +29,7 @@ import {
   inferShareLinkContextType,
   type ShareLinkState,
 } from "../lib/shareLink";
+import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
 
 export type ViewMode = "close" | "overview";
 
@@ -53,6 +54,11 @@ export type SimulationState = {
   navigationMode: NavigationMode;
   selectedConstellation: ConstellationId | null;
   constellationLinesVisible: boolean;
+  /**
+   * Extra spin (rad) around the celestial radial through the constellation center;
+   * pedagogical only, cleared when switching constellations.
+   */
+  constellationUserSpinRad: number;
   skyFocusId: number;
   // Phase 3 additions
   gameMode: GameMode;
@@ -61,6 +67,8 @@ export type SimulationState = {
   visitedBodies: ReadonlyArray<BodyId>;
   unlockedAchievements: ReadonlyArray<AchievementId>;
   recentAchievement: RecentAchievement | null;
+  /** Mobile-only: planet info bottom sheet open (not persisted). */
+  mobilePlanetInfoSheetOpen: boolean;
 };
 
 export type SimulationActions = {
@@ -82,12 +90,14 @@ export type SimulationActions = {
   setSelectedConstellation: (id: ConstellationId | null) => void;
   focusSkyTarget: (id: ConstellationId) => void;
   toggleConstellationLinesVisible: () => void;
+  adjustConstellationSpin: (deltaRad: number) => void;
   // Phase 3 additions
   setGameMode: (mode: GameMode) => void;
   startMission: (missionId: string) => void;
   abandonMission: () => void;
   acknowledgeAchievement: () => void;
   restoreFromShareLink: (state: ShareLinkState) => void;
+  setMobilePlanetInfoSheetOpen: (open: boolean) => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -229,7 +239,7 @@ export const useStore = create<Store>()(
       cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
       isTraveling: false,
       simulationTime: new Date(),
-      timeScale: 1,
+      timeScale: DEFAULT_TIME_SCALE,
       isPlaying: false,
       viewMode: "overview",
       travelId: 0,
@@ -238,6 +248,7 @@ export const useStore = create<Store>()(
       navigationMode: "cinematic",
       selectedConstellation: null,
       constellationLinesVisible: true,
+      constellationUserSpinRad: 0,
       skyFocusId: 0,
       gameMode: "explore",
       activeMissionId: null,
@@ -245,6 +256,7 @@ export const useStore = create<Store>()(
       visitedBodies: [],
       unlockedAchievements: [],
       recentAchievement: null,
+      mobilePlanetInfoSheetOpen: false,
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -264,6 +276,7 @@ export const useStore = create<Store>()(
           travelId: state.travelId + 1,
           navigationMode: "cinematic",
           selectedConstellation: null,
+          constellationUserSpinRad: 0,
         }));
         recordVisitedBody(id);
         dispatchDomainEvent({ kind: "body_focused", bodyId: id });
@@ -282,6 +295,7 @@ export const useStore = create<Store>()(
         set((state) => ({
           activeBody: null,
           selectedConstellation: null,
+          constellationUserSpinRad: 0,
           isTraveling: true,
           viewMode: "overview",
           travelId: state.travelId + 1,
@@ -333,27 +347,47 @@ export const useStore = create<Store>()(
         }
       },
 
-      setSelectedConstellation: (id) => set({ selectedConstellation: id }),
+      setSelectedConstellation: (id) =>
+        set((state) => {
+          const keepPose =
+            id !== null && id === state.selectedConstellation;
+          return {
+            selectedConstellation: id,
+            constellationUserSpinRad: keepPose
+              ? state.constellationUserSpinRad
+              : 0,
+          };
+        }),
 
       focusSkyTarget: (id) => {
         set((state) => {
           if (state.selectedConstellation !== id) {
             analytics.constellationOpened(id);
           }
+          const keepPose = state.selectedConstellation === id;
+          /**
+           * Only bump `travelId` when we actually need CameraManager’s overview
+           * travel (e.g. from a planet close-up). If we’re already in cinematic
+           * overview with no body, starting that ~5s spring would let
+           * CameraManager take the camera back after SkyFocus ends and the
+           * constellation would leave the frame.
+           */
+          const needsOverviewCameraTravel =
+            state.selectedConstellation === null &&
+            (state.viewMode !== "overview" || state.activeBody !== null);
           return {
             selectedConstellation: id,
+            constellationUserSpinRad: keepPose
+              ? state.constellationUserSpinRad
+              : 0,
             isPlaying: false,
-            isTraveling: state.selectedConstellation === null,
+            isTraveling: !keepPose,
             viewMode: "overview",
-            travelId:
-              state.selectedConstellation === null
-                ? state.travelId + 1
-                : state.travelId,
+            travelId: needsOverviewCameraTravel
+              ? state.travelId + 1
+              : state.travelId,
             navigationMode: "cinematic",
-            skyFocusId:
-              state.selectedConstellation === null
-                ? state.skyFocusId + 1
-                : state.skyFocusId,
+            skyFocusId: keepPose ? state.skyFocusId : state.skyFocusId + 1,
           };
         });
         dispatchDomainEvent({
@@ -365,6 +399,11 @@ export const useStore = create<Store>()(
       toggleConstellationLinesVisible: () =>
         set((state) => ({
           constellationLinesVisible: !state.constellationLinesVisible,
+        })),
+
+      adjustConstellationSpin: (deltaRad) =>
+        set((state) => ({
+          constellationUserSpinRad: state.constellationUserSpinRad + deltaRad,
         })),
 
       setGameMode: (mode) =>
@@ -406,6 +445,9 @@ export const useStore = create<Store>()(
 
       acknowledgeAchievement: () => set({ recentAchievement: null }),
 
+      setMobilePlanetInfoSheetOpen: (open) =>
+        set({ mobilePlanetInfoSheetOpen: open }),
+
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
         const partial: Partial<SimulationState> = {};
@@ -430,6 +472,7 @@ export const useStore = create<Store>()(
           partial.viewMode = "close";
           partial.travelId = state.travelId + 1;
           partial.selectedConstellation = null;
+          partial.constellationUserSpinRad = 0;
         }
         if (snapshot.missionId !== null) {
           partial.activeMissionId = snapshot.missionId;

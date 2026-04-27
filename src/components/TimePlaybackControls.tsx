@@ -3,14 +3,26 @@ import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { SolarSystemStartIcon } from "./SolarSystemStartIcon";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
-import { TIME_SPEED_PRESETS } from "../lib/timePlayback";
+import {
+  formatDaysPerSecond,
+  formatTimeScaleNumber,
+  TIME_SPEED_PRESETS,
+} from "../lib/timePlayback";
 
 type TimePlaybackControlsProps = {
   readonly className?: string;
+  readonly onSpeedSelect?: (scale: number) => void;
+  /** When true (e.g. mobile "Tid" sheet), speed buttons show numbers only, no `d/s`. */
+  readonly hideSpeedUnitOnPresets?: boolean;
+  /** When true, hide play/pause (e.g. sheet — pill already has transport). */
+  readonly hidePlayPauseButton?: boolean;
 };
 
 export const TimePlaybackControls = ({
   className,
+  onSpeedSelect,
+  hideSpeedUnitOnPresets = false,
+  hidePlayPauseButton = false,
 }: TimePlaybackControlsProps) => {
   const { t } = useTranslation();
   const mobileLayout = useIsMobileLayout();
@@ -22,14 +34,6 @@ export const TimePlaybackControls = ({
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const timePlaybackDisabled = selectedConstellation !== null;
-  const playButtonPreset = TIME_SPEED_PRESETS[2] ?? timeScale;
-
-  const handlePlayToggle = () => {
-    if (!isPlaying) {
-      setTimeScale(playButtonPreset);
-    }
-    togglePlay();
-  };
 
   return (
     <div
@@ -55,28 +59,32 @@ export const TimePlaybackControls = ({
           <SolarSystemStartIcon className="h-4 w-4 shrink-0" />
           {t.ui.start}
         </button>
-        <button
-          type="button"
-          onClick={handlePlayToggle}
-          disabled={timePlaybackDisabled}
-          aria-label={isPlaying ? t.ui.pause : t.ui.play}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
-        >
-          {isPlaying ? (
-            <Pause className="h-4 w-4" />
-          ) : (
-            <Play className="h-4 w-4 translate-x-[1px]" />
-          )}
-        </button>
+        {hidePlayPauseButton ? null : (
+          <button
+            type="button"
+            onClick={togglePlay}
+            disabled={timePlaybackDisabled}
+            aria-label={isPlaying ? t.ui.pause : t.ui.play}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
+          >
+            {isPlaying ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4 translate-x-[1px]" />
+            )}
+          </button>
+        )}
 
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
-          {TIME_SPEED_PRESETS.map((s, i) => {
-            const labels = ["0.25", "1", "3", "5", "10"];
+          {TIME_SPEED_PRESETS.map((s) => {
             return (
               <button
                 key={s}
                 type="button"
-                onClick={() => setTimeScale(s)}
+                onClick={() => {
+                  setTimeScale(s);
+                  onSpeedSelect?.(s);
+                }}
                 disabled={timePlaybackDisabled}
                 aria-pressed={timeScale === s}
                 className={
@@ -86,7 +94,9 @@ export const TimePlaybackControls = ({
                     : "text-white/60 hover:text-white disabled:hover:text-white/60")
                 }
               >
-                {labels[i] ?? (s < 1 ? s.toFixed(2) : s.toString())}
+                {hideSpeedUnitOnPresets
+                  ? formatTimeScaleNumber(s)
+                  : formatDaysPerSecond(s)}
               </button>
             );
           })}

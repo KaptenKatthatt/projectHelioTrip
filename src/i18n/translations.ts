@@ -57,6 +57,8 @@ export type Translation = {
     universeMilkyWayOverview: string;
     showConstellationLines: string;
     hideConstellationLines: string;
+    rotateConstellationLeft: string;
+    rotateConstellationRight: string;
     minimizePanel: string;
     expandPanel: string;
     bodyInfo: string;
@@ -72,6 +74,13 @@ export type Translation = {
     aboutAttribution: string;
     footerLinkAuthor: string;
     footerLinkGithub: string;
+    bottomNavStars: string;
+    bottomNavMore: string;
+    constellationSeasonYearRound: string;
+    constellationSeasonWinter: string;
+    constellationSeasonSpring: string;
+    constellationSeasonSummer: string;
+    constellationSeasonAutumn: string;
   };
   phase3: {
     gameMode: {

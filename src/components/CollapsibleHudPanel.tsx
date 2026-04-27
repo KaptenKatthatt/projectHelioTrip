@@ -1,46 +1,23 @@
 import { useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react';
-import { HudIconButton } from "./HudIconButton";
+import { HudPanelToggleButton } from "./HudPanelToggleButton";
+
+type CollapsibleHudPanelRenderContext = {
+  readonly expandedCloseToggle: ReactNode;
+};
 
 type CollapsibleHudPanelProps = {
   readonly title: string;
-  readonly children: ReactNode;
+  readonly children:
+    | ReactNode
+    | ((ctx: CollapsibleHudPanelRenderContext) => ReactNode);
   readonly collapsedTitlePrefix?: ReactNode;
   readonly collapsedTitleClassName?: string;
   readonly className?: string;
   readonly defaultCollapsed?: boolean;
   readonly collapseLabel: string;
   readonly expandLabel: string;
-  readonly collapsedIcon?: 'chevron' | 'help';
   readonly collapseOnExpandedHeaderClick?: boolean;
   readonly showExpandedToggle?: boolean;
-};
-
-const ToggleIcon = ({
-  expanded,
-  collapsedIcon = 'chevron',
-}: {
-  readonly expanded: boolean;
-  readonly collapsedIcon?: 'chevron' | 'help';
-}) => {
-  const CollapsedGlyph = collapsedIcon === 'help' ? CircleHelp : ChevronUp;
-  const ExpandedGlyph = collapsedIcon === 'help' ? ChevronUp : ChevronDown;
-  return (
-    <span className="relative h-4 w-4">
-      <CollapsedGlyph
-        className={
-          'absolute inset-0 h-4 w-4 transition-all duration-200 ease-out ' +
-          (expanded ? 'scale-75 opacity-0' : 'scale-100 opacity-100')
-        }
-      />
-      <ExpandedGlyph
-        className={
-          'absolute inset-0 h-4 w-4 transition-all duration-200 ease-out ' +
-          (expanded ? 'scale-100 opacity-100' : 'scale-75 opacity-0')
-        }
-      />
-    </span>
-  );
 };
 
 export const CollapsibleHudPanel = ({
@@ -52,7 +29,6 @@ export const CollapsibleHudPanel = ({
   defaultCollapsed = false,
   collapseLabel,
   expandLabel,
-  collapsedIcon = 'chevron',
   collapseOnExpandedHeaderClick = false,
   showExpandedToggle = true,
 }: CollapsibleHudPanelProps) => {
@@ -87,11 +63,11 @@ export const CollapsibleHudPanel = ({
               {title}
             </span>
           </span>
-          {collapsedIcon === 'help' ? (
-            <span className="pointer-events-none inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white/80">
-              <ToggleIcon expanded={false} collapsedIcon={collapsedIcon} />
-            </span>
-          ) : null}
+          <HudPanelToggleButton
+            asSpan
+            expanded={false}
+            className="pointer-events-none"
+          />
         </button>
       </div>
 
@@ -109,16 +85,30 @@ export const CollapsibleHudPanel = ({
             className="pointer-events-auto absolute top-0 left-0 right-11 z-10 h-14 rounded-t-2xl"
           />
         ) : null}
-        {showExpandedToggle ? (
-          <HudIconButton
-            onClick={() => setIsCollapsed(true)}
-            aria-expanded="true"
-            label={`${collapseLabel}: ${title}`}
-            className="pointer-events-auto absolute top-2 right-2 z-20"
-            icon={<ToggleIcon expanded collapsedIcon={collapsedIcon} />}
-          />
-        ) : null}
-        {children}
+        {typeof children === 'function' ? (
+          children({
+            expandedCloseToggle: showExpandedToggle ? (
+              <HudPanelToggleButton
+                onClick={() => setIsCollapsed(true)}
+                label={`${collapseLabel}: ${title}`}
+                className="pointer-events-auto z-20"
+                expanded
+              />
+            ) : null,
+          })
+        ) : (
+          <>
+            {showExpandedToggle ? (
+              <HudPanelToggleButton
+                onClick={() => setIsCollapsed(true)}
+                label={`${collapseLabel}: ${title}`}
+                className="pointer-events-auto absolute top-2 right-2 z-20"
+                expanded
+              />
+            ) : null}
+            {children}
+          </>
+        )}
       </div>
     </div>
   );

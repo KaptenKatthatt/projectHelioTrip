@@ -3,9 +3,11 @@ import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei/core/Stars";
 import { CameraManager } from "./CameraManager";
 import { GlobalZoom } from "./GlobalZoom";
-import { MobileCloseViewFraming } from "./MobileCloseViewFraming";
+import { PlanetViewportOffset } from "./PlanetViewportOffset";
+import { ConstellationViewportOffset } from "./ConstellationViewportOffset";
 import { MobileViewOffset } from "./MobileViewOffset";
 import { ViewportResizeSync } from "./ViewportResizeSync";
+import { MobilePlanetInfoCanvasDismiss } from "./MobilePlanetInfoCanvasDismiss";
 import { OverviewLookControls } from "./OverviewLookControls";
 import { SkyFocusCamera } from "./SkyFocusCamera";
 import { TimeManager } from "./TimeManager";
@@ -103,6 +105,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       onCreated={handleCanvasCreated}
     >
       <ViewportResizeSync />
+      <MobilePlanetInfoCanvasDismiss />
       <MobileViewOffset />
       <color attach="background" args={["#05060a"]} />
 
@@ -156,7 +159,8 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       ) : null}
       <OverviewLookControls />
       <GlobalZoom />
-      <MobileCloseViewFraming />
+      <PlanetViewportOffset />
+      <ConstellationViewportOffset />
       <Suspense fallback={null}>
         <LazyBodyPickers />
       </Suspense>

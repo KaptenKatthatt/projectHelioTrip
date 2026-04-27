@@ -1,30 +1,58 @@
+/**
+ * RENDERING PIPELINE — two-step orientation
+ * ==========================================
+ *
+ * STEP 1 — buildRenderData() (runs once per displayedId / aspect change):
+ *   Calls computeConstellationOrientation() which rotates the figure so:
+ *     a) its barycenter points along local -Z ("into the scene")
+ *     b) the figure is rolled around -Z to fit within the smallest possible FOV
+ *   Star positions and line endpoints are baked into geometry in this
+ *   "-Z aligned" local frame. No sky-sphere position is involved yet.
+ *
+ * STEP 2 — useFrame() (runs every frame):
+ *   Rotates the <group> so its local -Z aligns with the constellation's actual
+ *   sky direction from SKY_TARGET_DIRECTIONS, then applies any user spin offset.
+ *
+ * QUICK REFERENCE
+ * ---------------
+ * To move where a constellation appears in the sky  → edit SKY_TARGET_DIRECTIONS in skyTargets.ts
+ * To change how a figure is fitted / rolled          → edit computeConstellationOrientation in constellationOrientation.ts
+ * To add a rotation offset per constellation         → edit CONSTELLATION_SPIN_DEG in constellationViewSettings.ts
+ * To change fade timing                              → edit FADE_OUT_MS / FADE_IN_MS in useConstellationFade.ts
+ */
+
 import { Line } from '@react-three/drei/core/Line';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import {
   AdditiveBlending,
   BufferGeometry,
   Float32BufferAttribute,
   Group,
+  PerspectiveCamera,
   Quaternion,
   ShaderMaterial,
   Vector3,
 } from 'three';
+import { computeConstellationOrientation } from '../lib/constellationOrientation';
 import { CONSTELLATION_SHAPES } from '../lib/constellationShapes';
 import type { ConstellationId } from '../lib/constellations';
+import { getConstellationSpinOffsetRad } from '../lib/constellationViewSettings';
+import { SKY_TARGET_DIRECTIONS } from '../lib/skyTargets';
 import { useStore } from '../store/useStore';
+import { useConstellationFade } from './useConstellationFade';
 
 const SKY_RADIUS = 2450;
+/** Mesh-local "into scene" after buildRenderData; aligned to true sky direction in useFrame. */
+const MESH_FORWARD = new Vector3(0, 0, -1);
+const qAlignScratch = new Quaternion();
+const qSpinScratch = new Quaternion();
+const axisScratch = new Vector3();
+const qTotalScratch = new Quaternion();
 const LINE_COLOR = '#8ec5ff';
 const STAR_SIZE = 8;
 const LINE_WIDTH = 1.2;
 const STAR_COLOR = new Vector3(0.85, 0.93, 1.0);
-const FADE_OUT_MS = 350;
-const FADE_IN_MS = 450;
-const FADE_OUT_SECONDS = FADE_OUT_MS / 1000;
-const FADE_IN_SECONDS = FADE_IN_MS / 1000;
-const CANONICAL_FORWARD = new Vector3(0, 0, -1);
-
 const STAR_VERTEX_SHADER = `
 uniform float uSize;
 uniform float uPixelRatio;
@@ -77,22 +105,20 @@ const toDirection = (raHours: number, decDeg: number): Vector3 => {
   ).normalize();
 };
 
-const buildRenderData = (selectedId: ConstellationId): RenderData => {
+/**
+ * Builds geometry for the constellation in LOCAL SPACE aligned to -Z.
+ * The group's world orientation is set each frame in useFrame (Step 2 above).
+ * Aspect ratio affects the roll/fit calculation only, not star positions.
+ */
+const buildRenderData = (selectedId: ConstellationId, aspect: number): RenderData => {
   const shape = CONSTELLATION_SHAPES[selectedId];
+  const { quaternion: orient } = computeConstellationOrientation(shape, aspect);
 
   const starMap = new Map<string, Vector3>();
-  const centroid = new Vector3();
   for (const star of shape.stars) {
     const dir = toDirection(star.rightAscensionHours, star.declinationDeg);
-    centroid.add(dir);
+    dir.applyQuaternion(orient).multiplyScalar(SKY_RADIUS);
     starMap.set(star.id, dir);
-  }
-
-  if (centroid.lengthSq() <= 1e-8) centroid.copy(CANONICAL_FORWARD);
-  else centroid.normalize();
-  const align = new Quaternion().setFromUnitVectors(centroid, CANONICAL_FORWARD);
-  for (const dir of starMap.values()) {
-    dir.applyQuaternion(align).multiplyScalar(SKY_RADIUS);
   }
 
   const starPositions = new Float32Array(shape.stars.length * 3);
@@ -121,117 +147,62 @@ const buildRenderData = (selectedId: ConstellationId): RenderData => {
 
 export const ConstellationLines = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
+  const aspect =
+    camera instanceof PerspectiveCamera
+      ? camera.aspect
+      : size.width / Math.max(1, size.height);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
+
   const groupRef = useRef<Group>(null);
   const starMaterialRef = useRef<StarUniformMaterial | null>(null);
-  const displayedIdRef = useRef<ConstellationId | null>(null);
-  const nextIdRef = useRef<ConstellationId | null>(null);
-  const phaseRef = useRef<'idle' | 'fadeOut' | 'fadeIn'>('idle');
-  const opacityRef = useRef(0);
-  const [displayedId, setDisplayedId] = useState<ConstellationId | null>(null);
-  const [opacity, setOpacity] = useState(0);
 
-  useEffect(() => {
-    displayedIdRef.current = displayedId;
-  }, [displayedId]);
-
-  useEffect(() => {
-    opacityRef.current = opacity;
-  }, [opacity]);
-
-  useEffect(() => {
-    const current = displayedIdRef.current;
-
-    if (!selectedConstellation) {
-      nextIdRef.current = null;
-      if (!current) {
-        phaseRef.current = 'idle';
-        opacityRef.current = 0;
-        setOpacity(0);
-        return;
-      }
-      phaseRef.current = 'fadeOut';
-      return;
-    }
-
-    if (isTraveling) return;
-
-    if (!current) {
-      displayedIdRef.current = selectedConstellation;
-      setDisplayedId(selectedConstellation);
-      opacityRef.current = 0;
-      setOpacity(0);
-      phaseRef.current = 'fadeIn';
-      return;
-    }
-
-    if (current === selectedConstellation) return;
-    nextIdRef.current = selectedConstellation;
-    phaseRef.current = 'fadeOut';
-  }, [selectedConstellation, isTraveling]);
+  // displayedId lags behind selectedConstellation intentionally (fade-out before fade-in).
+  // Never read selectedConstellation directly for rendering decisions.
+  const { displayedId, displayedIdRef, opacity, opacityRef } =
+    useConstellationFade(selectedConstellation);
 
   const renderData = useMemo(() => {
     if (!displayedId) return null;
-    return buildRenderData(displayedId);
-  }, [displayedId]);
+    return buildRenderData(displayedId, aspect);
+  }, [displayedId, aspect]);
 
+  // Dispose GPU geometry when renderData is replaced or component unmounts.
   useEffect(
     () => () => {
-      if (!renderData) return;
-      renderData.starGeometry.dispose();
+      renderData?.starGeometry.dispose();
     },
     [renderData],
   );
 
-  useFrame((_, delta) => {
-    const phase = phaseRef.current;
-    if (phase === 'fadeOut') {
-      const nextOpacity =
-        FADE_OUT_SECONDS <= 1e-6
-          ? 0
-          : Math.max(0, opacityRef.current - delta / FADE_OUT_SECONDS);
-      opacityRef.current = nextOpacity;
-      setOpacity(nextOpacity);
-    } else if (phase === 'fadeIn') {
-      const nextOpacity =
-        FADE_IN_SECONDS <= 1e-6
-          ? 1
-          : Math.min(1, opacityRef.current + delta / FADE_IN_SECONDS);
-      opacityRef.current = nextOpacity;
-      setOpacity(nextOpacity);
-    }
-
-    if (phase === 'fadeOut' && opacityRef.current <= 0.001) {
-      const nextId = nextIdRef.current;
-      if (nextId) {
-        nextIdRef.current = null;
-        displayedIdRef.current = nextId;
-        setDisplayedId(nextId);
-        opacityRef.current = 0;
-        setOpacity(0);
-        phaseRef.current = 'fadeIn';
-      } else {
-        displayedIdRef.current = null;
-        setDisplayedId(null);
-        phaseRef.current = 'idle';
-      }
-    } else if (phase === 'fadeIn' && opacityRef.current >= 0.999) {
-      opacityRef.current = 1;
-      setOpacity(1);
-      phaseRef.current = 'idle';
-    }
-
+  useFrame(() => {
+    // STEP 2: align the group to the sky and apply spin offset.
     const group = groupRef.current;
-    if (!group) return;
-    group.position.copy(camera.position);
-    group.quaternion.copy(camera.quaternion);
+    const id = displayedIdRef.current;
+    if (group && id) {
+      const targetDir = SKY_TARGET_DIRECTIONS[id];
+      if (!targetDir) {
+        console.warn(`ConstellationLines: no sky target for "${id}" — figure will not be oriented`);
+        return;
+      }
+      qAlignScratch.setFromUnitVectors(MESH_FORWARD, targetDir);
+      const spin =
+        getConstellationSpinOffsetRad(id) +
+        useStore.getState().constellationUserSpinRad;
+      axisScratch.copy(targetDir);
+      qSpinScratch.setFromAxisAngle(axisScratch, spin);
+      qTotalScratch.multiplyQuaternions(qSpinScratch, qAlignScratch);
+      group.quaternion.copy(qTotalScratch);
+      group.position.set(0, 0, 0);
+    }
 
+    // Update star shader uniforms from opacityRef (written by useConstellationFade's useFrame).
     const starMaterial = starMaterialRef.current;
     if (!starMaterial || !renderData) return;
-    const visibleOpacity = isTraveling ? 0 : opacity;
+    const visibleOpacity = isTraveling ? 0 : opacityRef.current;
     starMaterial.uniforms.uSize.value = renderData.starSize;
     starMaterial.uniforms.uPixelRatio.value = pixelRatio;
     starMaterial.uniforms.uOpacity.value = visibleOpacity;
@@ -276,4 +247,3 @@ export const ConstellationLines = () => {
     </group>
   );
 };
-

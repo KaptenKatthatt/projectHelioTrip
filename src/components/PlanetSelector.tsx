@@ -10,6 +10,8 @@ type PlanetSelectorProps = {
   readonly showHeading?: boolean;
   readonly className?: string;
   readonly onSelect?: (id: BodyId) => void;
+  /** Larger planet color dots (mobile bottom sheet). */
+  readonly largePlanetDots?: boolean;
 };
 
 type PlanetRow = {
@@ -74,6 +76,7 @@ export const PlanetSelector = ({
   showHeading = true,
   className,
   onSelect,
+  largePlanetDots = false,
 }: PlanetSelectorProps) => {
   const { t, bodyName } = useTranslation();
   const activeBody = useStore((s) => s.activeBody);
@@ -116,7 +119,10 @@ export const PlanetSelector = ({
               }
             >
               <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white/20"
+                className={
+                  (largePlanetDots ? "h-3 w-3 " : "h-2.5 w-2.5 ") +
+                  "shrink-0 rounded-full ring-1 ring-white/20"
+                }
                 style={{ backgroundColor: row.color }}
               />
               <span className="truncate">{bodyName(row.id)}</span>

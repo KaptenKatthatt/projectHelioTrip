@@ -21,6 +21,7 @@ import {
   type Arrived,
   type Travel,
 } from "./cameraTravel";
+import { cameraTravelSpringProgressRef } from "./cameraTravelSpringProgress";
 
 export { CAMERA_TRAVEL_TOTAL_DURATION_MS } from "./cameraTravel";
 
@@ -59,10 +60,14 @@ export const CameraManager = () => {
     camera.getWorldDirection(startForward);
 
     const travel = createTravelFromState(state, startPos, startForward);
-    if (!travel) return;
+    if (!travel) {
+      cameraTravelSpringProgressRef.current = null;
+      return;
+    }
 
     travelRef.current = travel;
     arrivedRef.current = null;
+    cameraTravelSpringProgressRef.current = 0;
 
     api.start({
       from: { t: 0 },
@@ -77,6 +82,7 @@ export const CameraManager = () => {
         arrive();
         arrivedRef.current = toArrived(current);
         travelRef.current = null;
+        cameraTravelSpringProgressRef.current = null;
       },
     });
   }, [travelId, camera, api, setCameraPosition, arrive, tmpEndPos, tmpScratch]);
@@ -101,6 +107,7 @@ export const CameraManager = () => {
 
     if (travel) {
       const progress = t.get();
+      cameraTravelSpringProgressRef.current = progress;
       resolveTarget(travel, tmpTargetPos);
 
       if (progress <= AIM_FRACTION) {

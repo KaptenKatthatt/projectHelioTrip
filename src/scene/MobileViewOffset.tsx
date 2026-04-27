@@ -16,7 +16,7 @@ const MOBILE_VERTICAL_SHIFT_FRACTION = 0.15;
  * avoid clashing with the three.js projection (`setViewOffset`) that other
  * systems mutate.
  *
- * Disabled in close-up view of a planet (where `MobileCloseViewFraming`
+ * Disabled in close-up view of a planet (where `PlanetViewportOffset`
  * already frames the planet) and in free flight.
  */
 export const MobileViewOffset = (): null => {
