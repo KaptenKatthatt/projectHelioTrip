@@ -15,6 +15,7 @@ import {
 } from "../lib/positionsBus";
 import { getBody } from "../lib/bodies";
 import { AU_SCALE } from "../lib/constants";
+import type { PlanetId } from "../lib/planets";
 import { getWikipediaUrl } from "../lib/wikipedia";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useTranslation } from "../hooks/useTranslation";
@@ -46,7 +47,7 @@ const worldDistanceToEarthAu = (worldX: number, worldY: number, worldZ: number) 
 };
 
 const resolveOrbitingDistancePair = (
-  parentId: string,
+  parentId: PlanetId,
   offset: { x: number; y: number; z: number },
 ): DistancePair => {
   const parent = getLivePosition(parentId);

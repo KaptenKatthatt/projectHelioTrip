@@ -15,14 +15,21 @@ const createTempDir = async (): Promise<string> => {
 };
 
 const postAnalyticsEvent = (
-  app: { request: (input: string, init?: RequestInit) => Promise<Response> },
+  app: {
+    request: (
+      input: string,
+      init?: RequestInit,
+    ) => Response | Promise<Response>;
+  },
   body: Record<string, unknown>,
 ) => {
-  return app.request("/api/analytics/event", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return Promise.resolve(
+    app.request("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+  );
 };
 
 const loadApp = async ({
