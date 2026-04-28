@@ -268,6 +268,25 @@ Avoid introducing additional panel variants unless a new semantic role requires 
 - `MissionCard`: split picker and active-mission detail views.
 - `AboutDialog`: split trigger and content container.
 
+### 6.4 Why some files remain in `src/components`
+
+The migration is complete for the core atomic layers. A small set of files intentionally remains in `src/components` root because they are either cross-cutting helpers, transitional candidates, or test files rather than stable design-system building blocks.
+
+- `ConstellationViewControls`: currently a context-specific control cluster used in multiple places, but not yet normalized as a generic molecule/organism contract.
+- `MobileBottomNav`: tightly coupled to mobile sheet navigation semantics and game-mode state; kept at root until tablet/desktop navigation contracts are finalized.
+- `AchievementToast`: global feedback overlay behavior (not a reusable content primitive yet).
+- `FreeFlightHint`, `FreeFlightHelp`, `FreeFlightMobileControls`: mode-specific assistance and control surfaces that are feature-bound, not broadly reusable atomic primitives.
+- `navigation.behavior.test.tsx`, `TimePlaybackControls.test.tsx`: tests stay colocated with component domain, not inside atomic layer folders.
+
+#### Rule for future moves
+
+Move a root-level component into `atoms`/`molecules`/`organisms` only when all conditions are true:
+- clear reuse across at least two independent UI contexts,
+- stable public props contract,
+- visual semantics that align with design-token rules in this document.
+
+Until then, keeping it at root is intentional and preferred over forcing an atomic placement.
+
 ---
 
 ## 7) Responsive Strategy (Mobile-First + Adaptive)
