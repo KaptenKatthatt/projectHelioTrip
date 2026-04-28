@@ -25,6 +25,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect } from 'react';
 import { PerspectiveCamera } from 'three';
+import { useOverviewCinematicEnabled } from '../hooks/useOverviewCinematicEnabled';
 import { getConstellationViewportOffset } from '../lib/constellationViewSettings';
 import { useStore } from '../store/useStore';
 
@@ -32,15 +33,11 @@ export const ConstellationViewportOffset = (): null => {
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const viewMode = useStore((s) => s.viewMode);
-  const navigationMode = useStore((s) => s.navigationMode);
-  const isTraveling = useStore((s) => s.isTraveling);
+  const overviewCinematicEnabled = useOverviewCinematicEnabled();
 
   const enabled =
     selectedConstellation !== null &&
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic' &&
-    !isTraveling;
+    overviewCinematicEnabled;
 
   useEffect(() => {
     return () => {

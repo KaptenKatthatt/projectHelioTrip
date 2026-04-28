@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useOverviewCinematicEnabled } from '../hooks/useOverviewCinematicEnabled';
 import { getConstellationMinFovDegrees } from '../lib/constellationOrientation';
 import { INITIAL_OVERVIEW_FOV } from '../lib/initialCamera';
 import { getConstellationTargetFovDeg } from '../lib/constellationViewSettings';
@@ -58,18 +59,13 @@ export const GlobalZoom = () => {
   const gl = useThree((s) => s.gl);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
-  const isTraveling = useStore((s) => s.isTraveling);
   const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isMobileLayout = useIsMobileLayout();
+  const enabled = useOverviewCinematicEnabled();
 
   const targetFovRef = useRef(DEFAULT_FOV);
   const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
-
-  const enabled =
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic' &&
-    !isTraveling;
 
   useEffect(() => {
     perspectiveCameraRef.current =
