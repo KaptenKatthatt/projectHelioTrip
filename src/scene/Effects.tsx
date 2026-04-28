@@ -30,8 +30,10 @@ const VIGNETTE_PROPS = { offset: 0.35, darkness: 0.55 } as const;
 
 export const Effects = () => {
   const { effectsMode, effectComposerMsaa } = getGraphicsPreset();
+  const viewMode = useStore((s) => s.viewMode);
+  const shouldUseDof = effectsMode === 'full' && viewMode === 'close';
 
-  if (effectsMode === 'reduced') {
+  if (!shouldUseDof) {
     return (
       <EffectComposer multisampling={effectComposerMsaa}>
         <Bloom {...BLOOM_PROPS} />
@@ -41,10 +43,10 @@ export const Effects = () => {
     );
   }
 
-  return <EffectsFull />;
+  return <EffectsFullClose />;
 };
 
-const EffectsFull = () => {
+const EffectsFullClose = () => {
   const focusTarget = useMemo(() => new Vector3(), []);
   const dofRef = useRef<DepthOfFieldEffect>(null);
   const { effectComposerMsaa } = getGraphicsPreset();
