@@ -21,16 +21,17 @@ const resolveHostProviderOrigin = (): string => {
   );
   if (vercelProduction) return vercelProduction;
 
-  const cloudflare = process.env.CF_PAGES_URL?.trim();
-  if (cloudflare) return trimTrailingSlash(cloudflare);
+  const cloudflare = normalizeHostUrl(process.env.CF_PAGES_URL);
+  if (cloudflare) return cloudflare;
 
   const vercelPreview = normalizeHostUrl(process.env.VERCEL_URL);
   if (vercelPreview) return vercelPreview;
 
   if (process.env.NETLIFY === 'true') {
-    const netlify =
+    const netlifyRaw =
       process.env.DEPLOY_PRIME_URL?.trim() || process.env.URL?.trim();
-    if (netlify) return trimTrailingSlash(netlify);
+    const netlify = normalizeHostUrl(netlifyRaw);
+    if (netlify) return netlify;
   }
 
   return '';

@@ -7,6 +7,9 @@ const resolveBodySpinY = (
   simulationTimeMs: number,
   periodMs: number,
 ): number => {
+  if (periodMs <= 0 || !Number.isFinite(periodMs)) {
+    return 0;
+  }
   const phase = (simulationTimeMs / periodMs) % 1;
   return phase * TAU;
 };

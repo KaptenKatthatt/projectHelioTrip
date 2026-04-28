@@ -27,6 +27,7 @@ describe("resolvePublicSiteOrigin", () => {
   });
 
   it("throws in production when no host can be resolved", () => {
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
     expect(() => resolvePublicSiteOrigin("production", {})).toThrow(
       "Absolute site URL is required for og:image",
     );
