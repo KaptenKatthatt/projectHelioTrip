@@ -11,7 +11,7 @@ import {
   configureDataMap,
   getSurfaceTextures,
 } from '../lib/textures';
-import { resolveBodySpinY } from './bodySpin';
+import { applyBodySpinFromTime } from './bodySpin';
 import { Clouds } from './Clouds';
 import { Rings } from './Rings';
 
@@ -48,11 +48,8 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
     const group = groupRef.current;
     if (group) group.position.copy(getLivePosition(id));
 
-    const spin = spinRef.current;
-    if (spin) {
-      const simMs = useStore.getState().simulationTime.getTime();
-      spin.rotation.y = resolveBodySpinY(simMs, periodMs);
-    }
+    const simMs = useStore.getState().simulationTime.getTime();
+    applyBodySpinFromTime(spinRef, simMs, periodMs);
   });
 
   return (

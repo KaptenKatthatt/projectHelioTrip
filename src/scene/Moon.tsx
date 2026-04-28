@@ -7,7 +7,7 @@ import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
 import { useStore } from '../store/useStore';
 import { getGraphicsPreset } from '../lib/graphicsTier';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
-import { resolveBodySpinY } from './bodySpin';
+import { applyBodySpinFromTime } from './bodySpin';
 
 type Props = {
   moon: MoonDefinition;
@@ -49,11 +49,8 @@ export const Moon = ({ moon }: Props) => {
       );
     }
 
-    const spin = spinRef.current;
-    if (spin) {
-      const simMs = useStore.getState().simulationTime.getTime();
-      spin.rotation.y = resolveBodySpinY(simMs, periodMs);
-    }
+    const simMs = useStore.getState().simulationTime.getTime();
+    applyBodySpinFromTime(spinRef, simMs, periodMs);
   });
 
   return (
