@@ -28,7 +28,7 @@ export type AchievementTrigger =
   | { kind: "free_flight_activated" }
   | { kind: "mission_completed" };
 
-export type AchievementDefinition = {
+type AchievementDefinition = {
   readonly id: AchievementId;
   /** Translation key under `t.phase3.achievements.<id>`. */
   readonly titleKey: AchievementId;

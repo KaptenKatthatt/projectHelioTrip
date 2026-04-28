@@ -8,6 +8,11 @@ type AppModule = typeof import("./app");
 
 const ORIGINAL_ENV = { ...process.env };
 const tempDirs: string[] = [];
+const createTempDir = async (): Promise<string> => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
+  tempDirs.push(tempDir);
+  return tempDir;
+};
 
 const loadApp = async ({
   analyticsFilePath,
@@ -36,8 +41,7 @@ describe("analytics API routes", () => {
   });
 
   it("returns 400 for invalid analytics event payload", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
+    const tempDir = await createTempDir();
     const { buildApp } = await loadApp({
       analyticsFilePath: path.join(tempDir, "events.json"),
     });
@@ -56,8 +60,7 @@ describe("analytics API routes", () => {
   });
 
   it("records a valid analytics event", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
+    const tempDir = await createTempDir();
     const { buildApp } = await loadApp({
       analyticsFilePath: path.join(tempDir, "events.json"),
     });
@@ -74,8 +77,7 @@ describe("analytics API routes", () => {
   });
 
   it("protects analytics summary with token when configured", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
+    const tempDir = await createTempDir();
     const { buildApp } = await loadApp({
       analyticsFilePath: path.join(tempDir, "events.json"),
       analyticsAdminToken: "topsecret",

@@ -6,7 +6,7 @@ import type {
 } from "./shareLinkTypes";
 
 export { buildShareLinkSearch, parseShareLink };
-export type { ShareLinkContextType, ShareLinkInput, ShareLinkState };
+export type { ShareLinkContextType, ShareLinkState };
 
 export const inferShareLinkContextType = (
   state: ShareLinkInput,

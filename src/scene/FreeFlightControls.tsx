@@ -95,6 +95,27 @@ const addMobileMoveInput = (
   desired.addScaledVector(forward, ny * mag);
 };
 
+const addKeyboardMoveInput = (
+  desired: Vector3,
+  forward: Vector3,
+  right: Vector3,
+  keyboard: {
+    forward: boolean;
+    back: boolean;
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+  },
+): void => {
+  if (keyboard.forward) desired.addScaledVector(forward, 1);
+  if (keyboard.back) desired.addScaledVector(forward, -1);
+  if (keyboard.right) desired.addScaledVector(right, 1);
+  if (keyboard.left) desired.addScaledVector(right, -1);
+  if (keyboard.up) desired.addScaledVector(WORLD_UP, 1);
+  if (keyboard.down) desired.addScaledVector(WORLD_UP, -1);
+};
+
 const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number => {
   let nearestSurface = Infinity;
   for (const body of COLLISION_BODIES) {
@@ -126,6 +147,70 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
   lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
   camera.quaternion.setFromEuler(lookEuler);
+};
+
+const applyCollisionConstraints = (
+  cameraPosition: Vector3,
+  moveDelta: Vector3,
+  nextPosition: Vector3,
+  center: Vector3,
+  normal: Vector3,
+  radial: Vector3,
+): void => {
+  nextPosition.copy(cameraPosition).add(moveDelta);
+
+  for (const body of COLLISION_BODIES) {
+    const limit = body.radius + CAMERA_COLLISION_MARGIN;
+    const limitSq = limit * limit;
+    const softZone = Math.max(
+      SOFT_ZONE_RADIUS_MIN,
+      body.radius * SOFT_ZONE_RADIUS_FACTOR,
+    );
+    const softLimit = limit + softZone;
+
+    setBodyCenter(body, center);
+    normal.copy(cameraPosition).sub(center);
+    const currentDist = normal.length();
+
+    if (currentDist <= 1e-4) {
+      normal.set(1, 0, 0);
+    } else {
+      normal.multiplyScalar(1 / currentDist);
+    }
+
+    if (currentDist < softLimit) {
+      const inward = moveDelta.dot(normal);
+      if (inward < 0) {
+        const depth =
+          softZone > 1e-6
+            ? Math.min(1, Math.max(0, (softLimit - currentDist) / softZone))
+            : 1;
+        const damping = depth * depth * (3 - 2 * depth);
+        moveDelta.addScaledVector(normal, -inward * damping);
+        nextPosition.copy(cameraPosition).add(moveDelta);
+      }
+    }
+
+    radial.copy(nextPosition).sub(center);
+    const nextDistSq = radial.lengthSq();
+    const inwardSpeed = moveDelta.dot(normal);
+
+    if (inwardSpeed < 0 && nextDistSq < limitSq) {
+      moveDelta.addScaledVector(normal, -inwardSpeed);
+      nextPosition.copy(cameraPosition).add(moveDelta);
+      radial.copy(nextPosition).sub(center);
+    }
+
+    const correctedDistSq = radial.lengthSq();
+    if (correctedDistSq < limitSq) {
+      if (correctedDistSq <= 1e-8) {
+        radial.set(1, 0, 0);
+      } else {
+        radial.multiplyScalar(1 / Math.sqrt(correctedDistSq));
+      }
+      nextPosition.copy(center).addScaledVector(radial, limit);
+    }
+  }
 };
 
 export const FreeFlightControls = () => {
@@ -200,14 +285,7 @@ export const FreeFlightControls = () => {
 
     desired.set(0, 0, 0);
     if (allowKeyboardMove) {
-      const { forward: fwd, back, left, right: rgt, up, down } = input.current;
-
-      if (fwd) desired.addScaledVector(forward, 1);
-      if (back) desired.addScaledVector(forward, -1);
-      if (rgt) desired.addScaledVector(right, 1);
-      if (left) desired.addScaledVector(right, -1);
-      if (up) desired.addScaledVector(WORLD_UP, 1);
-      if (down) desired.addScaledVector(WORLD_UP, -1);
+      addKeyboardMoveInput(desired, forward, right, input.current);
     }
 
     if (isMobile) addMobileMoveInput(desired, right, forward);
@@ -228,66 +306,14 @@ export const FreeFlightControls = () => {
     velocity.lerp(desired, smoothing);
 
     moveDelta.copy(velocity).multiplyScalar(delta);
-    nextPosition.copy(camera.position).add(moveDelta);
-
-    for (const body of COLLISION_BODIES) {
-      const limit = body.radius + CAMERA_COLLISION_MARGIN;
-      const limitSq = limit * limit;
-      const softZone = Math.max(
-        SOFT_ZONE_RADIUS_MIN,
-        body.radius * SOFT_ZONE_RADIUS_FACTOR,
-      );
-      const softLimit = limit + softZone;
-
-      setBodyCenter(body, center);
-
-      normal.copy(camera.position).sub(center);
-      const currentDist = normal.length();
-      if (currentDist <= 1e-4) {
-        normal.set(1, 0, 0);
-      } else {
-        normal.multiplyScalar(1 / currentDist);
-      }
-
-      /**
-       * Soft cushion: damp the inward component of motion as we enter
-       * the outer zone. Falloff is 0 at softLimit and 1 at the hard
-       * limit, so the camera eases to a stop before the rigid clamp
-       * ever engages. Smoothstep keeps the onset gentle.
-       */
-      if (currentDist < softLimit) {
-        const inward = moveDelta.dot(normal);
-        if (inward < 0) {
-          const depth =
-            softZone > 1e-6
-              ? Math.min(1, Math.max(0, (softLimit - currentDist) / softZone))
-              : 1;
-          const damping = depth * depth * (3 - 2 * depth);
-          moveDelta.addScaledVector(normal, -inward * damping);
-          nextPosition.copy(camera.position).add(moveDelta);
-        }
-      }
-
-      radial.copy(nextPosition).sub(center);
-      const nextDistSq = radial.lengthSq();
-      const inwardSpeed = moveDelta.dot(normal);
-
-      if (inwardSpeed < 0 && nextDistSq < limitSq) {
-        moveDelta.addScaledVector(normal, -inwardSpeed);
-        nextPosition.copy(camera.position).add(moveDelta);
-        radial.copy(nextPosition).sub(center);
-      }
-
-      const correctedDistSq = radial.lengthSq();
-      if (correctedDistSq < limitSq) {
-        if (correctedDistSq <= 1e-8) {
-          radial.set(1, 0, 0);
-        } else {
-          radial.multiplyScalar(1 / Math.sqrt(correctedDistSq));
-        }
-        nextPosition.copy(center).addScaledVector(radial, limit);
-      }
-    }
+    applyCollisionConstraints(
+      camera.position,
+      moveDelta,
+      nextPosition,
+      center,
+      normal,
+      radial,
+    );
 
     camera.position.copy(nextPosition);
 

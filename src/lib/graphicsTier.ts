@@ -5,7 +5,7 @@
 
 export type GraphicsTier = "high" | "medium" | "low";
 
-export type RuntimeDeviceBucket =
+type RuntimeDeviceBucket =
   | "desktop"
   | "mobile-high"
   | "mobile-medium"
@@ -91,7 +91,7 @@ export type MilkyWayQualityPreset = {
   readonly deepSkyObjectSizeScale: number;
 };
 
-export type GraphicsPreset = {
+type GraphicsPreset = {
   readonly starsCount: number;
   readonly starsRadius: number;
   readonly asteroidCount: number;

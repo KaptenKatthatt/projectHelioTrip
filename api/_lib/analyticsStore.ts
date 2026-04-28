@@ -296,7 +296,7 @@ type AnalyticsSummaryRow = AnalyticsAggregate & {
   updated_at?: string | null;
 };
 
-export type AnalyticsSummaryResponse = {
+type AnalyticsSummaryResponse = {
   updatedAt: string;
   storage: "supabase" | "local-file";
   byEvent: EventSummary[];

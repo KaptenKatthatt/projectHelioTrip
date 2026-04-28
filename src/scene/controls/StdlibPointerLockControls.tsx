@@ -29,7 +29,7 @@ type PointerLockControlsUnlockEvent = ExtractCallback<
   'unlock'
 >;
 
-export type StdlibPointerLockControlsProps = Omit<
+type StdlibPointerLockControlsProps = Omit<
   ThreeElement<typeof PointerLockControlsImpl>,
   'ref' | 'args'
 > & {

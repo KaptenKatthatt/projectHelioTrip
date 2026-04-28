@@ -1,6 +1,6 @@
 const HORIZONS_URL = 'https://ssd.jpl.nasa.gov/api/horizons.api';
 
-export type Vector3D = {
+type Vector3D = {
   x: number;
   y: number;
   z: number;
@@ -13,7 +13,7 @@ export type HorizonsVectorResult = {
   lightTimeDays: number;
 };
 
-export type FetchHorizonsOptions = {
+type FetchHorizonsOptions = {
   commandId: number;
   date: Date;
   center?: string;

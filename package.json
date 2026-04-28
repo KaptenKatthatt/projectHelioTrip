@@ -16,6 +16,8 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:ci": "npm run test:unit && npm run test:e2e",
+    "fallow": "npx fallow --summary",
+    "fallow:json": "npx fallow --format json",
     "textures": "tsx scripts/download-textures.ts",
     "elements": "tsx scripts/generate-orbital-elements.ts",
     "preview": "vite preview"

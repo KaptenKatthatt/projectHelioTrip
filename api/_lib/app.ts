@@ -16,7 +16,7 @@ import {
 } from './planets.js';
 import type { AnalyticsEventName } from './analyticsStore.js';
 
-export type PlanetEphemerisResponse = {
+type PlanetEphemerisResponse = {
   id: string;
   date: string;
   frame: 'ecliptic-j2000';
@@ -28,7 +28,7 @@ export type PlanetEphemerisResponse = {
   lightTimeDays: number;
 };
 
-export type MoonEphemerisResponse = {
+type MoonEphemerisResponse = {
   id: string;
   parent: string;
   date: string;
@@ -60,6 +60,14 @@ const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   const providedBuffer = Buffer.from(provided, 'utf8');
   if (expectedBuffer.length !== providedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, providedBuffer);
+};
+
+const horizonsUpstreamResponse = (error: unknown) => {
+  if (!(error instanceof HorizonsError)) return null;
+  return {
+    payload: { error: 'horizons_upstream', message: error.message },
+    status: 502 as const,
+  };
 };
 
 export const buildApp = (): Hono => {
@@ -155,12 +163,8 @@ export const buildApp = (): Hono => {
       c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
       return c.json(body);
     } catch (error) {
-      if (error instanceof HorizonsError) {
-        return c.json(
-          { error: 'horizons_upstream', message: error.message },
-          502,
-        );
-      }
+      const upstreamError = horizonsUpstreamResponse(error);
+      if (upstreamError) return c.json(upstreamError.payload, upstreamError.status);
       throw error;
     }
   });
@@ -208,12 +212,8 @@ export const buildApp = (): Hono => {
       c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
       return c.json(body);
     } catch (error) {
-      if (error instanceof HorizonsError) {
-        return c.json(
-          { error: 'horizons_upstream', message: error.message },
-          502,
-        );
-      }
+      const upstreamError = horizonsUpstreamResponse(error);
+      if (upstreamError) return c.json(upstreamError.payload, upstreamError.status);
       throw error;
     }
   });

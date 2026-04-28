@@ -32,7 +32,7 @@ export const OVERVIEW_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
 export const OVERVIEW_TARGET = INITIAL_OVERVIEW_TARGET.clone();
 export const WORLD_UP = new Vector3(0, 1, 0);
 
-export type CameraTravelStateSnapshot = {
+type CameraTravelStateSnapshot = {
   viewMode: ViewMode;
   activeBody: BodyId | null;
 };
@@ -42,13 +42,13 @@ type BaseTravel = {
   startForward: Vector3;
 };
 
-export type BodyTravel = BaseTravel & {
+type BodyTravel = BaseTravel & {
   kind: "body";
   bodyId: BodyId;
   viewDistance: number;
 };
 
-export type OverviewTravel = BaseTravel & {
+type OverviewTravel = BaseTravel & {
   kind: "overview";
 };
 

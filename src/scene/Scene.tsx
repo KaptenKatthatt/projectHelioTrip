@@ -55,7 +55,7 @@ const LazyPlanetOrbitControls = lazy(async () => {
   return { default: module.PlanetOrbitControls };
 });
 
-export type SceneProps = {
+type SceneProps = {
   /** Fires once after the WebGL renderer is created (first interactive shell). */
   readonly onSceneReady?: () => void;
 };

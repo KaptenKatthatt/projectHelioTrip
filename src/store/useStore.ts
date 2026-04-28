@@ -33,14 +33,14 @@ import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
 
 export type ViewMode = "close" | "overview";
 
-export type NavigationMode = "cinematic" | "free";
+type NavigationMode = "cinematic" | "free";
 
-export type RecentAchievement = {
+type RecentAchievement = {
   readonly id: AchievementId;
   readonly unlockedAtMs: number;
 };
 
-export type SimulationState = {
+type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
   isTraveling: boolean;
@@ -71,7 +71,7 @@ export type SimulationState = {
   mobilePlanetInfoSheetOpen: boolean;
 };
 
-export type SimulationActions = {
+type SimulationActions = {
   setActiveBody: (id: BodyId | null) => void;
   setCameraPosition: (position: Vector3) => void;
   setIsTraveling: (traveling: boolean) => void;

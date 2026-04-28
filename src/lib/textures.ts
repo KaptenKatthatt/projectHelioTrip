@@ -5,13 +5,13 @@ import { PLANETS } from './planets';
 import type { PlanetId } from './planets';
 import { getGraphicsPreset } from './graphicsTier';
 
-export type SurfaceTextures = {
+type SurfaceTextures = {
   diffuse: string;
   normal?: string;
   roughness?: string;
 };
 
-export type CloudTextures = {
+type CloudTextures = {
   diffuse: string;
 };
 
