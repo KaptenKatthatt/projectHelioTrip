@@ -42,6 +42,15 @@ const loadApp = async ({
   return import("./app");
 };
 
+const createTestApp = async (analyticsAdminToken?: string) => {
+  const tempDir = await createTempDir();
+  const { buildApp } = await loadApp({
+    analyticsFilePath: path.join(tempDir, "events.json"),
+    analyticsAdminToken,
+  });
+  return buildApp();
+};
+
 describe("analytics API routes", () => {
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
@@ -52,11 +61,7 @@ describe("analytics API routes", () => {
   });
 
   it("returns 400 for invalid analytics event payload", async () => {
-    const tempDir = await createTempDir();
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-    });
-    const app = buildApp();
+    const app = await createTestApp();
 
     const response = await postAnalyticsEvent(app, { name: "not_valid_event" });
 
@@ -67,11 +72,7 @@ describe("analytics API routes", () => {
   });
 
   it("records a valid analytics event", async () => {
-    const tempDir = await createTempDir();
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-    });
-    const app = buildApp();
+    const app = await createTestApp();
 
     const response = await postAnalyticsEvent(app, {
       name: "play_clicked",
@@ -83,12 +84,7 @@ describe("analytics API routes", () => {
   });
 
   it("protects analytics summary with token when configured", async () => {
-    const tempDir = await createTempDir();
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-      analyticsAdminToken: "topsecret",
-    });
-    const app = buildApp();
+    const app = await createTestApp("topsecret");
 
     const forbidden = await app.request("/api/analytics/summary");
     expect(forbidden.status).toBe(403);
