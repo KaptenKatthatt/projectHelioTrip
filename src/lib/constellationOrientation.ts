@@ -4,6 +4,7 @@ import {
   CONSTELLATION_SHAPES,
   type ConstellationShape,
 } from './constellationShapes';
+import { equatorialToDirection } from './equatorial';
 import { getConstellationViewSpinOffsetRad } from './constellationViewSpinOffset';
 
 const CANONICAL_FORWARD = new Vector3(0, 0, -1);
@@ -11,17 +12,6 @@ const ROLL_AXIS = new Vector3(0, 0, 1);
 const ROLL_STEPS = 72;
 /** Extra margin so lines, point sprites, and mobile HUD insets stay inside the frustum. */
 const FOV_MARGIN = 1.52;
-
-const toUnitDirection = (raHours: number, decDeg: number): Vector3 => {
-  const ra = (raHours / 24) * Math.PI * 2;
-  const dec = (decDeg * Math.PI) / 180;
-  const cosDec = Math.cos(dec);
-  return new Vector3(
-    cosDec * Math.cos(ra),
-    Math.sin(dec),
-    cosDec * Math.sin(ra),
-  ).normalize();
-};
 
 const maxHalfTanForRollPhi = (
   aligned: readonly Vector3[],
@@ -59,7 +49,10 @@ type OrientationPrep = {
 const prepareOrientation = (shape: ConstellationShape, aspect: number): OrientationPrep => {
   const safeAspect = Math.max(0.25, Math.min(4, aspect));
   const dirs: Vector3[] = shape.stars.map((s) =>
-    toUnitDirection(s.rightAscensionHours, s.declinationDeg),
+    equatorialToDirection({
+      rightAscensionHours: s.rightAscensionHours,
+      declinationDeg: s.declinationDeg,
+    }),
   );
 
   const centroid = new Vector3();

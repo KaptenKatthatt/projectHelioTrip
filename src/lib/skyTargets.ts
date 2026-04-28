@@ -1,25 +1,7 @@
 import { Vector3 } from 'three';
 import type { ConstellationId } from './constellations';
 import { CONSTELLATION_SHAPES } from './constellationShapes';
-
-type EquatorialTarget = {
-  readonly rightAscensionHours: number;
-  readonly declinationDeg: number;
-};
-
-const toDirection = ({
-  rightAscensionHours,
-  declinationDeg,
-}: EquatorialTarget): Vector3 => {
-  const ra = (rightAscensionHours / 24) * Math.PI * 2;
-  const dec = (declinationDeg * Math.PI) / 180;
-  const cosDec = Math.cos(dec);
-  return new Vector3(
-    cosDec * Math.cos(ra),
-    Math.sin(dec),
-    cosDec * Math.sin(ra),
-  ).normalize();
-};
+import { equatorialToDirection } from './equatorial';
 
 const getConstellationDirection = (id: ConstellationId): Vector3 => {
   const shape = CONSTELLATION_SHAPES[id];
@@ -27,7 +9,7 @@ const getConstellationDirection = (id: ConstellationId): Vector3 => {
 
   for (const star of shape.stars) {
     centroid.add(
-      toDirection({
+      equatorialToDirection({
         rightAscensionHours: star.rightAscensionHours,
         declinationDeg: star.declinationDeg,
       }),
