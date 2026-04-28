@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 import { AUTHOR_WEBSITE_URL } from "../lib/footerLinks";
-import { LanguageToggle } from "./LanguageToggle";
+import { LanguageToggle } from "./molecules/LanguageToggle";
 
 export const AboutDialog = () => {
   const { t } = useTranslation();

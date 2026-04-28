@@ -5,7 +5,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { formatDaysPerSecond } from "../../lib/timePlayback";
 import { ConstellationViewControls } from "../ConstellationViewControls";
 import { BottomSheet } from "./BottomSheet";
-import { TimePlaybackControls } from "../TimePlaybackControls";
+import { TimePlaybackControls } from "../organisms/TimePlaybackControls";
 
 export const MobileTimePill = () => {
   const { t } = useTranslation();

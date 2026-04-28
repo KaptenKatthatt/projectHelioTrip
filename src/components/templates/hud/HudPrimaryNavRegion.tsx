@@ -1,11 +1,11 @@
-import { CollapsibleHudPanel } from "../../CollapsibleHudPanel";
+import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
 import { FreeFlightHelp } from "../../FreeFlightHelp";
 import { FreeFlightHint } from "../../FreeFlightHint";
 import { FreeFlightMobileControls } from "../../FreeFlightMobileControls";
-import { MissionCard } from "../../MissionCard";
-import { NavigationAccordion } from "../../NavigationAccordion";
-import { PlanetPanel } from "../../PlanetPanel";
-import { ProgressPanel } from "../../ProgressPanel";
+import { MissionCard } from "../../organisms/MissionCard";
+import { NavigationAccordion } from "../../organisms/NavigationAccordion";
+import { PlanetPanel } from "../../organisms/PlanetPanel";
+import { ProgressPanel } from "../../organisms/ProgressPanel";
 
 type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;

@@ -1,7 +1,7 @@
 import type { GameMode } from "../../../lib/missions/types";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import { MobileBottomNav } from "../../MobileBottomNav";
-import { MobileTimePill } from "../../MobileTimePill";
+import { MobileTimePill } from "../../molecules/MobileTimePill";
 
 type HudMobileNavRegionProps = {
   readonly mobileLayout: boolean;

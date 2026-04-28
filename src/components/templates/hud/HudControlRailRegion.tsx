@@ -1,8 +1,8 @@
-import { AboutDialog } from "../../AboutDialog";
+import { AboutDialog } from "../../organisms/AboutDialog";
 import { ConstellationViewControls } from "../../ConstellationViewControls";
-import { FlightModeToggle } from "../../FlightModeToggle";
-import { GameModeSwitcher } from "../../GameModeSwitcher";
-import { TimePlaybackControls } from "../../TimePlaybackControls";
+import { FlightModeToggle } from "../../molecules/FlightModeToggle";
+import { GameModeSwitcher } from "../../molecules/GameModeSwitcher";
+import { TimePlaybackControls } from "../../organisms/TimePlaybackControls";
 
 type HudControlRailRegionProps = {
   readonly show: boolean;

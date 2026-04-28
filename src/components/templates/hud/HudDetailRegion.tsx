@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
-import { BottomSheet } from "../../BottomSheet";
-import { ConstellationList } from "../../ConstellationList";
-import { LanguageToggle } from "../../LanguageToggle";
-import { MissionCard } from "../../MissionCard";
-import { PlanetPanel } from "../../PlanetPanel";
-import { PlanetSelector } from "../../PlanetSelector";
-import { ProgressPanel } from "../../ProgressPanel";
-import { AboutDialog } from "../../AboutDialog";
-import { FlightModeToggle } from "../../FlightModeToggle";
+import { BottomSheet } from "../../molecules/BottomSheet";
+import { LanguageToggle } from "../../molecules/LanguageToggle";
+import { FlightModeToggle } from "../../molecules/FlightModeToggle";
+import { AboutDialog } from "../../organisms/AboutDialog";
+import { ConstellationList } from "../../organisms/ConstellationList";
+import { MissionCard } from "../../organisms/MissionCard";
+import { PlanetPanel } from "../../organisms/PlanetPanel";
+import { PlanetSelector } from "../../organisms/PlanetSelector";
+import { ProgressPanel } from "../../organisms/ProgressPanel";
 
 type HudDetailRegionProps = {
   readonly mobileLayout: boolean;

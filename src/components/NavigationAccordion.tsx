@@ -3,9 +3,9 @@ import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useStore } from "../store/useStore";
 import { matchesMobileLayout } from "../lib/mobileLayoutMedia";
 import { useTranslation } from "../hooks/useTranslation";
-import { ConstellationList } from "./ConstellationList";
-import { HudPanelToggleButton } from "./HudPanelToggleButton";
-import { PlanetSelector } from "./PlanetSelector";
+import { HudPanelToggleButton } from "./atoms/HudPanelToggleButton";
+import { ConstellationList } from "./organisms/ConstellationList";
+import { PlanetSelector } from "./organisms/PlanetSelector";
 
 type SectionId = "planets" | "constellations";
 

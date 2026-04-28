@@ -1,7 +1,7 @@
 import { Pause, Play } from "lucide-react";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useTimePlaybackState } from "../hooks/useTimePlaybackState";
-import { SolarSystemStartIcon } from "./SolarSystemStartIcon";
+import { SolarSystemStartIcon } from "./atoms/SolarSystemStartIcon";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
 import {

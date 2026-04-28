@@ -8,9 +8,9 @@ import {
 } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { HUD } from "./components/HUD";
-import { LoadingScreen } from "./components/LoadingScreen";
-import { SceneErrorBoundary } from "./components/SceneErrorBoundary";
+import { HUD } from "./components/templates/HUD";
+import { LoadingScreen } from "./components/templates/LoadingScreen";
+import { SceneErrorBoundary } from "./components/templates/SceneErrorBoundary";
 import { useStore } from "./store/useStore";
 import { parseShareLink } from "./lib/shareLink";
 
