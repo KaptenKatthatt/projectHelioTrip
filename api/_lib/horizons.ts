@@ -20,7 +20,6 @@ type FetchHorizonsOptions = {
 };
 
 export class HorizonsError extends Error {
-  override readonly name = 'HorizonsError';
 }
 
 export const fetchHorizonsVectors = async (
