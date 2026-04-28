@@ -34,8 +34,7 @@ export const CollapsibleHudPanel = ({
 }: CollapsibleHudPanelProps) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const rootClassName = className ?? 'relative';
-  const collapsedPanelClassName =
-    'pointer-events-auto rounded-2xl border border-white/10 bg-black/40 p-2.5 backdrop-blur-md';
+  const collapsedPanelClassName = 'pointer-events-auto ds-panel-tight';
 
   return (
     <div className={rootClassName}>

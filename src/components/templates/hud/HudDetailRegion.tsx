@@ -49,7 +49,7 @@ export const HudDetailRegion = ({
       >
         <div className="p-3">
           <PlanetSelector
-            className="pointer-events-auto flex w-full flex-col gap-0.5 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md"
+            className="pointer-events-auto ds-panel flex w-full flex-col gap-0.5 p-2"
             showHeading={false}
             largePlanetDots
             onSelect={() => {

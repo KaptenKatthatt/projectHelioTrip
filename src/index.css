@@ -9,8 +9,39 @@
   color-scheme: dark;
   color: #e6e6f0;
   background: #05060a;
+  --color-space-dark-100: hsl(223 25% 91%);
+  --color-space-dark-700: hsl(230 30% 15%);
+  --color-space-dark-800: hsl(231 38% 10%);
+  --color-nebula-primary-500: hsl(238 84% 60%);
+  --color-star-accent-500: hsl(186 88% 56%);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .ds-panel {
+    @apply rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md;
+  }
+
+  .ds-panel-tight {
+    @apply ds-panel p-2.5;
+  }
+
+  .ds-panel-control {
+    @apply ds-panel px-3 py-3 sm:px-4;
+  }
+
+  .ds-eyebrow {
+    @apply text-[10px] font-medium uppercase tracking-[0.2em] text-white/45;
+  }
 }
 
 html,

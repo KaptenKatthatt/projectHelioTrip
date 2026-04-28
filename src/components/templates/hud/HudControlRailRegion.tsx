@@ -20,7 +20,7 @@ export const HudControlRailRegion = ({
       <div className="flex flex-col items-center gap-2 lg:flex-row lg:justify-center">
         <TimePlaybackControls
           className={
-            "pointer-events-auto w-full max-w-3xl rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md sm:w-auto sm:px-4"
+            "pointer-events-auto ds-panel-control w-full max-w-3xl sm:w-auto"
           }
         />
         <div className="pointer-events-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 sm:w-auto">
