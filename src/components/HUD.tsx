@@ -25,6 +25,13 @@ import { PlanetSelector } from "./PlanetSelector";
 import { ProgressPanel } from "./ProgressPanel";
 import { TimePlaybackControls } from "./TimePlaybackControls";
 
+const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge">> = {
+  explore: "explore",
+  stars: "explore",
+  learn: "learn",
+  challenge: "challenge",
+};
+
 export const HUD = () => {
   const { t, bodyName } = useTranslation();
   const mobileLayout = useIsMobileLayout();
@@ -74,16 +81,12 @@ export const HUD = () => {
   const handleToggleNavSheet = (id: MobileHudSheetId): void => {
     const next = openNavSheet === id ? null : id;
     setOpenNavSheet(next);
-    if (next !== null) {
-      setMobilePlanetInfoSheetOpen(false);
-    }
-    if (next === "learn") {
-      setGameMode("learn");
-    } else if (next === "challenge") {
-      setGameMode("challenge");
-    } else if (next === "explore" || next === "stars") {
-      setGameMode("explore");
-    }
+    if (next === null) return;
+
+    setMobilePlanetInfoSheetOpen(false);
+    const nextGameMode = SHEET_GAME_MODE[next];
+    if (!nextGameMode) return;
+    setGameMode(nextGameMode);
   };
 
   const closeNavSheets = (): void => {
