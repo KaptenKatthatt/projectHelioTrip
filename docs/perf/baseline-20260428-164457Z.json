@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T16:44:57.151Z",
+  "frameStats": {
+    "capturedFrames": 1764,
+    "averageFps": 117.58588969319008,
+    "onePercentLowFps": 117.6470588235294,
+    "avgFrameMs": 8.504421768710863,
+    "p95FrameMs": 8.400000000001455,
+    "p99FrameMs": 8.5,
+    "maxFrameMs": 216.80000000000018,
+    "jankOver16": 6,
+    "jankOver50": 1,
+    "longTaskCount": 0,
+    "longTasksTotalMs": 0,
+    "longTasksMaxMs": 0
+  },
+  "cpuProfile": {
+    "totalSamples": 9700,
+    "topHotspots": [
+      {
+        "functionName": "(idle)",
+        "url": "",
+        "hitCount": 7470,
+        "hitPct": 77.01030927835052
+      },
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 358,
+        "hitPct": 3.690721649484536
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 116,
+        "hitPct": 1.1958762886597938
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777394650079",
+        "hitCount": 96,
+        "hitPct": 0.9896907216494845
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 68,
+        "hitPct": 0.7010309278350515
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 61,
+        "hitPct": 0.6288659793814433
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 48,
+        "hitPct": 0.49484536082474223
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 43,
+        "hitPct": 0.44329896907216493
+      },
+      {
+        "functionName": "bindVertexArray",
+        "url": "",
+        "hitCount": 39,
+        "hitPct": 0.4020618556701031
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 29,
+        "hitPct": 0.29896907216494845
+      }
+    ]
+  }
+}
