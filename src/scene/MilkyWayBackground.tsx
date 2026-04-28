@@ -225,6 +225,15 @@ type PointCloudData = {
   readonly sizes: Float32Array;
 };
 
+type OverlayShaderProps = {
+  readonly data: PointCloudData;
+  readonly opacity: number;
+  readonly pixelRatio: number;
+  readonly renderOrder: number;
+  readonly vertexShader: string;
+  readonly fragmentShader: string;
+};
+
 type NebulaCluster = {
   readonly theta: number;
   readonly u: number;
@@ -519,26 +528,20 @@ const MilkyWaySphere = (): ReactElement => {
   );
 };
 
-const MilkyWayStarOverlay = (): ReactElement => {
-  const preset = getGraphicsPreset();
-  const pixelRatio = useThree((s) => s.gl.getPixelRatio());
-  const starCloud = useMemo(
-    () => buildStarCloud(preset.milkyWayQuality),
-    [preset.milkyWayQuality],
-  );
-
+const PointCloudOverlay = ({
+  data,
+  opacity,
+  pixelRatio,
+  renderOrder,
+  vertexShader,
+  fragmentShader,
+}: OverlayShaderProps): ReactElement => {
   return (
-    <points renderOrder={-14} rotation={MILKY_WAY_ROTATION}>
+    <points renderOrder={renderOrder} rotation={MILKY_WAY_ROTATION}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[starCloud.positions, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          args={[starCloud.colors, 3]}
-        />
-        <bufferAttribute attach="attributes-size" args={[starCloud.sizes, 1]} />
+        <bufferAttribute attach="attributes-position" args={[data.positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[data.colors, 3]} />
+        <bufferAttribute attach="attributes-size" args={[data.sizes, 1]} />
       </bufferGeometry>
       <shaderMaterial
         transparent
@@ -548,12 +551,32 @@ const MilkyWayStarOverlay = (): ReactElement => {
         blending={AdditiveBlending}
         uniforms={{
           uPixelRatio: { value: pixelRatio },
-          uOpacity: { value: preset.milkyWayQuality.overlayStarOpacity },
+          uOpacity: { value: opacity },
         }}
-        vertexShader={STAR_VERTEX_SHADER}
-        fragmentShader={STAR_FRAGMENT_SHADER}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
       />
     </points>
+  );
+};
+
+const MilkyWayStarOverlay = (): ReactElement => {
+  const preset = getGraphicsPreset();
+  const pixelRatio = useThree((s) => s.gl.getPixelRatio());
+  const starCloud = useMemo(
+    () => buildStarCloud(preset.milkyWayQuality),
+    [preset.milkyWayQuality],
+  );
+
+  return (
+    <PointCloudOverlay
+      data={starCloud}
+      opacity={preset.milkyWayQuality.overlayStarOpacity}
+      pixelRatio={pixelRatio}
+      renderOrder={-14}
+      vertexShader={STAR_VERTEX_SHADER}
+      fragmentShader={STAR_FRAGMENT_SHADER}
+    />
   );
 };
 
@@ -566,32 +589,14 @@ const MilkyWayMicroStarOverlay = (): ReactElement => {
   );
 
   return (
-    <points renderOrder={-17} rotation={MILKY_WAY_ROTATION}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[starCloud.positions, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          args={[starCloud.colors, 3]}
-        />
-        <bufferAttribute attach="attributes-size" args={[starCloud.sizes, 1]} />
-      </bufferGeometry>
-      <shaderMaterial
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        toneMapped={false}
-        blending={AdditiveBlending}
-        uniforms={{
-          uPixelRatio: { value: pixelRatio },
-          uOpacity: { value: preset.milkyWayQuality.overlayMicroStarOpacity },
-        }}
-        vertexShader={STAR_VERTEX_SHADER}
-        fragmentShader={STAR_FRAGMENT_SHADER}
-      />
-    </points>
+    <PointCloudOverlay
+      data={starCloud}
+      opacity={preset.milkyWayQuality.overlayMicroStarOpacity}
+      pixelRatio={pixelRatio}
+      renderOrder={-17}
+      vertexShader={STAR_VERTEX_SHADER}
+      fragmentShader={STAR_FRAGMENT_SHADER}
+    />
   );
 };
 
@@ -604,35 +609,14 @@ const MilkyWayNebulaOverlay = (): ReactElement => {
   );
 
   return (
-    <points renderOrder={-16} rotation={MILKY_WAY_ROTATION}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[nebulaCloud.positions, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          args={[nebulaCloud.colors, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          args={[nebulaCloud.sizes, 1]}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        toneMapped={false}
-        blending={AdditiveBlending}
-        uniforms={{
-          uPixelRatio: { value: pixelRatio },
-          uOpacity: { value: preset.milkyWayQuality.nebulaOpacity },
-        }}
-        vertexShader={NEBULA_VERTEX_SHADER}
-        fragmentShader={NEBULA_FRAGMENT_SHADER}
-      />
-    </points>
+    <PointCloudOverlay
+      data={nebulaCloud}
+      opacity={preset.milkyWayQuality.nebulaOpacity}
+      pixelRatio={pixelRatio}
+      renderOrder={-16}
+      vertexShader={NEBULA_VERTEX_SHADER}
+      fragmentShader={NEBULA_FRAGMENT_SHADER}
+    />
   );
 };
 
@@ -645,29 +629,14 @@ const MilkyWayDeepSkyObjectOverlay = (): ReactElement => {
   );
 
   return (
-    <points renderOrder={-15} rotation={MILKY_WAY_ROTATION}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[cloud.positions, 3]}
-        />
-        <bufferAttribute attach="attributes-color" args={[cloud.colors, 3]} />
-        <bufferAttribute attach="attributes-size" args={[cloud.sizes, 1]} />
-      </bufferGeometry>
-      <shaderMaterial
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        toneMapped={false}
-        blending={AdditiveBlending}
-        uniforms={{
-          uPixelRatio: { value: pixelRatio },
-          uOpacity: { value: preset.milkyWayQuality.deepSkyObjectOpacity },
-        }}
-        vertexShader={DEEP_SKY_OBJECT_VERTEX_SHADER}
-        fragmentShader={DEEP_SKY_OBJECT_FRAGMENT_SHADER}
-      />
-    </points>
+    <PointCloudOverlay
+      data={cloud}
+      opacity={preset.milkyWayQuality.deepSkyObjectOpacity}
+      pixelRatio={pixelRatio}
+      renderOrder={-15}
+      vertexShader={DEEP_SKY_OBJECT_VERTEX_SHADER}
+      fragmentShader={DEEP_SKY_OBJECT_FRAGMENT_SHADER}
+    />
   );
 };
 

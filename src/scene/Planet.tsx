@@ -11,6 +11,7 @@ import {
   configureDataMap,
   getSurfaceTextures,
 } from '../lib/textures';
+import { resolveBodySpinY } from './bodySpin';
 import { Clouds } from './Clouds';
 import { Rings } from './Rings';
 
@@ -30,7 +31,6 @@ const GEOMETRY_ARGS: [number, number, number] = [
 ];
 /** Sun stays high-poly on all tiers so bloom + texture read like desktop. */
 const SUN_SPHERE_ARGS: [number, number, number] = [1, 64, 48];
-const TAU = Math.PI * 2;
 const MS_PER_HOUR = 3_600_000;
 
 export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
@@ -51,8 +51,7 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
     const spin = spinRef.current;
     if (spin) {
       const simMs = useStore.getState().simulationTime.getTime();
-      const phase = (simMs / periodMs) % 1;
-      spin.rotation.y = phase * TAU;
+      spin.rotation.y = resolveBodySpinY(simMs, periodMs);
     }
   });
 
