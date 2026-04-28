@@ -38,6 +38,33 @@ const localizedMission = (
 const localizedStep = (t: Translation, copyKey: string): string =>
   t.phase3.steps[copyKey] ?? copyKey;
 
+const resolveStepState = (
+  ordered: boolean,
+  completedStepIds: readonly string[],
+  completedMission: boolean,
+  stepId: string,
+  index: number,
+): { done: boolean; isCurrent: boolean } => {
+  const done = completedStepIds.includes(stepId);
+  const isCurrent =
+    !completedMission &&
+    !done &&
+    (!ordered || index === completedStepIds.length);
+  return { done, isCurrent };
+};
+
+const missionStepTextClass = (done: boolean, isCurrent: boolean): string => {
+  if (done) return "text-white/55 line-through decoration-emerald-300/60";
+  if (isCurrent) return "text-white";
+  return "text-white/65";
+};
+
+const missionStepDotClass = (done: boolean, isCurrent: boolean): string => {
+  if (done) return "bg-emerald-300";
+  if (isCurrent) return "bg-white";
+  return "bg-white/30";
+};
+
 export const MissionCard = ({
   className,
   compact = false,
@@ -158,33 +185,26 @@ export const MissionCard = ({
 
       <ol className="mt-3 flex flex-col gap-1">
         {activeMission.steps.map((step, index) => {
-          const done = activeProgress.completedStepIds.includes(step.id);
-          const isCurrent =
-            !activeProgress.completed &&
-            !done &&
-            (!activeMission.ordered ||
-              index === activeProgress.completedStepIds.length);
+          const { done, isCurrent } = resolveStepState(
+            activeMission.ordered,
+            activeProgress.completedStepIds,
+            activeProgress.completed,
+            step.id,
+            index,
+          );
           return (
             <li
               key={step.id}
               className={
                 "flex items-start gap-2 rounded-md px-1 py-1 text-xs " +
-                (done
-                  ? "text-white/55 line-through decoration-emerald-300/60"
-                  : isCurrent
-                    ? "text-white"
-                    : "text-white/65")
+                missionStepTextClass(done, isCurrent)
               }
             >
               <span
                 aria-hidden
                 className={
                   "mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full " +
-                  (done
-                    ? "bg-emerald-300"
-                    : isCurrent
-                      ? "bg-white"
-                      : "bg-white/30")
+                  missionStepDotClass(done, isCurrent)
                 }
               />
               <span className="min-w-0 flex-1">
