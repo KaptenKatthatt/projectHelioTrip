@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { useResponsiveLayout } from "../hooks/useResponsiveLayout";
 import { useTranslation } from "../hooks/useTranslation";
 import { getBodyColor } from "../lib/bodies";
 import type { MobileHudSheetId } from "../lib/mobileHudSheetIds";
@@ -20,7 +20,8 @@ const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "c
 
 export const HUD = () => {
   const { t, bodyName } = useTranslation();
-  const mobileLayout = useIsMobileLayout();
+  const layoutTier = useResponsiveLayout();
+  const mobileLayout = layoutTier === "compact";
   const activeBody = useStore((s) => s.activeBody);
   const viewMode = useStore((s) => s.viewMode);
   const gameMode = useStore((s) => s.gameMode);
@@ -85,7 +86,9 @@ export const HUD = () => {
         "pointer-events-none fixed inset-0 z-10 flex flex-col justify-between font-sans text-white " +
         (mobileLayout
           ? "p-3 pb-[calc(7rem+env(safe-area-inset-bottom))]"
-          : "p-3 sm:p-5")
+          : layoutTier === "expanded"
+            ? "p-5"
+            : "p-3 sm:p-5")
       }
     >
       <HudTopBarRegion
