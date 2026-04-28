@@ -110,7 +110,7 @@ const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
   high: {
     starsCount: 12_000,
     starsRadius: 2500,
-    asteroidCount: 3000,
+    asteroidCount: 2200,
     planetSphere: [64, 48],
     cloudSphere: [48, 32],
     orbitLineSegments: 512,
