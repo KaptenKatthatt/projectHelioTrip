@@ -133,7 +133,7 @@ const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
     },
     textureAnisotropy: 8,
     effectsMode: "full",
-    effectComposerMsaa: 4,
+    effectComposerMsaa: 2,
     antialias: true,
   },
   medium: {
