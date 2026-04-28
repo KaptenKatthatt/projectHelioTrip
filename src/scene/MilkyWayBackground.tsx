@@ -336,6 +336,25 @@ const pickNebulaColor = (seed: number): RgbTriplet => {
   return NEBULA_COLORS[colorIndex] ?? DEFAULT_NEBULA_COLOR;
 };
 
+const assignPointCloudEntry = (
+  positions: Float32Array,
+  colors: Float32Array,
+  index: number,
+  point: readonly [number, number, number],
+  color: RgbTriplet,
+  brightness: number,
+): void => {
+  const [x, y, z] = point;
+  const [red, green, blue] = color;
+  const offset = index * 3;
+  positions[offset] = x;
+  positions[offset + 1] = y;
+  positions[offset + 2] = z;
+  colors[offset] = red * brightness;
+  colors[offset + 1] = green * brightness;
+  colors[offset + 2] = blue * brightness;
+};
+
 const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
   const positions = new Float32Array(quality.overlayStarCount * 3);
   const colors = new Float32Array(quality.overlayStarCount * 3);
@@ -366,13 +385,7 @@ const buildStarCloud = (quality: MilkyWayQualityPreset): PointCloudData => {
       lerp(0.62, 1.24, Math.pow(seededRandom(seed + 6), 4.4)) *
       lerp(1, 0.88, sizeRoll);
 
-    const offset = i * 3;
-    positions[offset] = x;
-    positions[offset + 1] = y;
-    positions[offset + 2] = z;
-    colors[offset] = red * brightness;
-    colors[offset + 1] = green * brightness;
-    colors[offset + 2] = blue * brightness;
+    assignPointCloudEntry(positions, colors, i, [x, y, z], [red, green, blue], brightness);
     sizes[i] = quality.overlayStarSize * lerp(0.72, 1.64, sizeRoll);
   }
 
@@ -398,13 +411,7 @@ const buildMicroStarCloud = (
     const [red, green, blue] = kelvinToRgb(temperature);
     const brightness = lerp(0.2, 0.48, Math.pow(seededRandom(seed + 5), 2.3));
 
-    const offset = i * 3;
-    positions[offset] = x;
-    positions[offset + 1] = y;
-    positions[offset + 2] = z;
-    colors[offset] = red * brightness;
-    colors[offset + 1] = green * brightness;
-    colors[offset + 2] = blue * brightness;
+    assignPointCloudEntry(positions, colors, i, [x, y, z], [red, green, blue], brightness);
     sizes[i] =
       quality.overlayMicroStarSize *
       lerp(0.58, 0.96, Math.pow(seededRandom(seed + 6), 2.6));

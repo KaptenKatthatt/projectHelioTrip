@@ -1,6 +1,6 @@
 import { Pause, Play } from "lucide-react";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
-import { useTimePlaybackDisabled } from "../hooks/useTimePlaybackDisabled";
+import { useTimePlaybackState } from "../hooks/useTimePlaybackState";
 import { SolarSystemStartIcon } from "./SolarSystemStartIcon";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
@@ -28,12 +28,10 @@ export const TimePlaybackControls = ({
   const { t } = useTranslation();
   const mobileLayout = useIsMobileLayout();
 
-  const isPlaying = useStore((s) => s.isPlaying);
-  const togglePlay = useStore((s) => s.togglePlay);
-  const timeScale = useStore((s) => s.timeScale);
+  const { isPlaying, togglePlay, timeScale, timePlaybackDisabled } =
+    useTimePlaybackState();
   const setTimeScale = useStore((s) => s.setTimeScale);
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
-  const timePlaybackDisabled = useTimePlaybackDisabled();
 
   return (
     <div
