@@ -1,0 +1,1 @@
+export { SceneErrorBoundary } from "../SceneErrorBoundary";
