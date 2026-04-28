@@ -46,12 +46,3 @@ const PLANET_MAP: ReadonlyMap<PlanetId, PlanetDefinition> = new Map(
 
 export const getPlanet = (id: PlanetId): PlanetDefinition | undefined =>
   PLANET_MAP.get(id);
-
-export const getPlanetPosition = (
-  id: PlanetId,
-  target?: Vector3,
-): Vector3 | null => {
-  const planet = PLANET_MAP.get(id);
-  if (!planet) return null;
-  return (target ?? new Vector3()).copy(planet.position);
-};

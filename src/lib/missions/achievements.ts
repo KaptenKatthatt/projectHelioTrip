@@ -53,7 +53,7 @@ const isSatelliteVisit = (event: AchievementTrigger): boolean => {
   return body?.kind === "satellite";
 };
 
-export const ACHIEVEMENT_DEFINITIONS: ReadonlyArray<AchievementDefinition> = [
+const ACHIEVEMENT_DEFINITIONS: ReadonlyArray<AchievementDefinition> = [
   { id: "first_planet", titleKey: "first_planet", matches: isPlanetVisit },
   { id: "first_moon", titleKey: "first_moon", matches: isMoonVisit },
   {

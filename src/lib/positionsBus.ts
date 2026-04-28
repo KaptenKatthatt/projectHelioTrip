@@ -20,8 +20,6 @@ const positions: Map<PlanetId, Vector3> = new Map(
   PLANETS.map((p) => [p.id, p.position.clone()] as const),
 );
 
-export const livePositions: ReadonlyMap<PlanetId, Vector3> = positions;
-
 export const getLivePosition = (id: PlanetId): Vector3 => {
   const pos = positions.get(id);
   if (!pos) {
@@ -65,8 +63,6 @@ const moonOffsets: Map<MoonId, Vector3> = (() => {
   return map;
 })();
 
-export const liveMoonOffsets: ReadonlyMap<MoonId, Vector3> = moonOffsets;
-
 export const getLiveMoonOffset = (id: MoonId): Vector3 => {
   const pos = moonOffsets.get(id);
   if (!pos) {
@@ -101,9 +97,6 @@ const satelliteOffsets: Map<SatelliteId, Vector3> = (() => {
   }
   return map;
 })();
-
-export const liveSatelliteOffsets: ReadonlyMap<SatelliteId, Vector3> =
-  satelliteOffsets;
 
 export const getLiveSatelliteOffset = (id: SatelliteId): Vector3 => {
   const pos = satelliteOffsets.get(id);

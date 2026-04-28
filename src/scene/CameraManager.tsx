@@ -23,7 +23,6 @@ import {
 } from "./cameraTravel";
 import { cameraTravelSpringProgressRef } from "./cameraTravelSpringProgress";
 
-export { CAMERA_TRAVEL_TOTAL_DURATION_MS } from "./cameraTravel";
 
 export const CameraManager = () => {
   const camera = useThree((s) => s.camera);

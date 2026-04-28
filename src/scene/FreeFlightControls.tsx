@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Euler, Vector3 } from "three";
+import { Euler, Vector3, type Camera } from "three";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import { useKeyboardMovement } from "../hooks/useKeyboardMovement";
 import { useEventListener } from "../hooks/useEventListener";
@@ -71,6 +71,62 @@ const COLLISION_BODIES: readonly CollisionBody[] = [
     radius: moon.radius,
   })),
 ];
+
+const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => {
+  if (body.kind === "planet") {
+    return target.copy(getLivePosition(body.id));
+  }
+  return target.copy(getLivePosition(body.parent)).add(getLiveMoonOffset(body.id));
+};
+
+const addMobileMoveInput = (
+  desired: Vector3,
+  right: Vector3,
+  forward: Vector3,
+): void => {
+  const { x: tx, y: ty } = freeFlightTouchBus.move;
+  const length = Math.hypot(tx, ty);
+  if (length < MOVE_TOUCH_DEADZONE) return;
+  const inv = 1 / length;
+  const nx = tx * inv;
+  const ny = ty * inv;
+  const mag = Math.min(1, (length - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE));
+  desired.addScaledVector(right, nx * mag);
+  desired.addScaledVector(forward, ny * mag);
+};
+
+const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number => {
+  let nearestSurface = Infinity;
+  for (const body of COLLISION_BODIES) {
+    setBodyCenter(body, center);
+    const surfaceDist = center.distanceTo(cameraPosition) - body.radius;
+    if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
+  }
+  if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
+  nearestSurface = Math.max(nearestSurface, MIN_SURFACE_DISTANCE);
+  return Math.min(
+    MAX_SPEED,
+    Math.max(
+      MIN_SPEED,
+      BASE_SPEED * Math.pow(nearestSurface / REFERENCE_DISTANCE, SPEED_EXPONENT),
+    ),
+  );
+};
+
+const applyMobileLook = (camera: Camera, delta: number): void => {
+  const { x: lx, y: ly } = freeFlightTouchBus.look;
+  const length = Math.hypot(lx, ly);
+  if (length < LOOK_TOUCH_DEADZONE) return;
+  const inv = 1 / length;
+  const nx = lx * inv;
+  const ny = ly * inv;
+  const mag = Math.min(1, (length - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE));
+  const lookEuler = new Euler().setFromQuaternion(camera.quaternion, "YXZ");
+  lookEuler.y -= nx * mag * LOOK_YAW_SPEED * delta;
+  lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
+  lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
+  camera.quaternion.setFromEuler(lookEuler);
+};
 
 export const FreeFlightControls = () => {
   const camera = useThree((s) => s.camera);
@@ -154,47 +210,11 @@ export const FreeFlightControls = () => {
       if (down) desired.addScaledVector(WORLD_UP, -1);
     }
 
-    if (isMobile) {
-      const { x: tx, y: ty } = freeFlightTouchBus.move;
-      const tlen = Math.hypot(tx, ty);
-      if (tlen >= MOVE_TOUCH_DEADZONE) {
-        const inv = 1 / tlen;
-        const nx = tx * inv;
-        const ny = ty * inv;
-        const mag = Math.min(
-          1,
-          (tlen - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE),
-        );
-        desired.addScaledVector(right, nx * mag);
-        desired.addScaledVector(forward, ny * mag);
-      }
-    }
+    if (isMobile) addMobileMoveInput(desired, right, forward);
 
     if (desired.lengthSq() > 0) {
       const { boost } = input.current;
-      let nearestSurface = Infinity;
-      for (const body of COLLISION_BODIES) {
-        if (body.kind === "planet") {
-          center.copy(getLivePosition(body.id));
-        } else {
-          center
-            .copy(getLivePosition(body.parent))
-            .add(getLiveMoonOffset(body.id));
-        }
-        const surfaceDist = center.distanceTo(camera.position) - body.radius;
-        if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
-      }
-      if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
-      nearestSurface = Math.max(nearestSurface, MIN_SURFACE_DISTANCE);
-
-      const dynamicSpeed = Math.min(
-        MAX_SPEED,
-        Math.max(
-          MIN_SPEED,
-          BASE_SPEED *
-            Math.pow(nearestSurface / REFERENCE_DISTANCE, SPEED_EXPONENT),
-        ),
-      );
+      const dynamicSpeed = resolveDesiredSpeed(camera.position, center);
       const speed = dynamicSpeed * (boost ? BOOST_MULTIPLIER : 1);
       desired.normalize().multiplyScalar(speed);
     }
@@ -219,13 +239,7 @@ export const FreeFlightControls = () => {
       );
       const softLimit = limit + softZone;
 
-      if (body.kind === "planet") {
-        center.copy(getLivePosition(body.id));
-      } else {
-        center
-          .copy(getLivePosition(body.parent))
-          .add(getLiveMoonOffset(body.id));
-      }
+      setBodyCenter(body, center);
 
       normal.copy(camera.position).sub(center);
       const currentDist = normal.length();
@@ -277,27 +291,7 @@ export const FreeFlightControls = () => {
 
     camera.position.copy(nextPosition);
 
-    if (isMobile) {
-      const { x: lx, y: ly } = freeFlightTouchBus.look;
-      const llen = Math.hypot(lx, ly);
-      if (llen >= LOOK_TOUCH_DEADZONE) {
-        const inv = 1 / llen;
-        const nx = lx * inv;
-        const ny = ly * inv;
-        const mag = Math.min(
-          1,
-          (llen - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE),
-        );
-        const lookEuler = new Euler().setFromQuaternion(
-          camera.quaternion,
-          "YXZ",
-        );
-        lookEuler.y -= nx * mag * LOOK_YAW_SPEED * delta;
-        lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
-        lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
-        camera.quaternion.setFromEuler(lookEuler);
-      }
-    }
+    if (isMobile) applyMobileLook(camera, delta);
   });
 
   /**

@@ -106,7 +106,7 @@ export type GraphicsPreset = {
   readonly antialias: boolean;
 };
 
-export const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
+const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
   high: {
     starsCount: 12_000,
     starsRadius: 2500,

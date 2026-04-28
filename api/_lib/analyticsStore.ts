@@ -80,11 +80,6 @@ const setCacheValue = (store: AnalyticsStore): AnalyticsStore => {
   cacheLoadedAtMs = Date.now();
   return store;
 };
-
-export const invalidateAnalyticsStoreCache = (): void => {
-  cache = null;
-  cacheLoadedAtMs = 0;
-};
 const isRpcNotDeployedError = (error: unknown): boolean => {
   if (!error || typeof error !== "object") return false;
   const maybeCode =

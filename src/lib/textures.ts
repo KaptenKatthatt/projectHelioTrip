@@ -18,7 +18,7 @@ export type CloudTextures = {
 const base = (body: PlanetId | MoonId, file: string): string =>
   `/textures/${body}/${file}`;
 
-export const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
+const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
   sun: { diffuse: base('sun', 'diffuse.webp') },
   mercury: { diffuse: base('mercury', 'diffuse.webp') },
   venus: { diffuse: base('venus', 'diffuse.webp') },
@@ -35,7 +35,7 @@ export const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
   pluto: { diffuse: base('pluto', 'diffuse.webp') },
 };
 
-export const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {
+const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {
   moon: { diffuse: base('moon', 'diffuse.webp') },
   io: { diffuse: base('io', 'diffuse.webp') },
   europa: { diffuse: base('europa', 'diffuse.webp') },
@@ -45,7 +45,7 @@ export const MOON_TEXTURES: Partial<Record<MoonId, SurfaceTextures>> = {
   triton: { diffuse: base('triton', 'diffuse.webp') },
 };
 
-export const CLOUD_TEXTURES: Partial<Record<PlanetId, CloudTextures>> = {
+const CLOUD_TEXTURES: Partial<Record<PlanetId, CloudTextures>> = {
   earth: { diffuse: base('earth', 'clouds.webp') },
 };
 
