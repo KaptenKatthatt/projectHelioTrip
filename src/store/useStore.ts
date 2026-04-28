@@ -112,20 +112,20 @@ type PersistedState = {
   unlockedAchievements: AchievementId[];
 };
 
+const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 const sanitizeMissionProgressEntry = (
   key: string,
   value: unknown,
 ): MissionProgress | null => {
   if (!isMissionId(key)) return null;
-  if (!value || typeof value !== "object") return null;
+  if (!isObjectRecord(value)) return null;
   const candidate = value as Partial<MissionProgress>;
-  const validCandidate =
-    typeof candidate.missionId === "string" &&
-    candidate.missionId === key &&
-    typeof candidate.startedAtMs === "number" &&
-    typeof candidate.completed === "boolean" &&
-    Array.isArray(candidate.completedStepIds);
-  if (!validCandidate) return null;
+  if (candidate.missionId !== key) return null;
+  if (typeof candidate.startedAtMs !== "number") return null;
+  if (typeof candidate.completed !== "boolean") return null;
+  if (!Array.isArray(candidate.completedStepIds)) return null;
 
   return {
     missionId: key,
