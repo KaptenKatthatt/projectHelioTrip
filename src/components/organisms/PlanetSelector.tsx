@@ -1,16 +1,15 @@
 import { useMemo } from "react";
-import { useStore } from "../store/useStore";
-import { PLANETS, type PlanetId } from "../lib/planets";
-import { MOONS, type MoonDefinition } from "../lib/moons";
-import { SATELLITES, type SatelliteDefinition } from "../lib/satellites";
-import type { BodyId } from "../lib/bodies";
-import { useTranslation } from "../hooks/useTranslation";
+import { useTranslation } from "../../hooks/useTranslation";
+import type { BodyId } from "../../lib/bodies";
+import { MOONS, type MoonDefinition } from "../../lib/moons";
+import { PLANETS, type PlanetId } from "../../lib/planets";
+import { SATELLITES, type SatelliteDefinition } from "../../lib/satellites";
+import { useStore } from "../../store/useStore";
 
 type PlanetSelectorProps = {
   readonly showHeading?: boolean;
   readonly className?: string;
   readonly onSelect?: (id: BodyId) => void;
-  /** Larger planet color dots (mobile bottom sheet). */
   readonly largePlanetDots?: boolean;
 };
 
@@ -136,7 +135,7 @@ export const PlanetSelector = ({
             type="button"
             onClick={() => handleSelect(row.id)}
             className={
-              "group relative flex items-center gap-2 rounded-lg py-1 pr-2.5 pl-6 text-left text-xs transition " +
+              "group relative flex items-center gap-2 rounded-lg py-1 pl-6 pr-2.5 text-left text-xs transition " +
               (isActive
                 ? "bg-white/15 text-white"
                 : "text-white/55 hover:bg-white/10 hover:text-white/90")

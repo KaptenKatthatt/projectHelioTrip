@@ -1,6 +1,6 @@
-import { useTranslation } from "../hooks/useTranslation";
-import { useStore } from "../store/useStore";
-import { GAME_MODES, type GameMode } from "../lib/missions/types";
+import { useTranslation } from "../../hooks/useTranslation";
+import { GAME_MODES, type GameMode } from "../../lib/missions/types";
+import { useStore } from "../../store/useStore";
 
 type GameModeSwitcherProps = {
   readonly className?: string;

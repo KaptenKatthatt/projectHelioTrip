@@ -5,7 +5,7 @@ import {
   type ReactNode,
 } from "react";
 import { RotateCcw, RotateCw } from "lucide-react";
-import { HudIconButton } from "./HudIconButton";
+import { HudIconButton } from "./atoms/HudIconButton";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
 import constellationLinesIcon from "../assets/constellation.png";

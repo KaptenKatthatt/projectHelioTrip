@@ -1,6 +1,6 @@
-import { Navigation, Rocket } from 'lucide-react';
-import { useStore } from '../store/useStore';
-import { useTranslation } from '../hooks/useTranslation';
+import { Navigation, Rocket } from "lucide-react";
+import { useTranslation } from "../../hooks/useTranslation";
+import { useStore } from "../../store/useStore";
 
 export const FlightModeToggle = () => {
   const { t } = useTranslation();
@@ -8,13 +8,13 @@ export const FlightModeToggle = () => {
   const setNavigationMode = useStore((s) => s.setNavigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
 
-  const isFree = navigationMode === 'free';
+  const isFree = navigationMode === "free";
   const Icon = isFree ? Navigation : Rocket;
   const label = isFree ? t.ui.autopilot : t.ui.freeFlight;
   const disabled = selectedConstellation !== null;
 
   const onClick = (): void => {
-    setNavigationMode(isFree ? 'cinematic' : 'free');
+    setNavigationMode(isFree ? "cinematic" : "free");
   };
 
   return (

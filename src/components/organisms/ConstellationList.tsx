@@ -1,12 +1,12 @@
 import { useMemo } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
 import {
   CONSTELLATION_MENU_ITEMS,
   CONSTELLATION_SEASON_ORDER,
   type ConstellationMenuItem,
   type ConstellationSeasonId,
-} from "../lib/constellations";
-import { useStore } from "../store/useStore";
-import { useTranslation } from "../hooks/useTranslation";
+} from "../../lib/constellations";
+import { useStore } from "../../store/useStore";
 
 const SEASON_LABEL_KEY: Record<
   ConstellationSeasonId,
@@ -64,8 +64,7 @@ export const ConstellationList = ({
           </div>
           {items.map((item) => {
             const isActive = selectedConstellation === item.id;
-            const primary =
-              locale === "sv" ? item.labelSv : item.labelEn;
+            const primary = locale === "sv" ? item.labelSv : item.labelEn;
             return (
               <button
                 key={item.id}

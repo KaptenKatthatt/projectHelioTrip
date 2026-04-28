@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import {
   freeFlightTouchBus,
   type FreeFlightTouchAxes,
-} from "../lib/freeFlightTouchBus";
+} from "../../lib/freeFlightTouchBus";
 
 const BASE_PX = 118;
 const THUMB_PX = 46;

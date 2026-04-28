@@ -1,3 +1,4 @@
+import { ExternalLink } from "lucide-react";
 import {
   type Dispatch,
   type SetStateAction,
@@ -6,20 +7,19 @@ import {
   useMemo,
   useState,
 } from "react";
-import { ExternalLink } from "lucide-react";
-import { useStore } from "../store/useStore";
+import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
+import { useTranslation } from "../../hooks/useTranslation";
+import { getBody } from "../../lib/bodies";
+import { AU_SCALE } from "../../lib/constants";
 import {
   getLiveMoonOffset,
   getLivePosition,
   getLiveSatelliteOffset,
-} from "../lib/positionsBus";
-import { getBody } from "../lib/bodies";
-import { AU_SCALE } from "../lib/constants";
-import type { PlanetId } from "../lib/planets";
-import { getWikipediaUrl } from "../lib/wikipedia";
-import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
-import { useTranslation } from "../hooks/useTranslation";
-import { PLANET_ORBITAL_ELEMENTS } from "../lib/orbitalElements";
+} from "../../lib/positionsBus";
+import type { PlanetId } from "../../lib/planets";
+import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
+import { getWikipediaUrl } from "../../lib/wikipedia";
+import { useStore } from "../../store/useStore";
 
 type Row = {
   label: string;
@@ -27,7 +27,6 @@ type Row = {
 };
 
 type PlanetPanelProps = {
-  /** Hide the title row (e.g. mobile bottom sheet supplies its own header). */
   readonly omitHeading?: boolean;
 };
 

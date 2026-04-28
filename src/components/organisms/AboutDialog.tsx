@@ -1,9 +1,9 @@
+import { Info } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
-import { Info } from "lucide-react";
-import { useTranslation } from "../hooks/useTranslation";
-import { AUTHOR_WEBSITE_URL } from "../lib/footerLinks";
-import { LanguageToggle } from "./LanguageToggle";
+import { useTranslation } from "../../hooks/useTranslation";
+import { AUTHOR_WEBSITE_URL } from "../../lib/footerLinks";
+import { LanguageToggle } from "../molecules/LanguageToggle";
 
 export const AboutDialog = () => {
   const { t } = useTranslation();
@@ -46,9 +46,7 @@ export const AboutDialog = () => {
                 className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
                 onClick={() => setOpen(false)}
               />
-              <div
-                className="relative z-10 flex w-full min-h-0 max-w-md flex-1 flex-col items-end gap-2 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:max-h-[min(90dvh,40rem)] sm:flex-none"
-              >
+              <div className="relative z-10 flex w-full min-h-0 max-w-md flex-1 flex-col items-end gap-2 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] sm:max-h-[min(90dvh,40rem)] sm:flex-none">
                 <LanguageToggle />
                 <div
                   role="dialog"

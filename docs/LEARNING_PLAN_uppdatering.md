@@ -188,13 +188,13 @@ Eleven klickar på en knapp i `PlanetPanel`: **"Jämför storlek"**. Appen zooma
 
 - Solen vs. Jupiter: "1302 Jupiters ryms i Solen"
 - Jupiter vs. Jorden: "1321 Jordar ryms i Jupiter"
-- Euopa vs. Månen: "Europa är ungefär lika stor som vår Måne"
+- Europa vs. Månen: "Europa är ungefär lika stor som vår Måne"
 
 Tekniskt: SVG-overlay i scenen, radier beräknade från `meanRadiusKm` som redan finns i body-data.
 
 ---
 
-### 3.6 XP och titlar – gamifierad progression (hög motivation, låg komplexitet)
+### 3.6 XP och titlar – gameifierad progression (hög motivation, låg komplexitet)
 
 **Vad:** Ersätt de 6 enkla achievement-flaggorna med ett XP-system med titlar som ger status och identitet.
 
@@ -232,7 +232,7 @@ title: TitleId;
 
 ### 3.7 Stjärnbildsberättelser (medel prioritet, låg komplexitet)
 
-**Vad:** Nuvarnade `ConstellationViewControls` visar bara stjärnornas namn. Lägg till ett "Berättelse"-kort som öppnas när eleven fokuserar en stjärnbild.
+**Vad:** Nuvarande `ConstellationViewControls` visar bara stjärnornas namn. Lägg till ett "Berättelse"-kort som öppnas när eleven fokuserar en stjärnbild.
 
 Innehåll per stjärnbild:
 
@@ -299,7 +299,7 @@ Alla texter skrivs som i18n-nycklar i `src/i18n/locales/sv.ts` och `en.ts`.
 
 ---
 
-## 6. Teknisk arkitektur – sammanfattningv
+## 6. Teknisk arkitektur – sammanfattning
 
 ### Nya filer att skapa
 

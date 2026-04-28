@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { useTranslation } from "../hooks/useTranslation";
-import { useStore } from "../store/useStore";
+import type { Translation } from "../../i18n/translations";
 import {
   MISSION_DEFINITIONS,
   getMissionDefinition,
-} from "../lib/missions/missionDefinitions";
-import { computeMissionProgressFraction } from "../lib/missions/missionEvaluator";
-import type { MissionDefinition, MissionProgress } from "../lib/missions/types";
-import type { Translation } from "../i18n/translations";
+} from "../../lib/missions/missionDefinitions";
+import { computeMissionProgressFraction } from "../../lib/missions/missionEvaluator";
+import type { MissionDefinition, MissionProgress } from "../../lib/missions/types";
+import { useStore } from "../../store/useStore";
+import { useTranslation } from "../../hooks/useTranslation";
 
 type MissionCardProps = {
   readonly className?: string;
@@ -134,10 +134,7 @@ export const MissionCard = ({
   const localized = localizedMission(t, activeMission);
   const totalSteps = activeMission.steps.length;
   const completedCount = activeProgress.completedStepIds.length;
-  const fraction = computeMissionProgressFraction(
-    activeMission,
-    activeProgress,
-  );
+  const fraction = computeMissionProgressFraction(activeMission, activeProgress);
   const fractionPercent = Math.round(fraction * 100);
 
   return (
@@ -207,9 +204,7 @@ export const MissionCard = ({
                   missionStepDotClass(done, isCurrent)
                 }
               />
-              <span className="min-w-0 flex-1">
-                {localizedStep(t, step.copyKey)}
-              </span>
+              <span className="min-w-0 flex-1">{localizedStep(t, step.copyKey)}</span>
             </li>
           );
         })}

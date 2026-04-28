@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTimePlaybackState } from "../../hooks/useTimePlaybackState";
+import { useTranslation } from "../../hooks/useTranslation";
+import { formatDaysPerSecond } from "../../lib/timePlayback";
+import { ConstellationViewControls } from "../ConstellationViewControls";
 import { BottomSheet } from "./BottomSheet";
-import { TimePlaybackControls } from "./TimePlaybackControls";
-import { useTimePlaybackState } from "../hooks/useTimePlaybackState";
-import { useTranslation } from "../hooks/useTranslation";
-import { formatDaysPerSecond } from "../lib/timePlayback";
-import { ConstellationViewControls } from "./ConstellationViewControls";
+import { TimePlaybackControls } from "../organisms/TimePlaybackControls";
 
 export const MobileTimePill = () => {
   const { t } = useTranslation();

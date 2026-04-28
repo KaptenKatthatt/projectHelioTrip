@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Store } from "../store/useStore";
 import { useStore } from "../store/useStore";
 import { mockMatchMedia, type MatchMediaController } from "../test/mockMatchMedia";
-import { TimePlaybackControls } from "./TimePlaybackControls";
+import { TimePlaybackControls } from "./organisms/TimePlaybackControls";
 
 const baseStoreState = (): Store => {
   const state = useStore.getState();

@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Store } from "../store/useStore";
 import { useStore } from "../store/useStore";
 import { mockMatchMedia } from "../test/mockMatchMedia";
-import { NavigationAccordion } from "./NavigationAccordion";
-import { PlanetSelector } from "./PlanetSelector";
+import { NavigationAccordion } from "./organisms/NavigationAccordion";
+import { PlanetSelector } from "./organisms/PlanetSelector";
 
 const baseStoreState = (): Store => {
   const state = useStore.getState();

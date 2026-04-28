@@ -1,6 +1,6 @@
-import { useTranslation } from "../hooks/useTranslation";
-import { SUPPORTED_LOCALES } from "../i18n/translations";
-import type { Locale } from "../i18n/translations";
+import type { Locale } from "../../i18n/translations";
+import { SUPPORTED_LOCALES } from "../../i18n/translations";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const SwedishFlag = () => (
   <svg viewBox="0 0 16 10" className="h-4 w-6 rounded-sm" aria-hidden>

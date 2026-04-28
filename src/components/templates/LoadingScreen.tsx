@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Rocket } from 'lucide-react';
-import { useTranslation } from '../hooks/useTranslation';
-import styles from './LoadingScreen.module.css';
+import { Rocket } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
+import styles from "../LoadingScreen.module.css";
 
 type Props = {
   readonly dismiss: boolean;
@@ -30,17 +30,17 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
 
     const el = rootRef.current;
     const onEnd = (e: TransitionEvent): void => {
-      if (e.propertyName !== 'opacity') return;
+      if (e.propertyName !== "opacity") return;
       if (dismissedRef.current) return;
       dismissedRef.current = true;
       window.clearTimeout(timer);
       onDismissedRef.current();
     };
 
-    el?.addEventListener('transitionend', onEnd);
+    el?.addEventListener("transitionend", onEnd);
     return () => {
       window.clearTimeout(timer);
-      el?.removeEventListener('transitionend', onEnd);
+      el?.removeEventListener("transitionend", onEnd);
     };
   }, [dismiss]);
 
@@ -48,7 +48,7 @@ export const LoadingScreen = ({ dismiss, onDismissed }: Props) => {
     <div
       ref={rootRef}
       className={styles.root}
-      data-dismiss={dismiss ? 'true' : 'false'}
+      data-dismiss={dismiss ? "true" : "false"}
       role="status"
       aria-busy={!dismiss}
       aria-labelledby="loading-screen-title"

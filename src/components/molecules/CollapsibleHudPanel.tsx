@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react';
-import { HudPanelToggleButton } from "./HudPanelToggleButton";
+import { useState, type ReactNode } from "react";
+import { HudPanelToggleButton } from "../atoms/HudPanelToggleButton";
 
 type CollapsibleHudPanelRenderContext = {
   readonly expandedCloseToggle: ReactNode;
@@ -33,16 +33,15 @@ export const CollapsibleHudPanel = ({
   showExpandedToggle = true,
 }: CollapsibleHudPanelProps) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const rootClassName = className ?? 'relative';
-  const collapsedPanelClassName =
-    'pointer-events-auto rounded-2xl border border-white/10 bg-black/40 p-2.5 backdrop-blur-md';
+  const rootClassName = className ?? "relative";
+  const collapsedPanelClassName = "pointer-events-auto ds-panel-tight";
 
   return (
     <div className={rootClassName}>
       <div
         className={
-          'overflow-hidden transition-[max-height,opacity] duration-200 ease-out ' +
-          (isCollapsed ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0')
+          "overflow-hidden transition-[max-height,opacity] duration-200 ease-out " +
+          (isCollapsed ? "max-h-20 opacity-100" : "max-h-0 opacity-0")
         }
       >
         <button
@@ -56,8 +55,7 @@ export const CollapsibleHudPanel = ({
             {collapsedTitlePrefix}
             <span
               className={
-                collapsedTitleClassName ??
-                'truncate text-sm font-medium text-white/85'
+                collapsedTitleClassName ?? "truncate text-sm font-medium text-white/85"
               }
             >
               {title}
@@ -73,8 +71,8 @@ export const CollapsibleHudPanel = ({
 
       <div
         className={
-          'relative overflow-hidden transition-[max-height,opacity] duration-200 ease-out ' +
-          (isCollapsed ? 'pointer-events-none max-h-0 opacity-0' : 'max-h-[80vh] opacity-100')
+          "relative overflow-hidden transition-[max-height,opacity] duration-200 ease-out " +
+          (isCollapsed ? "pointer-events-none max-h-0 opacity-0" : "max-h-[80vh] opacity-100")
         }
       >
         {collapseOnExpandedHeaderClick ? (
@@ -82,10 +80,10 @@ export const CollapsibleHudPanel = ({
             type="button"
             onClick={() => setIsCollapsed(true)}
             aria-label={`${collapseLabel}: ${title}`}
-            className="pointer-events-auto absolute top-0 left-0 right-11 z-10 h-14 rounded-t-2xl"
+            className="pointer-events-auto absolute left-0 right-11 top-0 z-10 h-14 rounded-t-2xl"
           />
         ) : null}
-        {typeof children === 'function' ? (
+        {typeof children === "function" ? (
           children({
             expandedCloseToggle: showExpandedToggle ? (
               <HudPanelToggleButton
@@ -102,7 +100,7 @@ export const CollapsibleHudPanel = ({
               <HudPanelToggleButton
                 onClick={() => setIsCollapsed(true)}
                 label={`${collapseLabel}: ${title}`}
-                className="pointer-events-auto absolute top-2 right-2 z-20"
+                className="pointer-events-auto absolute right-2 top-2 z-20"
                 expanded
               />
             ) : null}

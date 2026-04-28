@@ -27,9 +27,7 @@ type BottomSheetProps = {
   readonly scrimBlocksPointerEvents?: boolean;
 };
 
-/** Delay before starting slide so the browser paints `translate-y-full` first. */
 const SLIDE_UP_ENTER_DELAY_MS = 32;
-/** Planet info sheet: visible slide (~0.3s). */
 const SLIDE_UP_DURATION_MS = 300;
 
 export const BottomSheet = ({

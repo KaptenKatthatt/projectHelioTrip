@@ -1,21 +1,19 @@
 import { Pause, Play } from "lucide-react";
-import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
-import { useTimePlaybackState } from "../hooks/useTimePlaybackState";
-import { SolarSystemStartIcon } from "./SolarSystemStartIcon";
-import { useStore } from "../store/useStore";
-import { useTranslation } from "../hooks/useTranslation";
+import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
+import { useTimePlaybackState } from "../../hooks/useTimePlaybackState";
+import { useTranslation } from "../../hooks/useTranslation";
 import {
   formatDaysPerSecond,
   formatTimeScaleNumber,
   TIME_SPEED_PRESETS,
-} from "../lib/timePlayback";
+} from "../../lib/timePlayback";
+import { useStore } from "../../store/useStore";
+import { SolarSystemStartIcon } from "../atoms/SolarSystemStartIcon";
 
 type TimePlaybackControlsProps = {
   readonly className?: string;
   readonly onSpeedSelect?: (scale: number) => void;
-  /** When true (e.g. mobile "Tid" sheet), speed buttons show numbers only, no `d/s`. */
   readonly hideSpeedUnitOnPresets?: boolean;
-  /** When true, hide play/pause (e.g. sheet — pill already has transport). */
   readonly hidePlayPauseButton?: boolean;
 };
 

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { useTranslation } from "../hooks/useTranslation";
-import { useStore } from "../store/useStore";
-import { ACHIEVEMENT_IDS } from "../lib/missions/achievements";
-import { PLANETS } from "../lib/planets";
-import { MOONS } from "../lib/moons";
-import { SATELLITES } from "../lib/satellites";
+import { useTranslation } from "../../hooks/useTranslation";
+import { ACHIEVEMENT_IDS } from "../../lib/missions/achievements";
+import { MOONS } from "../../lib/moons";
+import { PLANETS } from "../../lib/planets";
+import { SATELLITES } from "../../lib/satellites";
+import { useStore } from "../../store/useStore";
 
 type ProgressPanelProps = {
   readonly className?: string;
