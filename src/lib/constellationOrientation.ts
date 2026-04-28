@@ -13,21 +13,30 @@ const ROLL_STEPS = 72;
 /** Extra margin so lines, point sprites, and mobile HUD insets stay inside the frustum. */
 const FOV_MARGIN = 1.52;
 
+const calculateMaxTanHalf = (
+  aligned: readonly Vector3[],
+  safeAspect: number,
+  rollQuat: Quaternion,
+): number => {
+  const tmp = new Vector3();
+  let maxTan = 0;
+  for (const direction of aligned) {
+    tmp.copy(direction).applyQuaternion(rollQuat);
+    if (tmp.z >= -1e-5) continue;
+    const ty = Math.abs(tmp.y) / -tmp.z;
+    const tx = Math.abs(tmp.x) / -tmp.z;
+    maxTan = Math.max(maxTan, ty, tx / safeAspect);
+  }
+  return maxTan;
+};
+
 const maxHalfTanForRollPhi = (
   aligned: readonly Vector3[],
   safeAspect: number,
   phi: number,
 ): number => {
   const rollQuat = new Quaternion().setFromAxisAngle(ROLL_AXIS, phi);
-  const tmp = new Vector3();
-  let maxTan = 0;
-  for (const d of aligned) {
-    tmp.copy(d).applyQuaternion(rollQuat);
-    if (tmp.z >= -1e-5) continue;
-    const ty = Math.abs(tmp.y) / -tmp.z;
-    const tx = Math.abs(tmp.x) / -tmp.z;
-    maxTan = Math.max(maxTan, ty, tx / safeAspect);
-  }
+  let maxTan = calculateMaxTanHalf(aligned, safeAspect, rollQuat);
   if (maxTan < 1e-6) {
     console.warn('constellationOrientation: degenerate figure (all stars behind camera), using fallback FOV');
     maxTan = Math.tan((18 * Math.PI) / 180);
@@ -64,21 +73,13 @@ const prepareOrientation = (shape: ConstellationShape, aspect: number): Orientat
   const aligned: Vector3[] = dirs.map((d) => d.clone().applyQuaternion(baseAlign));
 
   const rollQuat = new Quaternion();
-  const tmp = new Vector3();
   let bestPhi = 0;
   let bestTanHalf = Number.POSITIVE_INFINITY;
 
   for (let i = 0; i < ROLL_STEPS; i++) {
     const phi = ((i + 0.5) / ROLL_STEPS) * Math.PI * 2;
     rollQuat.setFromAxisAngle(ROLL_AXIS, phi);
-    let maxTan = 0;
-    for (const d of aligned) {
-      tmp.copy(d).applyQuaternion(rollQuat);
-      if (tmp.z >= -1e-5) continue;
-      const ty = Math.abs(tmp.y) / -tmp.z;
-      const tx = Math.abs(tmp.x) / -tmp.z;
-      maxTan = Math.max(maxTan, ty, tx / safeAspect);
-    }
+    let maxTan = calculateMaxTanHalf(aligned, safeAspect, rollQuat);
     if (maxTan < 1e-6) {
       maxTan = Math.tan((18 * Math.PI) / 180);
     }
