@@ -18,6 +18,7 @@
     "test:ci": "npm run test:unit && npm run test:e2e",
     "fallow": "npx fallow --summary",
     "fallow:json": "npx fallow --format json",
+    "perf:baseline": "node scripts/perf-baseline.mjs",
     "textures": "tsx scripts/download-textures.ts",
     "elements": "tsx scripts/generate-orbital-elements.ts",
     "preview": "vite preview"

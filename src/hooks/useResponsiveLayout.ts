@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useIsMobileLayout } from "./useIsMobileLayout";
 
-export type ResponsiveLayoutTier = "compact" | "medium" | "expanded";
+type ResponsiveLayoutTier = "compact" | "medium" | "expanded";
 
 const EXPANDED_LAYOUT_MEDIA_QUERY = "(min-width: 1280px)";
 
