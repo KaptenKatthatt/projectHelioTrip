@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export type MovementInput = {
+type MovementInput = {
   forward: boolean;
   back: boolean;
   left: boolean;

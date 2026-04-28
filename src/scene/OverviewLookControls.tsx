@@ -1,19 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { Euler } from "three";
-import { useStore } from "../store/useStore";
+import { useOverviewCinematicEnabled } from "../hooks/useOverviewCinematicEnabled";
 
 const LOOK_SENSITIVITY = 0.003;
 const MAX_PITCH = Math.PI / 2 - 0.05;
 export const OverviewLookControls = () => {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
-  const viewMode = useStore((s) => s.viewMode);
-  const navigationMode = useStore((s) => s.navigationMode);
-  const isTraveling = useStore((s) => s.isTraveling);
-
-  const enabled =
-    viewMode === "overview" && navigationMode === "cinematic" && !isTraveling;
+  const enabled = useOverviewCinematicEnabled();
 
   const dragActiveRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });

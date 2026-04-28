@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useOverviewCinematicEnabled } from '../hooks/useOverviewCinematicEnabled';
 import { getConstellationMinFovDegrees } from '../lib/constellationOrientation';
 import { INITIAL_OVERVIEW_FOV } from '../lib/initialCamera';
 import { getConstellationTargetFovDeg } from '../lib/constellationViewSettings';
@@ -52,24 +53,35 @@ const touchDistance = (touches: TouchList): number => {
   return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
 };
 
+const resolveFovLerpAlpha = (
+  delta: number,
+  selectedConstellation: string | null,
+  viewMode: string,
+  navigationMode: string,
+): number => {
+  const constellationFraming =
+    selectedConstellation !== null &&
+    viewMode === 'overview' &&
+    navigationMode === 'cinematic';
+  if (constellationFraming) {
+    return Math.min(1, delta * FOV_CONSTELLATION_SETTLE_PER_SEC);
+  }
+  return 1 - Math.pow(FOV_SMOOTHING, delta);
+};
+
 export const GlobalZoom = () => {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const gl = useThree((s) => s.gl);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
-  const isTraveling = useStore((s) => s.isTraveling);
   const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isMobileLayout = useIsMobileLayout();
+  const enabled = useOverviewCinematicEnabled();
 
   const targetFovRef = useRef(DEFAULT_FOV);
   const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
-
-  const enabled =
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic' &&
-    !isTraveling;
 
   useEffect(() => {
     perspectiveCameraRef.current =
@@ -194,13 +206,12 @@ export const GlobalZoom = () => {
     const current = perspectiveCamera.fov;
     if (Math.abs(target - current) < 0.01) return;
 
-    const constellationFraming =
-      selectedConstellation &&
-      viewMode === 'overview' &&
-      navigationMode === 'cinematic';
-    const alpha = constellationFraming
-      ? Math.min(1, delta * FOV_CONSTELLATION_SETTLE_PER_SEC)
-      : 1 - Math.pow(FOV_SMOOTHING, delta);
+    const alpha = resolveFovLerpAlpha(
+      delta,
+      selectedConstellation,
+      viewMode,
+      navigationMode,
+    );
     perspectiveCamera.fov = current + (target - current) * alpha;
     perspectiveCamera.updateProjectionMatrix();
   });

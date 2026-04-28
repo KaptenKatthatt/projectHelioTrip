@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
+import { useCloseCinematicBodyEnabled } from '../hooks/useCloseCinematicBodyEnabled';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
 
@@ -15,20 +16,13 @@ type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
   const activeBody = useStore((s) => s.activeBody);
-  const isTraveling = useStore((s) => s.isTraveling);
-  const viewMode = useStore((s) => s.viewMode);
-  const navigationMode = useStore((s) => s.navigationMode);
 
   const controlsRef = useRef<OrbitControlsRef>(null);
   const initializedRef = useRef(false);
   const tmpTarget = useMemo(() => new Vector3(), []);
   const tmpDelta = useMemo(() => new Vector3(), []);
 
-  const enabled =
-    !isTraveling &&
-    activeBody !== null &&
-    viewMode === 'close' &&
-    navigationMode === 'cinematic';
+  const enabled = useCloseCinematicBodyEnabled(activeBody !== null);
 
   /**
    * Re-initialize the orbit anchor whenever the active body changes or we

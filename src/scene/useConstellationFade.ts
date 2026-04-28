@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { ConstellationId } from '../lib/constellations';
 
-export const FADE_OUT_MS = 350;
-export const FADE_IN_MS = 300;
+const FADE_OUT_MS = 350;
+const FADE_IN_MS = 300;
 const FADE_OUT_SECONDS = FADE_OUT_MS / 1000;
 const FADE_IN_SECONDS = FADE_IN_MS / 1000;
 

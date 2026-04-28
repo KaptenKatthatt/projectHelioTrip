@@ -4,56 +4,9 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Store } from "../store/useStore";
 import { useStore } from "../store/useStore";
+import { mockMatchMedia } from "../test/mockMatchMedia";
 import { NavigationAccordion } from "./NavigationAccordion";
 import { PlanetSelector } from "./PlanetSelector";
-
-type MatchMediaController = {
-  restore: () => void;
-};
-
-const mockMatchMedia = (matches: boolean): MatchMediaController => {
-  const originalMatchMedia = window.matchMedia;
-
-  const matchMediaMock = vi
-    .fn()
-    .mockImplementation((query: string): MediaQueryList => {
-      const result: MediaQueryList = {
-        matches,
-        media: query,
-        onchange: null,
-        addListener: () => {
-          return;
-        },
-        removeListener: () => {
-          return;
-        },
-        addEventListener: () => {
-          return;
-        },
-        removeEventListener: () => {
-          return;
-        },
-        dispatchEvent: () => true,
-      };
-      return result;
-    });
-
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    writable: true,
-    value: matchMediaMock,
-  });
-
-  return {
-    restore: () => {
-      Object.defineProperty(window, "matchMedia", {
-        configurable: true,
-        writable: true,
-        value: originalMatchMedia,
-      });
-    },
-  };
-};
 
 const baseStoreState = (): Store => {
   const state = useStore.getState();

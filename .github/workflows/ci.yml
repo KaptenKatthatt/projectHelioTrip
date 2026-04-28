@@ -33,5 +33,9 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - name: Fallow report
+        run: npm run fallow
+        continue-on-error: true
+
       - name: Run E2E tests
         run: npm run test:e2e

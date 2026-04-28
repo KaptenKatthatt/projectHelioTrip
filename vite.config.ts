@@ -3,18 +3,42 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 const API_PORT = process.env.API_PORT ?? '3001';
+const NODE_MODULES_SEGMENT = 'node_modules';
+const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 
-const normalizeHostUrl = (raw: string | undefined): string => {
+export const normalizeHostUrl = (raw: string | undefined): string => {
   const trimmed = raw?.trim() ?? '';
   if (!trimmed) return '';
-  const noTrailingSlash = trimmed.replace(/\/$/, '');
+  const noTrailingSlash = trimTrailingSlash(trimmed);
   return noTrailingSlash.startsWith('http')
     ? noTrailingSlash
     : `https://${noTrailingSlash}`;
 };
 
+const resolveHostProviderOrigin = (): string => {
+  const vercelProduction = normalizeHostUrl(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  );
+  if (vercelProduction) return vercelProduction;
+
+  const cloudflare = normalizeHostUrl(process.env.CF_PAGES_URL);
+  if (cloudflare) return cloudflare;
+
+  const vercelPreview = normalizeHostUrl(process.env.VERCEL_URL);
+  if (vercelPreview) return vercelPreview;
+
+  if (process.env.NETLIFY === 'true') {
+    const netlifyRaw =
+      process.env.DEPLOY_PRIME_URL?.trim() || process.env.URL?.trim();
+    const netlify = normalizeHostUrl(netlifyRaw);
+    if (netlify) return netlify;
+  }
+
+  return '';
+};
+
 /** Open Graph / Twitter require absolute image URLs; Facebook rejects root-relative paths. */
-function resolvePublicSiteOrigin(
+export function resolvePublicSiteOrigin(
   mode: string,
   env: Record<string, string>,
 ): string {
@@ -22,30 +46,11 @@ function resolvePublicSiteOrigin(
     env.VITE_PUBLIC_SITE_URL ??
     process.env.VITE_PUBLIC_SITE_URL ??
     ''
-  ).replace(/\/$/, '');
-  if (explicit) return explicit;
+  ).trim();
+  if (explicit) return trimTrailingSlash(explicit);
 
-  // Stable production hostname (no scheme); set on all Vercel builds — good for og:image URLs.
-  const vercelProduction = normalizeHostUrl(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-  );
-  if (vercelProduction) {
-    return vercelProduction;
-  }
-
-  const cf = process.env.CF_PAGES_URL?.trim();
-  if (cf) return cf.replace(/\/$/, '');
-
-  const vercel = normalizeHostUrl(process.env.VERCEL_URL);
-  if (vercel) {
-    return vercel;
-  }
-
-  if (process.env.NETLIFY === 'true') {
-    const netlify =
-      process.env.DEPLOY_PRIME_URL?.trim() || process.env.URL?.trim();
-    if (netlify) return netlify.replace(/\/$/, '');
-  }
+  const providerOrigin = resolveHostProviderOrigin();
+  if (providerOrigin) return providerOrigin;
 
   if (mode === 'production') {
     throw new Error(
@@ -55,6 +60,59 @@ function resolvePublicSiteOrigin(
 
   return '';
 }
+
+export const resolveDreiChunk = (id: string): string => {
+  if (id.includes('/core/')) {
+    if (id.includes('/Stars')) return 'vendor-drei-stars';
+    if (id.includes('/OrbitControls') || id.includes('/PointerLockControls')) {
+      return 'vendor-drei-controls';
+    }
+    if (id.includes('/Html') || id.includes('/Line')) {
+      return 'vendor-drei-ui3d';
+    }
+    if (id.includes('/Texture') || id.includes('/useTexture')) {
+      return 'vendor-drei-textures';
+    }
+    return 'vendor-drei-core';
+  }
+  if (id.includes('/web/')) return 'vendor-drei-web';
+  if (id.includes('/helpers/')) return 'vendor-drei-helpers';
+  if (id.includes('/materials/')) return 'vendor-drei-materials';
+  return 'vendor-drei-misc';
+};
+
+export const resolveManualChunk = (id: string): string | undefined => {
+  if (!id.includes(NODE_MODULES_SEGMENT)) return undefined;
+
+  if (id.includes('@react-three/drei')) return resolveDreiChunk(id);
+
+  const rules: Array<[(moduleId: string) => boolean, string]> = [
+    [(moduleId) => moduleId.includes('/three/'), 'vendor-three'],
+    [(moduleId) => moduleId.includes('@react-three/fiber'), 'vendor-r3f'],
+    [(moduleId) => moduleId.includes('/three-stdlib/'), 'vendor-stdlib'],
+    [
+      (moduleId) =>
+        moduleId.includes('@react-three/postprocessing') ||
+        moduleId.includes('/postprocessing/'),
+      'vendor-postfx',
+    ],
+    [(moduleId) => moduleId.includes('@react-spring/three'), 'vendor-spring3d'],
+    [
+      (moduleId) =>
+        moduleId.includes('/react/') ||
+        moduleId.includes('/react-dom/') ||
+        moduleId.includes('/zustand/'),
+      'vendor-react',
+    ],
+    [(moduleId) => moduleId.includes('/lucide-react/'), 'vendor-ui'],
+  ];
+
+  for (const [matches, chunk] of rules) {
+    if (matches(id)) return chunk;
+  }
+
+  return 'vendor-misc';
+};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -76,100 +134,32 @@ export default defineConfig(({ mode }) => {
       : '';
 
   return {
-  plugins: [
-    react(),
-    tailwindcss(),
-    {
-      name: 'html-public-site-url',
-      transformIndexHtml(html) {
-        return html
-          .replaceAll('__PUBLIC_SITE_URL__', publicSiteUrl)
-          .replace('__FB_APP_ID_META__', facebookAppIdMeta);
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'html-public-site-url',
+        transformIndexHtml(html) {
+          return html
+            .replaceAll('__PUBLIC_SITE_URL__', publicSiteUrl)
+            .replace('__FB_APP_ID_META__', facebookAppIdMeta);
+        },
       },
-    },
-  ],
-  build: {
-    rolldownOptions: {
-      output: {
-        manualChunks: (id: string) => {
-          if (!id.includes('node_modules')) return undefined;
-
-          if (id.includes('/three/')) {
-            return 'vendor-three';
-          }
-
-          if (id.includes('@react-three/fiber')) {
-            return 'vendor-r3f';
-          }
-
-          if (id.includes('/three-stdlib/')) {
-            return 'vendor-stdlib';
-          }
-
-          if (id.includes('@react-three/drei')) {
-            if (id.includes('/core/')) {
-              if (id.includes('/Stars')) return 'vendor-drei-stars';
-              if (
-                id.includes('/OrbitControls') ||
-                id.includes('/PointerLockControls')
-              ) {
-                return 'vendor-drei-controls';
-              }
-              if (id.includes('/Html') || id.includes('/Line')) {
-                return 'vendor-drei-ui3d';
-              }
-              if (id.includes('/Texture') || id.includes('/useTexture')) {
-                return 'vendor-drei-textures';
-              }
-              return 'vendor-drei-core';
-            }
-            if (id.includes('/web/')) {
-              return 'vendor-drei-web';
-            }
-            if (id.includes('/helpers/')) {
-              return 'vendor-drei-helpers';
-            }
-            if (id.includes('/materials/')) {
-              return 'vendor-drei-materials';
-            }
-            return 'vendor-drei-misc';
-          }
-
-          if (
-            id.includes('@react-three/postprocessing') ||
-            id.includes('/postprocessing/')
-          ) {
-            return 'vendor-postfx';
-          }
-
-          if (id.includes('@react-spring/three')) {
-            return 'vendor-spring3d';
-          }
-
-          if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/zustand/')
-          ) {
-            return 'vendor-react';
-          }
-
-          if (id.includes('/lucide-react/')) {
-            return 'vendor-ui';
-          }
-
-          return 'vendor-misc';
+    ],
+    build: {
+      rolldownOptions: {
+        output: {
+          manualChunks: resolveManualChunk,
         },
       },
     },
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: `http://localhost:${API_PORT}`,
-        changeOrigin: true,
+    server: {
+      proxy: {
+        '/api': {
+          target: `http://localhost:${API_PORT}`,
+          changeOrigin: true,
+        },
       },
     },
-  },
-};
+  };
 });

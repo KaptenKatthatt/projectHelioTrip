@@ -8,6 +8,29 @@ type AppModule = typeof import("./app");
 
 const ORIGINAL_ENV = { ...process.env };
 const tempDirs: string[] = [];
+const createTempDir = async (): Promise<string> => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
+  tempDirs.push(tempDir);
+  return tempDir;
+};
+
+const postAnalyticsEvent = (
+  app: {
+    request: (
+      input: string,
+      init?: RequestInit,
+    ) => Response | Promise<Response>;
+  },
+  body: Record<string, unknown>,
+) => {
+  return Promise.resolve(
+    app.request("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+  );
+};
 
 const loadApp = async ({
   analyticsFilePath,
@@ -26,6 +49,15 @@ const loadApp = async ({
   return import("./app");
 };
 
+const createTestApp = async (analyticsAdminToken?: string) => {
+  const tempDir = await createTempDir();
+  const { buildApp } = await loadApp({
+    analyticsFilePath: path.join(tempDir, "events.json"),
+    analyticsAdminToken,
+  });
+  return buildApp();
+};
+
 describe("analytics API routes", () => {
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
@@ -36,18 +68,9 @@ describe("analytics API routes", () => {
   });
 
   it("returns 400 for invalid analytics event payload", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-    });
-    const app = buildApp();
+    const app = await createTestApp();
 
-    const response = await app.request("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "not_valid_event" }),
-    });
+    const response = await postAnalyticsEvent(app, { name: "not_valid_event" });
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
@@ -56,17 +79,11 @@ describe("analytics API routes", () => {
   });
 
   it("records a valid analytics event", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-    });
-    const app = buildApp();
+    const app = await createTestApp();
 
-    const response = await app.request("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "play_clicked", payload: {} }),
+    const response = await postAnalyticsEvent(app, {
+      name: "play_clicked",
+      payload: {},
     });
 
     expect(response.status).toBe(200);
@@ -74,13 +91,7 @@ describe("analytics API routes", () => {
   });
 
   it("protects analytics summary with token when configured", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "heliotrip-app-"));
-    tempDirs.push(tempDir);
-    const { buildApp } = await loadApp({
-      analyticsFilePath: path.join(tempDir, "events.json"),
-      analyticsAdminToken: "topsecret",
-    });
-    const app = buildApp();
+    const app = await createTestApp("topsecret");
 
     const forbidden = await app.request("/api/analytics/summary");
     expect(forbidden.status).toBe(403);

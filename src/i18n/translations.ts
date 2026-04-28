@@ -135,7 +135,7 @@ export type Translation = {
 
 export const translations: Record<Locale, Translation> = { en, sv };
 
-export const DEFAULT_LOCALE: Locale = "sv";
+const DEFAULT_LOCALE: Locale = "sv";
 
 export const SUPPORTED_LOCALES: readonly Locale[] = ["sv", "en"];
 

@@ -12,9 +12,9 @@ import {
 import { getLivePosition } from "../lib/positionsBus";
 import type { ViewMode } from "../store/useStore";
 
-export const AIM_DURATION_MS = 1600;
+const AIM_DURATION_MS = 1600;
 const FLY_DURATION_MS = 3400;
-export const CAMERA_TRAVEL_TOTAL_DURATION_MS =
+const CAMERA_TRAVEL_TOTAL_DURATION_MS =
   AIM_DURATION_MS + FLY_DURATION_MS;
 export const TOTAL_TRAVEL_DURATION_MS = CAMERA_TRAVEL_TOTAL_DURATION_MS;
 export const AIM_FRACTION = AIM_DURATION_MS / TOTAL_TRAVEL_DURATION_MS;
@@ -32,7 +32,7 @@ export const OVERVIEW_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
 export const OVERVIEW_TARGET = INITIAL_OVERVIEW_TARGET.clone();
 export const WORLD_UP = new Vector3(0, 1, 0);
 
-export type CameraTravelStateSnapshot = {
+type CameraTravelStateSnapshot = {
   viewMode: ViewMode;
   activeBody: BodyId | null;
 };
@@ -42,13 +42,13 @@ type BaseTravel = {
   startForward: Vector3;
 };
 
-export type BodyTravel = BaseTravel & {
+type BodyTravel = BaseTravel & {
   kind: "body";
   bodyId: BodyId;
   viewDistance: number;
 };
 
-export type OverviewTravel = BaseTravel & {
+type OverviewTravel = BaseTravel & {
   kind: "overview";
 };
 
@@ -100,7 +100,7 @@ const PLANET_SIDE_FACTOR = 0.75;
  */
 const PLANET_CAMERA_HEIGHT = 0.45;
 
-export const computePlanetEndPos = (
+const computePlanetEndPos = (
   planetPos: Vector3,
   viewDistance: number,
   out: Vector3,
@@ -121,7 +121,7 @@ export const computePlanetEndPos = (
   out.add(planetPos);
 };
 
-export const computeChildBodyEndPos = (
+const computeChildBodyEndPos = (
   childPos: Vector3,
   parentPos: Vector3,
   viewDistance: number,

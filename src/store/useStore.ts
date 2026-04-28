@@ -33,14 +33,14 @@ import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
 
 export type ViewMode = "close" | "overview";
 
-export type NavigationMode = "cinematic" | "free";
+type NavigationMode = "cinematic" | "free";
 
-export type RecentAchievement = {
+type RecentAchievement = {
   readonly id: AchievementId;
   readonly unlockedAtMs: number;
 };
 
-export type SimulationState = {
+type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
   isTraveling: boolean;
@@ -71,7 +71,7 @@ export type SimulationState = {
   mobilePlanetInfoSheetOpen: boolean;
 };
 
-export type SimulationActions = {
+type SimulationActions = {
   setActiveBody: (id: BodyId | null) => void;
   setCameraPosition: (position: Vector3) => void;
   setIsTraveling: (traveling: boolean) => void;
@@ -112,36 +112,42 @@ type PersistedState = {
   unlockedAchievements: AchievementId[];
 };
 
+const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const sanitizeMissionProgressEntry = (
+  key: string,
+  value: unknown,
+): MissionProgress | null => {
+  if (!isMissionId(key)) return null;
+  if (!isObjectRecord(value)) return null;
+  const candidate = value as Partial<MissionProgress>;
+  if (candidate.missionId !== key) return null;
+  if (typeof candidate.startedAtMs !== "number") return null;
+  if (typeof candidate.completed !== "boolean") return null;
+  if (!Array.isArray(candidate.completedStepIds)) return null;
+
+  return {
+    missionId: key,
+    startedAtMs: candidate.startedAtMs,
+    completedStepIds: candidate.completedStepIds.filter(
+      (id): id is string => typeof id === "string",
+    ),
+    completed: candidate.completed,
+    completedAtMs:
+      typeof candidate.completedAtMs === "number" ? candidate.completedAtMs : null,
+  };
+};
+
 const sanitizeMissionProgressMap = (
   raw: unknown,
 ): Record<string, MissionProgress> => {
   if (!raw || typeof raw !== "object") return {};
   const out: Record<string, MissionProgress> = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (!isMissionId(key)) continue;
-    if (!value || typeof value !== "object") continue;
-    const candidate = value as Partial<MissionProgress>;
-    if (
-      typeof candidate.missionId !== "string" ||
-      candidate.missionId !== key ||
-      typeof candidate.startedAtMs !== "number" ||
-      typeof candidate.completed !== "boolean" ||
-      !Array.isArray(candidate.completedStepIds)
-    ) {
-      continue;
-    }
-    out[key] = {
-      missionId: key,
-      startedAtMs: candidate.startedAtMs,
-      completedStepIds: candidate.completedStepIds.filter(
-        (id): id is string => typeof id === "string",
-      ),
-      completed: candidate.completed,
-      completedAtMs:
-        typeof candidate.completedAtMs === "number"
-          ? candidate.completedAtMs
-          : null,
-    };
+    const sanitized = sanitizeMissionProgressEntry(key, value);
+    if (!sanitized) continue;
+    out[key] = sanitized;
   }
   return out;
 };
@@ -156,6 +162,53 @@ const sanitizeAchievements = (raw: unknown): AchievementId[] => {
   return raw.filter(isAchievementId);
 };
 
+const applyMissionEventProgress = (
+  state: Store,
+  event: MissionDomainEvent,
+  nowMs: number,
+): void => {
+  if (state.activeMissionId === null) return;
+  const mission = getMissionDefinition(state.activeMissionId);
+  const progress = state.missionProgress[state.activeMissionId];
+  if (!mission || !progress || progress.completed) return;
+
+  const result = evaluateMissionStep({
+    mission,
+    progress,
+    event,
+    nowMs,
+  });
+  if (result.newlyCompletedStepIds.length === 0) return;
+
+  useStore.setState({
+    missionProgress: {
+      ...state.missionProgress,
+      [mission.id]: result.progress,
+    },
+  });
+  for (const stepId of result.newlyCompletedStepIds) {
+    analytics.missionStepCompleted(mission.id, stepId);
+  }
+  if (!result.missionJustCompleted) return;
+  analytics.missionCompleted(mission.id);
+  unlockAchievements({ kind: "mission_completed" }, nowMs);
+};
+
+const resolveAchievementTrigger = (
+  event: MissionDomainEvent,
+): AchievementTrigger | null => {
+  if (event.kind === "body_focused") {
+    return { kind: "body_visited", bodyId: event.bodyId };
+  }
+  if (event.kind === "navigation_mode_changed" && event.mode === "free") {
+    return { kind: "free_flight_activated" };
+  }
+  if (event.kind === "constellation_focused") {
+    return { kind: "constellation_focused" };
+  }
+  return null;
+};
+
 /**
  * Side-effecting domain dispatcher: runs the pure mission evaluator
  * and achievement matcher against the current store snapshot, then
@@ -164,45 +217,10 @@ const sanitizeAchievements = (raw: unknown): AchievementId[] => {
 const dispatchDomainEvent = (event: MissionDomainEvent): void => {
   const state = useStore.getState();
   const nowMs = Date.now();
-
-  if (state.activeMissionId !== null) {
-    const mission = getMissionDefinition(state.activeMissionId);
-    const progress = state.missionProgress[state.activeMissionId];
-    if (mission && progress && !progress.completed) {
-      const result = evaluateMissionStep({
-        mission,
-        progress,
-        event,
-        nowMs,
-      });
-      if (result.newlyCompletedStepIds.length > 0) {
-        useStore.setState({
-          missionProgress: {
-            ...state.missionProgress,
-            [mission.id]: result.progress,
-          },
-        });
-        for (const stepId of result.newlyCompletedStepIds) {
-          analytics.missionStepCompleted(mission.id, stepId);
-        }
-        if (result.missionJustCompleted) {
-          analytics.missionCompleted(mission.id);
-          unlockAchievements({ kind: "mission_completed" }, nowMs);
-        }
-      }
-    }
-  }
-
-  if (event.kind === "body_focused") {
-    unlockAchievements({ kind: "body_visited", bodyId: event.bodyId }, nowMs);
-  } else if (
-    event.kind === "navigation_mode_changed" &&
-    event.mode === "free"
-  ) {
-    unlockAchievements({ kind: "free_flight_activated" }, nowMs);
-  } else if (event.kind === "constellation_focused") {
-    unlockAchievements({ kind: "constellation_focused" }, nowMs);
-  }
+  applyMissionEventProgress(state, event, nowMs);
+  const achievementTrigger = resolveAchievementTrigger(event);
+  if (!achievementTrigger) return;
+  unlockAchievements(achievementTrigger, nowMs);
 };
 
 const unlockAchievements = (
@@ -230,6 +248,64 @@ const recordVisitedBody = (id: BodyId): void => {
   const next = [...state.visitedBodies, id];
   useStore.setState({ visitedBodies: next });
   analytics.checklistProgress(next.length);
+};
+
+const buildShareLinkPartialState = (
+  snapshot: ShareLinkState,
+  state: Store,
+): Partial<SimulationState> => {
+  const partial: Partial<SimulationState> = {};
+
+  if (snapshot.gameMode !== null) {
+    if (snapshot.gameMode !== state.gameMode) {
+      analytics.modeChanged(snapshot.gameMode);
+    }
+    partial.gameMode = snapshot.gameMode;
+  }
+  if (snapshot.simulationTimeMs !== null) {
+    partial.simulationTime = new Date(snapshot.simulationTimeMs);
+  }
+  if (snapshot.timeScale !== null) {
+    partial.timeScale = snapshot.timeScale;
+  }
+  if (snapshot.navigationMode !== null) {
+    partial.navigationMode = snapshot.navigationMode;
+  }
+  if (snapshot.bodyId !== null) {
+    partial.activeBody = snapshot.bodyId;
+    partial.isTraveling = true;
+    partial.viewMode = "close";
+    partial.travelId = state.travelId + 1;
+    partial.selectedConstellation = null;
+    partial.constellationUserSpinRad = 0;
+  }
+  if (snapshot.missionId !== null) {
+    partial.activeMissionId = snapshot.missionId;
+    const existing = state.missionProgress[snapshot.missionId];
+    partial.missionProgress = {
+      ...state.missionProgress,
+      [snapshot.missionId]:
+        existing ?? createInitialProgress(snapshot.missionId, Date.now()),
+    };
+  }
+
+  return partial;
+};
+
+const trackShareLinkRestoreAnalytics = (
+  snapshot: ShareLinkState,
+  state: Store,
+): void => {
+  analytics.shareLinkRestored(
+    inferShareLinkContextType({
+      bodyId: snapshot.bodyId,
+      simulationTimeMs: snapshot.simulationTimeMs ?? state.simulationTime.getTime(),
+      timeScale: snapshot.timeScale ?? state.timeScale,
+      gameMode: snapshot.gameMode ?? state.gameMode,
+      missionId: snapshot.missionId,
+      navigationMode: snapshot.navigationMode ?? state.navigationMode,
+    }),
+  );
 };
 
 export const useStore = create<Store>()(
@@ -450,51 +526,9 @@ export const useStore = create<Store>()(
 
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
-        const partial: Partial<SimulationState> = {};
-        if (snapshot.gameMode !== null) {
-          if (snapshot.gameMode !== state.gameMode) {
-            analytics.modeChanged(snapshot.gameMode);
-          }
-          partial.gameMode = snapshot.gameMode;
-        }
-        if (snapshot.simulationTimeMs !== null) {
-          partial.simulationTime = new Date(snapshot.simulationTimeMs);
-        }
-        if (snapshot.timeScale !== null) {
-          partial.timeScale = snapshot.timeScale;
-        }
-        if (snapshot.navigationMode !== null) {
-          partial.navigationMode = snapshot.navigationMode;
-        }
-        if (snapshot.bodyId !== null) {
-          partial.activeBody = snapshot.bodyId;
-          partial.isTraveling = true;
-          partial.viewMode = "close";
-          partial.travelId = state.travelId + 1;
-          partial.selectedConstellation = null;
-          partial.constellationUserSpinRad = 0;
-        }
-        if (snapshot.missionId !== null) {
-          partial.activeMissionId = snapshot.missionId;
-          const existing = state.missionProgress[snapshot.missionId];
-          partial.missionProgress = {
-            ...state.missionProgress,
-            [snapshot.missionId]:
-              existing ?? createInitialProgress(snapshot.missionId, Date.now()),
-          };
-        }
+        const partial = buildShareLinkPartialState(snapshot, state);
         set(partial as Partial<Store>);
-        analytics.shareLinkRestored(
-          inferShareLinkContextType({
-            bodyId: snapshot.bodyId,
-            simulationTimeMs:
-              snapshot.simulationTimeMs ?? state.simulationTime.getTime(),
-            timeScale: snapshot.timeScale ?? state.timeScale,
-            gameMode: snapshot.gameMode ?? state.gameMode,
-            missionId: snapshot.missionId,
-            navigationMode: snapshot.navigationMode ?? state.navigationMode,
-          }),
-        );
+        trackShareLinkRestoreAnalytics(snapshot, state);
       },
     }),
     {
