@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:02:12.335Z",
+  "frameStats": {
+    "capturedFrames": 19,
+    "averageFps": 1.2089513301646082,
+    "onePercentLowFps": 1.1319900384876618,
+    "avgFrameMs": 827.1631578947369,
+    "p95FrameMs": 883.3999999999996,
+    "p99FrameMs": 883.3999999999996,
+    "maxFrameMs": 1000,
+    "jankOver16": 19,
+    "jankOver50": 19,
+    "longTaskCount": 18,
+    "longTasksTotalMs": 14810,
+    "longTasksMaxMs": 1001
+  },
+  "cpuProfile": {
+    "totalSamples": 10924,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10788,
+        "hitPct": 98.75503478579274
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 7,
+        "hitPct": 0.06407909190772611
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 4,
+        "hitPct": 0.03661662394727206
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.027462467960454047
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.027462467960454047
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.027462467960454047
+      },
+      {
+        "functionName": "updateMatrixWorld",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01830831197363603
+      },
+      {
+        "functionName": "render",
+        "url": "http://localhost:5173/node_modules/.vite/deps/postprocessing.js?v=15e49df6",
+        "hitCount": 2,
+        "hitPct": 0.01830831197363603
+      },
+      {
+        "functionName": "set",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01830831197363603
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01830831197363603
+      }
+    ]
+  }
+}

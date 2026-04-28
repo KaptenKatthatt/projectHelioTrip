@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T16:59:52.958Z",
+  "frameStats": {
+    "capturedFrames": 1774,
+    "averageFps": 118.25247636950232,
+    "onePercentLowFps": 117.6470588235294,
+    "avgFrameMs": 8.456482525366404,
+    "p95FrameMs": 8.400000000001455,
+    "p99FrameMs": 8.5,
+    "maxFrameMs": 133.5,
+    "jankOver16": 5,
+    "jankOver50": 1,
+    "longTaskCount": 0,
+    "longTasksTotalMs": 0,
+    "longTasksMaxMs": 0
+  },
+  "cpuProfile": {
+    "totalSamples": 9566,
+    "topHotspots": [
+      {
+        "functionName": "(idle)",
+        "url": "",
+        "hitCount": 5972,
+        "hitPct": 62.42943759146979
+      },
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 524,
+        "hitPct": 5.477733639974911
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 144,
+        "hitPct": 1.505331381977838
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395552419",
+        "hitCount": 140,
+        "hitPct": 1.4635166213673425
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 113,
+        "hitPct": 1.181266987246498
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 90,
+        "hitPct": 0.940832113736149
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 71,
+        "hitPct": 0.7422120008362951
+      },
+      {
+        "functionName": "setup",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 71,
+        "hitPct": 0.7422120008362951
+      },
+      {
+        "functionName": "bindVertexArray",
+        "url": "",
+        "hitCount": 62,
+        "hitPct": 0.6481287894626803
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 58,
+        "hitPct": 0.6063140288521849
+      }
+    ]
+  }
+}

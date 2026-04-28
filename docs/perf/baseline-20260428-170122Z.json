@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:01:22.524Z",
+  "frameStats": {
+    "capturedFrames": 19,
+    "averageFps": 1.2206090196582293,
+    "onePercentLowFps": 1.1321181931393625,
+    "avgFrameMs": 819.263157894737,
+    "p95FrameMs": 883.3000000000011,
+    "p99FrameMs": 883.3000000000011,
+    "maxFrameMs": 999.8999999999996,
+    "jankOver16": 19,
+    "jankOver50": 19,
+    "longTaskCount": 18,
+    "longTasksTotalMs": 14673,
+    "longTasksMaxMs": 984
+  },
+  "cpuProfile": {
+    "totalSamples": 10677,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10529,
+        "hitPct": 98.61384283974898
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395552419",
+        "hitCount": 7,
+        "hitPct": 0.06556148730916923
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 7,
+        "hitPct": 0.06556148730916923
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.02809778027535825
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.02809778027535825
+      },
+      {
+        "functionName": "refreshUniformsCommon",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.02809778027535825
+      },
+      {
+        "functionName": "updateMatrix",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018731853516905497
+      },
+      {
+        "functionName": "setup",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018731853516905497
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 2,
+        "hitPct": 0.018731853516905497
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 2,
+        "hitPct": 0.018731853516905497
+      }
+    ]
+  }
+}

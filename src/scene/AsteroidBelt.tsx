@@ -8,6 +8,7 @@ const COUNT = getGraphicsPreset().asteroidCount;
 const INNER_RADIUS_AU = 2.2;
 const OUTER_RADIUS_AU = 3.2;
 const BELT_HEIGHT_AU = 0.08;
+const UPDATE_INTERVAL_SEC = 1 / 30;
 
 type AsteroidOrbit = {
   radius: number;
@@ -38,6 +39,7 @@ const generateOrbits = (count: number): readonly AsteroidOrbit[] => {
 export const AsteroidBelt = () => {
   const meshRef = useRef<InstancedMesh>(null);
   const elapsedRef = useRef(0);
+  const updateAccumulatorRef = useRef(0);
   const dummy = useMemo(() => new Object3D(), []);
   const asteroids = useMemo(() => generateOrbits(COUNT), []);
 
@@ -62,7 +64,12 @@ export const AsteroidBelt = () => {
   useFrame((_, delta) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    elapsedRef.current += delta;
+    updateAccumulatorRef.current += delta;
+    if (updateAccumulatorRef.current < UPDATE_INTERVAL_SEC) return;
+
+    const step = updateAccumulatorRef.current;
+    updateAccumulatorRef.current = 0;
+    elapsedRef.current += step;
     const t = elapsedRef.current;
     let i = 0;
     for (const a of asteroids) {
