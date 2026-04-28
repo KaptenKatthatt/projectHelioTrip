@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { resetFreeFlightTouch } from '../lib/freeFlightTouchBus';
 import { useStore } from '../store/useStore';
-import { VirtualJoystick } from './VirtualJoystick';
+import { VirtualJoystick } from './atoms/VirtualJoystick';
 
 export const FreeFlightMobileControls = () => {
   const navigationMode = useStore((s) => s.navigationMode);
