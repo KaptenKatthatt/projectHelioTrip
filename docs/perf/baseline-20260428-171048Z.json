@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:10:48.228Z",
+  "frameStats": {
+    "capturedFrames": 21,
+    "averageFps": 1.3333841289191968,
+    "onePercentLowFps": 1.25,
+    "avgFrameMs": 749.9714285714286,
+    "p95FrameMs": 800,
+    "p99FrameMs": 800,
+    "maxFrameMs": 966.6000000000004,
+    "jankOver16": 21,
+    "jankOver50": 21,
+    "longTaskCount": 20,
+    "longTasksTotalMs": 14948,
+    "longTasksMaxMs": 951
+  },
+  "cpuProfile": {
+    "totalSamples": 10918,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10799,
+        "hitPct": 98.91005678695733
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 9,
+        "hitPct": 0.08243267997801795
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 6,
+        "hitPct": 0.0549551199853453
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.02747755999267265
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.02747755999267265
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018318373328448434
+      },
+      {
+        "functionName": "refreshMaterialUniforms",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018318373328448434
+      },
+      {
+        "functionName": "refreshUniformsCommon",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018318373328448434
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018318373328448434
+      },
+      {
+        "functionName": "exports.createElement",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react.js?v=f4638193",
+        "hitCount": 2,
+        "hitPct": 0.018318373328448434
+      }
+    ]
+  }
+}

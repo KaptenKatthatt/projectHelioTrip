@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { type Group } from 'three';
 import type { SatelliteDefinition } from '../lib/satellites';
+import { useStore } from '../store/useStore';
 import {
   getLivePosition,
   getLiveSatelliteOffset,
@@ -13,6 +14,7 @@ type Props = {
 
 export const Satellite = ({ satellite }: Props) => {
   const groupRef = useRef<Group>(null);
+  const lastSimMsRef = useRef<number | null>(null);
 
   const initial = useMemo(() => {
     const parent = getLivePosition(satellite.parent);
@@ -25,6 +27,10 @@ export const Satellite = ({ satellite }: Props) => {
   }, [satellite]);
 
   useFrame(() => {
+    const simMs = useStore.getState().simulationTime.getTime();
+    if (lastSimMsRef.current === simMs) return;
+    lastSimMsRef.current = simMs;
+
     const group = groupRef.current;
     if (!group) return;
     const parent = getLivePosition(satellite.parent);

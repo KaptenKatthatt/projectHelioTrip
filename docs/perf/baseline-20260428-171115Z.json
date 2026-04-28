@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:11:15.914Z",
+  "frameStats": {
+    "capturedFrames": 21,
+    "averageFps": 1.3592760883917823,
+    "onePercentLowFps": 1.276487107480218,
+    "avgFrameMs": 735.6857142857143,
+    "p95FrameMs": 783.3999999999978,
+    "p99FrameMs": 783.3999999999978,
+    "maxFrameMs": 799.8999999999996,
+    "jankOver16": 21,
+    "jankOver50": 21,
+    "longTaskCount": 20,
+    "longTasksTotalMs": 14598,
+    "longTasksMaxMs": 798
+  },
+  "cpuProfile": {
+    "totalSamples": 10551,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10404,
+        "hitPct": 98.60676713107762
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 6,
+        "hitPct": 0.05686664771111743
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 5,
+        "hitPct": 0.04738887309259786
+      },
+      {
+        "functionName": "update",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 4,
+        "hitPct": 0.03791109847407829
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.028433323855558714
+      },
+      {
+        "functionName": "getProgramInfoLog",
+        "url": "",
+        "hitCount": 3,
+        "hitPct": 0.028433323855558714
+      },
+      {
+        "functionName": "updateMatrixWorld",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018955549237039144
+      },
+      {
+        "functionName": "getProgramCacheKeyParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018955549237039144
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018955549237039144
+      },
+      {
+        "functionName": "drawElements",
+        "url": "",
+        "hitCount": 2,
+        "hitPct": 0.018955549237039144
+      }
+    ]
+  }
+}

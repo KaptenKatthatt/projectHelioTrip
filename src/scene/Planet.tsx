@@ -36,6 +36,7 @@ const MS_PER_HOUR = 3_600_000;
 export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
   const groupRef = useRef<Group>(null);
   const spinRef = useRef<Group>(null);
+  const lastSimMsRef = useRef<number | null>(null);
 
   const initial = useMemo(() => {
     const p = getLivePosition(id);
@@ -45,10 +46,13 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
   const periodMs = rotationPeriodHours * MS_PER_HOUR;
 
   useFrame(() => {
+    const simMs = useStore.getState().simulationTime.getTime();
+    if (lastSimMsRef.current === simMs) return;
+    lastSimMsRef.current = simMs;
+
     const group = groupRef.current;
     if (group) group.position.copy(getLivePosition(id));
 
-    const simMs = useStore.getState().simulationTime.getTime();
     applyBodySpinFromTime(spinRef, simMs, periodMs);
   });
 

@@ -24,6 +24,7 @@ const MS_PER_HOUR = 3_600_000;
 export const Moon = ({ moon }: Props) => {
   const groupRef = useRef<Group>(null);
   const spinRef = useRef<Group>(null);
+  const lastSimMsRef = useRef<number | null>(null);
 
   const initial = useMemo(() => {
     const parent = getLivePosition(moon.parent);
@@ -38,6 +39,10 @@ export const Moon = ({ moon }: Props) => {
   const periodMs = moon.rotationPeriodHours * MS_PER_HOUR;
 
   useFrame(() => {
+    const simMs = useStore.getState().simulationTime.getTime();
+    if (lastSimMsRef.current === simMs) return;
+    lastSimMsRef.current = simMs;
+
     const group = groupRef.current;
     if (group) {
       const parent = getLivePosition(moon.parent);
@@ -49,7 +54,6 @@ export const Moon = ({ moon }: Props) => {
       );
     }
 
-    const simMs = useStore.getState().simulationTime.getTime();
     applyBodySpinFromTime(spinRef, simMs, periodMs);
   });
 
