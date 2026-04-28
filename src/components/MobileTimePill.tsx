@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { BottomSheet } from "./BottomSheet";
 import { TimePlaybackControls } from "./TimePlaybackControls";
+import { useTimePlaybackDisabled } from "../hooks/useTimePlaybackDisabled";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "../hooks/useTranslation";
 import { formatDaysPerSecond } from "../lib/timePlayback";
@@ -13,8 +14,7 @@ export const MobileTimePill = () => {
   const isPlaying = useStore((s) => s.isPlaying);
   const togglePlay = useStore((s) => s.togglePlay);
   const timeScale = useStore((s) => s.timeScale);
-  const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const inConstellationView = selectedConstellation !== null;
+  const inConstellationView = useTimePlaybackDisabled();
 
   useEffect(() => {
     if (!inConstellationView) return;
