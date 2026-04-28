@@ -14,6 +14,17 @@ const createTempDir = async (): Promise<string> => {
   return tempDir;
 };
 
+const postAnalyticsEvent = (
+  app: { request: (input: string, init?: RequestInit) => Promise<Response> },
+  body: Record<string, unknown>,
+) => {
+  return app.request("/api/analytics/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+};
+
 const loadApp = async ({
   analyticsFilePath,
   analyticsAdminToken,
@@ -47,11 +58,7 @@ describe("analytics API routes", () => {
     });
     const app = buildApp();
 
-    const response = await app.request("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "not_valid_event" }),
-    });
+    const response = await postAnalyticsEvent(app, { name: "not_valid_event" });
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
@@ -66,10 +73,9 @@ describe("analytics API routes", () => {
     });
     const app = buildApp();
 
-    const response = await app.request("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "play_clicked", payload: {} }),
+    const response = await postAnalyticsEvent(app, {
+      name: "play_clicked",
+      payload: {},
     });
 
     expect(response.status).toBe(200);
