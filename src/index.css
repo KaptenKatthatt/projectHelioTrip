@@ -32,11 +32,11 @@
   }
 
   .ds-panel-tight {
-    @apply ds-panel p-2.5;
+    @apply rounded-2xl border border-white/10 bg-black/40 p-2.5 backdrop-blur-md;
   }
 
   .ds-panel-control {
-    @apply ds-panel px-3 py-3 sm:px-4;
+    @apply rounded-2xl border border-white/10 bg-black/40 px-3 py-3 backdrop-blur-md sm:px-4;
   }
 
   .ds-eyebrow {
