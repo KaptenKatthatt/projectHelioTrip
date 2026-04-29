@@ -82,10 +82,16 @@ export const MobileBottomNav = ({
               {labelFor(labelKey)}
             </span>
             <span
-              className={
-                "h-1 w-1 shrink-0 rounded-full transition " +
-                (active ? "bg-white" : "bg-transparent")
-              }
+              className={[
+                "h-1 w-1 shrink-0 rounded-full transition",
+                active
+                  ? id === "learn"
+                    ? "bg-cyan-400"
+                    : id === "challenge"
+                      ? "bg-emerald-400"
+                      : "bg-white"
+                  : "bg-transparent",
+              ].join(" ")}
               aria-hidden
             />
           </button>

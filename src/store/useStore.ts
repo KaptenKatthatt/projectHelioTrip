@@ -30,6 +30,8 @@ import {
   type ShareLinkState,
 } from "../lib/shareLink";
 import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
+import type { FactCardLevel } from "../lib/learning/bodyContent";
+import { type TitleId, XP_AWARDS, resolveTitle } from "../lib/learning/xp";
 
 export type ViewMode = "close" | "overview";
 
@@ -69,6 +71,15 @@ type SimulationState = {
   recentAchievement: RecentAchievement | null;
   /** Mobile-only: planet info bottom sheet open (not persisted). */
   mobilePlanetInfoSheetOpen: boolean;
+  // Learning mode additions
+  learningLevel: FactCardLevel;
+  xp: number;
+  title: TitleId;
+  completedQuizzes: Readonly<Record<string, number>>;
+  /** Quiz id waiting to be presented as an overlay (not persisted). */
+  pendingQuizId: string | null;
+  /** Desktop left navigation rail open state. */
+  leftRailOpen: boolean;
 };
 
 type SimulationActions = {
@@ -98,6 +109,13 @@ type SimulationActions = {
   acknowledgeAchievement: () => void;
   restoreFromShareLink: (state: ShareLinkState) => void;
   setMobilePlanetInfoSheetOpen: (open: boolean) => void;
+  // Learning mode additions
+  setLearningLevel: (level: FactCardLevel) => void;
+  awardXp: (amount: number) => void;
+  recordQuizResult: (quizId: string, stars: number) => void;
+  triggerQuiz: (quizId: string) => void;
+  dismissQuiz: () => void;
+  toggleLeftRail: () => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -110,6 +128,10 @@ type PersistedState = {
   missionProgress: Record<string, MissionProgress>;
   visitedBodies: BodyId[];
   unlockedAchievements: AchievementId[];
+  learningLevel: FactCardLevel;
+  xp: number;
+  completedQuizzes: Record<string, number>;
+  leftRailOpen: boolean;
 };
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
@@ -188,9 +210,18 @@ const applyMissionEventProgress = (
   });
   for (const stepId of result.newlyCompletedStepIds) {
     analytics.missionStepCompleted(mission.id, stepId);
+    useStore.getState().awardXp(XP_AWARDS.missionStepCompleted);
+    const stepDef = mission.steps.find((s) => s.id === stepId);
+    if (stepDef?.triggersQuizId) {
+      useStore.getState().triggerQuiz(stepDef.triggersQuizId);
+    }
   }
   if (!result.missionJustCompleted) return;
   analytics.missionCompleted(mission.id);
+  const isAdventure = mission.id === "water_hunt" || mission.id === "gravity_sling";
+  useStore.getState().awardXp(
+    isAdventure ? XP_AWARDS.adventureMissionCompleted : XP_AWARDS.missionCompleted,
+  );
   unlockAchievements({ kind: "mission_completed" }, nowMs);
 };
 
@@ -248,6 +279,7 @@ const recordVisitedBody = (id: BodyId): void => {
   const next = [...state.visitedBodies, id];
   useStore.setState({ visitedBodies: next });
   analytics.checklistProgress(next.length);
+  useStore.getState().awardXp(XP_AWARDS.bodyVisited);
 };
 
 const buildShareLinkPartialState = (
@@ -333,6 +365,12 @@ export const useStore = create<Store>()(
       unlockedAchievements: [],
       recentAchievement: null,
       mobilePlanetInfoSheetOpen: false,
+      learningLevel: "middle",
+      xp: 0,
+      title: "rookie",
+      completedQuizzes: {},
+      pendingQuizId: null,
+      leftRailOpen: true,
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -524,6 +562,48 @@ export const useStore = create<Store>()(
       setMobilePlanetInfoSheetOpen: (open) =>
         set({ mobilePlanetInfoSheetOpen: open }),
 
+      setLearningLevel: (level) => set({ learningLevel: level }),
+
+      awardXp: (amount) =>
+        set((state) => {
+          const nextXp = state.xp + amount;
+          const completedMissionIds = Object.entries(state.missionProgress)
+            .filter(([, p]) => p.completed)
+            .map(([id]) => id);
+          const nextTitle = resolveTitle(nextXp, completedMissionIds);
+          return { xp: nextXp, title: nextTitle };
+        }),
+
+      recordQuizResult: (quizId, stars) => {
+        set((state) => {
+          if (state.completedQuizzes[quizId] !== undefined) return state;
+          const xpAmount =
+            stars === 3
+              ? XP_AWARDS.quizThreeStars
+              : stars === 2
+                ? XP_AWARDS.quizTwoStars
+                : XP_AWARDS.quizOneStar;
+          const nextXp = state.xp + xpAmount;
+          const completedMissionIds = Object.entries(state.missionProgress)
+            .filter(([, p]) => p.completed)
+            .map(([id]) => id);
+          const nextTitle = resolveTitle(nextXp, completedMissionIds);
+          return {
+            completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
+            xp: nextXp,
+            title: nextTitle,
+          };
+        });
+        dispatchDomainEvent({ kind: "quiz_completed", quizId });
+      },
+
+      triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
+
+      dismissQuiz: () => set({ pendingQuizId: null }),
+
+      toggleLeftRail: () =>
+        set((state) => ({ leftRailOpen: !state.leftRailOpen })),
+
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
         const partial = buildShareLinkPartialState(snapshot, state);
@@ -540,16 +620,37 @@ export const useStore = create<Store>()(
         missionProgress: { ...state.missionProgress },
         visitedBodies: [...state.visitedBodies],
         unlockedAchievements: [...state.unlockedAchievements],
+        learningLevel: state.learningLevel,
+        xp: state.xp,
+        completedQuizzes: { ...state.completedQuizzes },
+        leftRailOpen: state.leftRailOpen,
       }),
       merge: (persisted, current): Store => {
         const p = persisted as Partial<PersistedState> | undefined;
+        const sanitizedXp = typeof p?.xp === "number" && p.xp >= 0 ? p.xp : 0;
+        const sanitizedLevel =
+          p?.learningLevel === "middle" || p?.learningLevel === "upper" || p?.learningLevel === "both"
+            ? p.learningLevel
+            : "middle";
+        const sanitizedCompletedMissions = sanitizeMissionProgressMap(p?.missionProgress);
+        const completedMissionIds = Object.entries(sanitizedCompletedMissions)
+          .filter(([, prog]) => prog.completed)
+          .map(([id]) => id);
         return {
           ...current,
           locale: isLocale(p?.locale) ? p.locale : current.locale,
           gameMode: isGameMode(p?.gameMode) ? p.gameMode : current.gameMode,
-          missionProgress: sanitizeMissionProgressMap(p?.missionProgress),
+          missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),
+          learningLevel: sanitizedLevel,
+          xp: sanitizedXp,
+          title: resolveTitle(sanitizedXp, completedMissionIds),
+          completedQuizzes:
+            typeof p?.completedQuizzes === "object" && p.completedQuizzes !== null
+              ? (p.completedQuizzes as Record<string, number>)
+              : {},
+          leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
         };
       },
     },

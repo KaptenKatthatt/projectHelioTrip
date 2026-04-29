@@ -95,12 +95,14 @@ export const HUD = () => {
         mobileLayout={mobileLayout}
         appTitle={t.appTitle}
         tagline={t.tagline}
+        gameMode={gameMode}
       />
       <HudPrimaryNavRegion
         mobileLayout={mobileLayout}
         showPlanetInfoUi={showPlanetInfoUi}
         showMissionUi={showMissionUi}
         activeBody={activeBody}
+        selectedConstellation={selectedConstellation}
         mobileBodyTitle={mobileBodyTitle}
         mobileBodyColor={mobileBodyColor}
         minimizePanelLabel={t.ui.minimizePanel}

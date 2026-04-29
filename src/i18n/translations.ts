@@ -128,8 +128,49 @@ export type Translation = {
       time_travel_short: { title: string; description: string };
       iss_hunt: { title: string; description: string };
       free_flight_loop: { title: string; description: string };
+      water_hunt: { title: string; description: string };
+      gravity_sling: { title: string; description: string };
     };
     steps: Record<string, string>;
+  };
+  learn: {
+    ui: {
+      factsTab: string;
+      learnMoreTab: string;
+      compareSize: string;
+      testYourself: string;
+      levelMiddle: string;
+      levelUpper: string;
+      quizStars: string;
+      quizHint: string;
+      newTitle: string;
+      xpUntilNext: string;
+      narratorAstra: string;
+      narratorColleague: string;
+      constellationStory: string;
+      constellationFindIt: string;
+      constellationFunFact: string;
+      quizCorrect: string;
+      quizTryAgain: string;
+      xpPoints: string;
+      levelUp: string;
+      noFactCards: string;
+      quizFillPlaceholder: string;
+      quizSubmit: string;
+      railToggleOpen: string;
+      railToggleClose: string;
+    };
+    xpTitles: {
+      rookie: string;
+      stargazer: string;
+      space_explorer: string;
+      astronomy_cadet: string;
+      space_scientist: string;
+      solar_system_expert: string;
+      galactic_guide: string;
+      water_hunter: string;
+      orbital_mechanic: string;
+    };
   };
 };
 
