@@ -63,6 +63,18 @@ Rapporten i [`claude-ux-rapport.md`](./claude-ux-rapport.md) är **i stort sett 
 
 ---
 
+## Planetfokus i viewporten (ny prioritering)
+
+I nuvarande UI kan informationspaneler i vissa lägen ta över uppmärksamheten så att planeten hamnar för lågt, nära panelkanten, eller delvis visuellt blockerad. Det bryter mot appens primära löfte: att utforska solsystemet genom att faktiskt se och interagera med planeterna.
+
+**Rekommendation (designprincip):**
+
+- Planeten ska vara **primärt fokusobjekt** i viewporten, inte panelerna.
+- Vid hög informationsdensitet ska kamerakompositionen justeras så planeten ligger **högre upp** med tydlig luft runt objektet.
+- Definiera en **HUD-safe area** där paneler inte får konkurrera med planetens interaktionsyta (rotation/inspektion).
+
+---
+
 ## Hur göra upplevelsen roligare utan rörighet
 
 Princip: **belöning och tydlighet i befintliga ytor**, inte fler permanenta paneler.

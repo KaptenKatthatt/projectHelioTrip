@@ -71,8 +71,10 @@ export const CollapsibleHudPanel = ({
 
       <div
         className={
-          "relative overflow-hidden transition-[max-height,opacity] duration-200 ease-out " +
-          (isCollapsed ? "pointer-events-none max-h-0 opacity-0" : "max-h-[80vh] opacity-100")
+          "relative transition-[max-height,opacity] duration-200 ease-out " +
+          (isCollapsed
+            ? "pointer-events-none max-h-0 overflow-hidden opacity-0"
+            : "max-h-[80vh] overflow-y-auto opacity-100")
         }
       >
         {collapseOnExpandedHeaderClick ? (

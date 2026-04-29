@@ -13,6 +13,16 @@ Rapporten är organiserad efter prioritet: **Hög** (påverkar upplevelsen direk
 
 ## Hög prioritet
 
+### 0. Planeten får inte konkurreras ut av HUD-paneler
+
+**Problem:** I flera lägen tar inforutor visuellt över scenen och kan delvis täcka planeten eller trycka ner den mot panelkanten. Det minskar känslan av att utforska rymden och gör det svårare att rotera planeten med god överblick.
+
+**Konsekvens:** Appens huvudvärde (utforskning av solsystemet) försvagas när användarens uppmärksamhet hamnar på paneler i stället för himlakroppen.
+
+**Förslag:** Prioritera planeten som primärt fokus i viewporten. När stora paneler visas ska kamerakompositionen flytta planeten högre upp och ge tydlig "luft" runt objektet. Sätt en säker yta där HUD inte får överlappa planetens interaktionszon.
+
+---
+
 ### 1. XP-data visas på två ställen simultant
 
 **Problem:** XP-information dupliceras. `XpBadge` i topbaren visar titel + XP-tal + progress-bar. `ProgressPanel` i högerkolumnen (desktop) visar exakt samma sak — titel, XP-tal och progress-bar — plus ytterligare data. Användaren ser samma rad information två gånger inom 20 cm på skärmen.

@@ -25,6 +25,24 @@ Generellt är textrutorna väl begränsade (`max-w-sm` eller `max-w-md`), vilket
 
 ---
 
+## 1.5 Planetfokus och viewport-hierarki
+**Fråga:** *Tar informationspanelerna för mycket uppmärksamhet jämfört med planeterna?*
+
+**Analys:**
+Ja, i vissa lägen blir den nedre informationsytan så dominant att planeten hamnar för nära panelen eller delvis upplevs täckt. Det motverkar appens kärnsyfte: att utforska solsystemet visuellt och interaktivt.
+
+**Problem:**
+*   **Visuell konkurrens:** Informationskortet drar fokus från planeten.
+*   **Minskad manöveryta:** När planeten ligger för lågt blir det sämre "luft" runt objektet för rotation och observation.
+*   **Upplevelseglapp:** Appen känns mer som en informationsdashboard än ett utforskningsverktyg.
+
+**Förbättring:**
+*   **Planet först-princip:** Definiera planeten som primärt fokusobjekt i viewporten.
+*   **Dynamisk omkomposition:** När hög informationsdensitet visas, flytta planeten högre upp i bild för att behålla fri yta runt den.
+*   **Safe area för 3D-objekt:** Sätt en nedre HUD-gräns där planetens interaktionszon inte ska överlappas.
+
+---
+
 ## 2. Struktur och Placering
 **Fråga:** *Är där verkligen rätt saker på rätt plats?*
 
