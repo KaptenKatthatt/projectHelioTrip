@@ -69,7 +69,7 @@ export const resolveTitle = (
 
 export const xpToNextTitle = (
   xp: number,
-  completedMissionIds: ReadonlyArray<string>,
+  _completedMissionIds: ReadonlyArray<string>,
 ): { nextTitle: TitleId | null; xpNeeded: number } => {
   const xpBased = XP_TITLES.filter((t) => !t.missionRequired);
   for (const t of xpBased) {

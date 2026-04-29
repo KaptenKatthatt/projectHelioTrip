@@ -605,8 +605,6 @@ export const QUIZ_QUESTIONS: ReadonlyArray<QuizQuestion> = [
     hint: { sv: 'Tyngdlöshet är omöjligt att skapa på Jordens yta i längre perioder.', en: "Weightlessness is impossible to create on Earth's surface for extended periods." },
     explanation: { sv: 'ISS är världens enda permanenta laboratorium i tyngdlöshet. Forskningen hjälper oss förstå hur kroppen förändras på lång rymdfärd — kunskap som behövs för framtida resor till Mars.', en: "The ISS is the world's only permanent laboratory in weightlessness. The research helps us understand how the body changes on long space voyages — knowledge needed for future journeys to Mars." },
   },
-];
-
   // GRAVITY SLING (adventure mission specific — no bodyId)
   {
     type: 'multiple-choice', id: 'quiz_gravity_sling_mechanic', bodyId: 'jupiter', level: 'upper',

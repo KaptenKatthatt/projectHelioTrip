@@ -10,8 +10,10 @@ Redesign på desktop enligt mobilläget
 
 Gör ett ipadläge som är som ett större mobilläge, med samma virtuella styrspakar
 
-Implementera Atomic design/ Refactor UI designsystem
+✅Implementera Atomic design/ Refactor UI designsystem
 
 Gå över till CSS Modules?
 
 Gör en redesign och utveckling av Lär och Uppdragsdelen, lägg till några fler saker på varje steg, lägg till en lärande sida för varje planet och måne
+
+Är texturerna på planeterna suddiga vid friflygläge?

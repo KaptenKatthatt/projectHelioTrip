@@ -411,8 +411,13 @@ export const FACT_CARDS: ReadonlyArray<FactCard> = [
 
 export const getFactCardsForBody = (
   bodyId: BodyId,
-  level: 'middle' | 'upper',
-): ReadonlyArray<FactCard> =>
-  FACT_CARDS.filter(
+  level: FactCardLevel,
+): ReadonlyArray<FactCard> => {
+  if (level === 'both') {
+    return FACT_CARDS.filter((c) => c.bodyId === bodyId);
+  }
+
+  return FACT_CARDS.filter(
     (c) => c.bodyId === bodyId && (c.level === 'both' || c.level === level),
   );
+};
