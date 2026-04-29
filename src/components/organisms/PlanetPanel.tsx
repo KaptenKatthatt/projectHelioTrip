@@ -21,6 +21,7 @@ import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
 import { getWikipediaUrl } from "../../lib/wikipedia";
 import { useStore } from "../../store/useStore";
 import { FactCardDeck } from "../molecules/FactCardDeck";
+import { ScaleComparison } from "../molecules/ScaleComparison";
 
 type Row = {
   label: string;
@@ -115,7 +116,7 @@ const formatOrbitPeriod = (
   return parts.join(" ");
 };
 
-type PanelTab = "info" | "facts";
+type PanelTab = "info" | "facts" | "compare";
 
 export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
@@ -267,7 +268,12 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   const showLearnTab = gameMode === "learn" || gameMode === "challenge";
   const tabs: Array<{ id: PanelTab; label: string }> = [
     { id: "info", label: t.ui.bodyInfo },
-    ...(showLearnTab ? [{ id: "facts" as PanelTab, label: t.learn.ui.factsTab }] : []),
+    ...(showLearnTab
+      ? [
+          { id: "facts" as PanelTab, label: t.learn.ui.factsTab },
+          { id: "compare" as PanelTab, label: t.learn.ui.compareSize },
+        ]
+      : []),
   ];
 
   return (
@@ -345,6 +351,12 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
       {activeTab === "facts" && showLearnTab && (
         <div className="mt-4">
           <FactCardDeck bodyId={activeBody} showLevelToggle />
+        </div>
+      )}
+
+      {activeTab === "compare" && showLearnTab && (
+        <div className="mt-4">
+          <ScaleComparison key={activeBody} bodyId={activeBody} />
         </div>
       )}
     </aside>

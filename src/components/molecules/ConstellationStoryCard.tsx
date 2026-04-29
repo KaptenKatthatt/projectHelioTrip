@@ -24,7 +24,7 @@ export const ConstellationStoryCard = () => {
   const content = storyData[activeTab][locale];
 
   return (
-    <div className="pointer-events-auto rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-4 space-y-3">
+    <div className="pointer-events-auto max-w-sm rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-4 space-y-3">
       <div className="flex gap-0.5 rounded-lg bg-white/5 p-0.5">
         {tabs.map((tab) => (
           <button

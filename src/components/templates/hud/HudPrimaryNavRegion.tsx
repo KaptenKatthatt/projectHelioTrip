@@ -90,17 +90,21 @@ export const HudPrimaryNavRegion = ({
             <PlanetPanel />
           </CollapsibleHudPanel>
         ) : null}
-        {showMissionUi ? <MissionCard className="w-full max-w-sm" /> : null}
-        <CollapsibleHudPanel
-          title={progressTitle}
-          className="relative w-full max-w-sm"
-          collapseLabel={minimizePanelLabel}
-          expandLabel={expandPanelLabel}
-        >
-          {({ expandedCloseToggle }) => (
-            <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
-          )}
-        </CollapsibleHudPanel>
+        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+          <MissionCard className="w-full max-w-sm" />
+        ) : null}
+        {showPlanetInfoUi || selectedConstellation === null ? (
+          <CollapsibleHudPanel
+            title={progressTitle}
+            className="relative w-full max-w-sm"
+            collapseLabel={minimizePanelLabel}
+            expandLabel={expandPanelLabel}
+          >
+            {({ expandedCloseToggle }) => (
+              <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
+            )}
+          </CollapsibleHudPanel>
+        ) : null}
         <FreeFlightHelp />
       </div>
     </div>
