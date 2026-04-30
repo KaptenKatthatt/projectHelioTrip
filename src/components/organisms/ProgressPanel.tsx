@@ -54,7 +54,7 @@ export const ProgressPanel = ({
       }
     >
       {showTitle ? (
-        <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+        <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-white/45">
           {t.phase3.progressPanel.title}
         </h3>
       ) : null}
@@ -73,7 +73,7 @@ export const ProgressPanel = ({
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-white/40">
+              <p className="text-xs text-white/40">
                 {t.learn.ui.xpUntilNext
                   .replace("{xp}", String(nextXpRequired - xp))
                   .replace("{title}", t.learn.xpTitles[nextTier.id])}

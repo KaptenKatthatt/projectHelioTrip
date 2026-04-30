@@ -76,6 +76,7 @@ export const en: Translation = {
     minimizePanel: "Minimize panel",
     expandPanel: "Expand panel",
     bodyInfo: "Info",
+    bodyInfoShort: "Info",
     timeControls: "Time",
     start: "Start",
     aboutOpen: "About this app",
@@ -119,6 +120,10 @@ export const en: Translation = {
       missionCompleted: "Mission complete!",
       abandon: "Abandon",
       backToExplore: "Back to Explore",
+      confirmLeaveMission: "Leave this mission and return to Explore mode?",
+      confirmAbandonMission: "Abandon this mission? Your current mission progress will pause.",
+      confirmAction: "Confirm",
+      cancelAction: "Cancel",
     },
     progressPanel: {
       title: "Progress",
@@ -193,8 +198,10 @@ export const en: Translation = {
   learn: {
     ui: {
       factsTab: "Facts",
+      factsTabShort: "Facts",
       learnMoreTab: "Learn More",
       compareSize: "Compare size",
+      compareSizeShort: "Compare",
       testYourself: "Test yourself →",
       levelMiddle: "Middle school",
       levelUpper: "Upper school",

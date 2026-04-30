@@ -62,6 +62,7 @@ export type Translation = {
     minimizePanel: string;
     expandPanel: string;
     bodyInfo: string;
+    bodyInfoShort: string;
     timeControls: string;
     start: string;
     aboutOpen: string;
@@ -101,6 +102,10 @@ export type Translation = {
       missionCompleted: string;
       abandon: string;
       backToExplore: string;
+      confirmLeaveMission: string;
+      confirmAbandonMission: string;
+      confirmAction: string;
+      cancelAction: string;
     };
     progressPanel: {
       title: string;
@@ -136,8 +141,10 @@ export type Translation = {
   learn: {
     ui: {
       factsTab: string;
+      factsTabShort: string;
       learnMoreTab: string;
       compareSize: string;
+      compareSizeShort: string;
       testYourself: string;
       levelMiddle: string;
       levelUpper: string;

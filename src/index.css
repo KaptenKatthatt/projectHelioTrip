@@ -40,7 +40,7 @@
   }
 
   .ds-eyebrow {
-    @apply text-[10px] font-medium uppercase tracking-[0.2em] text-white/45;
+    @apply text-xs font-medium uppercase tracking-[0.2em] text-white/45;
   }
 }
 

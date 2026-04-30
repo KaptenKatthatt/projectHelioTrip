@@ -45,11 +45,14 @@ export const HudPrimaryNavRegion = ({
         className={
           mobileLayout
             ? "hidden"
-            : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
+            : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 pb-1 sm:w-auto sm:items-end"
         }
       >
         {selectedConstellation !== null && !showPlanetInfoUi ? (
           <ConstellationStoryCard />
+        ) : null}
+        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+          <MissionCard className="w-full max-w-sm" />
         ) : null}
         {showPlanetInfoUi ? (
           <CollapsibleHudPanel
@@ -61,13 +64,11 @@ export const HudPrimaryNavRegion = ({
             <PlanetPanel />
           </CollapsibleHudPanel>
         ) : null}
-        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
-          <MissionCard className="w-full max-w-sm" />
-        ) : null}
         {showPlanetInfoUi || selectedConstellation === null ? (
           <CollapsibleHudPanel
             title={progressTitle}
             className="relative w-full max-w-sm"
+            defaultCollapsed={showMissionUi}
             collapseLabel={minimizePanelLabel}
             expandLabel={expandPanelLabel}
           >

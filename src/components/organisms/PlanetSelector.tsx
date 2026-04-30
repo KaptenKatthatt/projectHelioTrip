@@ -97,7 +97,7 @@ export const PlanetSelector = ({
       }
     >
       {showHeading ? (
-        <h2 className="px-2 pb-1 pt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+        <h2 className="px-2 pb-1 pt-0.5 text-xs font-medium uppercase tracking-[0.2em] text-white/40">
           {t.ui.planets}
         </h2>
       ) : null}

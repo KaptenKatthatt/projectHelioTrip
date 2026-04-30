@@ -269,12 +269,17 @@ export const PlanetPanel = ({
   const name = bodyName(activeBody);
 
   const showLearnTab = gameMode === "learn" || gameMode === "challenge";
+  const infoTabLabel = mobileLayout ? t.ui.bodyInfoShort : t.ui.bodyInfo;
+  const factsTabLabel = mobileLayout ? t.learn.ui.factsTabShort : t.learn.ui.factsTab;
+  const compareTabLabel = mobileLayout
+    ? t.learn.ui.compareSizeShort
+    : t.learn.ui.compareSize;
   const tabs: Array<{ id: PanelTab; label: string }> = [
-    { id: "info", label: t.ui.bodyInfo },
+    { id: "info", label: infoTabLabel },
     ...(showLearnTab
       ? [
-          { id: "facts" as PanelTab, label: t.learn.ui.factsTab },
-          { id: "compare" as PanelTab, label: t.learn.ui.compareSize },
+          { id: "facts" as PanelTab, label: factsTabLabel },
+          { id: "compare" as PanelTab, label: compareTabLabel },
         ]
       : []),
   ];

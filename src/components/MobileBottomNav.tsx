@@ -78,7 +78,7 @@ export const MobileBottomNav = ({
             }
           >
             <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            <span className="truncate text-[10px] font-medium tracking-wide">
+            <span className="truncate text-xs font-medium tracking-wide">
               {labelFor(labelKey)}
             </span>
             <span

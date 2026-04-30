@@ -76,6 +76,7 @@ export const sv: Translation = {
     minimizePanel: "Minimera panel",
     expandPanel: "Visa panel",
     bodyInfo: "Mer information",
+    bodyInfoShort: "Info",
     timeControls: "Tid",
     start: "Start",
     aboutOpen: "Om appen",
@@ -119,6 +120,10 @@ export const sv: Translation = {
       missionCompleted: "Uppdrag klart!",
       abandon: "Avbryt",
       backToExplore: "Till Utforska",
+      confirmLeaveMission: "Är du säker på att du vill lämna uppdraget och gå tillbaka till Utforska?",
+      confirmAbandonMission: "Avbryta uppdraget? Dina aktuella framsteg i uppdraget pausas.",
+      confirmAction: "Bekräfta",
+      cancelAction: "Avbryt",
     },
     progressPanel: {
       title: "Framsteg",
@@ -193,8 +198,10 @@ export const sv: Translation = {
   learn: {
     ui: {
       factsTab: "Fakta",
+      factsTabShort: "Fakta",
       learnMoreTab: "Lär dig mer",
       compareSize: "Jämför storlek",
+      compareSizeShort: "Jämför",
       testYourself: "Testa dig själv →",
       levelMiddle: "Mellanstadiet",
       levelUpper: "Högstadiet",

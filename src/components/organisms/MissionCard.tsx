@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Translation } from "../../i18n/translations";
 import {
   MISSION_DEFINITIONS,
@@ -76,6 +76,7 @@ export const MissionCard = ({
   const startMission = useStore((s) => s.startMission);
   const abandonMission = useStore((s) => s.abandonMission);
   const setGameMode = useStore((s) => s.setGameMode);
+  const [confirmingAbandon, setConfirmingAbandon] = useState(false);
 
   const activeMission = activeMissionId
     ? getMissionDefinition(activeMissionId)
@@ -99,7 +100,7 @@ export const MissionCard = ({
   if (!activeMission || !activeProgress) {
     return (
       <aside className={`${cardBase} ${className ?? ""}`.trim()}>
-        <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+        <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-white/45">
           {t.phase3.missionCard.pickMission}
         </h3>
         <ul className="mt-2 flex flex-col gap-1">
@@ -118,7 +119,7 @@ export const MissionCard = ({
                     {localized.title}
                   </span>
                   {done ? (
-                    <span className="rounded-md border border-emerald-300/40 bg-emerald-300/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-200">
+                    <span className="rounded-md border border-emerald-300/40 bg-emerald-300/10 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-emerald-200">
                       ✓
                     </span>
                   ) : null}
@@ -141,7 +142,7 @@ export const MissionCard = ({
     <aside className={`${cardBase} ${className ?? ""}`.trim()}>
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/45">
             {t.phase3.missionCard.activeMission}
           </p>
           <h3 className="mt-0.5 truncate text-base font-semibold tracking-tight text-white">
@@ -151,6 +152,8 @@ export const MissionCard = ({
         <button
           type="button"
           onClick={() => {
+            const confirmed = window.confirm(t.phase3.missionCard.confirmLeaveMission);
+            if (!confirmed) return;
             abandonMission();
             setGameMode("explore");
           }}
@@ -215,13 +218,41 @@ export const MissionCard = ({
           {t.phase3.missionCard.missionCompleted}
         </p>
       ) : (
-        <button
-          type="button"
-          onClick={abandonMission}
-          className="mt-3 w-full rounded-md border border-white/10 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white/85"
-        >
-          {t.phase3.missionCard.abandon}
-        </button>
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setConfirmingAbandon((prev) => !prev)}
+            className="w-full rounded-md border border-white/10 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white/85"
+          >
+            {t.phase3.missionCard.abandon}
+          </button>
+          {confirmingAbandon ? (
+            <div className="mt-2 rounded-md border border-amber-300/30 bg-amber-300/10 p-2">
+              <p className="text-xs text-amber-100/90">
+                {t.phase3.missionCard.confirmAbandonMission}
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    abandonMission();
+                    setConfirmingAbandon(false);
+                  }}
+                  className="flex-1 rounded-md border border-amber-200/40 bg-amber-200/20 px-2 py-1 text-xs font-medium text-amber-50 transition hover:bg-amber-200/30"
+                >
+                  {t.phase3.missionCard.confirmAction}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingAbandon(false)}
+                  className="flex-1 rounded-md border border-white/15 bg-transparent px-2 py-1 text-xs font-medium text-white/75 transition hover:bg-white/10 hover:text-white"
+                >
+                  {t.phase3.missionCard.cancelAction}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       )}
     </aside>
   );
