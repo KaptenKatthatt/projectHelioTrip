@@ -27,7 +27,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { type MutableRefObject, useEffect, useRef } from 'react';
 import { PerspectiveCamera } from 'three';
-import { useCloseCinematicBodyEnabled } from '../hooks/useCloseCinematicBodyEnabled';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
 import { cameraTravelSpringProgressRef } from './cameraTravelSpringProgress';
@@ -104,7 +103,8 @@ export const PlanetViewportOffset = (): null => {
   const activeBody = useStore((s) => s.activeBody);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelId = useStore((s) => s.travelId);
-  const closeCinematicEnabled = useCloseCinematicBodyEnabled(activeBody !== null);
+  const viewMode = useStore((s) => s.viewMode);
+  const navigationMode = useStore((s) => s.navigationMode);
 
   /** View offset targets portrait HUD; in landscape it skews projection on wide phones. */
   const portraitCanvas = size.width <= size.height;
@@ -112,7 +112,11 @@ export const PlanetViewportOffset = (): null => {
   const enabled =
     isMobileLayout &&
     portraitCanvas &&
-    closeCinematicEnabled;
+    // Keep offset active during cinematic travel so spring progress can ramp
+    // continuously; gating on !isTraveling causes a visible jump at arrival.
+    activeBody !== null &&
+    viewMode === 'close' &&
+    navigationMode === 'cinematic';
 
   const prevTravelIdRef = useRef(travelId);
   const prevFrameArrivedCloseRef = useRef(false);
@@ -163,7 +167,11 @@ export const PlanetViewportOffset = (): null => {
     prevFrameArrivedCloseRef.current = arrivedClose;
 
     const sheetOpen = useStore.getState().mobilePlanetInfoSheetOpen;
-    const canShowPlanetInfo = activeBody !== null && closeCinematicEnabled;
+    const canShowPlanetInfo =
+      activeBody !== null &&
+      viewMode === 'close' &&
+      navigationMode === 'cinematic' &&
+      !isTraveling;
     updatePreSheetCanvas(
       canShowPlanetInfo,
       sheetOpen,
