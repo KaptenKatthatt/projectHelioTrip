@@ -52,7 +52,7 @@ export const HudPrimaryNavRegion = ({
           className={
             mobileLayout
               ? "hidden"
-              : "flex max-h-[calc(100dvh-8rem)] w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
+              : "pointer-events-auto flex max-h-[calc(100dvh-8rem)] w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
           }
         >
           {selectedConstellation !== null && !showPlanetInfoUi ? (

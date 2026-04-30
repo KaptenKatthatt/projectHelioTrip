@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
@@ -6,7 +7,7 @@ import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { LanguageToggle } from "../../molecules/LanguageToggle";
-import { FlightModeToggle } from "../../molecules/FlightModeToggle";
+import { ConstellationMiniCard } from "../../molecules/ConstellationMiniCard";
 import { AboutDialog } from "../../organisms/AboutDialog";
 import { ConstellationList } from "../../organisms/ConstellationList";
 import { MissionCard } from "../../organisms/MissionCard";
@@ -41,7 +42,12 @@ export const HudDetailRegion = ({
   mobileBottomNav,
 }: HudDetailRegionProps) => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const navigationMode = useStore((s) => s.navigationMode);
+  const setNavigationMode = useStore((s) => s.setNavigationMode);
+  const gameMode = useStore((s) => s.gameMode);
   const [planetSheetInitialTab, setPlanetSheetInitialTab] = useState<PanelTab>("info");
+  const showConstellationMiniCard =
+    openNavSheet !== "stars" && selectedConstellation !== null;
 
   if (!mobileLayout) return null;
 
@@ -85,7 +91,7 @@ export const HudDetailRegion = ({
         <div className="p-3 flex flex-col gap-3">
           <ConstellationList
             className="max-h-[min(20rem,40dvh)]"
-            onPick={() => {}}
+            onPick={closeNavSheets}
           />
           {selectedConstellation && <ConstellationStoryCard />}
         </div>
@@ -131,7 +137,6 @@ export const HudDetailRegion = ({
         title={t.ui.bottomNavMore}
       >
         <div className="flex flex-col gap-3 p-4">
-          <FlightModeToggle />
           <LanguageToggle />
           <AboutDialog />
         </div>
@@ -152,6 +157,23 @@ export const HudDetailRegion = ({
           <PlanetPanel omitHeading defaultTab={planetSheetInitialTab} />
         </div>
       </BottomSheet>
+      {showConstellationMiniCard && <ConstellationMiniCard />}
+
+      {gameMode === "explore" && navigationMode !== "free" && (
+        <button
+          type="button"
+          aria-label={t.ui.freeFlight}
+          onClick={() => setNavigationMode("free")}
+          className={
+            "pointer-events-auto fixed right-4 z-15 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
+            (showConstellationMiniCard
+              ? "bottom-[calc(12.5rem+env(safe-area-inset-bottom))]"
+              : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]")
+          }
+        >
+          <Rocket className="h-5 w-5" aria-hidden />
+        </button>
+      )}
     </>
   );
 };

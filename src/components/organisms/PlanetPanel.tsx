@@ -123,7 +123,7 @@ const formatOrbitPeriod = (
 export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
-  const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
+  const { activeBody, viewMode } = useActiveBodyViewGameMode();
 
   const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
 
@@ -265,15 +265,10 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
   });
   const name = bodyName(activeBody);
 
-  const showLearnTab = gameMode === "learn" || gameMode === "challenge";
   const tabs: Array<{ id: PanelTab; label: string }> = [
     { id: "info", label: t.ui.bodyInfo },
-    ...(showLearnTab
-      ? [
-          { id: "facts" as PanelTab, label: t.learn.ui.factsTab },
-          { id: "compare" as PanelTab, label: t.learn.ui.compareSize },
-        ]
-      : []),
+    { id: "facts", label: t.learn.ui.factsTab },
+    { id: "compare", label: t.learn.ui.compareSize },
   ];
 
   return (
@@ -294,18 +289,16 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
         </div>
       ) : null}
 
-      {showLearnTab && (
-        <HudSegmentedTabs
-          className="mt-3"
-          tabs={tabs}
-          activeTab={activeTab}
-          onSelect={setActiveTab}
-        />
-      )}
+      <HudSegmentedTabs
+        className="mt-3"
+        tabs={tabs}
+        activeTab={activeTab}
+        onSelect={setActiveTab}
+      />
 
       {activeTab === "info" && (
         <>
-          <dl className={omitHeading && !showLearnTab ? "mt-0 space-y-2 text-sm" : "mt-4 space-y-2 text-sm"}>
+          <dl className="mt-4 space-y-2 text-sm">
             {rows.map((r) => (
               <div
                 key={r.label}
@@ -337,13 +330,13 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
         </>
       )}
 
-      {activeTab === "facts" && showLearnTab && (
+      {activeTab === "facts" && (
         <div className="mt-4">
           <FactCardDeck bodyId={activeBody} showLevelToggle />
         </div>
       )}
 
-      {activeTab === "compare" && showLearnTab && (
+      {activeTab === "compare" && (
         <div className="mt-4">
           <ScaleComparison key={activeBody} bodyId={activeBody} />
         </div>
