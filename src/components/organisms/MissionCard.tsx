@@ -164,7 +164,7 @@ export const MissionCard = ({
       </header>
 
       {!compact ? (
-        <p className="mt-1.5 text-xs text-white/55">{localized.description}</p>
+        <p className="mt-1.5 max-w-prose text-xs text-white/55">{localized.description}</p>
       ) : null}
 
       <div className="mt-3 flex items-center gap-2">

@@ -162,6 +162,7 @@ export type Translation = {
       xpPoints: string;
       levelUp: string;
       noFactCards: string;
+      xpToastLabel: string;
       quizFillPlaceholder: string;
       quizSubmit: string;
       openFactsCta: string;

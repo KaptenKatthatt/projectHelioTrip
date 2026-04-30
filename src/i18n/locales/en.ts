@@ -219,6 +219,7 @@ export const en: Translation = {
       xpPoints: "XP",
       levelUp: "New title unlocked!",
       noFactCards: "No fact cards available for this level.",
+      xpToastLabel: "+{xp} XP",
       quizFillPlaceholder: "Type your answer…",
       quizSubmit: "Submit",
       openFactsCta: "Open facts for selected planet",

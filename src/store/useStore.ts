@@ -49,6 +49,11 @@ type RecentAchievement = {
   readonly unlockedAtMs: number;
 };
 
+type RecentXpGain = {
+  readonly amount: number;
+  readonly awardedAtMs: number;
+};
+
 type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
@@ -76,6 +81,7 @@ type SimulationState = {
   visitedBodies: ReadonlyArray<BodyId>;
   unlockedAchievements: ReadonlyArray<AchievementId>;
   recentAchievement: RecentAchievement | null;
+  recentXpGain: RecentXpGain | null;
   /** Mobile-only: planet info bottom sheet open (not persisted). */
   mobilePlanetInfoSheetOpen: boolean;
   // Learning mode additions
@@ -114,6 +120,7 @@ type SimulationActions = {
   startMission: (missionId: string) => void;
   abandonMission: () => void;
   acknowledgeAchievement: () => void;
+  acknowledgeXpGain: () => void;
   restoreFromShareLink: (state: ShareLinkState) => void;
   setMobilePlanetInfoSheetOpen: (open: boolean) => void;
   // Learning mode additions
@@ -371,6 +378,7 @@ export const useStore = create<Store>()(
       visitedBodies: [],
       unlockedAchievements: [],
       recentAchievement: null,
+      recentXpGain: null,
       mobilePlanetInfoSheetOpen: false,
       learningLevel: "middle",
       xp: 0,
@@ -565,6 +573,7 @@ export const useStore = create<Store>()(
       },
 
       acknowledgeAchievement: () => set({ recentAchievement: null }),
+      acknowledgeXpGain: () => set({ recentXpGain: null }),
 
       setMobilePlanetInfoSheetOpen: (open) =>
         set({ mobilePlanetInfoSheetOpen: open }),
@@ -578,7 +587,11 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
-          return { xp: nextXp, title: nextTitle };
+          return {
+            xp: nextXp,
+            title: nextTitle,
+            recentXpGain: { amount, awardedAtMs: Date.now() },
+          };
         }),
 
       recordQuizResult: (quizId, stars) => {
@@ -599,6 +612,7 @@ export const useStore = create<Store>()(
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,
             title: nextTitle,
+            recentXpGain: { amount: xpAmount, awardedAtMs: Date.now() },
           };
         });
         dispatchDomainEvent({ kind: "quiz_completed", quizId });
