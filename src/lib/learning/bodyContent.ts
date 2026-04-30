@@ -11,7 +11,7 @@ export type FactCard = {
   readonly body: { readonly sv: string; readonly en: string };
 };
 
-export const FACT_CARDS: ReadonlyArray<FactCard> = [
+const FACT_CARDS: ReadonlyArray<FactCard> = [
   // SUN
   {
     id: 'sun_scale', bodyId: 'sun', icon: '☀️', level: 'middle',

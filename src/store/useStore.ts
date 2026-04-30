@@ -33,6 +33,13 @@ import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
 import type { FactCardLevel } from "../lib/learning/bodyContent";
 import { type TitleId, XP_AWARDS, resolveTitle } from "../lib/learning/xp";
 
+const completedMissionIdsList = (
+  missionProgress: Readonly<Record<string, MissionProgress>>,
+): string[] =>
+  Object.entries(missionProgress)
+    .filter(([, p]) => p.completed)
+    .map(([id]) => id);
+
 export type ViewMode = "close" | "overview";
 
 type NavigationMode = "cinematic" | "free";
@@ -567,10 +574,10 @@ export const useStore = create<Store>()(
       awardXp: (amount) =>
         set((state) => {
           const nextXp = state.xp + amount;
-          const completedMissionIds = Object.entries(state.missionProgress)
-            .filter(([, p]) => p.completed)
-            .map(([id]) => id);
-          const nextTitle = resolveTitle(nextXp, completedMissionIds);
+          const nextTitle = resolveTitle(
+            nextXp,
+            completedMissionIdsList(state.missionProgress),
+          );
           return { xp: nextXp, title: nextTitle };
         }),
 
@@ -584,10 +591,10 @@ export const useStore = create<Store>()(
                 ? XP_AWARDS.quizTwoStars
                 : XP_AWARDS.quizOneStar;
           const nextXp = state.xp + xpAmount;
-          const completedMissionIds = Object.entries(state.missionProgress)
-            .filter(([, p]) => p.completed)
-            .map(([id]) => id);
-          const nextTitle = resolveTitle(nextXp, completedMissionIds);
+          const nextTitle = resolveTitle(
+            nextXp,
+            completedMissionIdsList(state.missionProgress),
+          );
           return {
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,

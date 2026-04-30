@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getConstellationStory } from "../../lib/learning/constellationStories";
 import { useStore } from "../../store/useStore";
+import { HudSegmentedTabs } from "./HudSegmentedTabs";
 
 type StoryTab = "story" | "findIt" | "funFact";
 
@@ -25,23 +26,11 @@ export const ConstellationStoryCard = () => {
 
   return (
     <div className="pointer-events-auto max-w-sm rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-4 space-y-3">
-      <div className="flex gap-0.5 rounded-lg bg-white/5 p-0.5">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={[
-              "flex-1 rounded-md py-1.5 text-xs font-medium transition-colors",
-              activeTab === tab.id
-                ? "bg-white/15 text-white"
-                : "text-white/50 hover:text-white/80",
-            ].join(" ")}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <HudSegmentedTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onSelect={setActiveTab}
+      />
       <p className="text-xs text-white/75 leading-relaxed">{content}</p>
     </div>
   );

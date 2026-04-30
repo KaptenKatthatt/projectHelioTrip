@@ -9,18 +9,6 @@ export type TitleId =
   | 'water_hunter'
   | 'orbital_mechanic';
 
-export const TITLE_IDS: ReadonlyArray<TitleId> = [
-  'rookie',
-  'stargazer',
-  'space_explorer',
-  'astronomy_cadet',
-  'space_scientist',
-  'solar_system_expert',
-  'galactic_guide',
-  'water_hunter',
-  'orbital_mechanic',
-];
-
 type XpTitle = {
   readonly id: TitleId;
   readonly xpRequired: number;
@@ -65,16 +53,4 @@ export const resolveTitle = (
     if (xp >= t.xpRequired) current = t.id;
   }
   return current;
-};
-
-export const xpToNextTitle = (
-  xp: number,
-): { nextTitle: TitleId | null; xpNeeded: number } => {
-  const xpBased = XP_TITLES.filter((t) => !t.missionRequired);
-  for (const t of xpBased) {
-    if (xp < t.xpRequired) {
-      return { nextTitle: t.id, xpNeeded: t.xpRequired - xp };
-    }
-  }
-  return { nextTitle: null, xpNeeded: 0 };
 };

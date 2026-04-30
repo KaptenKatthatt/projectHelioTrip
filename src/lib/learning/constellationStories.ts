@@ -7,7 +7,7 @@ export type ConstellationStory = {
   readonly funFact: { readonly sv: string; readonly en: string };
 };
 
-export const CONSTELLATION_STORIES: ReadonlyArray<ConstellationStory> = [
+const CONSTELLATION_STORIES: ReadonlyArray<ConstellationStory> = [
   {
     id: 'orion',
     story: {

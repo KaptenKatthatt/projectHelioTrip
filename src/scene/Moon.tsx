@@ -1,12 +1,11 @@
 import { Suspense, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei/core/Texture';
 import { type Group } from 'three';
 import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
-import { useStore } from '../store/useStore';
 import { getGraphicsPreset } from '../lib/graphicsTier';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
+import { useSimulationTickFrame } from '../hooks/useSimulationTickFrame';
 import { applyBodySpinFromTime } from './bodySpin';
 
 type Props = {
@@ -24,8 +23,6 @@ const MS_PER_HOUR = 3_600_000;
 export const Moon = ({ moon }: Props) => {
   const groupRef = useRef<Group>(null);
   const spinRef = useRef<Group>(null);
-  const lastSimMsRef = useRef<number | null>(null);
-
   const initial = useMemo(() => {
     const parent = getLivePosition(moon.parent);
     const offset = getLiveMoonOffset(moon.id);
@@ -38,11 +35,7 @@ export const Moon = ({ moon }: Props) => {
 
   const periodMs = moon.rotationPeriodHours * MS_PER_HOUR;
 
-  useFrame(() => {
-    const simMs = useStore.getState().simulationTime.getTime();
-    if (lastSimMsRef.current === simMs) return;
-    lastSimMsRef.current = simMs;
-
+  useSimulationTickFrame((simMs) => {
     const group = groupRef.current;
     if (group) {
       const parent = getLivePosition(moon.parent);

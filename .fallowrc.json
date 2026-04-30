@@ -1,0 +1,7 @@
+{
+  "health": {
+    "maxCyclomatic": 35,
+    "maxCognitive": 30,
+    "maxCrap": 1200
+  }
+}

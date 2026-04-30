@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getBodyColor } from "../../lib/bodies";
@@ -22,9 +23,7 @@ export const HUD = () => {
   const { t, bodyName } = useTranslation();
   const layoutTier = useResponsiveLayout();
   const mobileLayout = layoutTier === "compact";
-  const activeBody = useStore((s) => s.activeBody);
-  const viewMode = useStore((s) => s.viewMode);
-  const gameMode = useStore((s) => s.gameMode);
+  const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
   const setGameMode = useStore((s) => s.setGameMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
