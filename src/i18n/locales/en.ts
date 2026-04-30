@@ -214,6 +214,8 @@ export const en: Translation = {
       noFactCards: "No fact cards available for this level.",
       quizFillPlaceholder: "Type your answer…",
       quizSubmit: "Submit",
+      openFactsCta: "Open facts for selected planet",
+      selectPlanetForFacts: "Pick a planet in Explore first to open facts.",
       railToggleOpen: "Open navigation",
       railToggleClose: "Close navigation",
     },

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
 import { BottomSheet } from "../../molecules/BottomSheet";
@@ -39,6 +39,10 @@ export const HudDetailRegion = ({
   mobileBottomNav,
 }: HudDetailRegionProps) => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const [planetPanelForcedTab, setPlanetPanelForcedTab] = useState<
+    "info" | "facts" | "compare" | null
+  >(null);
+  const [planetPanelRenderKey, setPlanetPanelRenderKey] = useState(0);
   if (!mobileLayout) return null;
 
   return (
@@ -81,8 +85,26 @@ export const HudDetailRegion = ({
         onClose={closeNavSheets}
         title={t.phase3.gameMode.learn}
       >
-        <div className="p-3">
+        <div className="p-3 space-y-3">
           <MissionCard compact className="w-full" />
+          {showPlanetInfoUi ? (
+            <button
+              type="button"
+              onClick={() => {
+                setPlanetPanelForcedTab("facts");
+                setPlanetPanelRenderKey((prev) => prev + 1);
+                closeNavSheets();
+                setMobilePlanetInfoSheetOpen(true);
+              }}
+              className="w-full rounded-xl border border-cyan-300/35 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/20"
+            >
+              {t.learn.ui.openFactsCta}
+            </button>
+          ) : (
+            <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+              {t.learn.ui.selectPlanetForFacts}
+            </p>
+          )}
         </div>
       </BottomSheet>
 
@@ -120,7 +142,11 @@ export const HudDetailRegion = ({
         panelClassName="max-h-[min(92dvh,40rem)]"
       >
         <div className="p-3 pt-0">
-          <PlanetPanel omitHeading />
+          <PlanetPanel
+            key={planetPanelRenderKey}
+            omitHeading
+            initialTab={planetPanelForcedTab ?? "info"}
+          />
         </div>
       </BottomSheet>
     </>

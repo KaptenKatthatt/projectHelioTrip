@@ -214,6 +214,8 @@ export const sv: Translation = {
       noFactCards: "Inga faktakort tillgängliga för denna nivå.",
       quizFillPlaceholder: "Skriv ditt svar…",
       quizSubmit: "Svara",
+      openFactsCta: "Öppna fakta för vald planet",
+      selectPlanetForFacts: "Välj en planet i Utforska först för att öppna fakta.",
       railToggleOpen: "Öppna navigering",
       railToggleClose: "Stäng navigering",
     },

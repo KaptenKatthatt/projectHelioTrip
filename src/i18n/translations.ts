@@ -157,6 +157,8 @@ export type Translation = {
       noFactCards: string;
       quizFillPlaceholder: string;
       quizSubmit: string;
+      openFactsCta: string;
+      selectPlanetForFacts: string;
       railToggleOpen: string;
       railToggleClose: string;
     };

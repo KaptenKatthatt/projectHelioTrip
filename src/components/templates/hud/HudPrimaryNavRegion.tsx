@@ -12,10 +12,8 @@ type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;
   readonly showPlanetInfoUi: boolean;
   readonly showMissionUi: boolean;
-  readonly activeBody: string | null;
   readonly selectedConstellation: string | null;
   readonly mobileBodyTitle: string;
-  readonly mobileBodyColor: string | null;
   readonly minimizePanelLabel: string;
   readonly expandPanelLabel: string;
   readonly progressTitle: string;
@@ -25,40 +23,13 @@ export const HudPrimaryNavRegion = ({
   mobileLayout,
   showPlanetInfoUi,
   showMissionUi,
-  activeBody,
   selectedConstellation,
   mobileBodyTitle,
-  mobileBodyColor,
   minimizePanelLabel,
   expandPanelLabel,
   progressTitle,
 }: HudPrimaryNavRegionProps) => (
   <>
-    {!mobileLayout && showPlanetInfoUi ? (
-      <div>
-        <CollapsibleHudPanel
-          key={activeBody}
-          title={mobileBodyTitle}
-          collapsedTitlePrefix={
-            mobileBodyColor ? (
-              <span
-                className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
-                style={{ backgroundColor: mobileBodyColor }}
-              />
-            ) : null
-          }
-          collapsedTitleClassName="truncate text-lg font-semibold tracking-tight text-white"
-          className="relative w-full"
-          defaultCollapsed
-          collapseLabel={minimizePanelLabel}
-          expandLabel={expandPanelLabel}
-          collapseOnExpandedHeaderClick
-        >
-          <PlanetPanel />
-        </CollapsibleHudPanel>
-      </div>
-    ) : null}
-
     <FreeFlightHint />
 
     <div
