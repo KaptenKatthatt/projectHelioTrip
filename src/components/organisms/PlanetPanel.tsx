@@ -127,10 +127,6 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
 
   const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
 
-  useEffect(() => {
-    if (defaultTab) setActiveTab(defaultTab);
-  }, [defaultTab]);
-
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
 
