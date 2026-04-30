@@ -69,7 +69,7 @@ export const ProgressPanel = ({
             <>
               <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-cyan-400 transition-all duration-700"
+                  className="h-full rounded-full bg-cyan-400 transition-all duration-700 motion-reduce:transition-none"
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>

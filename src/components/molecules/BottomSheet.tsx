@@ -127,7 +127,7 @@ export const BottomSheet = ({
         aria-label={title ?? "Panel"}
         style={panelSlideStyle}
         className={
-          "pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:!transform-none motion-reduce:!transition-none " +
+          "pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:!transform-none motion-reduce:!transition-none sm:max-w-2xl sm:mx-auto " +
           (blurPanel
             ? "bg-black/60 backdrop-blur-xl "
             : "bg-[#05060a] backdrop-blur-none ") +

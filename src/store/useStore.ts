@@ -85,6 +85,8 @@ type SimulationState = {
   completedQuizzes: Readonly<Record<string, number>>;
   /** Quiz id waiting to be presented as an overlay (not persisted). */
   pendingQuizId: string | null;
+  /** XP amount from last awardXp call in learn/challenge mode (not persisted). */
+  recentXpGain: number | null;
   /** Desktop left navigation rail open state. */
   leftRailOpen: boolean;
 };
@@ -122,6 +124,7 @@ type SimulationActions = {
   recordQuizResult: (quizId: string, stars: number) => void;
   triggerQuiz: (quizId: string) => void;
   dismissQuiz: () => void;
+  acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
 };
 
@@ -377,6 +380,7 @@ export const useStore = create<Store>()(
       title: "rookie",
       completedQuizzes: {},
       pendingQuizId: null,
+      recentXpGain: null,
       leftRailOpen: true,
 
       setActiveBody: (id) => set({ activeBody: id }),
@@ -578,7 +582,8 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
-          return { xp: nextXp, title: nextTitle };
+          const showGain = state.gameMode !== "explore";
+          return { xp: nextXp, title: nextTitle, recentXpGain: showGain ? amount : null };
         }),
 
       recordQuizResult: (quizId, stars) => {
@@ -607,6 +612,8 @@ export const useStore = create<Store>()(
       triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
 
       dismissQuiz: () => set({ pendingQuizId: null }),
+
+      acknowledgeXpGain: () => set({ recentXpGain: null }),
 
       toggleLeftRail: () =>
         set((state) => ({ leftRailOpen: !state.leftRailOpen })),

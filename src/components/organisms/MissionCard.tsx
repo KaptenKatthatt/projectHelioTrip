@@ -168,7 +168,7 @@ export const MissionCard = ({
       <div className="mt-3 flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-emerald-300/80 transition-[width]"
+            className="h-full rounded-full bg-emerald-300/80 transition-[width] motion-reduce:transition-none"
             style={{ width: `${fractionPercent}%` }}
           />
         </div>
