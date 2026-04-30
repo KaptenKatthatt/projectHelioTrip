@@ -12,10 +12,8 @@ type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;
   readonly showPlanetInfoUi: boolean;
   readonly showMissionUi: boolean;
-  readonly activeBody: string | null;
   readonly selectedConstellation: string | null;
   readonly mobileBodyTitle: string;
-  readonly mobileBodyColor: string | null;
   readonly minimizePanelLabel: string;
   readonly expandPanelLabel: string;
   readonly progressTitle: string;
@@ -25,40 +23,13 @@ export const HudPrimaryNavRegion = ({
   mobileLayout,
   showPlanetInfoUi,
   showMissionUi,
-  activeBody,
   selectedConstellation,
   mobileBodyTitle,
-  mobileBodyColor,
   minimizePanelLabel,
   expandPanelLabel,
   progressTitle,
 }: HudPrimaryNavRegionProps) => (
   <>
-    {!mobileLayout && showPlanetInfoUi ? (
-      <div>
-        <CollapsibleHudPanel
-          key={activeBody}
-          title={mobileBodyTitle}
-          collapsedTitlePrefix={
-            mobileBodyColor ? (
-              <span
-                className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
-                style={{ backgroundColor: mobileBodyColor }}
-              />
-            ) : null
-          }
-          collapsedTitleClassName="truncate text-lg font-semibold tracking-tight text-white"
-          className="relative w-full"
-          defaultCollapsed
-          collapseLabel={minimizePanelLabel}
-          expandLabel={expandPanelLabel}
-          collapseOnExpandedHeaderClick
-        >
-          <PlanetPanel />
-        </CollapsibleHudPanel>
-      </div>
-    ) : null}
-
     <FreeFlightHint />
 
     <div
@@ -74,11 +45,14 @@ export const HudPrimaryNavRegion = ({
         className={
           mobileLayout
             ? "hidden"
-            : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
+            : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 pb-1 sm:w-auto sm:items-end"
         }
       >
         {selectedConstellation !== null && !showPlanetInfoUi ? (
           <ConstellationStoryCard />
+        ) : null}
+        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+          <MissionCard className="w-full max-w-sm" />
         ) : null}
         {showPlanetInfoUi ? (
           <CollapsibleHudPanel
@@ -90,13 +64,11 @@ export const HudPrimaryNavRegion = ({
             <PlanetPanel />
           </CollapsibleHudPanel>
         ) : null}
-        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
-          <MissionCard className="w-full max-w-sm" />
-        ) : null}
         {showPlanetInfoUi || selectedConstellation === null ? (
           <CollapsibleHudPanel
             title={progressTitle}
             className="relative w-full max-w-sm"
+            defaultCollapsed={showMissionUi}
             collapseLabel={minimizePanelLabel}
             expandLabel={expandPanelLabel}
           >
@@ -106,6 +78,10 @@ export const HudPrimaryNavRegion = ({
           </CollapsibleHudPanel>
         ) : null}
         <FreeFlightHelp />
+        <div
+          aria-hidden
+          className="pointer-events-none sticky bottom-0 h-8 w-full max-w-sm bg-linear-to-t from-black/45 to-transparent"
+        />
       </div>
     </div>
   </>

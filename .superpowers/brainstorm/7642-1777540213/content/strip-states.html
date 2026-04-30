@@ -1,0 +1,131 @@
+<style>
+  .states-grid { display: flex; flex-direction: column; gap: 2rem; margin-top: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .state-block { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem 1.25rem; }
+  .state-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+  .state-badge { font-size: 9px; background: rgba(255,255,255,0.08); border-radius: 4px; padding: 1px 6px; color: rgba(255,255,255,0.5); }
+  .strips { display: flex; flex-direction: column; gap: 0.6rem; }
+  .strip-option {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,12,0.78); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .strip-option:hover { border-color: rgba(6,182,212,0.4); }
+  .strip-option.selected-strip { border-color: rgba(6,182,212,0.7); background: rgba(6,182,212,0.06); }
+  .strip-left { font-size: 10px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 6px; }
+  .strip-center { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .strip-right { display: flex; align-items: center; gap: 6px; }
+  .xp-pill { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); border-radius: 5px; padding: 1px 6px; font-size: 8.5px; color: rgb(6,182,212); font-family: monospace; }
+  .back-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); border-radius: 5px; padding: 1px 6px; font-size: 8.5px; color: rgba(255,255,255,0.8); }
+  .opt-label { position: absolute; right: -52px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3); }
+  .strip-desc { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 3px; padding: 0 2px; }
+  .dim { color: rgba(255,255,255,0.3); }
+  .mode-pill { background: rgba(255,255,255,0.08); border-radius: 4px; padding: 1px 5px; font-size: 8px; color: rgba(255,255,255,0.6); }
+  .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0.5rem 0; }
+  .note { font-size: 10px; color: rgba(255,255,255,0.35); font-style: italic; margin-top: 0.5rem; }
+</style>
+
+<h2>Vad visar kontextremsan i varje läge?</h2>
+<p class="subtitle">Välj ett alternativ per situation (klicka för att markera). Bläddra ner för alla tre.</p>
+
+<div class="states-grid">
+
+  <!-- State 1: Solar system overview -->
+  <div class="state-block">
+    <div class="state-title">🌌 Läge 1 — Solsystemet (ingen planet vald) <span class="state-badge">default</span></div>
+    <div class="strips">
+
+      <div>
+        <div class="strip-option" data-choice="1a" onclick="toggleSelect(this)">
+          <div class="strip-left dim">— — —</div>
+          <div class="strip-center dim" style="font-size:9px;">Utforska solsystemet</div>
+          <div class="strip-right"><div class="xp-pill">240 XP · Stjärntittare</div></div>
+        </div>
+        <div class="strip-desc">Tyst remsa — enbart XP/titel höger, subtil text i mitten.</div>
+      </div>
+
+      <div>
+        <div class="strip-option" data-choice="1b" onclick="toggleSelect(this)">
+          <div class="strip-left"><div class="mode-pill">Utforska</div></div>
+          <div class="strip-center"></div>
+          <div class="strip-right"><div class="xp-pill">240 XP</div></div>
+        </div>
+        <div class="strip-desc">Aktivt läge visas som pill till vänster, XP till höger.</div>
+      </div>
+
+      <div>
+        <div class="strip-option" data-choice="1c" onclick="toggleSelect(this)">
+          <div class="strip-left dim" style="font-size:9px;">HelioTrip</div>
+          <div class="strip-center"></div>
+          <div class="strip-right"><div class="xp-pill">240 XP · Stjärntittare</div></div>
+        </div>
+        <div class="strip-desc">App-namn vänster (hemknapp), XP höger — minimalt.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- State 2: Planet selected -->
+  <div class="state-block">
+    <div class="state-title">🌍 Läge 2 — Planet vald / anländer <span class="state-badge">planet</span></div>
+    <div class="strips">
+
+      <div>
+        <div class="strip-option" data-choice="2a" onclick="toggleSelect(this)">
+          <div class="strip-left"><div class="back-btn">← Solsystemet</div></div>
+          <div class="strip-center">Jorden</div>
+          <div class="strip-right"><div class="xp-pill">240 XP</div></div>
+        </div>
+        <div class="strip-desc">Tydlig tillbaka-knapp + planetnamn i mitten + XP.</div>
+      </div>
+
+      <div>
+        <div class="strip-option" data-choice="2b" onclick="toggleSelect(this)">
+          <div class="strip-left"><div class="back-btn">← Tillbaka</div></div>
+          <div class="strip-center">Jorden</div>
+          <div class="strip-right"></div>
+        </div>
+        <div class="strip-desc">Enklare — tillbaka + namn, ingen XP (syns i Challenge-fliken).</div>
+      </div>
+
+      <div>
+        <div class="strip-option" data-choice="2c" onclick="toggleSelect(this)">
+          <div class="strip-left" style="gap:2px;">🌍 <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);">Jorden</span></div>
+          <div class="strip-center"></div>
+          <div class="strip-right"><div class="back-btn">Solsystemet →</div></div>
+        </div>
+        <div class="strip-desc">Planet + ikon till vänster, tillbaka höger (omvända sidor).</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- State 3: Constellation selected -->
+  <div class="state-block">
+    <div class="state-title">✦ Läge 3 — Stjärnbild vald (arket stängs) <span class="state-badge">constellation</span></div>
+    <div class="strips">
+
+      <div>
+        <div class="strip-option" data-choice="3a" onclick="toggleSelect(this)">
+          <div class="strip-left"><div class="back-btn">← Stjärnbilder</div></div>
+          <div class="strip-center">Orion</div>
+          <div class="strip-right"><div class="xp-pill">240 XP</div></div>
+        </div>
+        <div class="strip-desc">Samma mönster som planet — tillbaka öppnar Stjärnor-arket igen.</div>
+      </div>
+
+      <div>
+        <div class="strip-option" data-choice="3b" onclick="toggleSelect(this)">
+          <div class="strip-left">✦</div>
+          <div class="strip-center">Orion</div>
+          <div class="strip-right"><div class="back-btn">Stäng ✕</div></div>
+        </div>
+        <div class="strip-desc">Stjärnbildsikon + namn, stäng till höger — tydligare att det är en annan vy.</div>
+      </div>
+
+    </div>
+    <p class="note">Oavsett val: när stjärnbild väljs stängs bottenarket automatiskt och stjärnbildens story-kort visas som en liten overlay ovanpå scenen.</p>
+  </div>
+
+</div>

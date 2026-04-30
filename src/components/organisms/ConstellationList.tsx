@@ -34,7 +34,10 @@ export const ConstellationList = ({
 }: ConstellationListProps) => {
   const { locale, t } = useTranslation();
   const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const discoveredConstellations = useStore((s) => s.discoveredConstellations);
   const focusSkyTarget = useStore((s) => s.focusSkyTarget);
+  const discoveredSet = new Set(discoveredConstellations);
+  const missingCount = CONSTELLATION_MENU_ITEMS.length - discoveredSet.size;
 
   const sections = useMemo(() => {
     const bySeason = new Map<ConstellationSeasonId, ConstellationMenuItem[]>();
@@ -57,6 +60,12 @@ export const ConstellationList = ({
         "flex max-h-64 flex-col gap-2 overflow-y-auto pr-1 " + (className ?? "")
       }
     >
+      <div className="rounded-lg border border-indigo-300/25 bg-indigo-300/10 px-2.5 py-2 text-xs text-indigo-100/90">
+        {t.ui.constellationCollection
+          .replace("{found}", String(discoveredSet.size))
+          .replace("{total}", String(CONSTELLATION_MENU_ITEMS.length))
+          .replace("{missing}", String(missingCount))}
+      </div>
       {sections.map(({ season, title, items }) => (
         <div key={season} className="flex flex-col gap-0.5">
           <div className="px-2.5 pt-1 text-[0.65rem] font-medium uppercase tracking-wide text-white/45">
@@ -64,6 +73,7 @@ export const ConstellationList = ({
           </div>
           {items.map((item) => {
             const isActive = selectedConstellation === item.id;
+            const isDiscovered = discoveredSet.has(item.id);
             const primary = locale === "sv" ? item.labelSv : item.labelEn;
             return (
               <button
@@ -77,10 +87,14 @@ export const ConstellationList = ({
                   "w-full rounded-lg px-2.5 py-1.5 text-left transition " +
                   (isActive
                     ? "bg-white/15 text-white"
-                    : "text-white/70 hover:bg-white/10 hover:text-white")
+                    : isDiscovered
+                      ? "text-white/70 hover:bg-white/10 hover:text-white"
+                      : "text-white/45 hover:bg-white/8 hover:text-white/75")
                 }
               >
-                <span className="block truncate text-sm">{primary}</span>
+                <span className="block truncate text-sm">
+                  {isDiscovered ? primary : t.ui.constellationUnknownLabel}
+                </span>
                 <span className="block truncate text-xs text-white/55">
                   {item.labelLatin}
                 </span>

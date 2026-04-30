@@ -1,4 +1,6 @@
 import type { GameMode } from "../../../lib/missions/types";
+import { LearningStreakBadge } from "../../atoms/LearningStreakBadge";
+import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
 import { XpBadge } from "../../atoms/XpBadge";
 
 type HudTopBarRegionProps = {
@@ -9,9 +11,9 @@ type HudTopBarRegionProps = {
 };
 
 const MODE_ACCENT: Record<GameMode, string> = {
-  explore: "",
-  learn: "bg-cyan-400",
-  challenge: "bg-emerald-400",
+  explore: "bg-white/30",
+  learn: "bg-cyan-300",
+  challenge: "bg-emerald-300",
 };
 
 export const HudTopBarRegion = ({
@@ -45,18 +47,26 @@ export const HudTopBarRegion = ({
           <p className={mobileLayout ? "hidden" : "text-xs text-white/50"}>{tagline}</p>
         </div>
 
-        {showXpBadge && <XpBadge />}
+        {showXpBadge ? (
+          <div className="flex items-center gap-2">
+            <LearningStreakBadge />
+            <XpBadge />
+          </div>
+        ) : null}
       </header>
 
       {accentClass && (
         <div
           className={[
-            "h-0.5 w-full rounded-full opacity-70 transition-all duration-500",
+            "h-1 w-full rounded-full opacity-90 transition-all duration-500",
             accentClass,
           ].join(" ")}
           aria-hidden="true"
         />
       )}
+      <div className="flex justify-start">
+        <SpaceWeatherBadge />
+      </div>
     </div>
   );
 };

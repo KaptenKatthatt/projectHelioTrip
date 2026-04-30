@@ -31,7 +31,7 @@ export const ConstellationStoryCard = () => {
         activeTab={activeTab}
         onSelect={setActiveTab}
       />
-      <p className="text-xs text-white/75 leading-relaxed">{content}</p>
+      <p className="max-w-prose text-xs leading-relaxed text-white/75">{content}</p>
     </div>
   );
 };

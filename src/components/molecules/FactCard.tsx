@@ -18,7 +18,7 @@ export const FactCard = ({ card, locale }: Props) => {
         </span>
         <h3 className="text-sm font-semibold text-white leading-tight">{title}</h3>
       </div>
-      <p className="text-xs text-white/70 leading-relaxed">{body}</p>
+      <p className="max-w-prose text-xs leading-relaxed text-white/70">{body}</p>
     </div>
   );
 };

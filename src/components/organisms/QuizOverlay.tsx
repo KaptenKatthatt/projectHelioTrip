@@ -13,9 +13,33 @@ export const QuizOverlay = () => {
   const { t } = useTranslation();
   const locale = useStore((s) => s.locale);
   const pendingQuizId = useStore((s) => s.pendingQuizId);
+
+  if (!pendingQuizId) return null;
+
+  const question = QUIZ_QUESTIONS.find((q) => q.id === pendingQuizId);
+  if (!question) return null;
+
+  return (
+    <QuizOverlaySession
+      key={pendingQuizId}
+      locale={locale}
+      question={question}
+      t={t}
+    />
+  );
+};
+
+const QuizOverlaySession = ({
+  locale,
+  question,
+  t,
+}: {
+  locale: "sv" | "en";
+  question: QuizQuestion;
+  t: Translation;
+}) => {
   const dismissQuiz = useStore((s) => s.dismissQuiz);
   const recordQuizResult = useStore((s) => s.recordQuizResult);
-
   const [phase, setPhase] = useState<Phase>("question");
   const [attempts, setAttempts] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -24,20 +48,8 @@ export const QuizOverlay = () => {
   const [earnedStars, setEarnedStars] = useState(0);
   const [wrongFeedback, setWrongFeedback] = useState(false);
 
-  if (!pendingQuizId) return null;
-
-  const question = QUIZ_QUESTIONS.find((q) => q.id === pendingQuizId);
-  if (!question) return null;
-
   const handleClose = () => {
     dismissQuiz();
-    setPhase("question");
-    setAttempts(0);
-    setSelectedKey(null);
-    setFillValue("");
-    setShowHint(false);
-    setEarnedStars(0);
-    setWrongFeedback(false);
   };
 
   const checkAnswer = (answer: string): boolean => {
@@ -83,7 +95,7 @@ export const QuizOverlay = () => {
           type="button"
           onClick={handleClose}
           aria-label="Close"
-          className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition"
+          className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white motion-reduce:transition-none"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
@@ -180,7 +192,7 @@ const QuizQuestion = ({
                 onSubmit(opt.key);
               }}
               className={[
-                "w-full rounded-xl border px-3 py-2.5 text-left text-sm transition",
+                "w-full rounded-xl border px-3 py-2.5 text-left text-sm transition motion-reduce:transition-none",
                 selectedKey === opt.key
                   ? "border-cyan-400/60 bg-cyan-400/15 text-cyan-100"
                   : "border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10",
@@ -206,7 +218,7 @@ const QuizQuestion = ({
                 setSelectedKey(opt.value);
                 onSubmit(opt.value);
               }}
-              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/10"
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/10 motion-reduce:transition-none"
             >
               {opt.label}
             </button>
@@ -232,7 +244,7 @@ const QuizQuestion = ({
           <button
             type="submit"
             disabled={fillValue.trim().length === 0}
-            className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-40"
+            className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-40 motion-reduce:transition-none"
           >
             {t.learn.ui.quizSubmit}
           </button>
@@ -263,7 +275,7 @@ const QuizResult = ({
           <Star
             key={n}
             className={[
-              "h-7 w-7 transition-all",
+              "h-7 w-7 transition-all motion-reduce:transition-none",
               n <= earnedStars
                 ? "fill-amber-400 text-amber-400"
                 : "fill-white/10 text-white/20",
@@ -286,7 +298,7 @@ const QuizResult = ({
       <button
         type="button"
         onClick={onClose}
-        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10"
+        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 motion-reduce:transition-none"
       >
         {t.ui.aboutClose}
       </button>

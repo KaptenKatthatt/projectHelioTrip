@@ -62,6 +62,7 @@ export type Translation = {
     minimizePanel: string;
     expandPanel: string;
     bodyInfo: string;
+    bodyInfoShort: string;
     timeControls: string;
     start: string;
     aboutOpen: string;
@@ -81,6 +82,8 @@ export type Translation = {
     constellationSeasonSpring: string;
     constellationSeasonSummer: string;
     constellationSeasonAutumn: string;
+    constellationCollection: string;
+    constellationUnknownLabel: string;
   };
   phase3: {
     gameMode: {
@@ -101,10 +104,17 @@ export type Translation = {
       missionCompleted: string;
       abandon: string;
       backToExplore: string;
+      dailyChallenge: string;
+      startDailyChallenge: string;
+      confirmLeaveMission: string;
+      confirmAbandonMission: string;
+      confirmAction: string;
+      cancelAction: string;
     };
     progressPanel: {
       title: string;
       visited: string;
+      missingBodies: string;
       achievementsTitle: string;
       noAchievements: string;
     };
@@ -136,8 +146,10 @@ export type Translation = {
   learn: {
     ui: {
       factsTab: string;
+      factsTabShort: string;
       learnMoreTab: string;
       compareSize: string;
+      compareSizeShort: string;
       testYourself: string;
       levelMiddle: string;
       levelUpper: string;
@@ -155,8 +167,14 @@ export type Translation = {
       xpPoints: string;
       levelUp: string;
       noFactCards: string;
+      xpToastLabel: string;
+      learningStreakLabel: string;
+      learningStreakResetHint: string;
+      patienceReward: string;
       quizFillPlaceholder: string;
       quizSubmit: string;
+      openFactsCta: string;
+      selectPlanetForFacts: string;
       railToggleOpen: string;
       railToggleClose: string;
     };

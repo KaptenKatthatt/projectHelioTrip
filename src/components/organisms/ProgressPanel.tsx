@@ -5,6 +5,7 @@ import { XP_TITLES } from "../../lib/learning/xp";
 import { MOONS } from "../../lib/moons";
 import { PLANETS } from "../../lib/planets";
 import { SATELLITES } from "../../lib/satellites";
+import type { BodyId } from "../../lib/bodies";
 import { useStore } from "../../store/useStore";
 
 type ProgressPanelProps = {
@@ -25,6 +26,7 @@ export const ProgressPanel = ({
   const unlocked = useStore((s) => s.unlockedAchievements);
   const xp = useStore((s) => s.xp);
   const title = useStore((s) => s.title);
+  const learningStreakDays = useStore((s) => s.learningStreakDays);
   const gameMode = useStore((s) => s.gameMode);
 
   const showXp = gameMode === "learn" || gameMode === "challenge";
@@ -41,8 +43,10 @@ export const ProgressPanel = ({
       : 100;
 
   const totalBodies = PLANETS.length + MOONS.length + SATELLITES.length;
+  const allBodyIds: BodyId[] = [...PLANETS, ...MOONS, ...SATELLITES].map((body) => body.id);
   const visitedSet = new Set(visitedBodies);
   const unlockedSet = new Set(unlocked);
+  const missingBodies = allBodyIds.filter((id) => !visitedSet.has(id));
 
   return (
     <aside
@@ -54,7 +58,7 @@ export const ProgressPanel = ({
       }
     >
       {showTitle ? (
-        <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+        <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-white/45">
           {t.phase3.progressPanel.title}
         </h3>
       ) : null}
@@ -73,13 +77,18 @@ export const ProgressPanel = ({
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-white/40">
+              <p className="text-xs text-white/40">
                 {t.learn.ui.xpUntilNext
                   .replace("{xp}", String(nextXpRequired - xp))
                   .replace("{title}", t.learn.xpTitles[nextTier.id])}
               </p>
             </>
           )}
+          <p className="text-xs text-white/50">
+            {t.learn.ui.learningStreakLabel.replace("{days}", String(learningStreakDays))}
+            {" · "}
+            {t.learn.ui.learningStreakResetHint}
+          </p>
         </div>
       )}
 
@@ -109,6 +118,31 @@ export const ProgressPanel = ({
             ))}
           </div>
         ) : null}
+        {!compact ? (
+          <div className="mt-2 rounded-md border border-indigo-300/25 bg-indigo-300/10 px-2 py-1.5">
+            <p className="text-xs text-indigo-100/90">
+              {t.phase3.progressPanel.missingBodies
+                .replace("{count}", String(missingBodies.length))}
+            </p>
+            {missingBodies.length > 0 ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {missingBodies.slice(0, 6).map((id) => (
+                  <span
+                    key={id}
+                    className="rounded-md border border-indigo-200/35 bg-indigo-200/10 px-1.5 py-0.5 text-[11px] text-indigo-100"
+                  >
+                    {bodyName(id)}
+                  </span>
+                ))}
+                {missingBodies.length > 6 ? (
+                  <span className="rounded-md border border-indigo-200/25 bg-indigo-200/5 px-1.5 py-0.5 text-[11px] text-indigo-100/80">
+                    +{missingBodies.length - 6}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-3">
@@ -119,9 +153,9 @@ export const ProgressPanel = ({
           </span>
         </div>
         {unlockedSet.size === 0 ? (
-          <p className="mt-1 text-xs text-white/45">
-            {t.phase3.progressPanel.noAchievements}
-          </p>
+          <div className="mt-1 rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
+            <p className="text-xs text-white/55">{t.phase3.progressPanel.noAchievements}</p>
+          </div>
         ) : (
           <ul className="mt-1 flex flex-wrap gap-1">
             {ACHIEVEMENT_IDS.filter((id) => unlockedSet.has(id)).map((id) => (

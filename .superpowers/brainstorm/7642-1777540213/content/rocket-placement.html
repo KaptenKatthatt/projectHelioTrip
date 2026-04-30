@@ -1,0 +1,207 @@
+<style>
+  .phones { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; flex: 0 0 auto; }
+  .phone {
+    width: 190px; height: 370px; border-radius: 28px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: #06080f;
+    display: flex; flex-direction: column;
+    overflow: hidden; position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  }
+  .notch { width: 48px; height: 5px; background: rgba(0,0,0,0.9); border-radius: 3px; margin: 4px auto 0; }
+  .phone-scene {
+    flex: 1;
+    background: radial-gradient(ellipse at 50% 55%, #0d1a2e 0%, #030609 100%);
+    position: relative; overflow: hidden;
+  }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.7); border-radius: 50%; }
+  .planet-glow { position: absolute; border-radius: 50%; }
+  .phone-nav {
+    background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 4px 2px 7px; display: flex;
+  }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 1px; font-size: 6.5px; color: rgba(255,255,255,0.4); }
+  .nav-tab.active { color: rgba(255,255,255,0.9); }
+  .nav-icon { font-size: 12px; }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: transparent; }
+  .nav-tab.active .dot { background: white; }
+
+  /* Context strip */
+  .ctx-strip {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: rgba(0,0,12,0.78); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 5px 8px; display: flex; align-items: center;
+    justify-content: space-between; gap: 4px; min-height: 28px;
+  }
+  .ctx-left { font-size: 8px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 4px; }
+  .ctx-center { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.8); }
+  .ctx-right { display: flex; align-items: center; gap: 4px; }
+  .xp-pill { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); border-radius: 5px; padding: 1px 5px; font-size: 7.5px; color: rgb(6,182,212); font-family: monospace; }
+  .rocket-strip-btn {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px; padding: 2px 7px; font-size: 8px;
+    color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 3px;
+  }
+  .rocket-fab {
+    position: absolute; bottom: 62px; right: 10px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+  }
+  .rocket-scene-btn {
+    position: absolute; top: 38px; left: 8px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 7px; padding: 3px 7px; font-size: 8px;
+    color: rgba(255,255,255,0.75); display: flex; align-items: center; gap: 3px;
+  }
+  .approach-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); text-align: center; }
+  .approach-desc { font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; line-height: 1.5; max-width: 190px; }
+  .pro { color: rgba(134,239,172,0.9); font-size: 10px; }
+  .con { color: rgba(252,165,165,0.8); font-size: 10px; }
+  .pro-con { display: flex; flex-direction: column; gap: 2px; max-width: 190px; padding: 0 4px; }
+  .label-tag { font-size: 8px; color: rgba(6,182,212,0.9); background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25); border-radius: 4px; padding: 1px 5px; }
+  .annotation {
+    position: absolute; background: rgba(6,182,212,0.9); color: #000;
+    font-size: 7px; font-weight: 700; border-radius: 3px; padding: 1px 4px;
+    white-space: nowrap;
+  }
+</style>
+
+<h2>Var ska fri-flygning-knappen ligga?</h2>
+<p class="subtitle">Kontextremsan är vald — nu: var placerar vi 🚀?</p>
+
+<div class="phones">
+
+  <!-- Option A: In the strip -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:20%;left:18%"></div>
+          <div class="star" style="top:40%;left:72%"></div>
+          <div class="star" style="top:60%;left:35%"></div>
+          <div class="star" style="top:75%;left:80%"></div>
+          <div class="star" style="top:15%;left:55%"></div>
+          <div class="planet-glow" style="width:55px;height:55px;background:radial-gradient(circle at 35% 35%,#4a90d9,#1a3a6b);top:35%;left:50%;transform:translateX(-50%);box-shadow:0 0 20px rgba(74,144,217,0.35)"></div>
+
+          <!-- Context strip with rocket inside -->
+          <div class="ctx-strip">
+            <div class="ctx-left">
+              <div class="rocket-strip-btn">🚀 Flyg fritt</div>
+            </div>
+            <div class="ctx-right">
+              <div class="xp-pill">240 XP</div>
+            </div>
+          </div>
+          <!-- annotation -->
+          <div class="annotation" style="top:34px;left:8px;">Rocket i remsan ↑</div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab active"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">A — I kontextremsan</div>
+      <div class="approach-desc">Knappen lever i remsan, alltid synlig i Utforska-läge. Döljs när du är på planet (ersätts av ←).</div>
+      <div class="pro-con">
+        <span class="pro">✓ Alltid synlig, naturlig plats</span>
+        <span class="pro">✓ Ingen extra yta tas upp</span>
+        <span class="con">✗ Remsan kan bli trång</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: FAB -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:22%;left:22%"></div>
+          <div class="star" style="top:38%;left:68%"></div>
+          <div class="star" style="top:58%;left:40%"></div>
+          <div class="star" style="top:72%;left:78%"></div>
+          <div class="star" style="top:12%;left:58%"></div>
+          <div class="planet-glow" style="width:55px;height:55px;background:radial-gradient(circle at 35% 35%,#4a90d9,#1a3a6b);top:35%;left:50%;transform:translateX(-50%);box-shadow:0 0 20px rgba(74,144,217,0.35)"></div>
+
+          <!-- Context strip: clean, XP only -->
+          <div class="ctx-strip">
+            <div class="ctx-left" style="color:rgba(255,255,255,0.3);font-size:8px;">Utforska solsystemet</div>
+            <div class="ctx-right">
+              <div class="xp-pill">240 XP</div>
+            </div>
+          </div>
+
+          <!-- FAB -->
+          <div class="rocket-fab">🚀</div>
+          <div class="annotation" style="bottom:68px;right:50px;">FAB ↗</div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab active"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">B — Flytande FAB</div>
+      <div class="approach-desc">En rund floating action button i nedre hörnet, synlig när Utforska är aktivt.</div>
+      <div class="pro-con">
+        <span class="pro">✓ Stort tryckområde, tydlig CTA</span>
+        <span class="pro">✓ Välkänt mobilmönster</span>
+        <span class="con">✗ Täcker scenen lite</span>
+        <span class="con">✗ Ytterligare en flytande yta</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Below strip, inline with scene -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:25%;left:20%"></div>
+          <div class="star" style="top:42%;left:75%"></div>
+          <div class="star" style="top:62%;left:42%"></div>
+          <div class="star" style="top:78%;left:15%"></div>
+          <div class="star" style="top:16%;left:62%"></div>
+          <div class="planet-glow" style="width:55px;height:55px;background:radial-gradient(circle at 35% 35%,#4a90d9,#1a3a6b);top:38%;left:50%;transform:translateX(-50%);box-shadow:0 0 20px rgba(74,144,217,0.35)"></div>
+
+          <!-- Context strip -->
+          <div class="ctx-strip">
+            <div class="ctx-left" style="color:rgba(255,255,255,0.3);font-size:8px;">Utforska solsystemet</div>
+            <div class="ctx-right"><div class="xp-pill">240 XP</div></div>
+          </div>
+
+          <!-- Rocket just below strip -->
+          <div class="rocket-scene-btn">🚀 Flyg fritt</div>
+          <div class="annotation" style="top:58px;left:56px;">Under remsan ↑</div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab active"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">C — Under remsan</div>
+      <div class="approach-desc">En liten knapp direkt under kontextremsan, vänsterjusterad. Döljs när du väljer planet.</div>
+      <div class="pro-con">
+        <span class="pro">✓ Lätt att hitta, täcker inte scenen</span>
+        <span class="pro">✓ Tydlig text-label</span>
+        <span class="con">✗ Tar mer vertikal höjd</span>
+        <span class="con">✗ Halvt inuti scenen — konstig zon</span>
+      </div>
+    </div>
+  </div>
+
+</div>
