@@ -25,12 +25,15 @@ type AnonymousEventName =
 
 type AnonymousEventPayload = Readonly<Record<string, string>>;
 let analyticsDisabledForSession = false;
+const analyticsDisabledByEnv =
+  import.meta.env.VITE_DISABLE_ANALYTICS === "true";
 
 const sendEvent = (
   name: AnonymousEventName,
   payload: AnonymousEventPayload = {},
 ): void => {
   if (typeof window === "undefined") return;
+  if (analyticsDisabledByEnv) return;
   if (analyticsDisabledForSession) return;
   void fetch("/api/analytics/event", {
     method: "POST",

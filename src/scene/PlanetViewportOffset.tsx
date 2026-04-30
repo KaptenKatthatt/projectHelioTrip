@@ -32,7 +32,7 @@ import { useStore } from '../store/useStore';
 import { cameraTravelSpringProgressRef } from './cameraTravelSpringProgress';
 
 /** Fraction of canvas height to shift the planet upward in the 2D viewport. */
-const PLANET_VIEWPORT_UPSHIFT_FRACTION = 0.1;
+const PLANET_VIEWPORT_UPSHIFT_FRACTION = 0.2;
 
 const smoothstep = (t: number): number => t * t * (3 - 2 * t);
 const clearCameraViewOffset = (
@@ -191,7 +191,10 @@ export const PlanetViewportOffset = (): null => {
       return;
     }
 
-    camera.setViewOffset(width, height, 0, offsetY, width, height);
+    // Intentional: include offset in fullHeight to preserve the approved
+    // mobile close-view framing where the planet sits at the expected HUD-safe height.
+    const fullHeight = height + offsetY;
+    camera.setViewOffset(width, fullHeight, 0, offsetY, width, height);
   }, 1);
 
   return null;

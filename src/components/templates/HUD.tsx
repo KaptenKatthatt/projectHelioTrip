@@ -28,8 +28,10 @@ export const HUD = () => {
   const setGameMode = useStore((s) => s.setGameMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
+  const isTravelAnimating = useStore((s) => s.isTravelAnimating);
   const showPlanetPanel = activeBody !== null && viewMode !== "overview";
-  const showPlanetInfoUi = showPlanetPanel && !isTraveling;
+  const showPlanetInfoUi =
+    showPlanetPanel && !isTraveling && !isTravelAnimating;
   const showMissionUi = gameMode !== "explore";
   const mobileBodyTitle =
     activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
@@ -42,7 +44,6 @@ export const HUD = () => {
   const setMobilePlanetInfoSheetOpen = useStore(
     (s) => s.setMobilePlanetInfoSheetOpen,
   );
-  const setActiveBody = useStore((s) => s.setActiveBody);
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
 
   useEffect(() => {
@@ -82,10 +83,6 @@ export const HUD = () => {
     setOpenNavSheet(null);
   };
 
-  const handleBackFromPlanet = (): void => {
-    setActiveBody(null);
-  };
-
   const handleResetToStart = (): void => {
     closeNavSheets();
     setMobilePlanetInfoSheetOpen(false);
@@ -107,7 +104,7 @@ export const HUD = () => {
         <MobileContextStrip
           onOpenChallengeSheet={() => handleToggleNavSheet("challenge")}
           onOpenConstellationsSheet={() => handleToggleNavSheet("stars")}
-          onBackFromPlanet={handleBackFromPlanet}
+          onBackFromPlanet={handleResetToStart}
           onResetToStart={handleResetToStart}
         />
       )}

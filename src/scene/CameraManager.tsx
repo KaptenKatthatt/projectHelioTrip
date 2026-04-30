@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useSpring } from "@react-spring/three";
 import { Vector3 } from "three";
 import { useStore } from "../store/useStore";
+import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
 import {
   AIM_FRACTION,
   ARC_HEIGHT_FACTOR,
@@ -22,10 +23,13 @@ import {
   type Travel,
 } from "./cameraTravel";
 import { cameraTravelSpringProgressRef } from "./cameraTravelSpringProgress";
+import { applyMobilePlanetScreenLift } from "./mobilePlanetFraming";
 
 
 export const CameraManager = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  const isMobileLayout = useIsMobileLayout();
 
   const travelId = useStore((s) => s.travelId);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
@@ -37,12 +41,12 @@ export const CameraManager = () => {
   const arrivedRef = useRef<Arrived | null>(null);
   const previousNavigationModeRef = useRef(navigationMode);
 
-  const tmpEndPos = useMemo(() => new Vector3(), []);
-  const tmpTargetPos = useMemo(() => new Vector3(), []);
-  const tmpScratch = useMemo(() => new Vector3(), []);
-  const tmpDir = useMemo(() => new Vector3(), []);
-  const tmpInterpDir = useMemo(() => new Vector3(), []);
-  const tmpLookAt = useMemo(() => new Vector3(), []);
+  const tmpEndPosRef = useRef(new Vector3());
+  const tmpTargetPosRef = useRef(new Vector3());
+  const tmpScratchRef = useRef(new Vector3());
+  const tmpDirRef = useRef(new Vector3());
+  const tmpInterpDirRef = useRef(new Vector3());
+  const tmpLookAtRef = useRef(new Vector3());
   const arcPosRef = useRef(new Vector3());
 
   const [{ t }, api] = useSpring(() => ({
@@ -52,6 +56,8 @@ export const CameraManager = () => {
 
   useEffect(() => {
     if (travelId === 0) return;
+    const tmpEndPos = tmpEndPosRef.current;
+    const tmpScratch = tmpScratchRef.current;
 
     const state = useStore.getState();
     const startPos = camera.position.clone();
@@ -60,12 +66,14 @@ export const CameraManager = () => {
 
     const travel = createTravelFromState(state, startPos, startForward);
     if (!travel) {
+      useStore.setState({ isTravelAnimating: false });
       cameraTravelSpringProgressRef.current = null;
       return;
     }
 
     travelRef.current = travel;
     arrivedRef.current = null;
+    useStore.setState({ isTravelAnimating: true });
     cameraTravelSpringProgressRef.current = 0;
 
     api.start({
@@ -79,12 +87,14 @@ export const CameraManager = () => {
         resolveEndPos(current, tmpEndPos, tmpScratch);
         setCameraPosition(tmpEndPos);
         arrive();
-        arrivedRef.current = toArrived(current);
+        arrivedRef.current =
+          current.kind === "body" ? toArrived(current) : null;
         travelRef.current = null;
+        useStore.setState({ isTravelAnimating: false });
         cameraTravelSpringProgressRef.current = null;
       },
     });
-  }, [travelId, camera, api, setCameraPosition, arrive, tmpEndPos, tmpScratch]);
+  }, [travelId, camera, api, setCameraPosition, arrive]);
 
   useEffect(() => {
     const previous = previousNavigationModeRef.current;
@@ -100,6 +110,13 @@ export const CameraManager = () => {
   }, [navigationMode]);
 
   useFrame(() => {
+    const tmpTargetPos = tmpTargetPosRef.current;
+    const tmpDir = tmpDirRef.current;
+    const tmpInterpDir = tmpInterpDirRef.current;
+    const tmpLookAt = tmpLookAtRef.current;
+    const tmpEndPos = tmpEndPosRef.current;
+    const tmpScratch = tmpScratchRef.current;
+
     if (useStore.getState().navigationMode === "free") return;
 
     const travel = travelRef.current;
@@ -108,6 +125,15 @@ export const CameraManager = () => {
       const progress = t.get();
       cameraTravelSpringProgressRef.current = progress;
       resolveTarget(travel, tmpTargetPos);
+      if (travel.kind === "body") {
+        tmpTargetPos.y = applyMobilePlanetScreenLift(
+          camera,
+          camera.position.distanceTo(tmpTargetPos),
+          tmpTargetPos.y,
+          size,
+          isMobileLayout,
+        );
+      }
 
       if (progress <= AIM_FRACTION) {
         const aim = easeInOutSine(progress / AIM_FRACTION);

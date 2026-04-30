@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useCloseCinematicBodyEnabled } from '../hooks/useCloseCinematicBodyEnabled';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
+import { applyMobilePlanetScreenLift } from './mobilePlanetFraming';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
 const MAX_DISTANCE_MULTIPLIER = 60;
@@ -15,12 +17,14 @@ type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
 
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const activeBody = useStore((s) => s.activeBody);
+  const isMobileLayout = useIsMobileLayout();
 
   const controlsRef = useRef<OrbitControlsRef>(null);
   const initializedRef = useRef(false);
-  const tmpTarget = useMemo(() => new Vector3(), []);
-  const tmpDelta = useMemo(() => new Vector3(), []);
+  const tmpTargetRef = useRef(new Vector3());
+  const tmpDeltaRef = useRef(new Vector3());
 
   const enabled = useCloseCinematicBodyEnabled(activeBody !== null);
 
@@ -50,11 +54,23 @@ export const PlanetOrbitControls = () => {
    * camera appear to jump away from the planet.
    */
   useFrame(() => {
+    const tmpTarget = tmpTargetRef.current;
+    const tmpDelta = tmpDeltaRef.current;
+
     if (!enabled || !activeBody) return;
     const controls = controlsRef.current;
     if (!controls) return;
 
     getBodyWorldPosition(activeBody, tmpTarget);
+    // Intentional: orbit target uses the same mobile lift as framing so the
+    // selected body stays at the approved on-screen height in close view.
+    tmpTarget.y = applyMobilePlanetScreenLift(
+      camera,
+      camera.position.distanceTo(tmpTarget),
+      tmpTarget.y,
+      size,
+      isMobileLayout,
+    );
 
     if (!initializedRef.current) {
       controls.target.copy(tmpTarget);

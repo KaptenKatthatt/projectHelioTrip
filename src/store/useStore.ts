@@ -53,6 +53,7 @@ type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
   isTraveling: boolean;
+  isTravelAnimating: boolean;
   simulationTime: Date;
   timeScale: number;
   isPlaying: boolean;
@@ -403,6 +404,7 @@ export const useStore = create<Store>()(
       activeBody: null,
       cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
       isTraveling: false,
+      isTravelAnimating: false,
       simulationTime: new Date(),
       timeScale: DEFAULT_TIME_SCALE,
       isPlaying: false,
