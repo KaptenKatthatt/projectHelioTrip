@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import type { ComponentRef } from 'react';
@@ -23,8 +23,8 @@ export const PlanetOrbitControls = () => {
 
   const controlsRef = useRef<OrbitControlsRef>(null);
   const initializedRef = useRef(false);
-  const tmpTarget = useMemo(() => new Vector3(), []);
-  const tmpDelta = useMemo(() => new Vector3(), []);
+  const tmpTargetRef = useRef(new Vector3());
+  const tmpDeltaRef = useRef(new Vector3());
 
   const enabled = useCloseCinematicBodyEnabled(activeBody !== null);
 
@@ -54,6 +54,9 @@ export const PlanetOrbitControls = () => {
    * camera appear to jump away from the planet.
    */
   useFrame(() => {
+    const tmpTarget = tmpTargetRef.current;
+    const tmpDelta = tmpDeltaRef.current;
+
     if (!enabled || !activeBody) return;
     const controls = controlsRef.current;
     if (!controls) return;
