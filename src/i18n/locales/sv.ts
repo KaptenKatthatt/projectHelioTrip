@@ -223,6 +223,8 @@ export const sv: Translation = {
       levelUp: "Ny titel upplåst!",
       noFactCards: "Inga faktakort tillgängliga för denna nivå.",
       xpToastLabel: "+{xp} XP",
+      learningStreakLabel: "{days} dagar i rad",
+      patienceReward: "Du stannade kvar vid {body}. +{xp} XP för uthållighet!",
       quizFillPlaceholder: "Skriv ditt svar…",
       quizSubmit: "Svara",
       openFactsCta: "Öppna fakta för vald planet",

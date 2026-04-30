@@ -1,4 +1,5 @@
 import type { GameMode } from "../../../lib/missions/types";
+import { LearningStreakBadge } from "../../atoms/LearningStreakBadge";
 import { XpBadge } from "../../atoms/XpBadge";
 
 type HudTopBarRegionProps = {
@@ -45,7 +46,12 @@ export const HudTopBarRegion = ({
           <p className={mobileLayout ? "hidden" : "text-xs text-white/50"}>{tagline}</p>
         </div>
 
-        {showXpBadge && <XpBadge />}
+        {showXpBadge ? (
+          <div className="flex items-center gap-2">
+            <LearningStreakBadge />
+            <XpBadge />
+          </div>
+        ) : null}
       </header>
 
       {accentClass && (

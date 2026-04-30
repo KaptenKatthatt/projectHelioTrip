@@ -166,6 +166,8 @@ export type Translation = {
       levelUp: string;
       noFactCards: string;
       xpToastLabel: string;
+      learningStreakLabel: string;
+      patienceReward: string;
       quizFillPlaceholder: string;
       quizSubmit: string;
       openFactsCta: string;

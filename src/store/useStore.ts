@@ -54,6 +54,13 @@ type RecentXpGain = {
   readonly awardedAtMs: number;
 };
 
+const getLocalDayKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
@@ -89,6 +96,8 @@ type SimulationState = {
   xp: number;
   title: TitleId;
   completedQuizzes: Readonly<Record<string, number>>;
+  learningStreakDays: number;
+  lastLearningActiveDay: string | null;
   /** Quiz id waiting to be presented as an overlay (not persisted). */
   pendingQuizId: string | null;
   /** Desktop left navigation rail open state. */
@@ -145,6 +154,8 @@ type PersistedState = {
   learningLevel: FactCardLevel;
   xp: number;
   completedQuizzes: Record<string, number>;
+  learningStreakDays: number;
+  lastLearningActiveDay: string | null;
   leftRailOpen: boolean;
 };
 
@@ -384,6 +395,8 @@ export const useStore = create<Store>()(
       xp: 0,
       title: "rookie",
       completedQuizzes: {},
+      learningStreakDays: 0,
+      lastLearningActiveDay: null,
       pendingQuizId: null,
       leftRailOpen: true,
 
@@ -608,11 +621,28 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
+          const todayKey = getLocalDayKey(new Date());
+          const previousKey = state.lastLearningActiveDay;
+          let nextStreakDays = state.learningStreakDays;
+          if (previousKey === todayKey) {
+            nextStreakDays = state.learningStreakDays;
+          } else if (previousKey) {
+            const previousDate = new Date(`${previousKey}T00:00:00`);
+            const currentDate = new Date(`${todayKey}T00:00:00`);
+            const diffDays = Math.round(
+              (currentDate.getTime() - previousDate.getTime()) / 86_400_000,
+            );
+            nextStreakDays = diffDays === 1 ? state.learningStreakDays + 1 : 1;
+          } else {
+            nextStreakDays = 1;
+          }
           return {
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,
             title: nextTitle,
             recentXpGain: { amount: xpAmount, awardedAtMs: Date.now() },
+            learningStreakDays: nextStreakDays,
+            lastLearningActiveDay: todayKey,
           };
         });
         dispatchDomainEvent({ kind: "quiz_completed", quizId });
@@ -644,6 +674,8 @@ export const useStore = create<Store>()(
         learningLevel: state.learningLevel,
         xp: state.xp,
         completedQuizzes: { ...state.completedQuizzes },
+        learningStreakDays: state.learningStreakDays,
+        lastLearningActiveDay: state.lastLearningActiveDay,
         leftRailOpen: state.leftRailOpen,
       }),
       merge: (persisted, current): Store => {
@@ -671,6 +703,14 @@ export const useStore = create<Store>()(
             typeof p?.completedQuizzes === "object" && p.completedQuizzes !== null
               ? (p.completedQuizzes as Record<string, number>)
               : {},
+          learningStreakDays:
+            typeof p?.learningStreakDays === "number" && p.learningStreakDays >= 0
+              ? p.learningStreakDays
+              : 0,
+          lastLearningActiveDay:
+            typeof p?.lastLearningActiveDay === "string"
+              ? p.lastLearningActiveDay
+              : null,
           leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
         };
       },
