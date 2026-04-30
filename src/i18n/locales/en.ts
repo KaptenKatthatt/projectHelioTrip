@@ -226,6 +226,7 @@ export const en: Translation = {
       noFactCards: "No fact cards available for this level.",
       xpToastLabel: "+{xp} XP",
       learningStreakLabel: "{days}-day streak",
+      learningStreakResetHint: "Resets after a day without a quiz.",
       patienceReward: "You stayed with {body}. +{xp} XP for persistence!",
       quizFillPlaceholder: "Type your answer…",
       quizSubmit: "Submit",

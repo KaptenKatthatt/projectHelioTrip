@@ -99,6 +99,8 @@ type SimulationState = {
   completedQuizzes: Readonly<Record<string, number>>;
   learningStreakDays: number;
   lastLearningActiveDay: string | null;
+  patienceRewardDayKey: string | null;
+  patienceRewardBodyIds: ReadonlyArray<BodyId>;
   /** Quiz id waiting to be presented as an overlay (not persisted). */
   pendingQuizId: string | null;
   /** Desktop left navigation rail open state. */
@@ -137,6 +139,7 @@ type SimulationActions = {
   setLearningLevel: (level: FactCardLevel) => void;
   awardXp: (amount: number) => void;
   recordQuizResult: (quizId: string, stars: number) => void;
+  claimPatienceReward: (bodyId: BodyId) => boolean;
   triggerQuiz: (quizId: string) => void;
   dismissQuiz: () => void;
   toggleLeftRail: () => void;
@@ -158,6 +161,8 @@ type PersistedState = {
   completedQuizzes: Record<string, number>;
   learningStreakDays: number;
   lastLearningActiveDay: string | null;
+  patienceRewardDayKey: string | null;
+  patienceRewardBodyIds: BodyId[];
   leftRailOpen: boolean;
 };
 
@@ -409,6 +414,8 @@ export const useStore = create<Store>()(
       completedQuizzes: {},
       learningStreakDays: 0,
       lastLearningActiveDay: null,
+      patienceRewardDayKey: null,
+      patienceRewardBodyIds: [],
       pendingQuizId: null,
       leftRailOpen: true,
 
@@ -663,6 +670,19 @@ export const useStore = create<Store>()(
         dispatchDomainEvent({ kind: "quiz_completed", quizId });
       },
 
+      claimPatienceReward: (bodyId) => {
+        const state = useStore.getState();
+        const todayKey = getLocalDayKey(new Date());
+        const rewardDayMatches = state.patienceRewardDayKey === todayKey;
+        const rewardedBodyIds = rewardDayMatches ? state.patienceRewardBodyIds : [];
+        if (rewardedBodyIds.includes(bodyId)) return false;
+        set({
+          patienceRewardDayKey: todayKey,
+          patienceRewardBodyIds: [...rewardedBodyIds, bodyId],
+        });
+        return true;
+      },
+
       triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
 
       dismissQuiz: () => set({ pendingQuizId: null }),
@@ -692,6 +712,8 @@ export const useStore = create<Store>()(
         completedQuizzes: { ...state.completedQuizzes },
         learningStreakDays: state.learningStreakDays,
         lastLearningActiveDay: state.lastLearningActiveDay,
+        patienceRewardDayKey: state.patienceRewardDayKey,
+        patienceRewardBodyIds: [...state.patienceRewardBodyIds],
         leftRailOpen: state.leftRailOpen,
       }),
       merge: (persisted, current): Store => {
@@ -730,6 +752,11 @@ export const useStore = create<Store>()(
             typeof p?.lastLearningActiveDay === "string"
               ? p.lastLearningActiveDay
               : null,
+          patienceRewardDayKey:
+            typeof p?.patienceRewardDayKey === "string"
+              ? p.patienceRewardDayKey
+              : null,
+          patienceRewardBodyIds: sanitizeVisitedBodies(p?.patienceRewardBodyIds),
           leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
         };
       },

@@ -226,6 +226,7 @@ export const sv: Translation = {
       noFactCards: "Inga faktakort tillgängliga för denna nivå.",
       xpToastLabel: "+{xp} XP",
       learningStreakLabel: "{days} dagar i rad",
+      learningStreakResetHint: "Nollställs efter en dag utan quiz.",
       patienceReward: "Du stannade kvar vid {body}. +{xp} XP för uthållighet!",
       quizFillPlaceholder: "Skriv ditt svar…",
       quizSubmit: "Svara",

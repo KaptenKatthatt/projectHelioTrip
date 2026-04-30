@@ -31,7 +31,13 @@ export const CURIOSITY_HOOK_TEMPLATES: readonly CuriosityHookTemplate[] = [
 
 const getTemplate = (id: CuriosityHookTemplate["id"]): CuriosityHookTemplate => {
   const template = CURIOSITY_HOOK_TEMPLATES.find((item) => item.id === id);
-  if (!template) return CURIOSITY_HOOK_TEMPLATES[0];
+  if (!template) {
+    const fallback = CURIOSITY_HOOK_TEMPLATES[0];
+    if (!fallback) {
+      throw new Error("Curiosity hook templates are missing.");
+    }
+    return fallback;
+  }
   return template;
 };
 

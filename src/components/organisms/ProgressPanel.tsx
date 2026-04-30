@@ -26,6 +26,7 @@ export const ProgressPanel = ({
   const unlocked = useStore((s) => s.unlockedAchievements);
   const xp = useStore((s) => s.xp);
   const title = useStore((s) => s.title);
+  const learningStreakDays = useStore((s) => s.learningStreakDays);
   const gameMode = useStore((s) => s.gameMode);
 
   const showXp = gameMode === "learn" || gameMode === "challenge";
@@ -83,6 +84,11 @@ export const ProgressPanel = ({
               </p>
             </>
           )}
+          <p className="text-xs text-white/50">
+            {t.learn.ui.learningStreakLabel.replace("{days}", String(learningStreakDays))}
+            {" · "}
+            {t.learn.ui.learningStreakResetHint}
+          </p>
         </div>
       )}
 

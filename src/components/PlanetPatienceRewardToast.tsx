@@ -13,8 +13,8 @@ export const PlanetPatienceRewardToast = () => {
   const isTraveling = useStore((s) => s.isTraveling);
   const gameMode = useStore((s) => s.gameMode);
   const awardXp = useStore((s) => s.awardXp);
+  const claimPatienceReward = useStore((s) => s.claimPatienceReward);
   const [message, setMessage] = useState<string | null>(null);
-  const rewardedBodiesRef = useRef(new Set<string>());
   const rewardTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -24,9 +24,9 @@ export const PlanetPatienceRewardToast = () => {
     }
     if (!activeBody || isTraveling) return;
     if (gameMode === "explore") return;
-    if (rewardedBodiesRef.current.has(activeBody)) return;
     rewardTimerRef.current = window.setTimeout(() => {
-      rewardedBodiesRef.current.add(activeBody);
+      const shouldReward = claimPatienceReward(activeBody);
+      if (!shouldReward) return;
       awardXp(REWARD_XP_AMOUNT);
       setMessage(
         t.learn.ui.patienceReward
@@ -40,7 +40,15 @@ export const PlanetPatienceRewardToast = () => {
         rewardTimerRef.current = null;
       }
     };
-  }, [activeBody, awardXp, bodyName, gameMode, isTraveling, t.learn.ui.patienceReward]);
+  }, [
+    activeBody,
+    awardXp,
+    bodyName,
+    claimPatienceReward,
+    gameMode,
+    isTraveling,
+    t.learn.ui.patienceReward,
+  ]);
 
   useEffect(() => {
     if (!message) return;
