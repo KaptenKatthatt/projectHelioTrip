@@ -147,7 +147,6 @@ export const ConstellationLines = () => {
       ? camera.aspect
       : size.width / Math.max(1, size.height);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const isTraveling = useStore((s) => s.isTraveling);
   const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
 
   const groupRef = useRef<Group>(null);
@@ -195,14 +194,14 @@ export const ConstellationLines = () => {
     // Update star shader uniforms from opacityRef (written by useConstellationFade's useFrame).
     const starMaterial = starMaterialRef.current;
     if (!starMaterial || !renderData) return;
-    const visibleOpacity = isTraveling ? 0 : opacityRef.current;
+    const visibleOpacity = opacityRef.current;
     starMaterial.uniforms.uSize.value = renderData.starSize;
     starMaterial.uniforms.uPixelRatio.value = pixelRatio;
     starMaterial.uniforms.uOpacity.value = visibleOpacity;
   });
 
   if (!renderData) return null;
-  const visibleOpacity = isTraveling ? 0 : opacity;
+  const visibleOpacity = opacity;
   const lineOpacity = constellationLinesVisible ? visibleOpacity * 0.95 : 0;
 
   return (
