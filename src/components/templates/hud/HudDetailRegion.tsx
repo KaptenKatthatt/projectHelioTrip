@@ -53,7 +53,9 @@ export const HudDetailRegion = ({
   const showFreeFlightFab =
     gameMode === "explore" &&
     navigationMode !== "free" &&
-    openNavSheet !== "stars";
+    selectedConstellation === null &&
+    openNavSheet === null &&
+    !planetSheetOpen;
   const showAutopilotFab =
     gameMode === "explore" &&
     navigationMode === "free";
@@ -179,7 +181,7 @@ export const HudDetailRegion = ({
           aria-label={t.ui.freeFlight}
           onClick={() => setNavigationMode("free")}
           className={
-            "pointer-events-auto fixed right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
+            "pointer-events-auto fixed right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
             floatingButtonBottomClass
           }
         >
@@ -191,7 +193,7 @@ export const HudDetailRegion = ({
           type="button"
           aria-label={t.ui.autopilot}
           onClick={() => setNavigationMode("cinematic")}
-          className="pointer-events-auto fixed right-4 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95"
+          className="pointer-events-auto fixed right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95"
         >
           <ChevronLeft className="h-5 w-5" aria-hidden />
         </button>
