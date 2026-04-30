@@ -111,6 +111,31 @@ export const ProgressPanel = ({
         ) : null}
       </div>
 
+      {!compact && (() => {
+        const unvisitedPlanets = PLANETS.filter(
+          (p) => p.id !== "sun" && !visitedSet.has(p.id),
+        );
+        if (unvisitedPlanets.length === 0) return null;
+        return (
+          <div className="mt-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/40">
+              {t.phase3.unvisitedBodies}
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {unvisitedPlanets.map((p) => (
+                <span
+                  key={p.id}
+                  className="rounded-md border border-white/8 bg-white/3 px-1.5 py-0.5 text-[11px] text-white/40"
+                  style={{ borderColor: `${p.color}33` }}
+                >
+                  {bodyName(p.id)}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {unlockedSet.size > 0 && (
         <div className="mt-3">
           <div className="flex items-center justify-between text-xs text-white/65">

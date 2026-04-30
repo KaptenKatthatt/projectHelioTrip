@@ -4,6 +4,7 @@ import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
 import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
+import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { LanguageToggle } from "../../molecules/LanguageToggle";
 import { FlightModeToggle } from "../../molecules/FlightModeToggle";
 import { AboutDialog } from "../../organisms/AboutDialog";
@@ -96,6 +97,7 @@ export const HudDetailRegion = ({
         title={t.phase3.gameMode.learn}
       >
         <div className="flex flex-col gap-3 p-3">
+          <DailyChallengeCard />
           <MissionCard compact className="w-full" />
           {showPlanetInfoUi ? (
             <button

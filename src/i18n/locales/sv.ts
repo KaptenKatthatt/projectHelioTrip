@@ -101,6 +101,8 @@ export const sv: Translation = {
     constellationSeasonAutumn: "Höst",
   },
   phase3: {
+    dailyChallenge: "Dagens utmaning",
+    unvisitedBodies: "Att utforska",
     gameMode: {
       label: "Läge",
       explore: "Utforska",

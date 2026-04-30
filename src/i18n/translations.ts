@@ -83,6 +83,8 @@ export type Translation = {
     constellationSeasonAutumn: string;
   };
   phase3: {
+    dailyChallenge: string;
+    unvisitedBodies: string;
     gameMode: {
       label: string;
       explore: string;

@@ -1,5 +1,7 @@
 import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
+import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
+import { NarrativeMessage } from "../../molecules/NarrativeMessage";
 import { FreeFlightHelp } from "../../FreeFlightHelp";
 import { FreeFlightHint } from "../../FreeFlightHint";
 import { FreeFlightMobileControls } from "../../FreeFlightMobileControls";
@@ -58,6 +60,12 @@ export const HudPrimaryNavRegion = ({
           ) : null}
           {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
             <MissionCard className="w-full max-w-sm" />
+          ) : null}
+          {showMissionUi && selectedConstellation === null ? (
+            <DailyChallengeCard className="max-w-sm" />
+          ) : null}
+          {showMissionUi && selectedConstellation === null ? (
+            <NarrativeMessage />
           ) : null}
           {showPlanetInfoUi ? (
             <CollapsibleHudPanel
