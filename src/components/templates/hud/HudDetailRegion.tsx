@@ -7,6 +7,7 @@ import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { LanguageToggle } from "../../molecules/LanguageToggle";
+import { ConstellationMiniCard } from "../../molecules/ConstellationMiniCard";
 import { AboutDialog } from "../../organisms/AboutDialog";
 import { ConstellationList } from "../../organisms/ConstellationList";
 import { MissionCard } from "../../organisms/MissionCard";
@@ -88,7 +89,7 @@ export const HudDetailRegion = ({
         <div className="p-3 flex flex-col gap-3">
           <ConstellationList
             className="max-h-[min(20rem,40dvh)]"
-            onPick={() => {}}
+            onPick={closeNavSheets}
           />
           {selectedConstellation && <ConstellationStoryCard />}
         </div>
@@ -154,6 +155,8 @@ export const HudDetailRegion = ({
           <PlanetPanel omitHeading defaultTab={planetSheetInitialTab} />
         </div>
       </BottomSheet>
+      {openNavSheet !== "stars" && <ConstellationMiniCard />}
+
       {gameMode === "explore" && navigationMode !== "free" && (
         <button
           type="button"
