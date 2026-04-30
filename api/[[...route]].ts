@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 import { buildApp } from './_lib/app.js';
 
 const app = buildApp();
