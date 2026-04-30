@@ -5,6 +5,7 @@ import { XP_TITLES } from "../../lib/learning/xp";
 import { MOONS } from "../../lib/moons";
 import { PLANETS } from "../../lib/planets";
 import { SATELLITES } from "../../lib/satellites";
+import type { BodyId } from "../../lib/bodies";
 import { useStore } from "../../store/useStore";
 
 type ProgressPanelProps = {
@@ -41,8 +42,10 @@ export const ProgressPanel = ({
       : 100;
 
   const totalBodies = PLANETS.length + MOONS.length + SATELLITES.length;
+  const allBodyIds: BodyId[] = [...PLANETS, ...MOONS, ...SATELLITES].map((body) => body.id);
   const visitedSet = new Set(visitedBodies);
   const unlockedSet = new Set(unlocked);
+  const missingBodies = allBodyIds.filter((id) => !visitedSet.has(id));
 
   return (
     <aside
@@ -107,6 +110,31 @@ export const ProgressPanel = ({
                 {bodyName(id)}
               </span>
             ))}
+          </div>
+        ) : null}
+        {!compact ? (
+          <div className="mt-2 rounded-md border border-indigo-300/25 bg-indigo-300/10 px-2 py-1.5">
+            <p className="text-xs text-indigo-100/90">
+              {t.phase3.progressPanel.missingBodies
+                .replace("{count}", String(missingBodies.length))}
+            </p>
+            {missingBodies.length > 0 ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {missingBodies.slice(0, 6).map((id) => (
+                  <span
+                    key={id}
+                    className="rounded-md border border-indigo-200/35 bg-indigo-200/10 px-1.5 py-0.5 text-[11px] text-indigo-100"
+                  >
+                    {bodyName(id)}
+                  </span>
+                ))}
+                {missingBodies.length > 6 ? (
+                  <span className="rounded-md border border-indigo-200/25 bg-indigo-200/5 px-1.5 py-0.5 text-[11px] text-indigo-100/80">
+                    +{missingBodies.length - 6}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

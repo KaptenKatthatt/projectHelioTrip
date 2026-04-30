@@ -102,6 +102,8 @@ export type Translation = {
       missionCompleted: string;
       abandon: string;
       backToExplore: string;
+      dailyChallenge: string;
+      startDailyChallenge: string;
       confirmLeaveMission: string;
       confirmAbandonMission: string;
       confirmAction: string;
@@ -110,6 +112,7 @@ export type Translation = {
     progressPanel: {
       title: string;
       visited: string;
+      missingBodies: string;
       achievementsTitle: string;
       noAchievements: string;
     };

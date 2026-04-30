@@ -65,6 +65,24 @@ const missionStepDotClass = (done: boolean, isCurrent: boolean): string => {
   return "bg-white/30";
 };
 
+const DAILY_CHALLENGE_POOL: readonly string[] = [
+  "solar_system_start",
+  "time_travel_short",
+  "jupiter_moons",
+  "iss_hunt",
+  "free_flight_loop",
+];
+
+const resolveDailyMissionId = (): string | null => {
+  if (DAILY_CHALLENGE_POOL.length === 0) return null;
+  const now = new Date();
+  const utcDayNumber = Math.floor(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) / 86_400_000,
+  );
+  const index = utcDayNumber % DAILY_CHALLENGE_POOL.length;
+  return DAILY_CHALLENGE_POOL[index] ?? null;
+};
+
 export const MissionCard = ({
   className,
   compact = false,
@@ -84,6 +102,9 @@ export const MissionCard = ({
   const activeProgress: MissionProgress | undefined = activeMissionId
     ? missionProgress[activeMissionId]
     : undefined;
+  const dailyMissionId = resolveDailyMissionId();
+  const dailyMission = dailyMissionId ? getMissionDefinition(dailyMissionId) : undefined;
+  const dailyLocalized = dailyMission ? localizedMission(t, dailyMission) : null;
 
   const availableMissions = useMemo(
     () =>
@@ -128,6 +149,22 @@ export const MissionCard = ({
             );
           })}
         </ul>
+        {dailyMission && dailyLocalized ? (
+          <div className="mt-3 rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-2">
+            <p className="text-xs font-medium text-cyan-100">{t.phase3.missionCard.dailyChallenge}</p>
+            <p className="mt-1 text-xs text-cyan-50/90">{dailyLocalized.title}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setGameMode("challenge");
+                startMission(dailyMission.id);
+              }}
+              className="mt-2 w-full rounded-md border border-cyan-200/40 bg-cyan-200/20 px-2 py-1 text-xs font-medium text-cyan-50 transition hover:bg-cyan-200/30"
+            >
+              {t.phase3.missionCard.startDailyChallenge}
+            </button>
+          </div>
+        ) : null}
       </aside>
     );
   }

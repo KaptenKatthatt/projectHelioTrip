@@ -120,6 +120,8 @@ export const sv: Translation = {
       missionCompleted: "Uppdrag klart!",
       abandon: "Avbryt",
       backToExplore: "Till Utforska",
+      dailyChallenge: "Dagens utmaning",
+      startDailyChallenge: "Starta dagens utmaning",
       confirmLeaveMission: "Är du säker på att du vill lämna uppdraget och gå tillbaka till Utforska?",
       confirmAbandonMission: "Avbryta uppdraget? Dina aktuella framsteg i uppdraget pausas.",
       confirmAction: "Bekräfta",
@@ -128,6 +130,7 @@ export const sv: Translation = {
     progressPanel: {
       title: "Framsteg",
       visited: "Besökta kroppar",
+      missingBodies: "Kvar att utforska: {count}",
       achievementsTitle: "Upplåst",
       noAchievements: "Inga upplåsningar än.",
     },

@@ -120,6 +120,8 @@ export const en: Translation = {
       missionCompleted: "Mission complete!",
       abandon: "Abandon",
       backToExplore: "Back to Explore",
+      dailyChallenge: "Daily challenge",
+      startDailyChallenge: "Start today's challenge",
       confirmLeaveMission: "Leave this mission and return to Explore mode?",
       confirmAbandonMission: "Abandon this mission? Your current mission progress will pause.",
       confirmAction: "Confirm",
@@ -128,6 +130,7 @@ export const en: Translation = {
     progressPanel: {
       title: "Progress",
       visited: "Bodies visited",
+      missingBodies: "Still to explore: {count}",
       achievementsTitle: "Unlocked",
       noAchievements: "No unlocks yet.",
     },
