@@ -8,7 +8,11 @@ type ViewportSize = {
 };
 
 export const applyMobilePlanetScreenLift = (
-  camera: { readonly fov: number; readonly position: Vector3 },
+  camera: {
+    readonly position: Vector3;
+    readonly isPerspectiveCamera?: boolean;
+    readonly fov?: number;
+  },
   targetDistance: number,
   targetY: number,
   viewport: ViewportSize,
@@ -16,6 +20,7 @@ export const applyMobilePlanetScreenLift = (
 ): number => {
   const portraitCanvas = viewport.width <= viewport.height;
   if (!isMobileLayout || !portraitCanvas) return targetY;
+  if (!camera.isPerspectiveCamera || camera.fov === undefined) return targetY;
   const halfFovRad = ((camera.fov * Math.PI) / 180) * 0.5;
   const verticalSpanAtTarget = Math.tan(halfFovRad) * targetDistance * 2;
   return targetY - verticalSpanAtTarget * MOBILE_PLANET_SCREEN_LIFT_FRACTION;
