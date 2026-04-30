@@ -1,4 +1,5 @@
 import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
+import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { FreeFlightHelp } from "../../FreeFlightHelp";
 import { FreeFlightHint } from "../../FreeFlightHint";
 import { FreeFlightMobileControls } from "../../FreeFlightMobileControls";
@@ -12,6 +13,7 @@ type HudPrimaryNavRegionProps = {
   readonly showPlanetInfoUi: boolean;
   readonly showMissionUi: boolean;
   readonly activeBody: string | null;
+  readonly selectedConstellation: string | null;
   readonly mobileBodyTitle: string;
   readonly mobileBodyColor: string | null;
   readonly minimizePanelLabel: string;
@@ -24,6 +26,7 @@ export const HudPrimaryNavRegion = ({
   showPlanetInfoUi,
   showMissionUi,
   activeBody,
+  selectedConstellation,
   mobileBodyTitle,
   mobileBodyColor,
   minimizePanelLabel,
@@ -74,6 +77,9 @@ export const HudPrimaryNavRegion = ({
             : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
         }
       >
+        {selectedConstellation !== null && !showPlanetInfoUi ? (
+          <ConstellationStoryCard />
+        ) : null}
         {showPlanetInfoUi ? (
           <CollapsibleHudPanel
             title={mobileBodyTitle}
@@ -84,17 +90,21 @@ export const HudPrimaryNavRegion = ({
             <PlanetPanel />
           </CollapsibleHudPanel>
         ) : null}
-        {showMissionUi ? <MissionCard className="w-full max-w-sm" /> : null}
-        <CollapsibleHudPanel
-          title={progressTitle}
-          className="relative w-full max-w-sm"
-          collapseLabel={minimizePanelLabel}
-          expandLabel={expandPanelLabel}
-        >
-          {({ expandedCloseToggle }) => (
-            <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
-          )}
-        </CollapsibleHudPanel>
+        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+          <MissionCard className="w-full max-w-sm" />
+        ) : null}
+        {showPlanetInfoUi || selectedConstellation === null ? (
+          <CollapsibleHudPanel
+            title={progressTitle}
+            className="relative w-full max-w-sm"
+            collapseLabel={minimizePanelLabel}
+            expandLabel={expandPanelLabel}
+          >
+            {({ expandedCloseToggle }) => (
+              <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
+            )}
+          </CollapsibleHudPanel>
+        ) : null}
         <FreeFlightHelp />
       </div>
     </div>

@@ -91,6 +91,66 @@ export const MISSION_DEFINITIONS: ReadonlyArray<MissionDefinition> = [
       },
     ],
   },
+  {
+    id: "water_hunt",
+    availableModes: ["learn", "challenge"],
+    titleKey: "water_hunt.title",
+    descriptionKey: "water_hunt.description",
+    ordered: true,
+    steps: [
+      {
+        id: "water_hunt_start_at_sun",
+        trigger: { kind: "visit_body", bodyId: "sun" },
+        copyKey: "water_hunt.water_hunt_start_at_sun",
+      },
+      {
+        id: "water_hunt_visit_jupiter",
+        trigger: { kind: "visit_body", bodyId: "jupiter" },
+        copyKey: "water_hunt.water_hunt_visit_jupiter",
+      },
+      {
+        id: "water_hunt_visit_europa",
+        trigger: { kind: "visit_body", bodyId: "europa" },
+        copyKey: "water_hunt.water_hunt_visit_europa",
+        triggersQuizId: "quiz_europa_ocean",
+      },
+      {
+        id: "water_hunt_complete",
+        trigger: { kind: "quiz_completed", quizId: "quiz_europa_ocean" },
+        copyKey: "water_hunt.water_hunt_complete",
+      },
+    ],
+  },
+  {
+    id: "gravity_sling",
+    availableModes: ["learn", "challenge"],
+    titleKey: "gravity_sling.title",
+    descriptionKey: "gravity_sling.description",
+    ordered: true,
+    steps: [
+      {
+        id: "gravity_sling_start",
+        trigger: { kind: "visit_body", bodyId: "sun" },
+        copyKey: "gravity_sling.gravity_sling_start",
+      },
+      {
+        id: "gravity_sling_visit_jupiter",
+        trigger: { kind: "visit_body", bodyId: "jupiter" },
+        copyKey: "gravity_sling.gravity_sling_visit_jupiter",
+      },
+      {
+        id: "gravity_sling_time_speed",
+        trigger: { kind: "time_scale_at_least", minimumDaysPerSecond: 30 },
+        copyKey: "gravity_sling.gravity_sling_time_speed",
+        triggersQuizId: "quiz_gravity_sling_mechanic",
+      },
+      {
+        id: "gravity_sling_complete",
+        trigger: { kind: "quiz_completed", quizId: "quiz_gravity_sling_mechanic" },
+        copyKey: "gravity_sling.gravity_sling_complete",
+      },
+    ],
+  },
 ];
 
 export const getMissionDefinition = (

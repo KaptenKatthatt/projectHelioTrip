@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
 import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getBody } from "../../lib/bodies";
@@ -19,7 +20,9 @@ import {
 import type { PlanetId } from "../../lib/planets";
 import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
 import { getWikipediaUrl } from "../../lib/wikipedia";
-import { useStore } from "../../store/useStore";
+import { FactCardDeck } from "../molecules/FactCardDeck";
+import { HudSegmentedTabs } from "../molecules/HudSegmentedTabs";
+import { ScaleComparison } from "../molecules/ScaleComparison";
 
 type Row = {
   label: string;
@@ -114,11 +117,14 @@ const formatOrbitPeriod = (
   return parts.join(" ");
 };
 
+type PanelTab = "info" | "facts" | "compare";
+
 export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
-  const activeBody = useStore((s) => s.activeBody);
-  const viewMode = useStore((s) => s.viewMode);
+  const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
+
+  const [activeTab, setActiveTab] = useState<PanelTab>("info");
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
@@ -258,6 +264,17 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
   });
   const name = bodyName(activeBody);
 
+  const showLearnTab = gameMode === "learn" || gameMode === "challenge";
+  const tabs: Array<{ id: PanelTab; label: string }> = [
+    { id: "info", label: t.ui.bodyInfo },
+    ...(showLearnTab
+      ? [
+          { id: "facts" as PanelTab, label: t.learn.ui.factsTab },
+          { id: "compare" as PanelTab, label: t.learn.ui.compareSize },
+        ]
+      : []),
+  ];
+
   return (
     <aside
       className={
@@ -275,35 +292,61 @@ export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
           <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
         </div>
       ) : null}
-      <dl className={omitHeading ? "mt-0 space-y-2 text-sm" : "mt-4 space-y-2 text-sm"}>
-        {rows.map((r) => (
-          <div
-            key={r.label}
-            className="flex min-w-0 items-center justify-between gap-4 overflow-x-auto"
+
+      {showLearnTab && (
+        <HudSegmentedTabs
+          className="mt-3"
+          tabs={tabs}
+          activeTab={activeTab}
+          onSelect={setActiveTab}
+        />
+      )}
+
+      {activeTab === "info" && (
+        <>
+          <dl className={omitHeading && !showLearnTab ? "mt-0 space-y-2 text-sm" : "mt-4 space-y-2 text-sm"}>
+            {rows.map((r) => (
+              <div
+                key={r.label}
+                className="flex min-w-0 items-center justify-between gap-4 overflow-x-auto"
+              >
+                <dt className="shrink-0 whitespace-nowrap text-white/55">
+                  {r.label}
+                </dt>
+                <dd className="shrink-0 whitespace-nowrap font-mono text-white">
+                  {r.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <button
+            type="button"
+            onClick={openWikipedia}
+            aria-label={`${t.ui.readOnWikipedia}: ${name}`}
+            className={
+              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-white/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
+              (mobileLayout && omitHeading
+                ? "bg-white/12 hover:border-white/25 hover:bg-white/16"
+                : "bg-white/5 hover:border-white/25 hover:bg-white/10")
+            }
           >
-            <dt className="shrink-0 whitespace-nowrap text-white/55">
-              {r.label}
-            </dt>
-            <dd className="shrink-0 whitespace-nowrap font-mono text-white">
-              {r.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <button
-        type="button"
-        onClick={openWikipedia}
-        aria-label={`${t.ui.readOnWikipedia}: ${name}`}
-        className={
-          "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-white/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
-          (mobileLayout && omitHeading
-            ? "bg-white/12 hover:border-white/25 hover:bg-white/16"
-            : "bg-white/5 hover:border-white/25 hover:bg-white/10")
-        }
-      >
-        <ExternalLink className="h-4 w-4" aria-hidden />
-        {t.ui.readOnWikipedia}
-      </button>
+            <ExternalLink className="h-4 w-4" aria-hidden />
+            {t.ui.readOnWikipedia}
+          </button>
+        </>
+      )}
+
+      {activeTab === "facts" && showLearnTab && (
+        <div className="mt-4">
+          <FactCardDeck bodyId={activeBody} showLevelToggle />
+        </div>
+      )}
+
+      {activeTab === "compare" && showLearnTab && (
+        <div className="mt-4">
+          <ScaleComparison key={activeBody} bodyId={activeBody} />
+        </div>
+      )}
     </aside>
   );
 };

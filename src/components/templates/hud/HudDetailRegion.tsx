@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
 import { BottomSheet } from "../../molecules/BottomSheet";
+import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { LanguageToggle } from "../../molecules/LanguageToggle";
 import { FlightModeToggle } from "../../molecules/FlightModeToggle";
 import { AboutDialog } from "../../organisms/AboutDialog";
@@ -10,6 +11,7 @@ import { MissionCard } from "../../organisms/MissionCard";
 import { PlanetPanel } from "../../organisms/PlanetPanel";
 import { PlanetSelector } from "../../organisms/PlanetSelector";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
+import { useStore } from "../../../store/useStore";
 
 type HudDetailRegionProps = {
   readonly mobileLayout: boolean;
@@ -36,6 +38,7 @@ export const HudDetailRegion = ({
   setMobilePlanetInfoSheetOpen,
   mobileBottomNav,
 }: HudDetailRegionProps) => {
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
   if (!mobileLayout) return null;
 
   return (
@@ -64,11 +67,12 @@ export const HudDetailRegion = ({
         onClose={closeNavSheets}
         title={t.ui.constellations}
       >
-        <div className="p-3">
+        <div className="p-3 flex flex-col gap-3">
           <ConstellationList
-            className="max-h-[min(24rem,50dvh)]"
-            onPick={closeNavSheets}
+            className="max-h-[min(20rem,40dvh)]"
+            onPick={() => {}}
           />
+          {selectedConstellation && <ConstellationStoryCard />}
         </div>
       </BottomSheet>
 

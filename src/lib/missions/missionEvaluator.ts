@@ -41,6 +41,8 @@ const triggerMatchesEvent = (
         (trigger.constellationId === undefined ||
           trigger.constellationId === event.constellationId)
       );
+    case "quiz_completed":
+      return event.kind === "quiz_completed" && event.quizId === trigger.quizId;
   }
 };
 

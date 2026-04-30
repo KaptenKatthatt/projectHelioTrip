@@ -23,19 +23,23 @@ export type MissionDomainEvent =
   | { kind: "body_focused"; bodyId: BodyId }
   | { kind: "time_scale_changed"; daysPerSecond: number }
   | { kind: "navigation_mode_changed"; mode: NavigationModeLite }
-  | { kind: "constellation_focused"; constellationId: ConstellationId };
+  | { kind: "constellation_focused"; constellationId: ConstellationId }
+  | { kind: "quiz_completed"; quizId: string };
 
 export type MissionStepTrigger =
   | { kind: "visit_body"; bodyId: BodyId }
   | { kind: "time_scale_at_least"; minimumDaysPerSecond: number }
   | { kind: "navigation_mode_is"; mode: NavigationModeLite }
-  | { kind: "constellation_focused"; constellationId?: ConstellationId };
+  | { kind: "constellation_focused"; constellationId?: ConstellationId }
+  | { kind: "quiz_completed"; quizId: string };
 
 export type MissionStep = {
   readonly id: string;
   readonly trigger: MissionStepTrigger;
   /** Translation key under `t.phase3.missionDefs.<missionId>.steps.<stepId>`. */
   readonly copyKey: string;
+  /** Quiz id to auto-trigger when this step completes. */
+  readonly triggersQuizId?: string;
 };
 
 export type MissionDefinition = {

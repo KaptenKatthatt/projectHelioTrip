@@ -1,16 +1,15 @@
 import { Suspense, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei/core/Texture';
 import { Color, type Group } from 'three';
 import type { PlanetId } from '../lib/planets';
 import { getLivePosition } from '../lib/positionsBus';
-import { useStore } from '../store/useStore';
 import { getGraphicsPreset } from '../lib/graphicsTier';
 import {
   configureColorMap,
   configureDataMap,
   getSurfaceTextures,
 } from '../lib/textures';
+import { useSimulationTickFrame } from '../hooks/useSimulationTickFrame';
 import { applyBodySpinFromTime } from './bodySpin';
 import { Clouds } from './Clouds';
 import { Rings } from './Rings';
@@ -36,8 +35,6 @@ const MS_PER_HOUR = 3_600_000;
 export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
   const groupRef = useRef<Group>(null);
   const spinRef = useRef<Group>(null);
-  const lastSimMsRef = useRef<number | null>(null);
-
   const initial = useMemo(() => {
     const p = getLivePosition(id);
     return [p.x, p.y, p.z] as const;
@@ -45,11 +42,7 @@ export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
 
   const periodMs = rotationPeriodHours * MS_PER_HOUR;
 
-  useFrame(() => {
-    const simMs = useStore.getState().simulationTime.getTime();
-    if (lastSimMsRef.current === simMs) return;
-    lastSimMsRef.current = simMs;
-
+  useSimulationTickFrame((simMs) => {
     const group = groupRef.current;
     if (group) group.position.copy(getLivePosition(id));
 
