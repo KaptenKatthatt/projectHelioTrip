@@ -1,0 +1,198 @@
+<style>
+  .phones { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+  .phone {
+    width: 190px; height: 370px; border-radius: 28px;
+    border: 2px solid rgba(255,255,255,0.15); background: #06080f;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  }
+  .notch { width: 48px; height: 5px; background: rgba(0,0,0,0.9); border-radius: 3px; margin: 4px auto 0; }
+  .phone-scene { flex: 1; background: radial-gradient(ellipse at 50% 50%, #08101e 0%, #030609 100%); position: relative; overflow: hidden; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.7); border-radius: 50%; }
+  .constellation-line { position: absolute; background: rgba(180,160,255,0.35); transform-origin: left center; }
+  .phone-nav { background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.08); padding: 4px 2px 7px; display: flex; }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 1px; font-size: 6.5px; color: rgba(255,255,255,0.4); }
+  .nav-tab.active { color: rgba(255,255,255,0.9); }
+  .nav-icon { font-size: 12px; }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: transparent; }
+  .nav-tab.active .dot { background: white; }
+  .ctx-strip {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: rgba(0,0,12,0.78); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 5px 8px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 8px; z-index: 10;
+  }
+  .back-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); border-radius: 5px; padding: 1px 6px; font-size: 8px; color: rgba(255,255,255,0.8); }
+  .strip-center { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .xp-pill { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); border-radius: 5px; padding: 1px 5px; font-size: 7.5px; color: rgb(6,182,212); font-family: monospace; }
+  .story-card {
+    background: rgba(8,6,28,0.88); border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 10px; padding: 7px 9px; backdrop-filter: blur(8px);
+  }
+  .story-card .name { font-size: 9px; font-weight: 700; color: rgba(200,190,255,0.95); }
+  .story-card .text { font-size: 7.5px; color: rgba(255,255,255,0.5); margin-top: 2px; line-height: 1.4; }
+  .story-card .dismiss { position: absolute; top: 5px; right: 6px; font-size: 8px; color: rgba(255,255,255,0.3); }
+  .fab { position: absolute; bottom: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .approach-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); text-align: center; }
+  .approach-desc { font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; line-height: 1.5; max-width: 190px; }
+  .pro { color: rgba(134,239,172,0.9); font-size: 10px; }
+  .con { color: rgba(252,165,165,0.8); font-size: 10px; }
+  .pro-con { display: flex; flex-direction: column; gap: 2px; max-width: 190px; padding: 0 4px; }
+
+  /* Fake constellation stars */
+  .cs { position: absolute; width: 4px; height: 4px; background: rgba(200,190,255,0.9); border-radius: 50%; box-shadow: 0 0 4px rgba(180,160,255,0.6); }
+</style>
+
+<h2>Var visas stjärnbildens story-kort?</h2>
+<p class="subtitle">Bottenarket stängs när du väljer en stjärnbild — kortet dyker upp här istället.</p>
+
+<div class="phones">
+
+  <!-- Option A: Floating bottom-left -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:30%;left:25%"></div>
+          <div class="star" style="top:50%;left:70%"></div>
+          <div class="star" style="top:20%;left:60%"></div>
+          <!-- constellation dots -->
+          <div class="cs" style="top:28%;left:30%"></div>
+          <div class="cs" style="top:22%;left:48%"></div>
+          <div class="cs" style="top:32%;left:62%"></div>
+          <div class="cs" style="top:44%;left:55%"></div>
+          <div class="cs" style="top:38%;left:42%"></div>
+
+          <!-- Context strip -->
+          <div class="ctx-strip">
+            <div class="back-btn">← Stjärnbilder</div>
+            <div class="strip-center">Orion</div>
+            <div class="xp-pill">240 XP</div>
+          </div>
+
+          <!-- Story card bottom-left floating -->
+          <div style="position:absolute;bottom:10px;left:8px;right:8px;" class="story-card">
+            <div class="dismiss">✕</div>
+            <div class="name">✦ Orion</div>
+            <div class="text">Jägaren Orion syns tydligast vintertid. Bältestjärnorna — tre i rad — är lätta att känna igen.</div>
+          </div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">A — Kort längst ner</div>
+      <div class="approach-desc">Story-kortet glider upp från botten och täcker en liten del av scenen.</div>
+      <div class="pro-con">
+        <span class="pro">✓ Stort läsbart kort, bra för text</span>
+        <span class="pro">✓ Välkänt kortmönster på mobil</span>
+        <span class="con">✗ Täcker en del av stjärnbilden</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: Compact card top-right under strip -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:30%;left:25%"></div>
+          <div class="star" style="top:50%;left:70%"></div>
+          <div class="star" style="top:20%;left:60%"></div>
+          <div class="cs" style="top:45%;left:28%"></div>
+          <div class="cs" style="top:38%;left:45%"></div>
+          <div class="cs" style="top:48%;left:60%"></div>
+          <div class="cs" style="top:60%;left:52%"></div>
+          <div class="cs" style="top:54%;left:38%"></div>
+
+          <!-- Context strip -->
+          <div class="ctx-strip">
+            <div class="back-btn">← Stjärnbilder</div>
+            <div class="strip-center">Orion</div>
+            <div class="xp-pill">240 XP</div>
+          </div>
+
+          <!-- Small card top-right, under strip -->
+          <div style="position:absolute;top:34px;right:8px;width:110px;" class="story-card">
+            <div class="dismiss">✕</div>
+            <div class="name">✦ Orion</div>
+            <div class="text">Jägaren syns vintertid. Bältestjärnorna — tre i rad.</div>
+          </div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">B — Kompakt kort uppe</div>
+      <div class="approach-desc">Litet kort uppe till höger under remsan — stjärnbilden i scenen förblir nästan helt fri.</div>
+      <div class="pro-con">
+        <span class="pro">✓ Scenen syns nästan helt</span>
+        <span class="pro">✓ Kortet stör inte 3D-vyn</span>
+        <span class="con">✗ Litet, text kan bli trång</span>
+        <span class="con">✗ Ovanlig placering</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: Bottom sheet stays, but shrinks to mini-tab -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)" style="border-radius:16px; padding:12px;">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-scene">
+          <div class="star" style="top:25%;left:20%"></div>
+          <div class="star" style="top:45%;left:75%"></div>
+          <div class="star" style="top:15%;left:55%"></div>
+          <div class="cs" style="top:35%;left:25%"></div>
+          <div class="cs" style="top:28%;left:42%"></div>
+          <div class="cs" style="top:38%;left:58%"></div>
+          <div class="cs" style="top:50%;left:50%"></div>
+          <div class="cs" style="top:44%;left:35%"></div>
+
+          <!-- Context strip -->
+          <div class="ctx-strip">
+            <div class="back-btn">← Stjärnbilder</div>
+            <div class="strip-center">Orion</div>
+            <div class="xp-pill">240 XP</div>
+          </div>
+
+          <!-- Mini peek sheet from bottom -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(8,6,28,0.88);border-top:1px solid rgba(99,102,241,0.3);padding:8px 12px 6px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:8px;font-weight:700;color:rgba(200,190,255,0.95);">✦ Orion</div>
+              <div style="font-size:7px;color:rgba(255,255,255,0.45);margin-top:1px;">Dra upp för att läsa mer →</div>
+            </div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.25);">▲</div>
+          </div>
+        </div>
+        <div class="phone-nav">
+          <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+          <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+          <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+        </div>
+      </div>
+      <div class="approach-label">C — Mini-ark nertill</div>
+      <div class="approach-desc">Arket krymper till en smal "peek"-remsa i botten. Dra upp för att läsa hela storyn.</div>
+      <div class="pro-con">
+        <span class="pro">✓ Scenen är fri och tydlig</span>
+        <span class="pro">✓ Naturligt mobilmönster (dra upp)</span>
+        <span class="con">✗ Extra interaktion krävs för storyn</span>
+      </div>
+    </div>
+  </div>
+
+</div>
