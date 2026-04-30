@@ -23,6 +23,7 @@ export const HudTopBarRegion = ({
   tagline,
   gameMode,
 }: HudTopBarRegionProps) => {
+  if (mobileLayout) return null;
   const { t } = useTranslation();
   const quizStreakDays = useStore((s) => s.quizStreakDays);
   const accentClass = MODE_ACCENT[gameMode];
@@ -30,24 +31,12 @@ export const HudTopBarRegion = ({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <header
-        className={
-          mobileLayout
-            ? "flex items-center justify-between"
-            : "flex items-start justify-between"
-        }
-      >
+      <header className="flex items-start justify-between">
         <div className="pointer-events-auto">
-          <h1
-            className={
-              mobileLayout
-                ? "text-base font-semibold tracking-tight"
-                : "text-base font-semibold tracking-tight sm:text-lg"
-            }
-          >
+          <h1 className="text-base font-semibold tracking-tight sm:text-lg">
             {appTitle}
           </h1>
-          <p className={mobileLayout ? "hidden" : "text-xs text-white/50"}>{tagline}</p>
+          <p className="text-xs text-white/50">{tagline}</p>
         </div>
 
         {showXpBadge ? (

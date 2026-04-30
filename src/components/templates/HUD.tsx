@@ -11,6 +11,7 @@ import { HudMobileNavRegion } from "./hud/HudMobileNavRegion";
 import { HudOverlayRegion } from "./hud/HudOverlayRegion";
 import { HudPrimaryNavRegion } from "./hud/HudPrimaryNavRegion";
 import { HudTopBarRegion } from "./hud/HudTopBarRegion";
+import { MobileContextStrip } from "../molecules/MobileContextStrip";
 
 const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge">> = {
   explore: "explore",
@@ -41,6 +42,7 @@ export const HUD = () => {
   const setMobilePlanetInfoSheetOpen = useStore(
     (s) => s.setMobilePlanetInfoSheetOpen,
   );
+  const setActiveBody = useStore((s) => s.setActiveBody);
 
   useEffect(() => {
     if (!mobileLayout) {
@@ -79,17 +81,28 @@ export const HUD = () => {
     setOpenNavSheet(null);
   };
 
+  const handleBackFromPlanet = (): void => {
+    setActiveBody(null);
+  };
+
   return (
     <div
       className={
         "pointer-events-none fixed inset-0 z-10 flex flex-col justify-between font-sans text-white " +
         (mobileLayout
-          ? "p-3 pb-[calc(7rem+env(safe-area-inset-bottom))]"
+          ? "p-3 pt-10 pb-[calc(7rem+env(safe-area-inset-bottom))]"
           : layoutTier === "expanded"
             ? "p-5"
             : "p-3 sm:p-5")
       }
     >
+      {mobileLayout && (
+        <MobileContextStrip
+          onOpenChallengeSheet={() => handleToggleNavSheet("challenge")}
+          onOpenConstellationsSheet={() => handleToggleNavSheet("stars")}
+          onBackFromPlanet={handleBackFromPlanet}
+        />
+      )}
       <HudTopBarRegion
         mobileLayout={mobileLayout}
         appTitle={t.appTitle}
