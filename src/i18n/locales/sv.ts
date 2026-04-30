@@ -100,6 +100,8 @@ export const sv: Translation = {
     constellationSeasonSpring: "Vår",
     constellationSeasonSummer: "Sommar",
     constellationSeasonAutumn: "Höst",
+    constellationCollection: "Stjärnkarta: {found}/{total} upptäckta · {missing} kvar",
+    constellationUnknownLabel: "Okänd stjärnbild",
   },
   phase3: {
     gameMode: {

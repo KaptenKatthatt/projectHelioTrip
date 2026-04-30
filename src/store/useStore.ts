@@ -74,6 +74,7 @@ type SimulationState = {
   locale: Locale;
   navigationMode: NavigationMode;
   selectedConstellation: ConstellationId | null;
+  discoveredConstellations: ReadonlyArray<ConstellationId>;
   constellationLinesVisible: boolean;
   /**
    * Extra spin (rad) around the celestial radial through the constellation center;
@@ -150,6 +151,7 @@ type PersistedState = {
   gameMode: GameMode;
   missionProgress: Record<string, MissionProgress>;
   visitedBodies: BodyId[];
+  discoveredConstellations: ConstellationId[];
   unlockedAchievements: AchievementId[];
   learningLevel: FactCardLevel;
   xp: number;
@@ -202,6 +204,15 @@ const sanitizeMissionProgressMap = (
 const sanitizeVisitedBodies = (raw: unknown): BodyId[] => {
   if (!Array.isArray(raw)) return [];
   return raw.filter((value): value is BodyId => typeof value === "string");
+};
+
+const sanitizeDiscoveredConstellations = (
+  raw: unknown,
+): ConstellationId[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (value): value is ConstellationId => typeof value === "string",
+  );
 };
 
 const sanitizeAchievements = (raw: unknown): AchievementId[] => {
@@ -380,6 +391,7 @@ export const useStore = create<Store>()(
       locale: detectLocale(),
       navigationMode: "cinematic",
       selectedConstellation: null,
+      discoveredConstellations: [],
       constellationLinesVisible: true,
       constellationUserSpinRad: 0,
       skyFocusId: 0,
@@ -519,6 +531,9 @@ export const useStore = create<Store>()(
             (state.viewMode !== "overview" || state.activeBody !== null);
           return {
             selectedConstellation: id,
+            discoveredConstellations: state.discoveredConstellations.includes(id)
+              ? state.discoveredConstellations
+              : [...state.discoveredConstellations, id],
             constellationUserSpinRad: keepPose
               ? state.constellationUserSpinRad
               : 0,
@@ -670,6 +685,7 @@ export const useStore = create<Store>()(
         gameMode: state.gameMode,
         missionProgress: { ...state.missionProgress },
         visitedBodies: [...state.visitedBodies],
+        discoveredConstellations: [...state.discoveredConstellations],
         unlockedAchievements: [...state.unlockedAchievements],
         learningLevel: state.learningLevel,
         xp: state.xp,
@@ -695,6 +711,9 @@ export const useStore = create<Store>()(
           gameMode: isGameMode(p?.gameMode) ? p.gameMode : current.gameMode,
           missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
+          discoveredConstellations: sanitizeDiscoveredConstellations(
+            p?.discoveredConstellations,
+          ),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),
           learningLevel: sanitizedLevel,
           xp: sanitizedXp,

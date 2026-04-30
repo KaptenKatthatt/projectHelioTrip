@@ -82,6 +82,8 @@ export type Translation = {
     constellationSeasonSpring: string;
     constellationSeasonSummer: string;
     constellationSeasonAutumn: string;
+    constellationCollection: string;
+    constellationUnknownLabel: string;
   };
   phase3: {
     gameMode: {

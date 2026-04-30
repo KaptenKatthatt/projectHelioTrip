@@ -100,6 +100,8 @@ export const en: Translation = {
     constellationSeasonSpring: "Spring",
     constellationSeasonSummer: "Summer",
     constellationSeasonAutumn: "Autumn",
+    constellationCollection: "Star map: {found}/{total} discovered · {missing} missing",
+    constellationUnknownLabel: "Unknown constellation",
   },
   phase3: {
     gameMode: {
