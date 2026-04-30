@@ -216,6 +216,8 @@ export const en: Translation = {
       quizSubmit: "Submit",
       railToggleOpen: "Open navigation",
       railToggleClose: "Close navigation",
+      viewFactsForBody: "View facts for {body}",
+      selectBodyForFacts: "Select a planet to view fact cards",
     },
     xpTitles: {
       rookie: "Rookie",

@@ -34,31 +34,6 @@ export const HudPrimaryNavRegion = ({
   progressTitle,
 }: HudPrimaryNavRegionProps) => (
   <>
-    {!mobileLayout && showPlanetInfoUi ? (
-      <div>
-        <CollapsibleHudPanel
-          key={activeBody}
-          title={mobileBodyTitle}
-          collapsedTitlePrefix={
-            mobileBodyColor ? (
-              <span
-                className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
-                style={{ backgroundColor: mobileBodyColor }}
-              />
-            ) : null
-          }
-          collapsedTitleClassName="truncate text-lg font-semibold tracking-tight text-white"
-          className="relative w-full"
-          defaultCollapsed
-          collapseLabel={minimizePanelLabel}
-          expandLabel={expandPanelLabel}
-          collapseOnExpandedHeaderClick
-        >
-          <PlanetPanel />
-        </CollapsibleHudPanel>
-      </div>
-    ) : null}
-
     <FreeFlightHint />
 
     <div
@@ -74,7 +49,7 @@ export const HudPrimaryNavRegion = ({
         className={
           mobileLayout
             ? "hidden"
-            : "flex max-h-full w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
+            : "flex max-h-[calc(100dvh-8rem)] w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
         }
       >
         {selectedConstellation !== null && !showPlanetInfoUi ? (
@@ -82,10 +57,21 @@ export const HudPrimaryNavRegion = ({
         ) : null}
         {showPlanetInfoUi ? (
           <CollapsibleHudPanel
+            key={activeBody}
             title={mobileBodyTitle}
+            collapsedTitlePrefix={
+              mobileBodyColor ? (
+                <span
+                  className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
+                  style={{ backgroundColor: mobileBodyColor }}
+                />
+              ) : null
+            }
             className="relative w-full max-w-sm"
+            defaultCollapsed
             collapseLabel={minimizePanelLabel}
             expandLabel={expandPanelLabel}
+            collapseOnExpandedHeaderClick
           >
             <PlanetPanel />
           </CollapsibleHudPanel>

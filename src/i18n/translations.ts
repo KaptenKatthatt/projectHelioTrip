@@ -159,6 +159,8 @@ export type Translation = {
       quizSubmit: string;
       railToggleOpen: string;
       railToggleClose: string;
+      viewFactsForBody: string;
+      selectBodyForFacts: string;
     };
     xpTitles: {
       rookie: string;

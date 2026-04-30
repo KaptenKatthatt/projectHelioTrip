@@ -29,8 +29,11 @@ type Row = {
   value: string;
 };
 
+export type PanelTab = "info" | "facts" | "compare";
+
 type PlanetPanelProps = {
   readonly omitHeading?: boolean;
+  readonly defaultTab?: PanelTab;
 };
 
 const DISTANCE_SAMPLE_MS = 160;
@@ -117,14 +120,16 @@ const formatOrbitPeriod = (
   return parts.join(" ");
 };
 
-type PanelTab = "info" | "facts" | "compare";
-
-export const PlanetPanel = ({ omitHeading = false }: PlanetPanelProps) => {
+export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
   const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
 
-  const [activeTab, setActiveTab] = useState<PanelTab>("info");
+  const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
+
+  useEffect(() => {
+    if (defaultTab) setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);

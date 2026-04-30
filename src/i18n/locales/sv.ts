@@ -216,6 +216,8 @@ export const sv: Translation = {
       quizSubmit: "Svara",
       railToggleOpen: "Öppna navigering",
       railToggleClose: "Stäng navigering",
+      viewFactsForBody: "Se fakta om {body}",
+      selectBodyForFacts: "Välj en planet för att se faktakort",
     },
     xpTitles: {
       rookie: "Nybörjare",
