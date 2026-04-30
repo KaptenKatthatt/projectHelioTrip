@@ -120,7 +120,7 @@ export const MissionCard = ({
                     {localized.title}
                   </span>
                   {done ? (
-                    <span className="rounded-md border border-emerald-300/40 bg-emerald-300/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-200">
+                    <span className="rounded-md border border-emerald-300/40 bg-emerald-300/10 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-emerald-200">
                       ✓
                     </span>
                   ) : null}
@@ -187,7 +187,7 @@ export const MissionCard = ({
       </header>
 
       {!compact ? (
-        <p className="mt-1.5 text-xs text-white/55">{localized.description}</p>
+        <p className="mt-1.5 max-w-prose text-xs text-white/55">{localized.description}</p>
       ) : null}
 
       <div className="mt-3 flex items-center gap-2">

@@ -1,9 +1,13 @@
 import type { Locale } from "../../i18n/translations";
 import type { GameMode } from "../missions/types";
 
-export type NarrativeHookType = "persistence" | "mystery" | "collection_gap";
+type NarrativeHookType =
+  | "persistence"
+  | "mystery"
+  | "collection_gap"
+  | "daily_challenge";
 
-export type NarrativeHook = {
+type NarrativeHook = {
   readonly id: string;
   readonly type: NarrativeHookType;
   readonly copy: Record<Locale, string>;
@@ -12,12 +16,13 @@ export type NarrativeHook = {
 export type NarrativeContext = {
   gameMode: GameMode;
   activeBody: string | null;
+  activeMissionId: string | null;
   visitedCount: number;
   totalBodies: number;
 };
 
 // Three reusable hook templates covering persistence, mystery, and collection-gap loops.
-export const NARRATIVE_HOOKS: readonly NarrativeHook[] = [
+const NARRATIVE_HOOKS: readonly NarrativeHook[] = [
   {
     id: "learn-select-planet",
     type: "persistence",
@@ -42,6 +47,14 @@ export const NARRATIVE_HOOKS: readonly NarrativeHook[] = [
       en: "You've visited {visited} of {total} bodies. Which one will you explore next?",
     },
   },
+  {
+    id: "daily-challenge-ready",
+    type: "daily_challenge",
+    copy: {
+      sv: "Dagens utmaning väntar. Byt till uppdrag och se om du kan klara den i ett svep.",
+      en: "Today's challenge is ready. Switch to Challenge mode and see if you can clear it in one run.",
+    },
+  },
 ];
 
 export const resolveNarrativeHint = (
@@ -57,6 +70,8 @@ export const resolveNarrativeHint = (
       return context.gameMode === "learn" && context.activeBody !== null;
     if (h.id === "collection-gap")
       return context.visitedCount > 0 && context.visitedCount < context.totalBodies;
+    if (h.id === "daily-challenge-ready")
+      return context.gameMode === "challenge" && context.activeMissionId === null;
     return false;
   });
 

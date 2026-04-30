@@ -1,4 +1,6 @@
 import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
+import { CommunityPulseBadge } from "../../atoms/CommunityPulseBadge";
+import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { NarrativeMessage } from "../../molecules/NarrativeMessage";
@@ -58,15 +60,6 @@ export const HudPrimaryNavRegion = ({
           {selectedConstellation !== null && !showPlanetInfoUi ? (
             <ConstellationStoryCard />
           ) : null}
-          {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
-            <MissionCard className="w-full max-w-sm" />
-          ) : null}
-          {showMissionUi && selectedConstellation === null ? (
-            <DailyChallengeCard className="max-w-sm" />
-          ) : null}
-          {showMissionUi && selectedConstellation === null ? (
-            <NarrativeMessage />
-          ) : null}
           {showPlanetInfoUi ? (
             <CollapsibleHudPanel
               key={activeBody}
@@ -101,11 +94,22 @@ export const HudPrimaryNavRegion = ({
               )}
             </CollapsibleHudPanel>
           ) : null}
+          {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+            <MissionCard className="w-full max-w-sm" />
+          ) : null}
+          {showMissionUi && selectedConstellation === null ? (
+            <DailyChallengeCard className="max-w-sm" />
+          ) : null}
+          {showMissionUi && selectedConstellation === null ? <SpaceWeatherBadge /> : null}
+          {showMissionUi && selectedConstellation === null ? <CommunityPulseBadge /> : null}
+          {showMissionUi && selectedConstellation === null ? (
+            <NarrativeMessage />
+          ) : null}
           <FreeFlightHelp />
         </div>
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl bg-gradient-to-t from-black/30 to-transparent"
+          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl bg-linear-to-t from-black/30 to-transparent"
         />
       </div>
     </div>

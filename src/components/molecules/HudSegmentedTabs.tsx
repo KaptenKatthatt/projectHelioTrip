@@ -30,7 +30,7 @@ export function HudSegmentedTabs<T extends string>({
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
             className={[
-              "min-w-0 flex-1 truncate rounded-md px-1.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+              "min-w-0 flex-1 rounded-md px-1 py-1.5 text-[11px] font-medium leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:px-1.5 sm:text-xs",
               isActive
                 ? "bg-white/20 text-white shadow-sm"
                 : "text-white/50 hover:text-white/80",

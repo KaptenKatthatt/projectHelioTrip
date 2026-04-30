@@ -135,7 +135,6 @@ type SimulationActions = {
   acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
   claimPatienceReward: (bodyId: BodyId) => boolean;
-  maybeRewardBodyPatience: () => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -701,13 +700,6 @@ export const useStore = create<Store>()(
           },
         });
         return true;
-      },
-
-      maybeRewardBodyPatience: () => {
-        const state = useStore.getState();
-        const bodyId = state.activeBody;
-        if (!bodyId) return;
-        useStore.getState().claimPatienceReward(bodyId);
       },
 
       restoreFromShareLink: (snapshot) => {

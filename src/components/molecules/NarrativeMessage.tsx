@@ -11,13 +11,20 @@ import { resolveNarrativeHint } from "../../lib/learning/narrativeHooks";
 export const NarrativeMessage = () => {
   const { t, locale } = useTranslation();
   const { activeBody, gameMode } = useActiveBodyViewGameMode();
+  const activeMissionId = useStore((s) => s.activeMissionId);
   const visitedBodies = useStore((s) => s.visitedBodies);
   const [dismissedIds, setDismissedIds] = useState<ReadonlySet<string>>(new Set());
 
   const totalBodies = PLANETS.length + MOONS.length + SATELLITES.length;
 
   const hint = resolveNarrativeHint(
-    { gameMode, activeBody, visitedCount: visitedBodies.length, totalBodies },
+    {
+      gameMode,
+      activeBody,
+      activeMissionId,
+      visitedCount: visitedBodies.length,
+      totalBodies,
+    },
     dismissedIds,
     locale,
   );
@@ -43,7 +50,7 @@ export const NarrativeMessage = () => {
           <X className="h-3.5 w-3.5" aria-hidden />
         </button>
       </div>
-      <p className="mt-1.5 text-xs text-white/70 leading-relaxed">{hint.text}</p>
+      <p className="mt-1.5 max-w-prose text-xs leading-relaxed text-white/70">{hint.text}</p>
     </div>
   );
 };
