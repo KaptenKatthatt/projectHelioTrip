@@ -1,4 +1,7 @@
+import { Flame } from "lucide-react";
 import type { GameMode } from "../../../lib/missions/types";
+import { useTranslation } from "../../../hooks/useTranslation";
+import { useStore } from "../../../store/useStore";
 import { XpBadge } from "../../atoms/XpBadge";
 
 type HudTopBarRegionProps = {
@@ -20,6 +23,8 @@ export const HudTopBarRegion = ({
   tagline,
   gameMode,
 }: HudTopBarRegionProps) => {
+  const { t } = useTranslation();
+  const quizStreakDays = useStore((s) => s.quizStreakDays);
   const accentClass = MODE_ACCENT[gameMode];
   const showXpBadge = gameMode === "learn" || gameMode === "challenge";
 
@@ -45,7 +50,21 @@ export const HudTopBarRegion = ({
           <p className={mobileLayout ? "hidden" : "text-xs text-white/50"}>{tagline}</p>
         </div>
 
-        {showXpBadge && <XpBadge />}
+        {showXpBadge ? (
+          <div className="pointer-events-auto flex items-center gap-2">
+            {quizStreakDays > 0 ? (
+              <div
+                className="flex items-center gap-1 rounded-xl border border-amber-300/35 bg-amber-300/10 px-2 py-1 text-xs text-amber-100"
+                aria-label={`${t.learn.ui.streakLabel}: ${quizStreakDays}`}
+                title={`${t.learn.ui.streakLabel}: ${quizStreakDays}`}
+              >
+                <Flame className="h-4 w-4" aria-hidden />
+                <span className="font-semibold">{quizStreakDays}</span>
+              </div>
+            ) : null}
+            <XpBadge />
+          </div>
+        ) : null}
       </header>
 
       {accentClass && (

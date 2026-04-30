@@ -123,6 +123,7 @@ export const en: Translation = {
       abandonConfirm: "Yes, abandon",
       abandonCancel: "Keep going",
       backToExplore: "Back to Explore",
+      backToExploreConfirm: "Yes, leave mission",
     },
     progressPanel: {
       title: "Progress",
@@ -222,6 +223,7 @@ export const en: Translation = {
       railToggleClose: "Close navigation",
       viewFactsForBody: "View facts for {body}",
       selectBodyForFacts: "Select a planet to view fact cards",
+      streakLabel: "Quiz streak",
     },
     xpTitles: {
       rookie: "Rookie",

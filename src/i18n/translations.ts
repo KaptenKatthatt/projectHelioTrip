@@ -105,6 +105,7 @@ export type Translation = {
       abandonConfirm: string;
       abandonCancel: string;
       backToExplore: string;
+      backToExploreConfirm: string;
     };
     progressPanel: {
       title: string;
@@ -165,6 +166,7 @@ export type Translation = {
       railToggleClose: string;
       viewFactsForBody: string;
       selectBodyForFacts: string;
+      streakLabel: string;
     };
     xpTitles: {
       rookie: string;

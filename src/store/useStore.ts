@@ -89,6 +89,12 @@ type SimulationState = {
   recentXpGain: number | null;
   /** Desktop left navigation rail open state. */
   leftRailOpen: boolean;
+  /** Last rewarded day key per body for patience reward gating. */
+  patienceRewardedOnByBody: Readonly<Record<BodyId, string>>;
+  /** Current daily quiz streak count. */
+  quizStreakDays: number;
+  /** Last date key (YYYY-MM-DD) when a quiz was completed. */
+  lastQuizCompletedOn: string | null;
 };
 
 type SimulationActions = {
@@ -126,6 +132,7 @@ type SimulationActions = {
   dismissQuiz: () => void;
   acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
+  maybeRewardBodyPatience: () => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -142,6 +149,18 @@ type PersistedState = {
   xp: number;
   completedQuizzes: Record<string, number>;
   leftRailOpen: boolean;
+  patienceRewardedOnByBody: Record<BodyId, string>;
+  quizStreakDays: number;
+  lastQuizCompletedOn: string | null;
+};
+
+const todayDateKey = (): string => new Date().toISOString().slice(0, 10);
+
+const daysBetweenDateKeys = (previousKey: string, nextKey: string): number => {
+  const previousUtc = Date.parse(`${previousKey}T00:00:00.000Z`);
+  const nextUtc = Date.parse(`${nextKey}T00:00:00.000Z`);
+  if (Number.isNaN(previousUtc) || Number.isNaN(nextUtc)) return Number.POSITIVE_INFINITY;
+  return Math.round((nextUtc - previousUtc) / 86_400_000);
 };
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
@@ -382,6 +401,9 @@ export const useStore = create<Store>()(
       pendingQuizId: null,
       recentXpGain: null,
       leftRailOpen: true,
+      patienceRewardedOnByBody: {},
+      quizStreakDays: 0,
+      lastQuizCompletedOn: null,
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -600,10 +622,24 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
+          const today = todayDateKey();
+          const previousDay = state.lastQuizCompletedOn;
+          const dayDelta = previousDay ? daysBetweenDateKeys(previousDay, today) : null;
+          const nextStreak =
+            dayDelta === null
+              ? 1
+              : dayDelta === 0
+                ? state.quizStreakDays
+                : dayDelta === 1
+                  ? state.quizStreakDays + 1
+                  : 1;
+
           return {
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,
             title: nextTitle,
+            quizStreakDays: nextStreak,
+            lastQuizCompletedOn: today,
           };
         });
         dispatchDomainEvent({ kind: "quiz_completed", quizId });
@@ -617,6 +653,22 @@ export const useStore = create<Store>()(
 
       toggleLeftRail: () =>
         set((state) => ({ leftRailOpen: !state.leftRailOpen })),
+
+      maybeRewardBodyPatience: () => {
+        const state = useStore.getState();
+        const bodyId = state.activeBody;
+        if (!bodyId) return;
+        if (state.gameMode === "explore") return;
+        const today = todayDateKey();
+        if (state.patienceRewardedOnByBody[bodyId] === today) return;
+        useStore.getState().awardXp(XP_AWARDS.bodyPatience);
+        set({
+          patienceRewardedOnByBody: {
+            ...state.patienceRewardedOnByBody,
+            [bodyId]: today,
+          },
+        });
+      },
 
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
@@ -638,6 +690,9 @@ export const useStore = create<Store>()(
         xp: state.xp,
         completedQuizzes: { ...state.completedQuizzes },
         leftRailOpen: state.leftRailOpen,
+        patienceRewardedOnByBody: { ...state.patienceRewardedOnByBody },
+        quizStreakDays: state.quizStreakDays,
+        lastQuizCompletedOn: state.lastQuizCompletedOn,
       }),
       merge: (persisted, current): Store => {
         const p = persisted as Partial<PersistedState> | undefined;
@@ -665,6 +720,13 @@ export const useStore = create<Store>()(
               ? (p.completedQuizzes as Record<string, number>)
               : {},
           leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
+          patienceRewardedOnByBody:
+            typeof p?.patienceRewardedOnByBody === "object" && p.patienceRewardedOnByBody !== null
+              ? (p.patienceRewardedOnByBody as Record<BodyId, string>)
+              : {},
+          quizStreakDays: typeof p?.quizStreakDays === "number" ? p.quizStreakDays : 0,
+          lastQuizCompletedOn:
+            typeof p?.lastQuizCompletedOn === "string" ? p.lastQuizCompletedOn : null,
         };
       },
     },

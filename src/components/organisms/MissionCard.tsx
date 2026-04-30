@@ -71,6 +71,7 @@ export const MissionCard = ({
 }: MissionCardProps) => {
   const { t } = useTranslation();
   const [pendingAbandon, setPendingAbandon] = useState(false);
+  const [pendingBackToExplore, setPendingBackToExplore] = useState(false);
   const gameMode = useStore((s) => s.gameMode);
   const activeMissionId = useStore((s) => s.activeMissionId);
   const missionProgress = useStore((s) => s.missionProgress);
@@ -149,16 +150,40 @@ export const MissionCard = ({
             {localized.title}
           </h3>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            abandonMission();
-            setGameMode("explore");
-          }}
-          className="shrink-0 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/15 hover:text-white"
-        >
-          {t.phase3.missionCard.backToExplore}
-        </button>
+        {pendingBackToExplore ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setPendingBackToExplore(false)}
+              className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              {t.phase3.missionCard.abandonCancel}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                abandonMission();
+                setGameMode("explore");
+                setPendingBackToExplore(false);
+                setPendingAbandon(false);
+              }}
+              className="rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[11px] font-medium text-amber-200 transition hover:bg-amber-400/20"
+            >
+              {t.phase3.missionCard.backToExploreConfirm}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setPendingBackToExplore(true);
+              setPendingAbandon(false);
+            }}
+            className="shrink-0 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/15 hover:text-white"
+          >
+            {t.phase3.missionCard.backToExplore}
+          </button>
+        )}
       </header>
 
       {!compact ? (
@@ -219,7 +244,9 @@ export const MissionCard = ({
         <div className="mt-3 flex gap-2">
           <button
             type="button"
-            onClick={() => setPendingAbandon(false)}
+            onClick={() => {
+              setPendingAbandon(false);
+            }}
             className="flex-1 rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
           >
             {t.phase3.missionCard.abandonCancel}
@@ -235,7 +262,10 @@ export const MissionCard = ({
       ) : (
         <button
           type="button"
-          onClick={() => setPendingAbandon(true)}
+          onClick={() => {
+            setPendingAbandon(true);
+            setPendingBackToExplore(false);
+          }}
           className="mt-3 w-full rounded-md border border-white/8 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/35 transition hover:border-white/15 hover:text-white/55"
         >
           {t.phase3.missionCard.abandon}

@@ -123,6 +123,7 @@ export const sv: Translation = {
       abandonConfirm: "Ja, avbryt",
       abandonCancel: "Fortsätt",
       backToExplore: "Till Utforska",
+      backToExploreConfirm: "Ja, lämna uppdraget",
     },
     progressPanel: {
       title: "Framsteg",
@@ -222,6 +223,7 @@ export const sv: Translation = {
       railToggleClose: "Stäng navigering",
       viewFactsForBody: "Se fakta om {body}",
       selectBodyForFacts: "Välj en planet för att se faktakort",
+      streakLabel: "Quiz-streak",
     },
     xpTitles: {
       rookie: "Nybörjare",
