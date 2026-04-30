@@ -62,6 +62,8 @@ export const PlanetOrbitControls = () => {
     if (!controls) return;
 
     getBodyWorldPosition(activeBody, tmpTarget);
+    // Intentional: orbit target uses the same mobile lift as framing so the
+    // selected body stays at the approved on-screen height in close view.
     tmpTarget.y = applyMobilePlanetScreenLift(
       camera,
       camera.position.distanceTo(tmpTarget),

@@ -191,6 +191,8 @@ export const PlanetViewportOffset = (): null => {
       return;
     }
 
+    // Intentional: include offset in fullHeight to preserve the approved
+    // mobile close-view framing where the planet sits at the expected HUD-safe height.
     const fullHeight = height + offsetY;
     camera.setViewOffset(width, fullHeight, 0, offsetY, width, height);
   }, 1);
