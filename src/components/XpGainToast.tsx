@@ -26,7 +26,7 @@ export const XpGainToast = () => {
     >
       <span className="inline-flex items-center gap-1">
         <Sparkles className="h-3.5 w-3.5" aria-hidden />
-        {t.learn.ui.xpToastLabel.replace("{xp}", String(recentXpGain.amount))}
+        {t.learn.ui.xpToastLabel.replace("{xp}", String(recentXpGain))}
       </span>
     </div>
   );

@@ -4,7 +4,7 @@ import { useStore } from "../../store/useStore";
 
 export const LearningStreakBadge = () => {
   const { t } = useTranslation();
-  const streakDays = useStore((s) => s.learningStreakDays);
+  const streakDays = useStore((s) => s.quizStreakDays);
 
   if (streakDays < 1) return null;
 

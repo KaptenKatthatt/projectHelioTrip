@@ -90,11 +90,13 @@ type SimulationState = {
   /** Desktop left navigation rail open state. */
   leftRailOpen: boolean;
   /** Last rewarded day key per body for patience reward gating. */
-  patienceRewardedOnByBody: Readonly<Record<BodyId, string>>;
+  patienceRewardedOnByBody: Readonly<Partial<Record<BodyId, string>>>;
   /** Current daily quiz streak count. */
   quizStreakDays: number;
   /** Last date key (YYYY-MM-DD) when a quiz was completed. */
   lastQuizCompletedOn: string | null;
+  /** Constellations the user has discovered at least once. */
+  discoveredConstellations: ReadonlyArray<ConstellationId>;
 };
 
 type SimulationActions = {
@@ -132,6 +134,7 @@ type SimulationActions = {
   dismissQuiz: () => void;
   acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
+  claimPatienceReward: (bodyId: BodyId) => boolean;
   maybeRewardBodyPatience: () => void;
 };
 
@@ -149,17 +152,38 @@ type PersistedState = {
   xp: number;
   completedQuizzes: Record<string, number>;
   leftRailOpen: boolean;
-  patienceRewardedOnByBody: Record<BodyId, string>;
+  patienceRewardedOnByBody: Partial<Record<BodyId, string>>;
   quizStreakDays: number;
   lastQuizCompletedOn: string | null;
+  discoveredConstellations: ConstellationId[];
 };
 
-const todayDateKey = (): string => new Date().toISOString().slice(0, 10);
+const dateKeyFromLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const todayDateKey = (): string => dateKeyFromLocalDate(new Date());
+
+const parseDateKeyToUtcMs = (dateKey: string): number | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return Date.UTC(year, month - 1, day);
+};
 
 const daysBetweenDateKeys = (previousKey: string, nextKey: string): number => {
-  const previousUtc = Date.parse(`${previousKey}T00:00:00.000Z`);
-  const nextUtc = Date.parse(`${nextKey}T00:00:00.000Z`);
-  if (Number.isNaN(previousUtc) || Number.isNaN(nextUtc)) return Number.POSITIVE_INFINITY;
+  const previousUtc = parseDateKeyToUtcMs(previousKey);
+  const nextUtc = parseDateKeyToUtcMs(nextKey);
+  if (previousUtc === null || nextUtc === null) return Number.POSITIVE_INFINITY;
   return Math.round((nextUtc - previousUtc) / 86_400_000);
 };
 
@@ -211,6 +235,11 @@ const sanitizeVisitedBodies = (raw: unknown): BodyId[] => {
 const sanitizeAchievements = (raw: unknown): AchievementId[] => {
   if (!Array.isArray(raw)) return [];
   return raw.filter(isAchievementId);
+};
+
+const sanitizeDiscoveredConstellations = (raw: unknown): ConstellationId[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((value): value is ConstellationId => typeof value === "string");
 };
 
 const applyMissionEventProgress = (
@@ -404,6 +433,7 @@ export const useStore = create<Store>()(
       patienceRewardedOnByBody: {},
       quizStreakDays: 0,
       lastQuizCompletedOn: null,
+      discoveredConstellations: [],
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -523,6 +553,9 @@ export const useStore = create<Store>()(
             state.selectedConstellation === null &&
             (state.viewMode !== "overview" || state.activeBody !== null);
           return {
+            discoveredConstellations: state.discoveredConstellations.includes(id)
+              ? state.discoveredConstellations
+              : [...state.discoveredConstellations, id],
             selectedConstellation: id,
             constellationUserSpinRad: keepPose
               ? state.constellationUserSpinRad
@@ -638,6 +671,7 @@ export const useStore = create<Store>()(
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,
             title: nextTitle,
+            recentXpGain: xpAmount,
             quizStreakDays: nextStreak,
             lastQuizCompletedOn: today,
           };
@@ -654,13 +688,11 @@ export const useStore = create<Store>()(
       toggleLeftRail: () =>
         set((state) => ({ leftRailOpen: !state.leftRailOpen })),
 
-      maybeRewardBodyPatience: () => {
+      claimPatienceReward: (bodyId) => {
         const state = useStore.getState();
-        const bodyId = state.activeBody;
-        if (!bodyId) return;
-        if (state.gameMode === "explore") return;
+        if (state.gameMode === "explore") return false;
         const today = todayDateKey();
-        if (state.patienceRewardedOnByBody[bodyId] === today) return;
+        if (state.patienceRewardedOnByBody[bodyId] === today) return false;
         useStore.getState().awardXp(XP_AWARDS.bodyPatience);
         set({
           patienceRewardedOnByBody: {
@@ -668,6 +700,14 @@ export const useStore = create<Store>()(
             [bodyId]: today,
           },
         });
+        return true;
+      },
+
+      maybeRewardBodyPatience: () => {
+        const state = useStore.getState();
+        const bodyId = state.activeBody;
+        if (!bodyId) return;
+        useStore.getState().claimPatienceReward(bodyId);
       },
 
       restoreFromShareLink: (snapshot) => {
@@ -693,6 +733,7 @@ export const useStore = create<Store>()(
         patienceRewardedOnByBody: { ...state.patienceRewardedOnByBody },
         quizStreakDays: state.quizStreakDays,
         lastQuizCompletedOn: state.lastQuizCompletedOn,
+        discoveredConstellations: [...state.discoveredConstellations],
       }),
       merge: (persisted, current): Store => {
         const p = persisted as Partial<PersistedState> | undefined;
@@ -722,11 +763,14 @@ export const useStore = create<Store>()(
           leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
           patienceRewardedOnByBody:
             typeof p?.patienceRewardedOnByBody === "object" && p.patienceRewardedOnByBody !== null
-              ? (p.patienceRewardedOnByBody as Record<BodyId, string>)
+              ? (p.patienceRewardedOnByBody as Partial<Record<BodyId, string>>)
               : {},
           quizStreakDays: typeof p?.quizStreakDays === "number" ? p.quizStreakDays : 0,
           lastQuizCompletedOn:
             typeof p?.lastQuizCompletedOn === "string" ? p.lastQuizCompletedOn : null,
+          discoveredConstellations: sanitizeDiscoveredConstellations(
+            p?.discoveredConstellations,
+          ),
         };
       },
     },

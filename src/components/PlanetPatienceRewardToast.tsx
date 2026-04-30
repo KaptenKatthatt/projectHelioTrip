@@ -12,7 +12,6 @@ export const PlanetPatienceRewardToast = () => {
   const activeBody = useStore((s) => s.activeBody);
   const isTraveling = useStore((s) => s.isTraveling);
   const gameMode = useStore((s) => s.gameMode);
-  const awardXp = useStore((s) => s.awardXp);
   const claimPatienceReward = useStore((s) => s.claimPatienceReward);
   const [message, setMessage] = useState<string | null>(null);
   const rewardTimerRef = useRef<number | null>(null);
@@ -27,7 +26,6 @@ export const PlanetPatienceRewardToast = () => {
     rewardTimerRef.current = window.setTimeout(() => {
       const shouldReward = claimPatienceReward(activeBody);
       if (!shouldReward) return;
-      awardXp(REWARD_XP_AMOUNT);
       setMessage(
         t.learn.ui.patienceReward
           .replace("{body}", bodyName(activeBody))
@@ -42,7 +40,6 @@ export const PlanetPatienceRewardToast = () => {
     };
   }, [
     activeBody,
-    awardXp,
     bodyName,
     claimPatienceReward,
     gameMode,

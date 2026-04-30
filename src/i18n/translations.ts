@@ -76,6 +76,8 @@ export type Translation = {
     footerLinkGithub: string;
     bottomNavStars: string;
     bottomNavMore: string;
+    constellationCollection: string;
+    constellationUnknownLabel: string;
     constellationSeasonYearRound: string;
     constellationSeasonWinter: string;
     constellationSeasonSpring: string;
@@ -167,6 +169,10 @@ export type Translation = {
       viewFactsForBody: string;
       selectBodyForFacts: string;
       streakLabel: string;
+      patienceReward: string;
+      xpToastLabel: string;
+      learningStreakLabel: string;
+      learningStreakResetHint: string;
     };
     xpTitles: {
       rookie: string;
