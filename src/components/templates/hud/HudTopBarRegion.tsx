@@ -1,5 +1,6 @@
 import type { GameMode } from "../../../lib/missions/types";
 import { LearningStreakBadge } from "../../atoms/LearningStreakBadge";
+import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
 import { XpBadge } from "../../atoms/XpBadge";
 
 type HudTopBarRegionProps = {
@@ -63,6 +64,9 @@ export const HudTopBarRegion = ({
           aria-hidden="true"
         />
       )}
+      <div className="flex justify-start">
+        <SpaceWeatherBadge />
+      </div>
     </div>
   );
 };
