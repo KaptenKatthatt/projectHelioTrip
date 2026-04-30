@@ -111,18 +111,14 @@ export const ProgressPanel = ({
         ) : null}
       </div>
 
-      <div className="mt-3">
-        <div className="flex items-center justify-between text-xs text-white/65">
-          <span>{t.phase3.progressPanel.achievementsTitle}</span>
-          <span className="font-mono text-white/85">
-            {unlockedSet.size}/{ACHIEVEMENT_IDS.length}
-          </span>
-        </div>
-        {unlockedSet.size === 0 ? (
-          <p className="mt-1 text-xs text-white/45">
-            {t.phase3.progressPanel.noAchievements}
-          </p>
-        ) : (
+      {unlockedSet.size > 0 && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs text-white/65">
+            <span>{t.phase3.progressPanel.achievementsTitle}</span>
+            <span className="font-mono text-white/85">
+              {unlockedSet.size}/{ACHIEVEMENT_IDS.length}
+            </span>
+          </div>
           <ul className="mt-1 flex flex-wrap gap-1">
             {ACHIEVEMENT_IDS.filter((id) => unlockedSet.has(id)).map((id) => (
               <li
@@ -133,8 +129,8 @@ export const ProgressPanel = ({
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   );
 };

@@ -144,8 +144,14 @@ export const BottomSheet = ({
             </h2>
           </div>
         ) : null}
-        <div className="max-h-[min(72dvh,28rem)] overflow-y-auto pr-1">
-          {children}
+        <div className="relative">
+          <div className="max-h-[min(72dvh,28rem)] overflow-y-auto pr-1">
+            {children}
+          </div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 rounded-b-3xl bg-gradient-to-t from-black/40 to-transparent"
+          />
         </div>
       </div>
     </div>

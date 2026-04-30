@@ -10,9 +10,16 @@ const starCount = (attempts: number): number =>
   attempts === 1 ? 3 : attempts === 2 ? 2 : 1;
 
 export const QuizOverlay = () => {
+  const pendingQuizId = useStore((s) => s.pendingQuizId);
+  if (!pendingQuizId) return null;
+  // key forces a full remount — and therefore a clean state — whenever the
+  // quiz id changes, making it safe to open a new quiz while one is in progress.
+  return <QuizOverlayInner key={pendingQuizId} quizId={pendingQuizId} />;
+};
+
+const QuizOverlayInner = ({ quizId }: { quizId: string }) => {
   const { t } = useTranslation();
   const locale = useStore((s) => s.locale);
-  const pendingQuizId = useStore((s) => s.pendingQuizId);
   const dismissQuiz = useStore((s) => s.dismissQuiz);
   const recordQuizResult = useStore((s) => s.recordQuizResult);
 
@@ -24,20 +31,11 @@ export const QuizOverlay = () => {
   const [earnedStars, setEarnedStars] = useState(0);
   const [wrongFeedback, setWrongFeedback] = useState(false);
 
-  if (!pendingQuizId) return null;
-
-  const question = QUIZ_QUESTIONS.find((q) => q.id === pendingQuizId);
+  const question = QUIZ_QUESTIONS.find((q) => q.id === quizId);
   if (!question) return null;
 
   const handleClose = () => {
     dismissQuiz();
-    setPhase("question");
-    setAttempts(0);
-    setSelectedKey(null);
-    setFillValue("");
-    setShowHint(false);
-    setEarnedStars(0);
-    setWrongFeedback(false);
   };
 
   const checkAnswer = (answer: string): boolean => {

@@ -2,6 +2,12 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { GAME_MODES, type GameMode } from "../../lib/missions/types";
 import { useStore } from "../../store/useStore";
 
+const MODE_ACTIVE_CLASS: Record<GameMode, string> = {
+  explore: "bg-white/90 text-black",
+  learn: "bg-cyan-400 text-black",
+  challenge: "bg-emerald-400 text-black",
+};
+
 type GameModeSwitcherProps = {
   readonly className?: string;
   readonly compact?: boolean;
@@ -45,7 +51,7 @@ export const GameModeSwitcher = ({
                 ? "px-2 py-1 text-[11px] font-medium tracking-wide "
                 : "px-3 py-1.5 text-xs font-medium tracking-wide ") +
               (active
-                ? "bg-white text-black"
+                ? MODE_ACTIVE_CLASS[mode]
                 : "text-white/60 hover:text-white hover:bg-white/10")
             }
           >
