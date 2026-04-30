@@ -24,7 +24,7 @@ export const ConstellationMiniCard = () => {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="pointer-events-auto fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[15] flex items-center justify-between rounded-xl border border-indigo-400/30 bg-black/80 px-3 py-2.5 text-left backdrop-blur-md transition hover:border-indigo-400/50 hover:bg-black/90"
+        className="pointer-events-auto fixed inset-x-3 bottom-[calc(8.75rem+env(safe-area-inset-bottom))] z-15 flex items-center justify-between rounded-xl border border-indigo-400/30 bg-black/80 px-3 py-2.5 text-left backdrop-blur-md transition hover:border-indigo-400/50 hover:bg-black/90"
       >
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-indigo-200">✦ {label}</p>
@@ -42,6 +42,8 @@ export const ConstellationMiniCard = () => {
         onClose={() => setExpanded(false)}
         title={label}
         panelClassName="max-h-[min(92dvh,32rem)]"
+        blurScrim={false}
+        scrimBlocksPointerEvents={false}
       >
         <div className="p-3 pt-0">
           <ConstellationStoryCard />
