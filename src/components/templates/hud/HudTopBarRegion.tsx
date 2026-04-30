@@ -9,9 +9,9 @@ type HudTopBarRegionProps = {
 };
 
 const MODE_ACCENT: Record<GameMode, string> = {
-  explore: "",
-  learn: "bg-cyan-400",
-  challenge: "bg-emerald-400",
+  explore: "bg-white/30",
+  learn: "bg-cyan-300",
+  challenge: "bg-emerald-300",
 };
 
 export const HudTopBarRegion = ({
@@ -51,7 +51,7 @@ export const HudTopBarRegion = ({
       {accentClass && (
         <div
           className={[
-            "h-0.5 w-full rounded-full opacity-70 transition-all duration-500",
+            "h-1 w-full rounded-full opacity-90 transition-all duration-500",
             accentClass,
           ].join(" ")}
           aria-hidden="true"

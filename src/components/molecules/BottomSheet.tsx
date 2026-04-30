@@ -1,6 +1,7 @@
 import {
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -43,6 +44,17 @@ export const BottomSheet = ({
   scrimBlocksPointerEvents = true,
 }: BottomSheetProps) => {
   const [panelEntered, setPanelEntered] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showTopScrollCue, setShowTopScrollCue] = useState(false);
+  const [showBottomScrollCue, setShowBottomScrollCue] = useState(false);
+
+  const updateScrollCues = (): void => {
+    const node = scrollContainerRef.current;
+    if (!node) return;
+    const maxScrollTop = node.scrollHeight - node.clientHeight;
+    setShowTopScrollCue(node.scrollTop > 4);
+    setShowBottomScrollCue(maxScrollTop - node.scrollTop > 4);
+  };
 
   useLayoutEffect(() => {
     if (!open || !slideFromBottom) {
@@ -74,6 +86,19 @@ export const BottomSheet = ({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const node = scrollContainerRef.current;
+    if (!node) return;
+    updateScrollCues();
+    node.addEventListener("scroll", updateScrollCues, { passive: true });
+    window.addEventListener("resize", updateScrollCues);
+    return () => {
+      node.removeEventListener("scroll", updateScrollCues);
+      window.removeEventListener("resize", updateScrollCues);
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -108,7 +133,7 @@ export const BottomSheet = ({
     <div
       className={
         (scrimBlocksPointerEvents ? "pointer-events-auto " : "pointer-events-none ") +
-        "fixed inset-0 z-[28] flex flex-col justify-end isolate"
+        "fixed inset-0 z-28 flex flex-col justify-end isolate"
       }
     >
       {scrimBlocksPointerEvents ? (
@@ -127,7 +152,7 @@ export const BottomSheet = ({
         aria-label={title ?? "Panel"}
         style={panelSlideStyle}
         className={
-          "pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:!transform-none motion-reduce:!transition-none " +
+          "pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:transform-none! motion-reduce:transition-none! " +
           (blurPanel
             ? "bg-black/60 backdrop-blur-xl "
             : "bg-[#05060a] backdrop-blur-none ") +
@@ -144,8 +169,25 @@ export const BottomSheet = ({
             </h2>
           </div>
         ) : null}
-        <div className="max-h-[min(72dvh,28rem)] overflow-y-auto pr-1">
+        <div className="relative">
+          {showTopScrollCue ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-4 bg-linear-to-b from-black/45 to-transparent"
+            />
+          ) : null}
+          {showBottomScrollCue ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-linear-to-t from-black/55 to-transparent"
+            />
+          ) : null}
+          <div
+            ref={scrollContainerRef}
+            className="max-h-[min(72dvh,28rem)] overflow-y-auto pr-1"
+          >
           {children}
+          </div>
         </div>
       </div>
     </div>

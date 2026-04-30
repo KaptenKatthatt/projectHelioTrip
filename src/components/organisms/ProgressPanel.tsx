@@ -119,9 +119,9 @@ export const ProgressPanel = ({
           </span>
         </div>
         {unlockedSet.size === 0 ? (
-          <p className="mt-1 text-xs text-white/45">
-            {t.phase3.progressPanel.noAchievements}
-          </p>
+          <div className="mt-1 rounded-md border border-white/10 bg-white/5 px-2 py-1.5">
+            <p className="text-xs text-white/55">{t.phase3.progressPanel.noAchievements}</p>
+          </div>
         ) : (
           <ul className="mt-1 flex flex-wrap gap-1">
             {ACHIEVEMENT_IDS.filter((id) => unlockedSet.has(id)).map((id) => (

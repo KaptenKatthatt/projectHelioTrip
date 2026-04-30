@@ -13,9 +13,33 @@ export const QuizOverlay = () => {
   const { t } = useTranslation();
   const locale = useStore((s) => s.locale);
   const pendingQuizId = useStore((s) => s.pendingQuizId);
+
+  if (!pendingQuizId) return null;
+
+  const question = QUIZ_QUESTIONS.find((q) => q.id === pendingQuizId);
+  if (!question) return null;
+
+  return (
+    <QuizOverlaySession
+      key={pendingQuizId}
+      locale={locale}
+      question={question}
+      t={t}
+    />
+  );
+};
+
+const QuizOverlaySession = ({
+  locale,
+  question,
+  t,
+}: {
+  locale: "sv" | "en";
+  question: QuizQuestion;
+  t: Translation;
+}) => {
   const dismissQuiz = useStore((s) => s.dismissQuiz);
   const recordQuizResult = useStore((s) => s.recordQuizResult);
-
   const [phase, setPhase] = useState<Phase>("question");
   const [attempts, setAttempts] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -24,20 +48,8 @@ export const QuizOverlay = () => {
   const [earnedStars, setEarnedStars] = useState(0);
   const [wrongFeedback, setWrongFeedback] = useState(false);
 
-  if (!pendingQuizId) return null;
-
-  const question = QUIZ_QUESTIONS.find((q) => q.id === pendingQuizId);
-  if (!question) return null;
-
   const handleClose = () => {
     dismissQuiz();
-    setPhase("question");
-    setAttempts(0);
-    setSelectedKey(null);
-    setFillValue("");
-    setShowHint(false);
-    setEarnedStars(0);
-    setWrongFeedback(false);
   };
 
   const checkAnswer = (answer: string): boolean => {

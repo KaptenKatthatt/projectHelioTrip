@@ -78,6 +78,10 @@ export const HudPrimaryNavRegion = ({
           </CollapsibleHudPanel>
         ) : null}
         <FreeFlightHelp />
+        <div
+          aria-hidden
+          className="pointer-events-none sticky bottom-0 h-8 w-full max-w-sm bg-linear-to-t from-black/45 to-transparent"
+        />
       </div>
     </div>
   </>

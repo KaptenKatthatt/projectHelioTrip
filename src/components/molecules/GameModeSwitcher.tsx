@@ -20,6 +20,11 @@ export const GameModeSwitcher = ({
     learn: t.phase3.gameMode.learn,
     challenge: t.phase3.gameMode.challenge,
   };
+  const activeClass: Record<GameMode, string> = {
+    explore: "bg-white text-black ring-1 ring-white/80",
+    learn: "bg-cyan-300 text-slate-950 ring-1 ring-cyan-200/90",
+    challenge: "bg-emerald-300 text-slate-950 ring-1 ring-emerald-200/90",
+  };
 
   return (
     <div
@@ -45,7 +50,7 @@ export const GameModeSwitcher = ({
                 ? "px-2 py-1 text-[11px] font-medium tracking-wide "
                 : "px-3 py-1.5 text-xs font-medium tracking-wide ") +
               (active
-                ? "bg-white text-black"
+                ? activeClass[mode]
                 : "text-white/60 hover:text-white hover:bg-white/10")
             }
           >
