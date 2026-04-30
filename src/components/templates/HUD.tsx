@@ -100,10 +100,8 @@ export const HUD = () => {
         mobileLayout={mobileLayout}
         showPlanetInfoUi={showPlanetInfoUi}
         showMissionUi={showMissionUi}
-        activeBody={activeBody}
         selectedConstellation={selectedConstellation}
         mobileBodyTitle={mobileBodyTitle}
-        mobileBodyColor={mobileBodyColor}
         minimizePanelLabel={t.ui.minimizePanel}
         expandPanelLabel={t.ui.expandPanel}
         progressTitle={t.phase3.progressPanel.title}

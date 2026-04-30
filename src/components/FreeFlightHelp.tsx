@@ -21,7 +21,7 @@ export const FreeFlightHelp = () => {
 
   return (
     <aside className="pointer-events-auto w-64 rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-md">
-      <h2 className="px-1 pb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+      <h2 className="px-1 pb-2 text-xs font-medium uppercase tracking-[0.2em] text-white/40">
         {t.ui.controls}
       </h2>
       <dl className="space-y-1.5 text-xs">
@@ -34,7 +34,7 @@ export const FreeFlightHelp = () => {
             <dd className="flex items-center gap-1">
               {row.keys.map((k, i) => (
                 <span key={k} className="flex items-center gap-1">
-                  <kbd className="inline-flex min-w-[1.5rem] items-center justify-center rounded-md border border-white/15 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-white/90">
+                  <kbd className="inline-flex min-w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-white/90">
                     {k}
                   </kbd>
                   {i < row.keys.length - 1 && row.keys.length > 2 && (
