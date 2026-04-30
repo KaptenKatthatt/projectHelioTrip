@@ -11,6 +11,7 @@ type BottomSheetProps = {
   readonly onClose: () => void;
   readonly children: ReactNode;
   readonly title?: string;
+  readonly titleTopContent?: ReactNode;
   readonly titleLeftAction?: ReactNode;
   readonly titleRightAction?: ReactNode;
   readonly titleAccentColor?: string | null;
@@ -37,6 +38,7 @@ export const BottomSheet = ({
   onClose,
   children,
   title,
+  titleTopContent,
   titleLeftAction,
   titleRightAction,
   titleAccentColor,
@@ -138,6 +140,9 @@ export const BottomSheet = ({
           (panelClassName ?? "")
         }
       >
+        {titleTopContent ? (
+          <div className="border-b border-white/10 px-4 py-3">{titleTopContent}</div>
+        ) : null}
         {title ? (
           <div
             className="border-b border-white/10 px-4 pb-3 pt-4"

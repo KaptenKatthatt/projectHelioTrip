@@ -4,13 +4,19 @@ import { CONSTELLATION_MENU_ITEMS } from "../../lib/constellations";
 import { getConstellationStory } from "../../lib/learning/constellationStories";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStore } from "../../store/useStore";
+import { ConstellationViewControls } from "../ConstellationViewControls";
 import { BottomSheet } from "./BottomSheet";
 import { ConstellationStoryCard } from "./ConstellationStoryCard";
 
-export const ConstellationMiniCard = () => {
+type ConstellationMiniCardProps = {
+  readonly onBackToConstellationsMenu: () => void;
+};
+
+export const ConstellationMiniCard = ({
+  onBackToConstellationsMenu,
+}: ConstellationMiniCardProps) => {
   const { locale, t } = useTranslation();
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const setSelectedConstellation = useStore((s) => s.setSelectedConstellation);
   const focusSkyTarget = useStore((s) => s.focusSkyTarget);
   const [expanded, setExpanded] = useState(false);
 
@@ -60,6 +66,11 @@ export const ConstellationMiniCard = () => {
         open={expanded}
         onClose={() => setExpanded(false)}
         title={label}
+        titleTopContent={
+          <div className="flex justify-center">
+            <ConstellationViewControls />
+          </div>
+        }
         titleLeftAction={
           <button
             type="button"
@@ -67,7 +78,7 @@ export const ConstellationMiniCard = () => {
             title={t.ui.backToConstellationsList}
             onClick={() => {
               setExpanded(false);
-              setSelectedConstellation(null);
+              onBackToConstellationsMenu();
             }}
             className="pointer-events-auto text-white/75 transition hover:text-white"
           >

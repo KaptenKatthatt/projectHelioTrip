@@ -45,6 +45,7 @@ export const HUD = () => {
     (s) => s.setMobilePlanetInfoSheetOpen,
   );
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
+  const setSelectedConstellation = useStore((s) => s.setSelectedConstellation);
 
   useEffect(() => {
     if (!mobileLayout) {
@@ -87,6 +88,13 @@ export const HUD = () => {
     closeNavSheets();
     setMobilePlanetInfoSheetOpen(false);
     resetSolarSystemStart();
+  };
+
+  const handleBackToConstellationsMenu = (): void => {
+    setSelectedConstellation(null);
+    setMobilePlanetInfoSheetOpen(false);
+    setOpenNavSheet("stars");
+    setGameMode("explore");
   };
 
   return (
@@ -134,6 +142,7 @@ export const HUD = () => {
         mobileLayout={mobileLayout}
         openNavSheet={openNavSheet}
         closeNavSheets={closeNavSheets}
+        onBackToConstellationsMenu={handleBackToConstellationsMenu}
         t={t}
         planetSheetOpen={planetSheetOpen}
         showPlanetInfoUi={showPlanetInfoUi}
