@@ -101,6 +101,8 @@ export const en: Translation = {
     constellationSeasonSpring: "Spring",
     constellationSeasonSummer: "Summer",
     constellationSeasonAutumn: "Autumn",
+    backToConstellationsList: "Back to the constellations list",
+    nextConstellation: "Next constellation",
   },
   phase3: {
     dailyChallenge: "Daily challenge",

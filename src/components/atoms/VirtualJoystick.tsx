@@ -21,7 +21,7 @@ const writeAxes = (
   mode: "move" | "look",
 ): void => {
   const inv = maxR > 1e-6 ? 1 / maxR : 0;
-  target.x = sx * inv;
+  target.x = mode === "move" ? 0 : sx * inv;
   if (mode === "move") {
     target.y = -sy * inv;
   } else {
@@ -50,9 +50,10 @@ export const VirtualJoystick = ({
 
       const dx = clientX - cx;
       const dy = clientY - cy;
-      const len = Math.hypot(dx, dy);
+      const effectiveDx = mode === "move" ? 0 : dx;
+      const len = Math.hypot(effectiveDx, dy);
       const scale = len > maxR ? maxR / len : 1;
-      const sx = dx * scale;
+      const sx = effectiveDx * scale;
       const sy = dy * scale;
 
       const bus =

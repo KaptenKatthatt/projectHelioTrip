@@ -81,18 +81,14 @@ const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => {
 
 const addMobileMoveInput = (
   desired: Vector3,
-  right: Vector3,
   forward: Vector3,
 ): void => {
-  const { x: tx, y: ty } = freeFlightTouchBus.move;
-  const length = Math.hypot(tx, ty);
-  if (length < MOVE_TOUCH_DEADZONE) return;
-  const inv = 1 / length;
-  const nx = tx * inv;
-  const ny = ty * inv;
-  const mag = Math.min(1, (length - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE));
-  desired.addScaledVector(right, nx * mag);
-  desired.addScaledVector(forward, ny * mag);
+  const { y: ty } = freeFlightTouchBus.move;
+  const abs = Math.abs(ty);
+  if (abs < MOVE_TOUCH_DEADZONE) return;
+  const direction = ty < 0 ? -1 : 1;
+  const mag = Math.min(1, (abs - MOVE_TOUCH_DEADZONE) / (1 - MOVE_TOUCH_DEADZONE));
+  desired.addScaledVector(forward, direction * mag);
 };
 
 const addKeyboardMoveInput = (
@@ -288,7 +284,7 @@ export const FreeFlightControls = () => {
       addKeyboardMoveInput(desired, forward, right, input.current);
     }
 
-    if (isMobile) addMobileMoveInput(desired, right, forward);
+    if (isMobile) addMobileMoveInput(desired, forward);
 
     if (desired.lengthSq() > 0) {
       const { boost } = input.current;

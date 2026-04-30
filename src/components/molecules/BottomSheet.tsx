@@ -11,6 +11,8 @@ type BottomSheetProps = {
   readonly onClose: () => void;
   readonly children: ReactNode;
   readonly title?: string;
+  readonly titleLeftAction?: ReactNode;
+  readonly titleRightAction?: ReactNode;
   readonly titleAccentColor?: string | null;
   readonly panelClassName?: string;
   /** When false, scrim does not blur the scene (e.g. planet info over the canvas). */
@@ -35,6 +37,8 @@ export const BottomSheet = ({
   onClose,
   children,
   title,
+  titleLeftAction,
+  titleRightAction,
   titleAccentColor,
   panelClassName,
   blurScrim = true,
@@ -139,9 +143,17 @@ export const BottomSheet = ({
             className="border-b border-white/10 px-4 pb-3 pt-4"
             style={headerStyle}
           >
-            <h2 className="text-base font-semibold tracking-tight text-white">
-              {title}
-            </h2>
+            <div className="flex items-center gap-2">
+              <div className="min-w-4 shrink-0 text-white/85">
+                {titleLeftAction ?? null}
+              </div>
+              <h2 className="min-w-0 flex-1 text-base font-semibold tracking-tight text-white">
+                {title}
+              </h2>
+              <div className="min-w-4 shrink-0 text-white/85">
+                {titleRightAction ?? null}
+              </div>
+            </div>
           </div>
         ) : null}
         <div className="relative">

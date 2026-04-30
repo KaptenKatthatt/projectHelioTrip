@@ -101,6 +101,8 @@ export const sv: Translation = {
     constellationSeasonSpring: "Vår",
     constellationSeasonSummer: "Sommar",
     constellationSeasonAutumn: "Höst",
+    backToConstellationsList: "Tillbaka till listan med stjärnbilder",
+    nextConstellation: "Nästa stjärnbild",
   },
   phase3: {
     dailyChallenge: "Dagens utmaning",
