@@ -4,8 +4,10 @@ import { OrbitControls } from '@react-three/drei/core/OrbitControls';
 import type { ComponentRef } from 'react';
 import { Vector3 } from 'three';
 import { useCloseCinematicBodyEnabled } from '../hooks/useCloseCinematicBodyEnabled';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
+import { applyMobilePlanetScreenLift } from './mobilePlanetFraming';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
 const MAX_DISTANCE_MULTIPLIER = 60;
@@ -15,7 +17,9 @@ type OrbitControlsRef = ComponentRef<typeof OrbitControls>;
 
 export const PlanetOrbitControls = () => {
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const activeBody = useStore((s) => s.activeBody);
+  const isMobileLayout = useIsMobileLayout();
 
   const controlsRef = useRef<OrbitControlsRef>(null);
   const initializedRef = useRef(false);
@@ -55,6 +59,13 @@ export const PlanetOrbitControls = () => {
     if (!controls) return;
 
     getBodyWorldPosition(activeBody, tmpTarget);
+    tmpTarget.y = applyMobilePlanetScreenLift(
+      camera,
+      camera.position.distanceTo(tmpTarget),
+      tmpTarget.y,
+      size,
+      isMobileLayout,
+    );
 
     if (!initializedRef.current) {
       controls.target.copy(tmpTarget);
