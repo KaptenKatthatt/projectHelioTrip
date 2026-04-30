@@ -46,6 +46,8 @@ export const HudDetailRegion = ({
   const setNavigationMode = useStore((s) => s.setNavigationMode);
   const gameMode = useStore((s) => s.gameMode);
   const [planetSheetInitialTab, setPlanetSheetInitialTab] = useState<PanelTab>("info");
+  const showConstellationMiniCard =
+    openNavSheet !== "stars" && selectedConstellation !== null;
 
   if (!mobileLayout) return null;
 
@@ -155,14 +157,19 @@ export const HudDetailRegion = ({
           <PlanetPanel omitHeading defaultTab={planetSheetInitialTab} />
         </div>
       </BottomSheet>
-      {openNavSheet !== "stars" && <ConstellationMiniCard />}
+      {showConstellationMiniCard && <ConstellationMiniCard />}
 
       {gameMode === "explore" && navigationMode !== "free" && (
         <button
           type="button"
           aria-label={t.ui.freeFlight}
           onClick={() => setNavigationMode("free")}
-          className="pointer-events-auto fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-[15] flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95"
+          className={
+            "pointer-events-auto fixed right-4 z-15 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
+            (showConstellationMiniCard
+              ? "bottom-[calc(12.5rem+env(safe-area-inset-bottom))]"
+              : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]")
+          }
         >
           <Rocket className="h-5 w-5" aria-hidden />
         </button>
