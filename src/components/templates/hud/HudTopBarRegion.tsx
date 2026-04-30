@@ -23,9 +23,9 @@ export const HudTopBarRegion = ({
   tagline,
   gameMode,
 }: HudTopBarRegionProps) => {
-  if (mobileLayout) return null;
   const { t } = useTranslation();
   const quizStreakDays = useStore((s) => s.quizStreakDays);
+  if (mobileLayout) return null;
   const accentClass = MODE_ACCENT[gameMode];
   const showXpBadge = gameMode === "learn" || gameMode === "challenge";
 
