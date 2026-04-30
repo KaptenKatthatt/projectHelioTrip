@@ -29,6 +29,7 @@ type HudDetailRegionProps = {
   readonly mobileBodyColor: string | null;
   readonly setMobilePlanetInfoSheetOpen: (open: boolean) => void;
   readonly mobileBottomNav: ReactNode;
+  readonly onBackToConstellationsMenu: () => void;
 };
 
 export const HudDetailRegion = ({
@@ -42,6 +43,7 @@ export const HudDetailRegion = ({
   mobileBodyColor,
   setMobilePlanetInfoSheetOpen,
   mobileBottomNav,
+  onBackToConstellationsMenu,
 }: HudDetailRegionProps) => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const navigationMode = useStore((s) => s.navigationMode);
@@ -173,7 +175,11 @@ export const HudDetailRegion = ({
           <PlanetPanel omitHeading defaultTab={planetSheetInitialTab} />
         </div>
       </BottomSheet>
-      {showConstellationMiniCard && <ConstellationMiniCard />}
+      {showConstellationMiniCard && (
+        <ConstellationMiniCard
+          onBackToConstellationsMenu={onBackToConstellationsMenu}
+        />
+      )}
 
       {showFreeFlightFab && (
         <button

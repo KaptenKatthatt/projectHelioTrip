@@ -26,7 +26,6 @@ export const MobileContextStrip = ({
         locale === "sv" ? "labelSv" : "labelEn"
       ] ?? selectedConstellation)
     : null;
-
   const renderLeft = () => {
     if (selectedConstellation !== null) {
       return (
