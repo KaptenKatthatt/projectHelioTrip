@@ -8,12 +8,14 @@ type MobileContextStripProps = {
   readonly onOpenChallengeSheet: () => void;
   readonly onOpenConstellationsSheet: () => void;
   readonly onBackFromPlanet: () => void;
+  readonly onResetToStart: () => void;
 };
 
 export const MobileContextStrip = ({
   onOpenChallengeSheet,
   onOpenConstellationsSheet,
   onBackFromPlanet,
+  onResetToStart,
 }: MobileContextStripProps) => {
   const { locale, t, bodyName } = useTranslation();
   const activeBody = useStore((s) => s.activeBody);
@@ -51,9 +53,13 @@ export const MobileContextStrip = ({
       );
     }
     return (
-      <span className="text-sm font-semibold tracking-tight text-white/90">
+      <button
+        type="button"
+        onClick={onResetToStart}
+        className="text-sm font-semibold tracking-tight text-white/90 transition hover:text-white"
+      >
         {t.appTitle}
-      </span>
+      </button>
     );
   };
 

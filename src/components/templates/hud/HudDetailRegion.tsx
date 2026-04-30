@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Rocket } from "lucide-react";
+import { ChevronLeft, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
@@ -48,6 +48,16 @@ export const HudDetailRegion = ({
   const [planetSheetInitialTab, setPlanetSheetInitialTab] = useState<PanelTab>("info");
   const showConstellationMiniCard =
     openNavSheet !== "stars" && selectedConstellation !== null;
+  const showFreeFlightFab =
+    gameMode === "explore" &&
+    navigationMode !== "free" &&
+    openNavSheet !== "stars";
+  const showAutopilotFab =
+    gameMode === "explore" &&
+    navigationMode === "free";
+  const floatingButtonBottomClass = showConstellationMiniCard
+    ? "bottom-[calc(12.5rem+env(safe-area-inset-bottom))]"
+    : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]";
 
   if (!mobileLayout) return null;
 
@@ -159,19 +169,27 @@ export const HudDetailRegion = ({
       </BottomSheet>
       {showConstellationMiniCard && <ConstellationMiniCard />}
 
-      {gameMode === "explore" && navigationMode !== "free" && (
+      {showFreeFlightFab && (
         <button
           type="button"
           aria-label={t.ui.freeFlight}
           onClick={() => setNavigationMode("free")}
           className={
-            "pointer-events-auto fixed right-4 z-15 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
-            (showConstellationMiniCard
-              ? "bottom-[calc(12.5rem+env(safe-area-inset-bottom))]"
-              : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]")
+            "pointer-events-auto fixed right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 " +
+            floatingButtonBottomClass
           }
         >
           <Rocket className="h-5 w-5" aria-hidden />
+        </button>
+      )}
+      {showAutopilotFab && (
+        <button
+          type="button"
+          aria-label={t.ui.autopilot}
+          onClick={() => setNavigationMode("cinematic")}
+          className="pointer-events-auto fixed right-4 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95"
+        >
+          <ChevronLeft className="h-5 w-5" aria-hidden />
         </button>
       )}
     </>

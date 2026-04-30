@@ -43,6 +43,7 @@ export const HUD = () => {
     (s) => s.setMobilePlanetInfoSheetOpen,
   );
   const setActiveBody = useStore((s) => s.setActiveBody);
+  const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
 
   useEffect(() => {
     if (!mobileLayout) {
@@ -85,6 +86,12 @@ export const HUD = () => {
     setActiveBody(null);
   };
 
+  const handleResetToStart = (): void => {
+    closeNavSheets();
+    setMobilePlanetInfoSheetOpen(false);
+    resetSolarSystemStart();
+  };
+
   return (
     <div
       className={
@@ -101,6 +108,7 @@ export const HUD = () => {
           onOpenChallengeSheet={() => handleToggleNavSheet("challenge")}
           onOpenConstellationsSheet={() => handleToggleNavSheet("stars")}
           onBackFromPlanet={handleBackFromPlanet}
+          onResetToStart={handleResetToStart}
         />
       )}
       <HudTopBarRegion

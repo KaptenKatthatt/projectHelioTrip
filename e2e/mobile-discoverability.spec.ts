@@ -35,13 +35,28 @@ test("free-flight FAB and more sheet content", async ({ page }) => {
 
   const freeFlightFab = page.getByRole("button", { name: "Flyg fritt" });
   await expect(freeFlightFab).toBeVisible();
-  await freeFlightFab.dispatchEvent("click");
+  await freeFlightFab.click();
   await expect(page.getByText("Använd spakarna för att flyga och titta")).toBeVisible();
+  const autopilotFab = page.getByRole("button", { name: "Autopilot" });
+  await expect(autopilotFab).toBeVisible();
+  await autopilotFab.click();
+  await expect(page.getByRole("button", { name: "Flyg fritt" })).toBeVisible();
 
   await page.getByRole("button", { name: "Mer" }).click();
   const moreSheet = page.getByRole("dialog", { name: "Mer" });
   await expect(moreSheet).toBeVisible();
   await expect(moreSheet.getByRole("button", { name: "Flyg fritt" })).toHaveCount(0);
+});
+
+test("free-flight FAB is hidden while stars sheet is open", async ({ page }) => {
+  await bootstrapMobileSv(page);
+
+  const freeFlightFab = page.getByRole("button", { name: "Flyg fritt" });
+  await expect(freeFlightFab).toBeVisible();
+
+  await page.getByRole("button", { name: "Stjärnor" }).click();
+  await expect(page.getByRole("dialog", { name: "Stjärnbilder" })).toBeVisible();
+  await expect(freeFlightFab).toHaveCount(0);
 });
 
 test("stars sheet closes on pick and opens mini-card story", async ({ page }) => {
@@ -59,4 +74,15 @@ test("stars sheet closes on pick and opens mini-card story", async ({ page }) =>
   await expect(miniCard).toBeVisible();
   await miniCard.click();
   await expect(page.getByRole("tab", { name: "Berättelse" }).first()).toBeVisible();
+});
+
+test("tapping HelioTrip logo resets back to autopilot start view", async ({ page }) => {
+  await bootstrapMobileSv(page);
+
+  await page.getByRole("button", { name: "Flyg fritt" }).click();
+  await expect(page.getByRole("button", { name: "Autopilot" })).toBeVisible();
+
+  await page.getByRole("button", { name: "HelioTrip" }).click();
+  await expect(page.getByRole("button", { name: "Autopilot" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Flyg fritt" })).toBeVisible();
 });
