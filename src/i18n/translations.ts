@@ -62,7 +62,6 @@ export type Translation = {
     minimizePanel: string;
     expandPanel: string;
     bodyInfo: string;
-    bodyInfoShort: string;
     timeControls: string;
     start: string;
     aboutOpen: string;
@@ -77,15 +76,17 @@ export type Translation = {
     footerLinkGithub: string;
     bottomNavStars: string;
     bottomNavMore: string;
+    constellationCollection: string;
+    constellationUnknownLabel: string;
     constellationSeasonYearRound: string;
     constellationSeasonWinter: string;
     constellationSeasonSpring: string;
     constellationSeasonSummer: string;
     constellationSeasonAutumn: string;
-    constellationCollection: string;
-    constellationUnknownLabel: string;
   };
   phase3: {
+    dailyChallenge: string;
+    unvisitedBodies: string;
     gameMode: {
       label: string;
       explore: string;
@@ -103,18 +104,14 @@ export type Translation = {
       stepCompleted: string;
       missionCompleted: string;
       abandon: string;
+      abandonConfirm: string;
+      abandonCancel: string;
       backToExplore: string;
-      dailyChallenge: string;
-      startDailyChallenge: string;
-      confirmLeaveMission: string;
-      confirmAbandonMission: string;
-      confirmAction: string;
-      cancelAction: string;
+      backToExploreConfirm: string;
     };
     progressPanel: {
       title: string;
       visited: string;
-      missingBodies: string;
       achievementsTitle: string;
       noAchievements: string;
     };
@@ -146,10 +143,8 @@ export type Translation = {
   learn: {
     ui: {
       factsTab: string;
-      factsTabShort: string;
       learnMoreTab: string;
       compareSize: string;
-      compareSizeShort: string;
       testYourself: string;
       levelMiddle: string;
       levelUpper: string;
@@ -167,16 +162,17 @@ export type Translation = {
       xpPoints: string;
       levelUp: string;
       noFactCards: string;
+      quizFillPlaceholder: string;
+      quizSubmit: string;
+      railToggleOpen: string;
+      railToggleClose: string;
+      viewFactsForBody: string;
+      selectBodyForFacts: string;
+      streakLabel: string;
+      patienceReward: string;
       xpToastLabel: string;
       learningStreakLabel: string;
       learningStreakResetHint: string;
-      patienceReward: string;
-      quizFillPlaceholder: string;
-      quizSubmit: string;
-      openFactsCta: string;
-      selectPlanetForFacts: string;
-      railToggleOpen: string;
-      railToggleClose: string;
     };
     xpTitles: {
       rookie: string;

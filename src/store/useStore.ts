@@ -49,18 +49,6 @@ type RecentAchievement = {
   readonly unlockedAtMs: number;
 };
 
-type RecentXpGain = {
-  readonly amount: number;
-  readonly awardedAtMs: number;
-};
-
-const getLocalDayKey = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
 type SimulationState = {
   activeBody: BodyId | null;
   cameraPosition: Vector3;
@@ -74,7 +62,6 @@ type SimulationState = {
   locale: Locale;
   navigationMode: NavigationMode;
   selectedConstellation: ConstellationId | null;
-  discoveredConstellations: ReadonlyArray<ConstellationId>;
   constellationLinesVisible: boolean;
   /**
    * Extra spin (rad) around the celestial radial through the constellation center;
@@ -89,7 +76,6 @@ type SimulationState = {
   visitedBodies: ReadonlyArray<BodyId>;
   unlockedAchievements: ReadonlyArray<AchievementId>;
   recentAchievement: RecentAchievement | null;
-  recentXpGain: RecentXpGain | null;
   /** Mobile-only: planet info bottom sheet open (not persisted). */
   mobilePlanetInfoSheetOpen: boolean;
   // Learning mode additions
@@ -97,14 +83,20 @@ type SimulationState = {
   xp: number;
   title: TitleId;
   completedQuizzes: Readonly<Record<string, number>>;
-  learningStreakDays: number;
-  lastLearningActiveDay: string | null;
-  patienceRewardDayKey: string | null;
-  patienceRewardBodyIds: ReadonlyArray<BodyId>;
   /** Quiz id waiting to be presented as an overlay (not persisted). */
   pendingQuizId: string | null;
+  /** XP amount from last awardXp call in learn/challenge mode (not persisted). */
+  recentXpGain: number | null;
   /** Desktop left navigation rail open state. */
   leftRailOpen: boolean;
+  /** Last rewarded day key per body for patience reward gating. */
+  patienceRewardedOnByBody: Readonly<Partial<Record<BodyId, string>>>;
+  /** Current daily quiz streak count. */
+  quizStreakDays: number;
+  /** Last date key (YYYY-MM-DD) when a quiz was completed. */
+  lastQuizCompletedOn: string | null;
+  /** Constellations the user has discovered at least once. */
+  discoveredConstellations: ReadonlyArray<ConstellationId>;
 };
 
 type SimulationActions = {
@@ -132,17 +124,18 @@ type SimulationActions = {
   startMission: (missionId: string) => void;
   abandonMission: () => void;
   acknowledgeAchievement: () => void;
-  acknowledgeXpGain: () => void;
   restoreFromShareLink: (state: ShareLinkState) => void;
   setMobilePlanetInfoSheetOpen: (open: boolean) => void;
   // Learning mode additions
   setLearningLevel: (level: FactCardLevel) => void;
   awardXp: (amount: number) => void;
   recordQuizResult: (quizId: string, stars: number) => void;
-  claimPatienceReward: (bodyId: BodyId) => boolean;
   triggerQuiz: (quizId: string) => void;
   dismissQuiz: () => void;
+  acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
+  claimPatienceReward: (bodyId: BodyId) => boolean;
+  maybeRewardBodyPatience: () => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -154,16 +147,44 @@ type PersistedState = {
   gameMode: GameMode;
   missionProgress: Record<string, MissionProgress>;
   visitedBodies: BodyId[];
-  discoveredConstellations: ConstellationId[];
   unlockedAchievements: AchievementId[];
   learningLevel: FactCardLevel;
   xp: number;
   completedQuizzes: Record<string, number>;
-  learningStreakDays: number;
-  lastLearningActiveDay: string | null;
-  patienceRewardDayKey: string | null;
-  patienceRewardBodyIds: BodyId[];
   leftRailOpen: boolean;
+  patienceRewardedOnByBody: Partial<Record<BodyId, string>>;
+  quizStreakDays: number;
+  lastQuizCompletedOn: string | null;
+  discoveredConstellations: ConstellationId[];
+};
+
+const dateKeyFromLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const todayDateKey = (): string => dateKeyFromLocalDate(new Date());
+
+const parseDateKeyToUtcMs = (dateKey: string): number | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return Date.UTC(year, month - 1, day);
+};
+
+const daysBetweenDateKeys = (previousKey: string, nextKey: string): number => {
+  const previousUtc = parseDateKeyToUtcMs(previousKey);
+  const nextUtc = parseDateKeyToUtcMs(nextKey);
+  if (previousUtc === null || nextUtc === null) return Number.POSITIVE_INFINITY;
+  return Math.round((nextUtc - previousUtc) / 86_400_000);
 };
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
@@ -211,18 +232,14 @@ const sanitizeVisitedBodies = (raw: unknown): BodyId[] => {
   return raw.filter((value): value is BodyId => typeof value === "string");
 };
 
-const sanitizeDiscoveredConstellations = (
-  raw: unknown,
-): ConstellationId[] => {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(
-    (value): value is ConstellationId => typeof value === "string",
-  );
-};
-
 const sanitizeAchievements = (raw: unknown): AchievementId[] => {
   if (!Array.isArray(raw)) return [];
   return raw.filter(isAchievementId);
+};
+
+const sanitizeDiscoveredConstellations = (raw: unknown): ConstellationId[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((value): value is ConstellationId => typeof value === "string");
 };
 
 const applyMissionEventProgress = (
@@ -396,7 +413,6 @@ export const useStore = create<Store>()(
       locale: detectLocale(),
       navigationMode: "cinematic",
       selectedConstellation: null,
-      discoveredConstellations: [],
       constellationLinesVisible: true,
       constellationUserSpinRad: 0,
       skyFocusId: 0,
@@ -406,18 +422,18 @@ export const useStore = create<Store>()(
       visitedBodies: [],
       unlockedAchievements: [],
       recentAchievement: null,
-      recentXpGain: null,
       mobilePlanetInfoSheetOpen: false,
       learningLevel: "middle",
       xp: 0,
       title: "rookie",
       completedQuizzes: {},
-      learningStreakDays: 0,
-      lastLearningActiveDay: null,
-      patienceRewardDayKey: null,
-      patienceRewardBodyIds: [],
       pendingQuizId: null,
+      recentXpGain: null,
       leftRailOpen: true,
+      patienceRewardedOnByBody: {},
+      quizStreakDays: 0,
+      lastQuizCompletedOn: null,
+      discoveredConstellations: [],
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -537,10 +553,10 @@ export const useStore = create<Store>()(
             state.selectedConstellation === null &&
             (state.viewMode !== "overview" || state.activeBody !== null);
           return {
-            selectedConstellation: id,
             discoveredConstellations: state.discoveredConstellations.includes(id)
               ? state.discoveredConstellations
               : [...state.discoveredConstellations, id],
+            selectedConstellation: id,
             constellationUserSpinRad: keepPose
               ? state.constellationUserSpinRad
               : 0,
@@ -608,7 +624,6 @@ export const useStore = create<Store>()(
       },
 
       acknowledgeAchievement: () => set({ recentAchievement: null }),
-      acknowledgeXpGain: () => set({ recentXpGain: null }),
 
       setMobilePlanetInfoSheetOpen: (open) =>
         set({ mobilePlanetInfoSheetOpen: open }),
@@ -622,11 +637,8 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
-          return {
-            xp: nextXp,
-            title: nextTitle,
-            recentXpGain: { amount, awardedAtMs: Date.now() },
-          };
+          const showGain = state.gameMode !== "explore";
+          return { xp: nextXp, title: nextTitle, recentXpGain: showGain ? amount : null };
         }),
 
       recordQuizResult: (quizId, stars) => {
@@ -643,52 +655,60 @@ export const useStore = create<Store>()(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
-          const todayKey = getLocalDayKey(new Date());
-          const previousKey = state.lastLearningActiveDay;
-          let nextStreakDays = state.learningStreakDays;
-          if (previousKey === todayKey) {
-            nextStreakDays = state.learningStreakDays;
-          } else if (previousKey) {
-            const previousDate = new Date(`${previousKey}T00:00:00`);
-            const currentDate = new Date(`${todayKey}T00:00:00`);
-            const diffDays = Math.round(
-              (currentDate.getTime() - previousDate.getTime()) / 86_400_000,
-            );
-            nextStreakDays = diffDays === 1 ? state.learningStreakDays + 1 : 1;
-          } else {
-            nextStreakDays = 1;
-          }
+          const today = todayDateKey();
+          const previousDay = state.lastQuizCompletedOn;
+          const dayDelta = previousDay ? daysBetweenDateKeys(previousDay, today) : null;
+          const nextStreak =
+            dayDelta === null
+              ? 1
+              : dayDelta === 0
+                ? state.quizStreakDays
+                : dayDelta === 1
+                  ? state.quizStreakDays + 1
+                  : 1;
+
           return {
             completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
             xp: nextXp,
             title: nextTitle,
-            recentXpGain: { amount: xpAmount, awardedAtMs: Date.now() },
-            learningStreakDays: nextStreakDays,
-            lastLearningActiveDay: todayKey,
+            recentXpGain: xpAmount,
+            quizStreakDays: nextStreak,
+            lastQuizCompletedOn: today,
           };
         });
         dispatchDomainEvent({ kind: "quiz_completed", quizId });
-      },
-
-      claimPatienceReward: (bodyId) => {
-        const state = useStore.getState();
-        const todayKey = getLocalDayKey(new Date());
-        const rewardDayMatches = state.patienceRewardDayKey === todayKey;
-        const rewardedBodyIds = rewardDayMatches ? state.patienceRewardBodyIds : [];
-        if (rewardedBodyIds.includes(bodyId)) return false;
-        set({
-          patienceRewardDayKey: todayKey,
-          patienceRewardBodyIds: [...rewardedBodyIds, bodyId],
-        });
-        return true;
       },
 
       triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
 
       dismissQuiz: () => set({ pendingQuizId: null }),
 
+      acknowledgeXpGain: () => set({ recentXpGain: null }),
+
       toggleLeftRail: () =>
         set((state) => ({ leftRailOpen: !state.leftRailOpen })),
+
+      claimPatienceReward: (bodyId) => {
+        const state = useStore.getState();
+        if (state.gameMode === "explore") return false;
+        const today = todayDateKey();
+        if (state.patienceRewardedOnByBody[bodyId] === today) return false;
+        useStore.getState().awardXp(XP_AWARDS.bodyPatience);
+        set({
+          patienceRewardedOnByBody: {
+            ...state.patienceRewardedOnByBody,
+            [bodyId]: today,
+          },
+        });
+        return true;
+      },
+
+      maybeRewardBodyPatience: () => {
+        const state = useStore.getState();
+        const bodyId = state.activeBody;
+        if (!bodyId) return;
+        useStore.getState().claimPatienceReward(bodyId);
+      },
 
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
@@ -705,16 +725,15 @@ export const useStore = create<Store>()(
         gameMode: state.gameMode,
         missionProgress: { ...state.missionProgress },
         visitedBodies: [...state.visitedBodies],
-        discoveredConstellations: [...state.discoveredConstellations],
         unlockedAchievements: [...state.unlockedAchievements],
         learningLevel: state.learningLevel,
         xp: state.xp,
         completedQuizzes: { ...state.completedQuizzes },
-        learningStreakDays: state.learningStreakDays,
-        lastLearningActiveDay: state.lastLearningActiveDay,
-        patienceRewardDayKey: state.patienceRewardDayKey,
-        patienceRewardBodyIds: [...state.patienceRewardBodyIds],
         leftRailOpen: state.leftRailOpen,
+        patienceRewardedOnByBody: { ...state.patienceRewardedOnByBody },
+        quizStreakDays: state.quizStreakDays,
+        lastQuizCompletedOn: state.lastQuizCompletedOn,
+        discoveredConstellations: [...state.discoveredConstellations],
       }),
       merge: (persisted, current): Store => {
         const p = persisted as Partial<PersistedState> | undefined;
@@ -733,9 +752,6 @@ export const useStore = create<Store>()(
           gameMode: isGameMode(p?.gameMode) ? p.gameMode : current.gameMode,
           missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
-          discoveredConstellations: sanitizeDiscoveredConstellations(
-            p?.discoveredConstellations,
-          ),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),
           learningLevel: sanitizedLevel,
           xp: sanitizedXp,
@@ -744,20 +760,17 @@ export const useStore = create<Store>()(
             typeof p?.completedQuizzes === "object" && p.completedQuizzes !== null
               ? (p.completedQuizzes as Record<string, number>)
               : {},
-          learningStreakDays:
-            typeof p?.learningStreakDays === "number" && p.learningStreakDays >= 0
-              ? p.learningStreakDays
-              : 0,
-          lastLearningActiveDay:
-            typeof p?.lastLearningActiveDay === "string"
-              ? p.lastLearningActiveDay
-              : null,
-          patienceRewardDayKey:
-            typeof p?.patienceRewardDayKey === "string"
-              ? p.patienceRewardDayKey
-              : null,
-          patienceRewardBodyIds: sanitizeVisitedBodies(p?.patienceRewardBodyIds),
           leftRailOpen: typeof p?.leftRailOpen === "boolean" ? p.leftRailOpen : true,
+          patienceRewardedOnByBody:
+            typeof p?.patienceRewardedOnByBody === "object" && p.patienceRewardedOnByBody !== null
+              ? (p.patienceRewardedOnByBody as Partial<Record<BodyId, string>>)
+              : {},
+          quizStreakDays: typeof p?.quizStreakDays === "number" ? p.quizStreakDays : 0,
+          lastQuizCompletedOn:
+            typeof p?.lastQuizCompletedOn === "string" ? p.lastQuizCompletedOn : null,
+          discoveredConstellations: sanitizeDiscoveredConstellations(
+            p?.discoveredConstellations,
+          ),
         };
       },
     },

@@ -1,14 +1,16 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
 import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
+import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { LanguageToggle } from "../../molecules/LanguageToggle";
 import { FlightModeToggle } from "../../molecules/FlightModeToggle";
 import { AboutDialog } from "../../organisms/AboutDialog";
 import { ConstellationList } from "../../organisms/ConstellationList";
 import { MissionCard } from "../../organisms/MissionCard";
-import { PlanetPanel } from "../../organisms/PlanetPanel";
+import { PlanetPanel, type PanelTab } from "../../organisms/PlanetPanel";
 import { PlanetSelector } from "../../organisms/PlanetSelector";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
 import { useStore } from "../../../store/useStore";
@@ -39,11 +41,20 @@ export const HudDetailRegion = ({
   mobileBottomNav,
 }: HudDetailRegionProps) => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const [planetPanelForcedTab, setPlanetPanelForcedTab] = useState<
-    "info" | "facts" | "compare" | null
-  >(null);
-  const [planetPanelRenderKey, setPlanetPanelRenderKey] = useState(0);
+  const [planetSheetInitialTab, setPlanetSheetInitialTab] = useState<PanelTab>("info");
+
   if (!mobileLayout) return null;
+
+  const handleOpenFactsSheet = (): void => {
+    setPlanetSheetInitialTab("facts");
+    closeNavSheets();
+    setMobilePlanetInfoSheetOpen(true);
+  };
+
+  const handleClosePlanetSheet = (): void => {
+    setMobilePlanetInfoSheetOpen(false);
+    setPlanetSheetInitialTab("info");
+  };
 
   return (
     <>
@@ -85,24 +96,20 @@ export const HudDetailRegion = ({
         onClose={closeNavSheets}
         title={t.phase3.gameMode.learn}
       >
-        <div className="p-3 space-y-3">
+        <div className="flex flex-col gap-3 p-3">
+          <DailyChallengeCard />
           <MissionCard compact className="w-full" />
           {showPlanetInfoUi ? (
             <button
               type="button"
-              onClick={() => {
-                setPlanetPanelForcedTab("facts");
-                setPlanetPanelRenderKey((prev) => prev + 1);
-                closeNavSheets();
-                setMobilePlanetInfoSheetOpen(true);
-              }}
-              className="w-full rounded-xl border border-cyan-300/35 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/20"
+              className="pointer-events-auto w-full rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-left text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+              onClick={handleOpenFactsSheet}
             >
-              {t.learn.ui.openFactsCta}
+              {t.learn.ui.viewFactsForBody.replace("{body}", mobileBodyTitle)}
             </button>
           ) : (
-            <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
-              {t.learn.ui.selectPlanetForFacts}
+            <p className="text-xs text-white/40">
+              {t.learn.ui.selectBodyForFacts}
             </p>
           )}
         </div>
@@ -132,7 +139,7 @@ export const HudDetailRegion = ({
 
       <BottomSheet
         open={planetSheetOpen && showPlanetInfoUi}
-        onClose={() => setMobilePlanetInfoSheetOpen(false)}
+        onClose={handleClosePlanetSheet}
         title={mobileBodyTitle}
         titleAccentColor={mobileBodyColor}
         blurScrim={false}
@@ -142,11 +149,7 @@ export const HudDetailRegion = ({
         panelClassName="max-h-[min(92dvh,40rem)]"
       >
         <div className="p-3 pt-0">
-          <PlanetPanel
-            key={planetPanelRenderKey}
-            omitHeading
-            initialTab={planetPanelForcedTab ?? "info"}
-          />
+          <PlanetPanel omitHeading defaultTab={planetSheetInitialTab} />
         </div>
       </BottomSheet>
     </>

@@ -29,6 +29,7 @@ export const XP_TITLES: ReadonlyArray<XpTitle> = [
 
 export const XP_AWARDS = {
   bodyVisited: 10,
+  bodyPatience: 15,
   missionStepCompleted: 15,
   quizThreeStars: 30,
   quizTwoStars: 20,

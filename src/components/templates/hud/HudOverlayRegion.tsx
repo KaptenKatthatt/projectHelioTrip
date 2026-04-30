@@ -1,15 +1,13 @@
 import { AchievementToast } from "../../AchievementToast";
-import { DrAstraPromptToast } from "../../DrAstraPromptToast";
-import { PlanetPatienceRewardToast } from "../../PlanetPatienceRewardToast";
-import { XpGainToast } from "../../XpGainToast";
+import { PatienceRewardEffect } from "../../PatienceRewardEffect";
+import { XpToast } from "../../XpToast";
 import { QuizOverlay } from "../../organisms/QuizOverlay";
 
 export const HudOverlayRegion = () => (
   <>
     <AchievementToast />
-    <XpGainToast />
-    <PlanetPatienceRewardToast />
-    <DrAstraPromptToast />
+    <XpToast />
     <QuizOverlay />
+    <PatienceRewardEffect />
   </>
 );

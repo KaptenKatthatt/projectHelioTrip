@@ -9,6 +9,7 @@ export const XpBadge = ({ className }: Props) => {
   const xp = useStore((s) => s.xp);
   const title = useStore((s) => s.title);
   const { t } = useTranslation();
+
   const titleLabel = t.learn.xpTitles[title];
 
   return (

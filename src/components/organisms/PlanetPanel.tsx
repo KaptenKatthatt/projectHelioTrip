@@ -29,11 +29,11 @@ type Row = {
   value: string;
 };
 
-type PanelTab = "info" | "facts" | "compare";
+export type PanelTab = "info" | "facts" | "compare";
 
 type PlanetPanelProps = {
   readonly omitHeading?: boolean;
-  readonly initialTab?: PanelTab;
+  readonly defaultTab?: PanelTab;
 };
 
 const DISTANCE_SAMPLE_MS = 160;
@@ -120,15 +120,12 @@ const formatOrbitPeriod = (
   return parts.join(" ");
 };
 
-export const PlanetPanel = ({
-  omitHeading = false,
-  initialTab = "info",
-}: PlanetPanelProps) => {
+export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
   const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
 
-  const [activeTab, setActiveTab] = useState<PanelTab>(initialTab);
+  const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
@@ -269,17 +266,12 @@ export const PlanetPanel = ({
   const name = bodyName(activeBody);
 
   const showLearnTab = gameMode === "learn" || gameMode === "challenge";
-  const infoTabLabel = mobileLayout ? t.ui.bodyInfoShort : t.ui.bodyInfo;
-  const factsTabLabel = mobileLayout ? t.learn.ui.factsTabShort : t.learn.ui.factsTab;
-  const compareTabLabel = mobileLayout
-    ? t.learn.ui.compareSizeShort
-    : t.learn.ui.compareSize;
   const tabs: Array<{ id: PanelTab; label: string }> = [
-    { id: "info", label: infoTabLabel },
+    { id: "info", label: t.ui.bodyInfo },
     ...(showLearnTab
       ? [
-          { id: "facts" as PanelTab, label: factsTabLabel },
-          { id: "compare" as PanelTab, label: compareTabLabel },
+          { id: "facts" as PanelTab, label: t.learn.ui.factsTab },
+          { id: "compare" as PanelTab, label: t.learn.ui.compareSize },
         ]
       : []),
   ];

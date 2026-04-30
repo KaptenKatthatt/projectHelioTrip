@@ -1,6 +1,7 @@
+import { Flame } from "lucide-react";
 import type { GameMode } from "../../../lib/missions/types";
-import { LearningStreakBadge } from "../../atoms/LearningStreakBadge";
-import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
+import { useTranslation } from "../../../hooks/useTranslation";
+import { useStore } from "../../../store/useStore";
 import { XpBadge } from "../../atoms/XpBadge";
 
 type HudTopBarRegionProps = {
@@ -11,9 +12,9 @@ type HudTopBarRegionProps = {
 };
 
 const MODE_ACCENT: Record<GameMode, string> = {
-  explore: "bg-white/30",
-  learn: "bg-cyan-300",
-  challenge: "bg-emerald-300",
+  explore: "",
+  learn: "bg-cyan-400",
+  challenge: "bg-emerald-400",
 };
 
 export const HudTopBarRegion = ({
@@ -22,6 +23,8 @@ export const HudTopBarRegion = ({
   tagline,
   gameMode,
 }: HudTopBarRegionProps) => {
+  const { t } = useTranslation();
+  const quizStreakDays = useStore((s) => s.quizStreakDays);
   const accentClass = MODE_ACCENT[gameMode];
   const showXpBadge = gameMode === "learn" || gameMode === "challenge";
 
@@ -48,8 +51,17 @@ export const HudTopBarRegion = ({
         </div>
 
         {showXpBadge ? (
-          <div className="flex items-center gap-2">
-            <LearningStreakBadge />
+          <div className="pointer-events-auto flex items-center gap-2">
+            {quizStreakDays > 0 ? (
+              <div
+                className="flex items-center gap-1 rounded-xl border border-amber-300/35 bg-amber-300/10 px-2 py-1 text-xs text-amber-100"
+                aria-label={`${t.learn.ui.streakLabel}: ${quizStreakDays}`}
+                title={`${t.learn.ui.streakLabel}: ${quizStreakDays}`}
+              >
+                <Flame className="h-4 w-4" aria-hidden />
+                <span className="font-semibold">{quizStreakDays}</span>
+              </div>
+            ) : null}
             <XpBadge />
           </div>
         ) : null}
@@ -58,15 +70,12 @@ export const HudTopBarRegion = ({
       {accentClass && (
         <div
           className={[
-            "h-1 w-full rounded-full opacity-90 transition-all duration-500",
+            "h-0.5 w-full rounded-full opacity-70 transition-all duration-500",
             accentClass,
           ].join(" ")}
           aria-hidden="true"
         />
       )}
-      <div className="flex justify-start">
-        <SpaceWeatherBadge />
-      </div>
     </div>
   );
 };

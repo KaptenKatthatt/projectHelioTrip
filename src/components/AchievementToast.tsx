@@ -23,7 +23,7 @@ export const AchievementToast = () => {
       aria-live="polite"
       className="pointer-events-auto fixed left-1/2 top-4 z-30 -translate-x-1/2 rounded-full border border-emerald-300/40 bg-emerald-300/15 px-4 py-2 text-sm font-medium text-emerald-100 shadow-lg backdrop-blur-md"
     >
-      <span className="mr-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
+      <span className="mr-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
         {t.phase3.achievements.unlocked}
       </span>
       {t.phase3.achievements[recent.id]}
