@@ -126,4 +126,19 @@ describe("useStore", () => {
     expect(state.skyFocusId).toBe(beforeSkyFocusId + 1);
     expect(spies.constellationOpened).toHaveBeenCalledWith("orion");
   });
+
+  it("focusSkyTarget from close mode does not trigger CameraManager travel arc", async () => {
+    const { useStore } = await loadStore();
+
+    useStore.getState().travelTo("earth");
+    const beforeTravelId = useStore.getState().travelId;
+
+    useStore.getState().focusSkyTarget("orion");
+
+    const state = useStore.getState();
+    expect(state.viewMode).toBe("overview");
+    expect(state.activeBody).toBe("earth");
+    expect(state.selectedConstellation).toBe("orion");
+    expect(state.travelId).toBe(beforeTravelId);
+  });
 });

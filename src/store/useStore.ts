@@ -543,16 +543,6 @@ export const useStore = create<Store>()(
             analytics.constellationOpened(id);
           }
           const keepPose = state.selectedConstellation === id;
-          /**
-           * Only bump `travelId` when we actually need CameraManager’s overview
-           * travel (e.g. from a planet close-up). If we’re already in cinematic
-           * overview with no body, starting that ~5s spring would let
-           * CameraManager take the camera back after SkyFocus ends and the
-           * constellation would leave the frame.
-           */
-          const needsOverviewCameraTravel =
-            state.selectedConstellation === null &&
-            (state.viewMode !== "overview" || state.activeBody !== null);
           return {
             discoveredConstellations: state.discoveredConstellations.includes(id)
               ? state.discoveredConstellations
@@ -564,9 +554,9 @@ export const useStore = create<Store>()(
             isPlaying: false,
             isTraveling: !keepPose,
             viewMode: "overview",
-            travelId: needsOverviewCameraTravel
-              ? state.travelId + 1
-              : state.travelId,
+            // SkyFocusCamera owns constellation transitions. Incrementing `travelId`
+            // here would also start CameraManager travel and create competing camera writes.
+            travelId: state.travelId,
             navigationMode: "cinematic",
             skyFocusId: keepPose ? state.skyFocusId : state.skyFocusId + 1,
           };
