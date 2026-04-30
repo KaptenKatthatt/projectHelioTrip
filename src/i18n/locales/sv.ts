@@ -75,7 +75,7 @@ export const sv: Translation = {
     rotateConstellationRight: "Rotera stjärnbilden medurs",
     minimizePanel: "Minimera panel",
     expandPanel: "Visa panel",
-    bodyInfo: "Mer information",
+    bodyInfo: "Info",
     timeControls: "Tid",
     start: "Start",
     aboutOpen: "Om appen",
@@ -117,7 +117,9 @@ export const sv: Translation = {
       stepProgress: "Steg {current}/{total}",
       stepCompleted: "Steg klart",
       missionCompleted: "Uppdrag klart!",
-      abandon: "Avbryt",
+      abandon: "Avbryt uppdrag",
+      abandonConfirm: "Ja, avbryt",
+      abandonCancel: "Fortsätt",
       backToExplore: "Till Utforska",
     },
     progressPanel: {
@@ -194,7 +196,7 @@ export const sv: Translation = {
     ui: {
       factsTab: "Fakta",
       learnMoreTab: "Lär dig mer",
-      compareSize: "Jämför storlek",
+      compareSize: "Jämför",
       testYourself: "Testa dig själv →",
       levelMiddle: "Mellanstadiet",
       levelUpper: "Högstadiet",

@@ -45,53 +45,60 @@ export const HudPrimaryNavRegion = ({
     >
       <FreeFlightMobileControls />
       {!mobileLayout ? <NavigationAccordion /> : null}
-      <div
-        className={
-          mobileLayout
-            ? "hidden"
-            : "flex max-h-[calc(100dvh-8rem)] w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
-        }
-      >
-        {selectedConstellation !== null && !showPlanetInfoUi ? (
-          <ConstellationStoryCard />
-        ) : null}
-        {showPlanetInfoUi ? (
-          <CollapsibleHudPanel
-            key={activeBody}
-            title={mobileBodyTitle}
-            collapsedTitlePrefix={
-              mobileBodyColor ? (
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
-                  style={{ backgroundColor: mobileBodyColor }}
-                />
-              ) : null
-            }
-            className="relative w-full max-w-sm"
-            defaultCollapsed
-            collapseLabel={minimizePanelLabel}
-            expandLabel={expandPanelLabel}
-            collapseOnExpandedHeaderClick
-          >
-            <PlanetPanel />
-          </CollapsibleHudPanel>
-        ) : null}
-        {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
-          <MissionCard className="w-full max-w-sm" />
-        ) : null}
-        {showPlanetInfoUi || selectedConstellation === null ? (
-          <CollapsibleHudPanel
-            title={progressTitle}
-            className="relative w-full max-w-sm"
-            collapseLabel={minimizePanelLabel}
-            expandLabel={expandPanelLabel}
-          >
-            {({ expandedCloseToggle }) => (
-              <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
-            )}
-          </CollapsibleHudPanel>
-        ) : null}
-        <FreeFlightHelp />
+      <div className={mobileLayout ? "hidden" : "relative sm:w-auto"}>
+        <div
+          className={
+            mobileLayout
+              ? "hidden"
+              : "flex max-h-[calc(100dvh-8rem)] w-full flex-col items-stretch gap-3 overflow-y-auto pr-1 sm:w-auto sm:items-end"
+          }
+        >
+          {selectedConstellation !== null && !showPlanetInfoUi ? (
+            <ConstellationStoryCard />
+          ) : null}
+          {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+            <MissionCard className="w-full max-w-sm" />
+          ) : null}
+          {showPlanetInfoUi ? (
+            <CollapsibleHudPanel
+              key={activeBody}
+              title={mobileBodyTitle}
+              collapsedTitlePrefix={
+                mobileBodyColor ? (
+                  <span
+                    className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
+                    style={{ backgroundColor: mobileBodyColor }}
+                  />
+                ) : null
+              }
+              className="relative w-full max-w-sm"
+              defaultCollapsed
+              collapseLabel={minimizePanelLabel}
+              expandLabel={expandPanelLabel}
+              collapseOnExpandedHeaderClick
+            >
+              <PlanetPanel />
+            </CollapsibleHudPanel>
+          ) : null}
+          {showPlanetInfoUi || selectedConstellation === null ? (
+            <CollapsibleHudPanel
+              title={progressTitle}
+              className="relative w-full max-w-sm"
+              defaultCollapsed
+              collapseLabel={minimizePanelLabel}
+              expandLabel={expandPanelLabel}
+            >
+              {({ expandedCloseToggle }) => (
+                <ProgressPanel showTitle={false} visitedRowEnd={expandedCloseToggle} />
+              )}
+            </CollapsibleHudPanel>
+          ) : null}
+          <FreeFlightHelp />
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl bg-gradient-to-t from-black/30 to-transparent"
+        />
       </div>
     </div>
   </>

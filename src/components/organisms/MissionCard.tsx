@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Translation } from "../../i18n/translations";
 import {
   MISSION_DEFINITIONS,
@@ -70,6 +70,7 @@ export const MissionCard = ({
   compact = false,
 }: MissionCardProps) => {
   const { t } = useTranslation();
+  const [pendingAbandon, setPendingAbandon] = useState(false);
   const gameMode = useStore((s) => s.gameMode);
   const activeMissionId = useStore((s) => s.activeMissionId);
   const missionProgress = useStore((s) => s.missionProgress);
@@ -99,7 +100,7 @@ export const MissionCard = ({
   if (!activeMission || !activeProgress) {
     return (
       <aside className={`${cardBase} ${className ?? ""}`.trim()}>
-        <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+        <h3 className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/45">
           {t.phase3.missionCard.pickMission}
         </h3>
         <ul className="mt-2 flex flex-col gap-1">
@@ -141,7 +142,7 @@ export const MissionCard = ({
     <aside className={`${cardBase} ${className ?? ""}`.trim()}>
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45">
+          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/45">
             {t.phase3.missionCard.activeMission}
           </p>
           <h3 className="mt-0.5 truncate text-base font-semibold tracking-tight text-white">
@@ -214,11 +215,28 @@ export const MissionCard = ({
         <p className="mt-3 rounded-md bg-emerald-300/15 px-2 py-1.5 text-center text-xs font-medium text-emerald-200">
           {t.phase3.missionCard.missionCompleted}
         </p>
+      ) : pendingAbandon ? (
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setPendingAbandon(false)}
+            className="flex-1 rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+          >
+            {t.phase3.missionCard.abandonCancel}
+          </button>
+          <button
+            type="button"
+            onClick={abandonMission}
+            className="flex-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-400/20"
+          >
+            {t.phase3.missionCard.abandonConfirm}
+          </button>
+        </div>
       ) : (
         <button
           type="button"
-          onClick={abandonMission}
-          className="mt-3 w-full rounded-md border border-white/10 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white/85"
+          onClick={() => setPendingAbandon(true)}
+          className="mt-3 w-full rounded-md border border-white/8 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/35 transition hover:border-white/15 hover:text-white/55"
         >
           {t.phase3.missionCard.abandon}
         </button>

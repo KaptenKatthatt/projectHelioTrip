@@ -117,7 +117,9 @@ export const en: Translation = {
       stepProgress: "Step {current}/{total}",
       stepCompleted: "Step done",
       missionCompleted: "Mission complete!",
-      abandon: "Abandon",
+      abandon: "Abandon mission",
+      abandonConfirm: "Yes, abandon",
+      abandonCancel: "Keep going",
       backToExplore: "Back to Explore",
     },
     progressPanel: {
@@ -194,7 +196,7 @@ export const en: Translation = {
     ui: {
       factsTab: "Facts",
       learnMoreTab: "Learn More",
-      compareSize: "Compare size",
+      compareSize: "Compare",
       testYourself: "Test yourself →",
       levelMiddle: "Middle school",
       levelUpper: "Upper school",

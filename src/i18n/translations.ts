@@ -100,6 +100,8 @@ export type Translation = {
       stepCompleted: string;
       missionCompleted: string;
       abandon: string;
+      abandonConfirm: string;
+      abandonCancel: string;
       backToExplore: string;
     };
     progressPanel: {

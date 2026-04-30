@@ -45,7 +45,7 @@ export const NavigationAccordion = () => {
         aria-expanded={openSection === "planets"}
         aria-label={`${openSection === "planets" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.planets}`}
         className={
-          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition " +
+          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
           (openSection === "planets"
             ? "bg-white/12 text-white/85"
             : "text-white/45 hover:bg-white/8 hover:text-white/70")
@@ -80,7 +80,7 @@ export const NavigationAccordion = () => {
         aria-expanded={openSection === "constellations"}
         aria-label={`${openSection === "constellations" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.constellations}`}
         className={
-          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] transition " +
+          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
           (openSection === "constellations"
             ? "bg-white/12 text-white/85"
             : "text-white/45 hover:bg-white/8 hover:text-white/70")
