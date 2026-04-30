@@ -20,6 +20,13 @@ export const GameModeSwitcher = ({
   const { t } = useTranslation();
   const gameMode = useStore((s) => s.gameMode);
   const setGameMode = useStore((s) => s.setGameMode);
+  const handleModeClick = (mode: GameMode): void => {
+    if (gameMode === mode && mode !== "explore") {
+      setGameMode("explore");
+      return;
+    }
+    setGameMode(mode);
+  };
 
   const labels: Record<GameMode, string> = {
     explore: t.phase3.gameMode.explore,
@@ -44,7 +51,7 @@ export const GameModeSwitcher = ({
             type="button"
             role="radio"
             aria-checked={active}
-            onClick={() => setGameMode(mode)}
+            onClick={() => handleModeClick(mode)}
             className={
               "rounded-lg transition " +
               (compact
