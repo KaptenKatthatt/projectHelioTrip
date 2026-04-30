@@ -15,7 +15,7 @@ export type RingGap = {
   depth: number;
 };
 
-export type RingTextureOptions = {
+type RingTextureOptions = {
   baseColor: string;
   seed: number;
   gaps?: readonly RingGap[];

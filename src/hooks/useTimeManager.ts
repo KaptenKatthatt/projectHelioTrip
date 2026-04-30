@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useStore } from "../store/useStore";
@@ -63,10 +63,15 @@ export const useTimeManager = (): void => {
   const planetScratch = useMemo(() => new Vector3(), []);
   const moonScratch = useMemo(() => new Vector3(), []);
   const satelliteScratch = useMemo(() => new Vector3(), []);
+  const lastProcessedMsRef = useRef<number | null>(null);
 
   useFrame((_state, delta) => {
     const state = useStore.getState();
     const currentMs = advanceSimulationClock(state, delta);
+    if (lastProcessedMsRef.current === currentMs) {
+      return;
+    }
+    lastProcessedMsRef.current = currentMs;
 
     for (const planet of PLANETS) {
       const el = PLANET_ORBITAL_ELEMENTS[planet.id];

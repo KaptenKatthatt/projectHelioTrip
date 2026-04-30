@@ -5,13 +5,13 @@ import type { ConstellationId } from './constellations';
  * Coordinates: Hipparcos new reduction (I/311), J2000. Right ascension in hours.
  */
 
-export type ConstellationStarNode = {
+type ConstellationStarNode = {
   readonly id: string;
   readonly rightAscensionHours: number;
   readonly declinationDeg: number;
 };
 
-export type ConstellationSegment = readonly [from: string, to: string];
+type ConstellationSegment = readonly [from: string, to: string];
 
 export type ConstellationShape = {
   readonly stars: readonly ConstellationStarNode[];

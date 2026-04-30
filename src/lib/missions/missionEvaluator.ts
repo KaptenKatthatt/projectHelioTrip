@@ -6,14 +6,14 @@ import type {
   MissionStepTrigger,
 } from "./types";
 
-export type EvaluatorInput = {
+type EvaluatorInput = {
   readonly mission: MissionDefinition;
   readonly progress: MissionProgress;
   readonly event: MissionDomainEvent;
   readonly nowMs: number;
 };
 
-export type EvaluatorOutput = {
+type EvaluatorOutput = {
   readonly progress: MissionProgress;
   readonly newlyCompletedStepIds: ReadonlyArray<string>;
   readonly missionJustCompleted: boolean;
@@ -41,6 +41,8 @@ const triggerMatchesEvent = (
         (trigger.constellationId === undefined ||
           trigger.constellationId === event.constellationId)
       );
+    case "quiz_completed":
+      return event.kind === "quiz_completed" && event.quizId === trigger.quizId;
   }
 };
 

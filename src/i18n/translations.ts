@@ -76,6 +76,8 @@ export type Translation = {
     footerLinkGithub: string;
     bottomNavStars: string;
     bottomNavMore: string;
+    constellationCollection: string;
+    constellationUnknownLabel: string;
     constellationSeasonYearRound: string;
     constellationSeasonWinter: string;
     constellationSeasonSpring: string;
@@ -83,6 +85,8 @@ export type Translation = {
     constellationSeasonAutumn: string;
   };
   phase3: {
+    dailyChallenge: string;
+    unvisitedBodies: string;
     gameMode: {
       label: string;
       explore: string;
@@ -100,7 +104,10 @@ export type Translation = {
       stepCompleted: string;
       missionCompleted: string;
       abandon: string;
+      abandonConfirm: string;
+      abandonCancel: string;
       backToExplore: string;
+      backToExploreConfirm: string;
     };
     progressPanel: {
       title: string;
@@ -128,14 +135,62 @@ export type Translation = {
       time_travel_short: { title: string; description: string };
       iss_hunt: { title: string; description: string };
       free_flight_loop: { title: string; description: string };
+      water_hunt: { title: string; description: string };
+      gravity_sling: { title: string; description: string };
     };
     steps: Record<string, string>;
+  };
+  learn: {
+    ui: {
+      factsTab: string;
+      learnMoreTab: string;
+      compareSize: string;
+      testYourself: string;
+      levelMiddle: string;
+      levelUpper: string;
+      quizStars: string;
+      quizHint: string;
+      newTitle: string;
+      xpUntilNext: string;
+      narratorAstra: string;
+      narratorColleague: string;
+      constellationStory: string;
+      constellationFindIt: string;
+      constellationFunFact: string;
+      quizCorrect: string;
+      quizTryAgain: string;
+      xpPoints: string;
+      levelUp: string;
+      noFactCards: string;
+      quizFillPlaceholder: string;
+      quizSubmit: string;
+      railToggleOpen: string;
+      railToggleClose: string;
+      viewFactsForBody: string;
+      selectBodyForFacts: string;
+      streakLabel: string;
+      patienceReward: string;
+      xpToastLabel: string;
+      learningStreakLabel: string;
+      learningStreakResetHint: string;
+    };
+    xpTitles: {
+      rookie: string;
+      stargazer: string;
+      space_explorer: string;
+      astronomy_cadet: string;
+      space_scientist: string;
+      solar_system_expert: string;
+      galactic_guide: string;
+      water_hunter: string;
+      orbital_mechanic: string;
+    };
   };
 };
 
 export const translations: Record<Locale, Translation> = { en, sv };
 
-export const DEFAULT_LOCALE: Locale = "sv";
+const DEFAULT_LOCALE: Locale = "sv";
 
 export const SUPPORTED_LOCALES: readonly Locale[] = ["sv", "en"];
 

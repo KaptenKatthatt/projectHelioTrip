@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { cors } from 'hono/cors';
 import { timingSafeEqual } from 'crypto';
 import {
@@ -16,7 +16,7 @@ import {
 } from './planets.js';
 import type { AnalyticsEventName } from './analyticsStore.js';
 
-export type PlanetEphemerisResponse = {
+type PlanetEphemerisResponse = {
   id: string;
   date: string;
   frame: 'ecliptic-j2000';
@@ -28,7 +28,7 @@ export type PlanetEphemerisResponse = {
   lightTimeDays: number;
 };
 
-export type MoonEphemerisResponse = {
+type MoonEphemerisResponse = {
   id: string;
   parent: string;
   date: string;
@@ -52,6 +52,7 @@ const parseDate = (raw: string | undefined): Date | null => {
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
+const EPHEMERIS_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400';
 
 const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   if (ANALYTICS_ADMIN_TOKEN.length === 0) return false;
@@ -60,6 +61,30 @@ const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   const providedBuffer = Buffer.from(provided, 'utf8');
   if (expectedBuffer.length !== providedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, providedBuffer);
+};
+
+const horizonsUpstreamResponse = (error: unknown) => {
+  if (!(error instanceof HorizonsError)) return null;
+  return {
+    payload: { error: 'horizons_upstream', message: error.message },
+    status: 502 as const,
+  };
+};
+
+const respondWithEphemeris = async <T>(
+  context: Context,
+  resolveBody: () => Promise<T>,
+) => {
+  try {
+    const body = await resolveBody();
+    context.header('Cache-Control', EPHEMERIS_CACHE_CONTROL);
+    return context.json(body);
+  } catch (error) {
+    const upstreamError = horizonsUpstreamResponse(error);
+    if (upstreamError)
+      return context.json(upstreamError.payload, upstreamError.status);
+    throw error;
+  }
 };
 
 export const buildApp = (): Hono => {
@@ -134,13 +159,13 @@ export const buildApp = (): Hono => {
       );
     }
 
-    try {
+    return respondWithEphemeris(c, async () => {
       const vectors = await fetchHorizonsVectors({
         commandId: HORIZONS_COMMAND_IDS[id],
         date,
       });
 
-      const body: PlanetEphemerisResponse = {
+      return {
         id,
         date: isoDay(date),
         frame: 'ecliptic-j2000',
@@ -150,19 +175,8 @@ export const buildApp = (): Hono => {
         velocity: vectors.velocity,
         distance: vectors.distanceAu,
         lightTimeDays: vectors.lightTimeDays,
-      };
-
-      c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-      return c.json(body);
-    } catch (error) {
-      if (error instanceof HorizonsError) {
-        return c.json(
-          { error: 'horizons_upstream', message: error.message },
-          502,
-        );
-      }
-      throw error;
-    }
+      } satisfies PlanetEphemerisResponse;
+    });
   });
 
   app.get('/moons/:id', async (c) => {
@@ -185,14 +199,14 @@ export const buildApp = (): Hono => {
     const meta = MOON_META[id];
     const parentCommand = HORIZONS_COMMAND_IDS[meta.parent];
 
-    try {
+    return respondWithEphemeris(c, async () => {
       const vectors = await fetchHorizonsVectors({
         commandId: meta.commandId,
         date,
         center: `500@${parentCommand}`,
       });
 
-      const body: MoonEphemerisResponse = {
+      return {
         id,
         parent: meta.parent,
         date: isoDay(date),
@@ -203,19 +217,8 @@ export const buildApp = (): Hono => {
         velocity: vectors.velocity,
         distance: vectors.distanceAu,
         lightTimeDays: vectors.lightTimeDays,
-      };
-
-      c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
-      return c.json(body);
-    } catch (error) {
-      if (error instanceof HorizonsError) {
-        return c.json(
-          { error: 'horizons_upstream', message: error.message },
-          502,
-        );
-      }
-      throw error;
-    }
+      } satisfies MoonEphemerisResponse;
+    });
   });
 
   return app;

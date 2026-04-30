@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T16:51:07.047Z",
+  "frameStats": {
+    "capturedFrames": 1790,
+    "averageFps": 119.32299200738306,
+    "onePercentLowFps": 117.6470588235294,
+    "avgFrameMs": 8.380614525138,
+    "p95FrameMs": 8.400000000001455,
+    "p99FrameMs": 8.5,
+    "maxFrameMs": 83.39999999999964,
+    "jankOver16": 2,
+    "jankOver50": 1,
+    "longTaskCount": 0,
+    "longTasksTotalMs": 0,
+    "longTasksMaxMs": 0
+  },
+  "cpuProfile": {
+    "totalSamples": 9881,
+    "topHotspots": [
+      {
+        "functionName": "(idle)",
+        "url": "",
+        "hitCount": 7271,
+        "hitPct": 73.58566946665317
+      },
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 465,
+        "hitPct": 4.706001416860642
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 97,
+        "hitPct": 0.9816820159902843
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 81,
+        "hitPct": 0.8197550855176601
+      },
+      {
+        "functionName": "setup",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 68,
+        "hitPct": 0.688189454508653
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 66,
+        "hitPct": 0.6679485881995749
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 52,
+        "hitPct": 0.5262625240360287
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 50,
+        "hitPct": 0.5060216577269507
+      },
+      {
+        "functionName": "bindVertexArray",
+        "url": "",
+        "hitCount": 44,
+        "hitPct": 0.4452990587997166
+      },
+      {
+        "functionName": "getProgramCacheKey",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 39,
+        "hitPct": 0.39469689302702154
+      }
+    ]
+  }
+}

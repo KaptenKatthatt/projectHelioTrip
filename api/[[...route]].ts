@@ -1,10 +1,12 @@
-import { handle } from 'hono/vercel';
+// fallow-ignore-file unused-file
 import { buildApp } from './_lib/app.js';
-
-export const runtime = 'nodejs';
 
 const app = buildApp();
 
-export const GET = handle(app);
-export const POST = handle(app);
-export default handle(app);
+export const GET = (request: Request) => app.fetch(request);
+export const POST = (request: Request) => app.fetch(request);
+export const PUT = (request: Request) => app.fetch(request);
+export const PATCH = (request: Request) => app.fetch(request);
+export const DELETE = (request: Request) => app.fetch(request);
+export const OPTIONS = (request: Request) => app.fetch(request);
+export const HEAD = (request: Request) => app.fetch(request);

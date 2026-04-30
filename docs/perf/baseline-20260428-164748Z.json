@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T16:47:48.894Z",
+  "frameStats": {
+    "capturedFrames": 1774,
+    "averageFps": 118.243018063101,
+    "onePercentLowFps": 117.6470588235294,
+    "avgFrameMs": 8.457158962792583,
+    "p95FrameMs": 8.400000000001455,
+    "p99FrameMs": 8.5,
+    "maxFrameMs": 133.29999999999927,
+    "jankOver16": 7,
+    "jankOver50": 1,
+    "longTaskCount": 0,
+    "longTasksTotalMs": 0,
+    "longTasksMaxMs": 0
+  },
+  "cpuProfile": {
+    "totalSamples": 9620,
+    "topHotspots": [
+      {
+        "functionName": "(idle)",
+        "url": "",
+        "hitCount": 7267,
+        "hitPct": 75.54054054054053
+      },
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 364,
+        "hitPct": 3.783783783783784
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777394823646",
+        "hitCount": 162,
+        "hitPct": 1.683991683991684
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 93,
+        "hitPct": 0.9667359667359667
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 70,
+        "hitPct": 0.7276507276507277
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 63,
+        "hitPct": 0.654885654885655
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 59,
+        "hitPct": 0.6133056133056134
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 58,
+        "hitPct": 0.6029106029106029
+      },
+      {
+        "functionName": "update",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 42,
+        "hitPct": 0.4365904365904366
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 39,
+        "hitPct": 0.40540540540540543
+      }
+    ]
+  }
+}

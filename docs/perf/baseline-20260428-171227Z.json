@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:12:27.679Z",
+  "frameStats": {
+    "capturedFrames": 21,
+    "averageFps": 1.386193512614361,
+    "onePercentLowFps": 1.3042911177774867,
+    "avgFrameMs": 721.4,
+    "p95FrameMs": 766.7000000000007,
+    "p99FrameMs": 766.7000000000007,
+    "maxFrameMs": 799.8999999999996,
+    "jankOver16": 21,
+    "jankOver50": 21,
+    "longTaskCount": 21,
+    "longTasksTotalMs": 15039,
+    "longTasksMaxMs": 784
+  },
+  "cpuProfile": {
+    "totalSamples": 10774,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10628,
+        "hitPct": 98.64488583627251
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 8,
+        "hitPct": 0.07425283088917765
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 7,
+        "hitPct": 0.06497122702803045
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 4,
+        "hitPct": 0.03712641544458883
+      },
+      {
+        "functionName": "getProgramInfoLog",
+        "url": "",
+        "hitCount": 3,
+        "hitPct": 0.027844811583441622
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.027844811583441622
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.027844811583441622
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.027844811583441622
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018563207722294413
+      },
+      {
+        "functionName": "setValueV3f",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.018563207722294413
+      }
+    ]
+  }
+}

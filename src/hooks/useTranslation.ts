@@ -7,7 +7,7 @@ import { isMoonId, isSatelliteId, type BodyId } from '../lib/bodies';
 import { translations } from '../i18n/translations';
 import type { Locale, Translation } from '../i18n/translations';
 
-export type UseTranslationResult = {
+type UseTranslationResult = {
   locale: Locale;
   t: Translation;
   planetName: (id: PlanetId) => string;

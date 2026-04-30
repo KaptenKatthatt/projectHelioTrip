@@ -1,287 +1,395 @@
-# HelioTrip Design System
+# HelioTrip Design System (Next)
 
-This document is the authoritative reference for all UI decisions in HelioTrip.
-**Before creating any new UI element, read the relevant section here and match the existing patterns exactly.**
+This document defines the next-generation design system for HelioTrip using Refactoring UI constraints and Atomic Design architecture.
 
----
-
-## 1. Foundation
-
-### Color scheme
-The app is always dark. All color values are Tailwind opacity modifiers on `white` or named palette colors — never raw hex except in `index.css`.
-
-- **Base background**: `#05060a` (set in `index.css`)
-- **Base text**: `#e6e6f0` (set in `index.css`)
-- **Surface**: `bg-black/40` + `backdrop-blur-md` — the standard HUD surface
-- **Border**: `border border-white/10` on every panel and card
-
-### Accent colors
-| Role | Classes |
-|------|---------|
-| Success / achievement / completed | `emerald-300` family: `bg-emerald-300/10`, `border-emerald-300/30`, `text-emerald-100`, `text-emerald-200` |
-| Active constellation / highlight | `cyan-300` family: `bg-cyan-300/20`, `border-cyan-200/60`, `text-cyan-100` |
-| Range slider thumb | `bg-[#c7d2fe]` border `border-[#6366f1]` (indigo) — only in `index.css` |
+It is the source of truth for new and migrated dashboard UI work.
+The existing `DESIGN_SYSTEM.md` remains a legacy reference while migration is in progress.
 
 ---
 
-## 2. Typography
+## 1) Design Principles
 
-Every text token below is used verbatim in the codebase. Match them exactly.
-
-| Role | Classes |
-|------|---------|
-| App title | `text-base font-semibold tracking-tight sm:text-lg` |
-| Panel heading (large) | `text-base font-semibold tracking-tight text-white` |
-| Panel heading (medium) | `truncate text-lg font-semibold tracking-tight text-white` |
-| Eyebrow / section label | `text-[10px] font-medium uppercase tracking-[0.2em] text-white/45` |
-| Body text | `text-sm text-white/70` or `text-white/80` |
-| Secondary text | `text-xs text-white/55` |
-| Muted text | `text-xs text-white/45` |
-| Monospaced counter | `font-mono text-[11px] text-white/55` or `font-mono text-sm tabular-nums text-white/85` |
-| List item (planet row) | `text-sm text-white/70` → active: `text-white` |
-| List item (child/moon) | `text-xs text-white/55` → active: `text-white` |
-| Small action text | `text-[11px] font-medium text-white/70` |
-| Ghost/dismiss text | `text-[11px] font-medium uppercase tracking-wide text-white/55` |
-
-**Fonts**: `font-sans` = Inter (set in `@theme`). `font-mono` = JetBrains Mono / Consolas.
+- Constrain choices to increase consistency and speed.
+- Use named, functional tokens (never one-off values).
+- Favor composition over custom component variants.
+- Design mobile-first and progressively enhance for larger screens.
+- Keep immersive space aesthetics while preserving readability and interaction clarity.
 
 ---
 
-## 3. Surfaces and Panels
+## 2) Color System (HSL, fixed tokens)
 
-All panels share the same glass-morphism base. Padding varies by context.
+Use explicit HSL values. Do not use lighten/darken utilities or generated runtime transforms.
 
-| Variant | Classes |
-|---------|---------|
-| Standard panel | `rounded-2xl border border-white/10 bg-black/40 p-4 sm:p-5 backdrop-blur-md` |
-| Compact panel | `rounded-2xl border border-white/10 bg-black/40 p-3 backdrop-blur-md` |
-| Tight panel (collapsed header) | `rounded-2xl border border-white/10 bg-black/40 p-2.5 backdrop-blur-md` |
-| Navigation panel | `rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md` |
+### 2.1 Space Dark (neutral surfaces + text contrast)
 
-**Never** use a different border radius, background opacity, or blur value on a new panel without a very strong reason.
 
----
+| Token                    | HSL           | Usage                 |
+| ------------------------ | ------------- | --------------------- |
+| `--color-space-dark-50`  | `220 30% 96%` | highest-contrast text |
+| `--color-space-dark-100` | `223 25% 91%` | primary text          |
+| `--color-space-dark-200` | `224 20% 82%` | secondary text        |
+| `--color-space-dark-300` | `225 16% 68%` | muted text            |
+| `--color-space-dark-400` | `226 14% 52%` | placeholders/dividers |
+| `--color-space-dark-500` | `227 16% 38%` | disabled states       |
+| `--color-space-dark-600` | `229 22% 23%` | elevated borders      |
+| `--color-space-dark-700` | `230 30% 15%` | panel overlays        |
+| `--color-space-dark-800` | `231 38% 10%` | app background        |
+| `--color-space-dark-900` | `232 44% 6%`  | deepest backdrop      |
 
-## 4. Buttons
 
-### 4a. Icon-only button (`HudIconButton` component)
-Use `HudIconButton` for all standalone icon buttons. Do not write a custom button element when this component fits.
+### 2.2 Nebula Primary (interactive brand color)
 
-```tsx
-<HudIconButton label="Descriptive label" icon={<SomeIcon className="h-4 w-4" />} />
-```
 
-Underlying classes: `inline-flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white`
+| Token                        | HSL            | Usage               |
+| ---------------------------- | -------------- | ------------------- |
+| `--color-nebula-primary-50`  | `214 100% 96%` | subtle highlights   |
+| `--color-nebula-primary-100` | `217 100% 92%` | soft selected bg    |
+| `--color-nebula-primary-200` | `221 96% 84%`  | chips and tags      |
+| `--color-nebula-primary-300` | `226 92% 74%`  | hover accents       |
+| `--color-nebula-primary-400` | `232 89% 66%`  | interactive default |
+| `--color-nebula-primary-500` | `238 84% 60%`  | primary action      |
+| `--color-nebula-primary-600` | `243 75% 52%`  | active focus        |
+| `--color-nebula-primary-700` | `247 68% 45%`  | pressed state       |
+| `--color-nebula-primary-800` | `249 61% 36%`  | dark surfaces       |
+| `--color-nebula-primary-900` | `252 58% 28%`  | deep decorative     |
 
-### 4b. Text + icon button (ghost/outline)
-Used for mode toggles and actions that need a label next to an icon.
 
-```
-flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/90 backdrop-blur-md transition hover:bg-white/10
-disabled: disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-black/40
-```
+### 2.3 Star Accent (attention and active celestial highlights)
 
-### 4c. Pill action button (primary action, rounded-full)
-Used for the "Start" button and similar prominent single actions.
 
-```
-flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 text-sm font-medium text-white transition hover:bg-white/15
-```
+| Token                     | HSL            | Usage                     |
+| ------------------------- | -------------- | ------------------------- |
+| `--color-star-accent-100` | `197 100% 92%` | high-contrast accent text |
+| `--color-star-accent-200` | `194 97% 84%`  | soft active states        |
+| `--color-star-accent-300` | `191 93% 75%`  | badges/chips              |
+| `--color-star-accent-400` | `188 90% 66%`  | hover accent              |
+| `--color-star-accent-500` | `186 88% 56%`  | active accent             |
+| `--color-star-accent-600` | `184 82% 47%`  | strong emphasis           |
+| `--color-star-accent-700` | `183 75% 39%`  | pressed/selected          |
+| `--color-star-accent-800` | `182 68% 31%`  | deep accent surface       |
 
-### 4d. Circle icon button (play/pause style)
-```
-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15
-disabled: disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5
-```
 
-### 4e. Segment control (tab group)
-Wrapper:
-```
-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1
-```
-Inactive tab:
-```
-rounded-lg px-2 py-1 text-[11px] font-medium tracking-wide text-white/60 hover:text-white hover:bg-white/10
-```
-Active tab:
-```
-rounded-lg px-2 py-1 text-[11px] font-medium tracking-wide bg-white text-black
-```
-Compact variant: `px-2 py-1 text-[11px]`. Standard variant: `px-3 py-1.5 text-xs`.
+### 2.4 Semantic Colors
 
-### 4f. List row button (navigation item)
-Planet row (top-level):
-```
-inactive: flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-white/70 hover:bg-white/10 hover:text-white transition
-active:   flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm bg-white/15 text-white transition
-```
-Child/moon row (indented):
-```
-inactive: group relative flex items-center gap-2 rounded-lg py-1 pr-2.5 pl-6 text-left text-xs text-white/55 hover:bg-white/10 hover:text-white/90 transition
-active:   group relative flex items-center gap-2 rounded-lg py-1 pr-2.5 pl-6 text-left text-xs bg-white/15 text-white transition
-```
+#### Success
 
-### 4g. Accordion section header
-```
-inactive: flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] text-white/45 hover:bg-white/8 hover:text-white/70 transition
-active:   flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-[10px] font-medium uppercase tracking-[0.2em] bg-white/12 text-white/85 transition
-```
+- `--color-success-100`: `153 79% 90%`
+- `--color-success-200`: `153 72% 80%`
+- `--color-success-300`: `154 66% 68%`
+- `--color-success-400`: `155 63% 56%`
+- `--color-success-500`: `156 64% 45%`
+- `--color-success-600`: `157 67% 36%`
+- `--color-success-700`: `159 70% 28%`
+- `--color-success-800`: `161 73% 21%`
 
-### 4h. Small secondary action button
-```
-rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/15 hover:text-white
-```
+#### Warning
 
-### 4i. Ghost/dismiss button
-```
-rounded-md border border-white/10 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white/85
-```
+- `--color-warning-100`: `42 100% 90%`
+- `--color-warning-200`: `41 98% 80%`
+- `--color-warning-300`: `40 95% 69%`
+- `--color-warning-400`: `39 93% 58%`
+- `--color-warning-500`: `38 91% 50%`
+- `--color-warning-600`: `35 89% 42%`
+- `--color-warning-700`: `32 84% 34%`
+- `--color-warning-800`: `30 79% 27%`
 
-### Disabled state (all buttons)
-```
-disabled:cursor-not-allowed disabled:opacity-40
-```
-On hover-state buttons, also add: `disabled:hover:bg-[original-bg]` to suppress hover.
+#### Danger
 
----
+- `--color-danger-100`: `350 100% 93%`
+- `--color-danger-200`: `350 93% 85%`
+- `--color-danger-300`: `350 86% 75%`
+- `--color-danger-400`: `350 80% 64%`
+- `--color-danger-500`: `350 76% 54%`
+- `--color-danger-600`: `350 72% 45%`
+- `--color-danger-700`: `350 68% 36%`
+- `--color-danger-800`: `350 64% 29%`
 
-## 5. Badges and Status Indicators
+### 2.5 Usage Rules
 
-### Success / completed badge
-```
-rounded-md border border-emerald-300/40 bg-emerald-300/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-200
-```
-
-### Achievement chip (in lists)
-```
-rounded-md border border-emerald-300/30 bg-emerald-300/10 px-1.5 py-0.5 text-[11px] text-emerald-100
-```
-
-### Constellation active badge
-```
-rounded-md border border-cyan-200/60 bg-cyan-300/20 text-cyan-100 px-1.5 py-0.5 text-[10px] leading-none
-```
-
-### Toast / floating notification
-```
-rounded-full border border-emerald-300/40 bg-emerald-300/15 px-4 py-2 text-sm font-medium text-emerald-100 shadow-lg backdrop-blur-md
-```
+- App background: `space-dark-800` or `space-dark-900`.
+- Standard panel surface: `space-dark-700` with transparency, plus subtle blur.
+- Primary action: `nebula-primary-500`, hover `nebula-primary-400`, active `nebula-primary-600`.
+- Selected navigation/highlighted constellation: `star-accent-500`.
+- Success/progress/achievement: `success` scale only.
+- Never use raw hex in components; define tokens in global theme first.
 
 ---
 
-## 6. Progress and Data Visualization
+## 3) Typography System
 
-### Progress bar
-```tsx
-<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-  <div
-    className="h-full rounded-full bg-emerald-300/80 transition-[width]"
-    style={{ width: `${percent}%` }}
-  />
-</div>
+### 3.1 Type Scale
+
+
+| Token            | Size | Typical Role                   |
+| ---------------- | ---- | ------------------------------ |
+| `--font-size-12` | 12px | captions, compact metadata     |
+| `--font-size-14` | 14px | secondary body text            |
+| `--font-size-16` | 16px | default body text              |
+| `--font-size-18` | 18px | emphasized body / card heading |
+| `--font-size-24` | 24px | section title                  |
+| `--font-size-30` | 30px | page title                     |
+| `--font-size-48` | 48px | hero numerals / splash heading |
+
+
+### 3.2 Line-Height Pairs
+
+
+| Size | Line height |
+| ---- | ----------- |
+| 12   | 16          |
+| 14   | 20          |
+| 16   | 24          |
+| 18   | 24          |
+| 24   | 32          |
+| 30   | 36          |
+| 48   | 52          |
+
+
+### 3.3 Weight and Tracking
+
+- Weights: `500` (UI labels), `600` (headings). Avoid `700+` in dashboard UI.
+- Tracking:
+  - neutral text: `0`
+  - uppercase eyebrow labels: `0.2em`
+- Numeric/telemetry values should use tabular numbers where available.
+
+### 3.4 Baseline Alignment for Mixed Sizes
+
+- When combining label + value pairs of different sizes:
+  - align to baseline, not center.
+  - use consistent line-height pairs from section 3.2.
+  - avoid ad-hoc margin nudges; use a dedicated stack/row utility.
+
+---
+
+## 4) Spacing System (Non-linear)
+
+
+| Token        | Value | Typical Usage             |
+| ------------ | ----- | ------------------------- |
+| `--space-1`  | 4px   | icon-label micro gap      |
+| `--space-2`  | 8px   | compact controls          |
+| `--space-3`  | 12px  | list row internals        |
+| `--space-4`  | 16px  | default component padding |
+| `--space-6`  | 24px  | panel section spacing     |
+| `--space-8`  | 32px  | grouped dashboard regions |
+| `--space-12` | 48px  | major layout separation   |
+| `--space-16` | 64px  | page-level offsets        |
+
+
+### Spacing Rules
+
+- Small deltas at micro level, larger jumps at layout level.
+- Prefer token steps over one-off values.
+- Safe-area offsets may use calculated values, but internal component spacing must still use the token scale.
+
+---
+
+## 5) Surface, Radius, Elevation, and Interaction Tokens
+
+### 5.1 Radius
+
+- `--radius-sm`: 8px
+- `--radius-md`: 12px
+- `--radius-lg`: 16px
+- `--radius-xl`: 24px
+- `--radius-pill`: 999px
+
+### 5.2 Elevation
+
+- `--shadow-none`: none
+- `--shadow-float`: use for toasts, dialogs, and temporary overlays only
+
+### 5.3 Panel Surface Contract
+
+Standard HUD panels should share one canonical surface contract:
+
+- radius: `--radius-xl`
+- border: subtle neutral border
+- background: translucent `space-dark-700`
+- blur: medium
+
+Avoid introducing additional panel variants unless a new semantic role requires it.
+
+---
+
+## 6) Atomic Design Architecture
+
+### 6.1 Folder Structure
+
+- `src/components/atoms`
+- `src/components/molecules`
+- `src/components/organisms`
+- `src/components/templates`
+
+### 6.2 Current Component Mapping
+
+#### Atoms
+
+- `HudIconButton`
+- `HudPanelToggleButton`
+- `SolarSystemStartIcon`
+- `VirtualJoystick`
+
+#### Molecules
+
+- `GameModeSwitcher`
+- `FlightModeToggle`
+- `LanguageToggle`
+- `BottomSheet`
+- `CollapsibleHudPanel`
+- `MobileTimePill`
+- `ConstellationViewControls`
+
+#### Organisms
+
+- `NavigationAccordion`
+- `PlanetSelector`
+- `ConstellationList`
+- `TimePlaybackControls`
+- `PlanetPanel`
+- `MissionCard`
+- `ProgressPanel`
+- `AboutDialog`
+- `MobileBottomNav`
+- `FreeFlightMobileControls`
+
+#### Templates
+
+- `HUD` (main dashboard template today)
+- `LoadingScreen`
+- `SceneErrorBoundary`
+
+### 6.3 Split Candidates
+
+- `HUD`: split into shell + region templates.
+- `PlanetPanel`: separate data shaping from presentation.
+- `MissionCard`: split picker and active-mission detail views.
+- `AboutDialog`: split trigger and content container.
+
+### 6.4 Why some files remain in `src/components`
+
+The migration is complete for the core atomic layers. A small set of files intentionally remains in `src/components` root because they are either cross-cutting helpers, transitional candidates, or test files rather than stable design-system building blocks.
+
+- `ConstellationViewControls`: currently a context-specific control cluster used in multiple places, but not yet normalized as a generic molecule/organism contract.
+- `MobileBottomNav`: tightly coupled to mobile sheet navigation semantics and game-mode state; kept at root until tablet/desktop navigation contracts are finalized.
+- `AchievementToast`: global feedback overlay behavior (not a reusable content primitive yet).
+- `FreeFlightHint`, `FreeFlightHelp`, `FreeFlightMobileControls`: mode-specific assistance and control surfaces that are feature-bound, not broadly reusable atomic primitives.
+- `navigation.behavior.test.tsx`, `TimePlaybackControls.test.tsx`: tests stay colocated with component domain, not inside atomic layer folders.
+
+#### Rule for future moves
+
+Move a root-level component into `atoms`/`molecules`/`organisms` only when all conditions are true:
+- clear reuse across at least two independent UI contexts,
+- stable public props contract,
+- visual semantics that align with design-token rules in this document.
+
+Until then, keeping it at root is intentional and preferred over forcing an atomic placement.
+
+---
+
+## 7) Responsive Strategy (Mobile-First + Adaptive)
+
+Define three layout tiers:
+
+- `compact` (mobile default): single-column, focused actions, sheets/drawers.
+- `medium` (tablet): column layout with master-detail, reduced modal dependence.
+- `expanded` (desktop): persistent side regions and secondary information panels.
+
+### 7.1 Mobile (compact) rules
+
+- Start with the smallest useful feature set.
+- Keep one primary task visible at a time.
+- Use bottom navigation + task-specific sheets.
+- Avoid persistent side chrome.
+
+### 7.2 Tablet (medium) enhancements
+
+- Introduce two-column patterns for browsing + detail.
+- Convert simple lists into master-detail where context matters.
+- Keep controls reachable without covering core content.
+
+### 7.3 Desktop (expanded) enhancements
+
+- Use sidebars/secondary panels for immersive context.
+- Prevent over-stretching with content max-width constraints.
+- Keep critical controls and contextual data visible concurrently.
+
+---
+
+## 8) Dashboard Migration Plan
+
+### Phase 1 - Foundation
+
+- Add this file as the new design-system source of truth.
+- Define token names for use in Tailwind utilities and global CSS variables.
+- Freeze new arbitrary styles in dashboard-facing components.
+
+### Phase 2 - Template Extraction
+
+- Refactor `src/components/HUD.tsx` into template shell regions without visual change:
+  - `topBarRegion`
+  - `primaryNavRegion`
+  - `detailRegion`
+  - `controlRailRegion`
+  - `overlayRegion`
+
+### Phase 3 - Atomic Re-homing
+
+- Move components into atomic folders.
+- Keep temporary compatibility exports to avoid breaking imports during transition.
+- Validate that behavior is unchanged after each move.
+
+### Phase 4 - Responsive Upgrade
+
+- Introduce `useResponsiveLayout` (`compact`, `medium`, `expanded`) alongside existing mobile hook.
+- Shift macro layout decisions to responsive tier logic.
+- Implement tablet master-detail composition for navigation + planet details.
+
+### Phase 5 - Visual Normalization
+
+- Replace arbitrary text/spacing/color values with tokens in highest-impact order:
+  1. panel surfaces and headers
+  2. nav/list rows
+  3. controls and overlays
+  4. dialogs and sheets
+
+### Validation Gates
+
+- Visual parity checks on mobile and desktop before/after each phase.
+- Tablet portrait/landscape verification after responsive tier introduction.
+- Lint/type/tests after each migration phase.
+
+---
+
+## 9) Dashboard Composition Target
+
+```mermaid
+flowchart LR
+  dashboardTemplate[DashboardTemplate] --> topBarRegion[TopBarRegion]
+  dashboardTemplate --> primaryNavRegion[PrimaryNavRegion]
+  dashboardTemplate --> detailRegion[DetailRegion]
+  dashboardTemplate --> controlRailRegion[ControlRailRegion]
+  dashboardTemplate --> overlayRegion[OverlayRegion]
+  primaryNavRegion --> navigationAccordion[NavigationAccordion]
+  primaryNavRegion --> mobileBottomNav[MobileBottomNav]
+  detailRegion --> planetPanel[PlanetPanel]
+  detailRegion --> missionCard[MissionCard]
+  detailRegion --> progressPanel[ProgressPanel]
+  controlRailRegion --> timePlaybackControls[TimePlaybackControls]
+  controlRailRegion --> gameModeSwitcher[GameModeSwitcher]
 ```
 
-### Step dot indicator
-```
-done:    mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-300
-current: mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-white
-future:  mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-white/30
-```
 
-### Planet color dot
-Large (planet rows): `h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white/20` with `style={{ backgroundColor: body.color }}`
-Small (moon rows): `h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white/20` with `style={{ backgroundColor: body.color }}`
-
-Always use the `color` field from the body definition and `ring-1 ring-white/20` — never hardcode a color.
 
 ---
 
-## 7. Spacing System
+## 10) Implementation Guardrails
 
-| Context | Classes |
-|---------|---------|
-| Panel outer gap | `gap-3` (between HUD panels) or `gap-6 sm:gap-6` |
-| Inner section gap | `gap-2` |
-| Tight list gap | `gap-1` or `gap-0.5` |
-| Content within card | `mt-2` after eyebrow, `mt-3` after heading block |
+- Reuse existing components before creating new ones.
+- Keep pointer events explicit in HUD overlays.
+- Use Lucide icon sizing conventions already established in the project.
+- Keep comments in code in English.
+- Do not introduce unbounded width containers on desktop layouts.
 
-**Scrollable panels** always add `overflow-y-auto pr-1` to compensate for scrollbar.
-
----
-
-## 8. Layout and Pointer Events
-
-The HUD is a `pointer-events-none fixed inset-0` container. Every interactive element must have `pointer-events-auto` on itself or a parent.
-
-```tsx
-// Panel container — non-interactive wrapper
-<div className="pointer-events-none fixed inset-0 z-10 flex flex-col justify-between p-3 sm:p-5">
-  // Interactive element must opt in
-  <div className="pointer-events-auto">...</div>
-</div>
-```
-
-Mobile layout breakpoint is handled by `useIsMobileLayout()` hook. Always use this hook — never use `sm:` breakpoints alone for layout decisions.
-
----
-
-## 9. Component Inventory
-
-Before building a new component, check if an existing one already solves the problem:
-
-| Component | Use for |
-|-----------|---------|
-| `HudIconButton` | Any icon-only action button in the HUD |
-| `HudPanelToggleButton` | Expand/collapse toggle (`+` / `-`) for panels |
-| `CollapsibleHudPanel` | Any panel that can be collapsed/expanded |
-| `GameModeSwitcher` | The Explore/Learn/Challenge mode selector |
-| `FlightModeToggle` | The cinematic/free-flight toggle |
-| `NavigationAccordion` | The planets + constellations accordion menu |
-| `PlanetSelector` | Scrollable list of planets and moons |
-| `TimePlaybackControls` | Play/pause + speed presets + reset |
-| `MissionCard` | Active mission display or mission picker |
-| `ProgressPanel` | Visited bodies count + achievement list |
-| `AchievementToast` | Floating achievement unlock notification |
-
----
-
-## 10. Do's and Don'ts
-
-**Do:**
-- Use `rounded-2xl` for panels and cards, `rounded-xl` or `rounded-lg` for buttons, `rounded-full` for pills and circles, `rounded-md` for badges
-- Use `text-white/45` for eyebrow labels, not `text-white/40` or `text-white/50`
-- Use `bg-white/10` for hover backgrounds on list rows
-- Use `bg-white/15` for selected/active state on list rows
-- Add `transition` to every interactive element
-- Use Lucide icons with `className="h-4 w-4"` for standard size, `h-5 w-5` for slightly larger
-- Write `aria-label` on every icon button
-
-**Don't:**
-- Introduce new background colors (no `bg-gray-*`, `bg-slate-*`, `bg-zinc-*`, etc.)
-- Use `shadow-*` except on toasts/floating elements (`shadow-lg`)
-- Use `font-bold` — use `font-semibold` or `font-medium`
-- Create a new panel style instead of using one of the four surface variants in section 3
-- Hardcode pixel values in `style={{}}` for colors — use body.color from the data layer
-- Skip `backdrop-blur-md` on any new panel that uses `bg-black/40`
-
----
-
-## 11. Constellation lines (IAU standard)
-
-**Constellation stick figures in the 3D sky are not simplified “connect-the-dots” patterns.** They must match the **standard IAU-referenced figures** (same line topology as the **Stellarium `western` skyculture** / `constellationship.fab` used in planetarium software).
-
-### Rules
-
-- **No hand-drawn or reduced star counts** for a constellation’s official figure. Do not substitute a “minimal” or educational shortcut when the standard defines more vertices and segments.
-- **Star positions** use **Hipparcos** (VizieR **I/311**), **J2000** equatorial coordinates (right ascension in hours, declination in degrees), consistent with the chosen catalog.
-- **Identifiers** in data use `hip` + Hipparcos number so every vertex maps unambiguously to the catalog.
-
-### Source of truth in the repo
-
-| File | Role |
-|------|------|
-| `src/lib/constellationShapes.ts` | The live stick figures and coordinates consumed by the scene |
-| `scripts/constellationship-iau-western.fab` | Copy of the **western** `constellationship` lines for the constellations the app includes |
-| `scripts/generateConstellationShapes.mjs` | Regenerates coordinates from **VizieR I/311** (requires network) |
-
-**When adding or changing constellations:** extend or edit the **fab** line list in line with the same **western/IAU** source, then regenerate or hand-merge into `constellationShapes.ts` using that pipeline — do not introduce ad-hoc segments that are not in the standard figure set for that constellation.

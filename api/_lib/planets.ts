@@ -37,7 +37,7 @@ export type MoonId =
   | 'titan'
   | 'triton';
 
-export type MoonMeta = {
+type MoonMeta = {
   parent: PlanetId;
   commandId: number;
 };

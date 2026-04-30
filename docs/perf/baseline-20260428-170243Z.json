@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:02:43.014Z",
+  "frameStats": {
+    "capturedFrames": 19,
+    "averageFps": 1.2141040551075442,
+    "onePercentLowFps": 1.2000480019200752,
+    "avgFrameMs": 823.6526315789473,
+    "p95FrameMs": 833.3000000000011,
+    "p99FrameMs": 833.3000000000011,
+    "maxFrameMs": 1000,
+    "jankOver16": 19,
+    "jankOver50": 19,
+    "longTaskCount": 18,
+    "longTasksTotalMs": 14766,
+    "longTasksMaxMs": 1004
+  },
+  "cpuProfile": {
+    "totalSamples": 10637,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 10504,
+        "hitPct": 98.74964745698975
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 6,
+        "hitPct": 0.05640688163956002
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 4,
+        "hitPct": 0.03760458775970668
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 4,
+        "hitPct": 0.03760458775970668
+      },
+      {
+        "functionName": "renderObject",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01880229387985334
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01880229387985334
+      },
+      {
+        "functionName": "setMaterial",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01880229387985334
+      },
+      {
+        "functionName": "updateMatrixWorld",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 2,
+        "hitPct": 0.01880229387985334
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 2,
+        "hitPct": 0.01880229387985334
+      },
+      {
+        "functionName": "update",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 1,
+        "hitPct": 0.00940114693992667
+      }
+    ]
+  }
+}

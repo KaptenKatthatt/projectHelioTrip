@@ -5,7 +5,7 @@
 
 export type GraphicsTier = "high" | "medium" | "low";
 
-export type RuntimeDeviceBucket =
+type RuntimeDeviceBucket =
   | "desktop"
   | "mobile-high"
   | "mobile-medium"
@@ -91,7 +91,7 @@ export type MilkyWayQualityPreset = {
   readonly deepSkyObjectSizeScale: number;
 };
 
-export type GraphicsPreset = {
+type GraphicsPreset = {
   readonly starsCount: number;
   readonly starsRadius: number;
   readonly asteroidCount: number;
@@ -106,11 +106,11 @@ export type GraphicsPreset = {
   readonly antialias: boolean;
 };
 
-export const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
+const GRAPHICS_PRESETS: Record<GraphicsTier, GraphicsPreset> = {
   high: {
     starsCount: 12_000,
     starsRadius: 2500,
-    asteroidCount: 3000,
+    asteroidCount: 2200,
     planetSphere: [64, 48],
     cloudSphere: [48, 32],
     orbitLineSegments: 512,

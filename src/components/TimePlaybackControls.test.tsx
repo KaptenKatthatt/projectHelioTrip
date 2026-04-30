@@ -4,55 +4,8 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Store } from "../store/useStore";
 import { useStore } from "../store/useStore";
-import { TimePlaybackControls } from "./TimePlaybackControls";
-
-type MatchMediaController = {
-  restore: () => void;
-};
-
-const mockMatchMedia = (matches: boolean): MatchMediaController => {
-  const originalMatchMedia = window.matchMedia;
-
-  const matchMediaMock = vi
-    .fn()
-    .mockImplementation((query: string): MediaQueryList => {
-      const result: MediaQueryList = {
-        matches,
-        media: query,
-        onchange: null,
-        addListener: () => {
-          return;
-        },
-        removeListener: () => {
-          return;
-        },
-        addEventListener: () => {
-          return;
-        },
-        removeEventListener: () => {
-          return;
-        },
-        dispatchEvent: () => true,
-      };
-      return result;
-    });
-
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    writable: true,
-    value: matchMediaMock,
-  });
-
-  return {
-    restore: () => {
-      Object.defineProperty(window, "matchMedia", {
-        configurable: true,
-        writable: true,
-        value: originalMatchMedia,
-      });
-    },
-  };
-};
+import { mockMatchMedia, type MatchMediaController } from "../test/mockMatchMedia";
+import { TimePlaybackControls } from "./organisms/TimePlaybackControls";
 
 const baseStoreState = (): Store => {
   const state = useStore.getState();

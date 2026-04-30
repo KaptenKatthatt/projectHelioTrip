@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:00:16.890Z",
+  "frameStats": {
+    "capturedFrames": 1744,
+    "averageFps": 115.87731887524585,
+    "onePercentLowFps": 59.88023952095548,
+    "avgFrameMs": 8.629816513761467,
+    "p95FrameMs": 8.400000000001455,
+    "p99FrameMs": 16.700000000000728,
+    "maxFrameMs": 158.40000000000055,
+    "jankOver16": 23,
+    "jankOver50": 1,
+    "longTaskCount": 0,
+    "longTasksTotalMs": 0,
+    "longTasksMaxMs": 0
+  },
+  "cpuProfile": {
+    "totalSamples": 8826,
+    "topHotspots": [
+      {
+        "functionName": "(idle)",
+        "url": "",
+        "hitCount": 5793,
+        "hitPct": 65.63562202583276
+      },
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 468,
+        "hitPct": 5.3025152957172
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 118,
+        "hitPct": 1.3369589848175845
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395552419",
+        "hitCount": 100,
+        "hitPct": 1.1330160888284613
+      },
+      {
+        "functionName": "setProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 93,
+        "hitPct": 1.053704962610469
+      },
+      {
+        "functionName": "getParameters",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 84,
+        "hitPct": 0.9517335146159076
+      },
+      {
+        "functionName": "setup",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 69,
+        "hitPct": 0.7817811012916385
+      },
+      {
+        "functionName": "loop",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react-three-fiber.esm-Rz0k6iEh.js?v=d56487ea",
+        "hitCount": 61,
+        "hitPct": 0.6911398141853614
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 60,
+        "hitPct": 0.6798096532970768
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 58,
+        "hitPct": 0.6571493315205076
+      }
+    ]
+  }
+}

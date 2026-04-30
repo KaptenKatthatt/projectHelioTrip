@@ -1,0 +1,85 @@
+{
+  "baseUrl": "http://localhost:5173",
+  "sampleMs": 15000,
+  "warmupMs": 3000,
+  "measuredAt": "2026-04-28T17:13:24.781Z",
+  "frameStats": {
+    "capturedFrames": 18,
+    "averageFps": 1.1934202762104928,
+    "onePercentLowFps": 1.0526315789473684,
+    "avgFrameMs": 837.9277777777778,
+    "p95FrameMs": 950,
+    "p99FrameMs": 950,
+    "maxFrameMs": 1150,
+    "jankOver16": 18,
+    "jankOver50": 18,
+    "longTaskCount": 18,
+    "longTasksTotalMs": 14975,
+    "longTasksMaxMs": 1150
+  },
+  "cpuProfile": {
+    "totalSamples": 9897,
+    "topHotspots": [
+      {
+        "functionName": "(program)",
+        "url": "",
+        "hitCount": 9733,
+        "hitPct": 98.34293220167729
+      },
+      {
+        "functionName": "(garbage collector)",
+        "url": "",
+        "hitCount": 7,
+        "hitPct": 0.07072850358694555
+      },
+      {
+        "functionName": "(anonymous)",
+        "url": "http://localhost:5173/src/scene/AsteroidBelt.tsx?t=1777395696535",
+        "hitCount": 5,
+        "hitPct": 0.0505203597049611
+      },
+      {
+        "functionName": "setFromEuler",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 4,
+        "hitPct": 0.04041628776396888
+      },
+      {
+        "functionName": "WebGLRenderer.renderBufferDirect",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 4,
+        "hitPct": 0.04041628776396888
+      },
+      {
+        "functionName": "getProgram",
+        "url": "http://localhost:5173/node_modules/.vite/deps/three.module-CZJdDodI.js?v=d56487ea",
+        "hitCount": 3,
+        "hitPct": 0.03031221582297666
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.03031221582297666
+      },
+      {
+        "functionName": "exports.createElement",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.03031221582297666
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.03031221582297666
+      },
+      {
+        "functionName": "exports.jsxDEV",
+        "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f4638193",
+        "hitCount": 3,
+        "hitPct": 0.03031221582297666
+      }
+    ]
+  }
+}

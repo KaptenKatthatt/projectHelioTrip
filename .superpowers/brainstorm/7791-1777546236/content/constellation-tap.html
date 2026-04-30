@@ -1,0 +1,261 @@
+<style>
+  .split { display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .col-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); text-align: center; }
+  .col-desc { font-size: 11px; color: rgba(255,255,255,0.45); text-align: center; max-width: 200px; line-height: 1.5; }
+  .flow { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+  .arrow { font-size: 18px; color: rgba(255,255,255,0.2); }
+  .phone {
+    width: 175px; height: 345px; border-radius: 26px;
+    border: 2px solid rgba(255,255,255,0.15); background: #06080f;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.7); flex-shrink: 0;
+  }
+  .phone-sm { width: 155px; height: 300px; border-radius: 22px; }
+  .notch { width: 44px; height: 5px; background: rgba(0,0,0,0.9); border-radius: 3px; margin: 4px auto 0; }
+  .scene { flex: 1; background: radial-gradient(ellipse at 50% 45%, #08101e 0%, #030609 100%); position: relative; overflow: hidden; }
+  .star { position: absolute; width: 2px; height: 2px; background: rgba(255,255,255,0.6); border-radius: 50%; }
+  .cs { position: absolute; width: 4px; height: 4px; background: rgba(200,190,255,0.9); border-radius: 50%; box-shadow: 0 0 4px rgba(180,160,255,0.6); }
+  .nav { background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.08); padding: 4px 2px 7px; display: flex; }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px 1px; font-size: 6px; color: rgba(255,255,255,0.4); }
+  .nav-tab.active { color: rgba(255,255,255,0.9); }
+  .nav-icon { font-size: 11px; }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: transparent; }
+  .nav-tab.active .dot { background: white; }
+  .ctx-strip {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+    background: rgba(0,0,12,0.82); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 4px 8px; display: flex; align-items: center; justify-content: space-between; font-size: 7.5px;
+  }
+  .back-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); border-radius: 5px; padding: 1px 5px; font-size: 7.5px; color: rgba(255,255,255,0.8); }
+  .strip-center { font-size: 8.5px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .xp-pill { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); border-radius: 5px; padding: 1px 5px; font-size: 7px; color: rgb(6,182,212); font-family: monospace; }
+
+  /* Mini card (before tap) */
+  .mini-card {
+    position: absolute; bottom: 8px; left: 8px; right: 8px;
+    background: rgba(8,6,28,0.88); border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 10px; padding: 7px 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mini-card .name { font-size: 9px; font-weight: 700; color: rgba(200,190,255,0.95); }
+  .mini-card .hint { font-size: 7px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+  .mini-card .tap-hint { font-size: 7px; color: rgba(99,102,241,0.7); }
+
+  /* Expanded card (after tap) */
+  .expanded-card {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(6,4,22,0.96); border-top: 1px solid rgba(99,102,241,0.4);
+    border-radius: 14px 14px 0 0; padding: 0;
+    display: flex; flex-direction: column;
+  }
+  .card-drag { width: 28px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 6px auto 0; }
+  .card-title { font-size: 10px; font-weight: 700; color: rgba(200,190,255,0.95); padding: 4px 10px 0; }
+  .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.06); margin: 4px 8px 0; gap: 0; }
+  .tab { flex: 1; text-align: center; font-size: 7px; padding: 4px 2px; color: rgba(255,255,255,0.4); border-bottom: 2px solid transparent; }
+  .tab.active { color: rgba(200,190,255,0.9); border-bottom-color: rgba(99,102,241,0.8); font-weight: 600; }
+  .card-body { padding: 6px 10px 8px; font-size: 7.5px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+  /* Peek strip */
+  .peek-strip {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(8,6,28,0.9); border-top: 1px solid rgba(99,102,241,0.3);
+    padding: 6px 12px 5px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .peek-full {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(6,4,22,0.97); border-top: 1px solid rgba(99,102,241,0.4);
+    border-radius: 14px 14px 0 0;
+  }
+
+  .step-label { font-size: 10px; color: rgba(255,255,255,0.3); text-align: center; font-style: italic; }
+  .pro { color: rgba(134,239,172,0.9); font-size: 10px; }
+  .con { color: rgba(252,165,165,0.8); font-size: 10px; }
+  .pro-con { display: flex; flex-direction: column; gap: 2px; }
+  .divider { width: 1px; background: rgba(255,255,255,0.07); align-self: stretch; margin: 0 0.5rem; }
+</style>
+
+<h2>Hur öppnas Berättelse / Hitta den / Kul fakta?</h2>
+<p class="subtitle">Välj det flöde som känns mest naturligt. Klicka för att markera.</p>
+
+<div class="split">
+
+  <!-- Option A: Mini card → tap → expands with tabs -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="border-radius:16px; padding:16px;">
+    <div class="col">
+      <div class="col-label">A — Kort → tryck → expanderar</div>
+      <div class="flow">
+        <!-- Before tap -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-label">1. Stjärnbild vald</div>
+          <div class="phone phone-sm">
+            <div class="notch"></div>
+            <div class="scene">
+              <div class="star" style="top:25%;left:20%"></div>
+              <div class="star" style="top:50%;left:75%"></div>
+              <div class="cs" style="top:30%;left:35%"></div>
+              <div class="cs" style="top:24%;left:50%"></div>
+              <div class="cs" style="top:34%;left:63%"></div>
+              <div class="ctx-strip">
+                <div class="back-btn">← Stjärnbilder</div>
+                <div class="strip-center">Orion</div>
+                <div class="xp-pill">240 XP</div>
+              </div>
+              <!-- Mini card -->
+              <div class="mini-card">
+                <div>
+                  <div class="name">✦ Orion</div>
+                  <div class="hint">Jägaren syns vintertid…</div>
+                </div>
+                <div class="tap-hint">Tryck ↑</div>
+              </div>
+            </div>
+            <div class="nav">
+              <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+              <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <!-- After tap -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-label">2. Tryck på kortet</div>
+          <div class="phone phone-sm">
+            <div class="notch"></div>
+            <div class="scene">
+              <div class="star" style="top:18%;left:22%"></div>
+              <div class="star" style="top:38%;left:72%"></div>
+              <div class="cs" style="top:22%;left:33%"></div>
+              <div class="cs" style="top:16%;left:48%"></div>
+              <div class="cs" style="top:26%;left:60%"></div>
+              <div class="ctx-strip">
+                <div class="back-btn">← Stjärnbilder</div>
+                <div class="strip-center">Orion</div>
+                <div class="xp-pill">240 XP</div>
+              </div>
+              <!-- Expanded card -->
+              <div class="expanded-card" style="height:145px;">
+                <div class="card-drag"></div>
+                <div class="card-title">✦ Orion</div>
+                <div class="tabs">
+                  <div class="tab active">Berättelse</div>
+                  <div class="tab">Hitta den</div>
+                  <div class="tab">Kul fakta</div>
+                </div>
+                <div class="card-body">Jägaren Orion syns tydligast vintertid på norra halvklotet. Bältestjärnorna — tre i rad — är bland de lättaste att känna igen.</div>
+              </div>
+            </div>
+            <div class="nav">
+              <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+              <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pro-con">
+        <span class="pro">✓ Tydlig handling — "tryck för mer"</span>
+        <span class="pro">✓ Stjärnbilden syns i steg 1</span>
+        <span class="pro">✓ Flikar i expanderat kort</span>
+        <span class="con">✗ Expanderat kort täcker halva scenen</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Option B: Peek strip → swipe up → full sheet with tabs -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="border-radius:16px; padding:16px;">
+    <div class="col">
+      <div class="col-label">B — Remsa → dra upp → fullt ark</div>
+      <div class="flow">
+        <!-- Before swipe -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-label">1. Stjärnbild vald</div>
+          <div class="phone phone-sm">
+            <div class="notch"></div>
+            <div class="scene">
+              <div class="star" style="top:25%;left:20%"></div>
+              <div class="star" style="top:45%;left:70%"></div>
+              <div class="cs" style="top:30%;left:30%"></div>
+              <div class="cs" style="top:23%;left:47%"></div>
+              <div class="cs" style="top:33%;left:62%"></div>
+              <div class="ctx-strip">
+                <div class="back-btn">← Stjärnbilder</div>
+                <div class="strip-center">Orion</div>
+                <div class="xp-pill">240 XP</div>
+              </div>
+              <!-- Peek strip -->
+              <div class="peek-strip">
+                <div>
+                  <div style="font-size:8.5px;font-weight:700;color:rgba(200,190,255,0.95);">✦ Orion</div>
+                  <div style="font-size:6.5px;color:rgba(255,255,255,0.35);">Dra upp för Berättelse, Kul fakta…</div>
+                </div>
+                <div style="font-size:11px;color:rgba(99,102,241,0.6);">▲</div>
+              </div>
+            </div>
+            <div class="nav">
+              <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+              <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <!-- After swipe -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-label">2. Dra upp</div>
+          <div class="phone phone-sm">
+            <div class="notch"></div>
+            <div class="scene">
+              <div class="star" style="top:12%;left:20%"></div>
+              <div class="star" style="top:22%;left:68%"></div>
+              <div class="ctx-strip">
+                <div class="back-btn">← Stjärnbilder</div>
+                <div class="strip-center">Orion</div>
+                <div class="xp-pill">240 XP</div>
+              </div>
+              <!-- Full sheet -->
+              <div class="peek-full" style="height:185px;">
+                <div class="card-drag"></div>
+                <div class="card-title" style="padding:4px 10px 0;font-size:10px;">✦ Orion</div>
+                <div class="tabs">
+                  <div class="tab active">Berättelse</div>
+                  <div class="tab">Hitta den</div>
+                  <div class="tab">Kul fakta</div>
+                </div>
+                <div class="card-body">Jägaren Orion syns tydligast vintertid på norra halvklotet. Bältestjärnorna — tre i rad — är bland de lättaste att känna igen på natthimlen.</div>
+              </div>
+            </div>
+            <div class="nav">
+              <div class="nav-tab"><span class="nav-icon">🌍</span>Utforska<div class="dot"></div></div>
+              <div class="nav-tab active"><span class="nav-icon">✦</span>Stjärnor<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">📖</span>Lär<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">🏆</span>Uppdrag<div class="dot"></div></div>
+              <div class="nav-tab"><span class="nav-icon">···</span>Mer<div class="dot"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pro-con">
+        <span class="pro">✓ Scenen är helt fri i steg 1</span>
+        <span class="pro">✓ Naturligt swipe-mönster</span>
+        <span class="con">✗ Extra steg för att nå innehållet</span>
+        <span class="con">✗ "Dra upp" kan vara oklart för vissa</span>
+      </div>
+    </div>
+  </div>
+
+</div>

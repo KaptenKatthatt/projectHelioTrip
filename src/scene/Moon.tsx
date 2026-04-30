@@ -1,12 +1,12 @@
 import { Suspense, useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei/core/Texture';
 import { type Group } from 'three';
 import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
-import { useStore } from '../store/useStore';
 import { getGraphicsPreset } from '../lib/graphicsTier';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
+import { useSimulationTickFrame } from '../hooks/useSimulationTickFrame';
+import { applyBodySpinFromTime } from './bodySpin';
 
 type Props = {
   moon: MoonDefinition;
@@ -18,13 +18,11 @@ const GEOMETRY_ARGS: [number, number, number] = [
   MOON_SPHERE[0],
   MOON_SPHERE[1],
 ];
-const TAU = Math.PI * 2;
 const MS_PER_HOUR = 3_600_000;
 
 export const Moon = ({ moon }: Props) => {
   const groupRef = useRef<Group>(null);
   const spinRef = useRef<Group>(null);
-
   const initial = useMemo(() => {
     const parent = getLivePosition(moon.parent);
     const offset = getLiveMoonOffset(moon.id);
@@ -37,7 +35,7 @@ export const Moon = ({ moon }: Props) => {
 
   const periodMs = moon.rotationPeriodHours * MS_PER_HOUR;
 
-  useFrame(() => {
+  useSimulationTickFrame((simMs) => {
     const group = groupRef.current;
     if (group) {
       const parent = getLivePosition(moon.parent);
@@ -49,12 +47,7 @@ export const Moon = ({ moon }: Props) => {
       );
     }
 
-    const spin = spinRef.current;
-    if (spin) {
-      const simMs = useStore.getState().simulationTime.getTime();
-      const phase = (simMs / periodMs) % 1;
-      spin.rotation.y = phase * TAU;
-    }
+    applyBodySpinFromTime(spinRef, simMs, periodMs);
   });
 
   return (

@@ -25,7 +25,7 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+import { type MutableRefObject, useEffect, useRef } from 'react';
 import { PerspectiveCamera } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
@@ -35,6 +35,53 @@ import { cameraTravelSpringProgressRef } from './cameraTravelSpringProgress';
 const PLANET_VIEWPORT_UPSHIFT_FRACTION = 0.1;
 
 const smoothstep = (t: number): number => t * t * (3 - 2 * t);
+const clearCameraViewOffset = (
+  camera: PerspectiveCamera,
+  width: number,
+  height: number,
+): void => {
+  if (!camera.view?.enabled) return;
+  camera.clearViewOffset();
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+};
+
+const resolveOffsetFactor = (
+  arrivedClose: boolean,
+  skipRampForTravel: boolean,
+): number => {
+  if (arrivedClose || skipRampForTravel) return 1;
+  const progress = cameraTravelSpringProgressRef.current ?? 0;
+  return smoothstep(progress);
+};
+
+const trackTravelTransition = (
+  travelId: number,
+  isTraveling: boolean,
+  prevTravelIdRef: MutableRefObject<number>,
+  prevFrameArrivedCloseRef: MutableRefObject<boolean>,
+  skipRampForThisTravelRef: MutableRefObject<boolean>,
+): void => {
+  const travelIdBumped = travelId !== prevTravelIdRef.current;
+  if (!travelIdBumped) return;
+  prevTravelIdRef.current = travelId;
+  skipRampForThisTravelRef.current =
+    isTraveling && prevFrameArrivedCloseRef.current;
+};
+
+const updatePreSheetCanvas = (
+  canShowPlanetInfo: boolean,
+  sheetOpen: boolean,
+  width: number,
+  height: number,
+  preSheetCanvasRef: MutableRefObject<{ w: number; h: number } | null>,
+): void => {
+  if (!canShowPlanetInfo) {
+    preSheetCanvasRef.current = null;
+    return;
+  }
+  if (!sheetOpen) preSheetCanvasRef.current = { w: width, h: height };
+};
 
 /**
  * In mobile portrait, the bottom HUD leaves the planet feeling too low.
@@ -55,9 +102,9 @@ export const PlanetViewportOffset = (): null => {
   const isMobileLayout = useIsMobileLayout();
   const activeBody = useStore((s) => s.activeBody);
   const isTraveling = useStore((s) => s.isTraveling);
+  const travelId = useStore((s) => s.travelId);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
-  const travelId = useStore((s) => s.travelId);
 
   /** View offset targets portrait HUD; in landscape it skews projection on wide phones. */
   const portraitCanvas = size.width <= size.height;
@@ -65,6 +112,8 @@ export const PlanetViewportOffset = (): null => {
   const enabled =
     isMobileLayout &&
     portraitCanvas &&
+    // Keep offset active during cinematic travel so spring progress can ramp
+    // continuously; gating on !isTraveling causes a visible jump at arrival.
     activeBody !== null &&
     viewMode === 'close' &&
     navigationMode === 'cinematic';
@@ -79,11 +128,7 @@ export const PlanetViewportOffset = (): null => {
     return () => {
       const { camera, size: currentSize } = get();
       if (!(camera instanceof PerspectiveCamera)) return;
-      if (camera.view?.enabled) {
-        camera.clearViewOffset();
-        camera.aspect = currentSize.width / currentSize.height;
-        camera.updateProjectionMatrix();
-      }
+      clearCameraViewOffset(camera, currentSize.width, currentSize.height);
     };
   }, [get]);
 
@@ -91,77 +136,62 @@ export const PlanetViewportOffset = (): null => {
     const camera = get().camera;
     if (!(camera instanceof PerspectiveCamera)) return;
 
+    const width = size.width;
+    const height = size.height;
+
     if (!enabled) {
       preSheetCanvasRef.current = null;
       prevTravelIdRef.current = travelId;
       prevFrameArrivedCloseRef.current = false;
       skipRampForThisTravelRef.current = false;
-      if (camera.view?.enabled) {
-        camera.clearViewOffset();
-        camera.aspect = size.width / size.height;
-        camera.updateProjectionMatrix();
-      }
+      clearCameraViewOffset(camera, width, height);
       return;
     }
 
     const arrivedClose = !isTraveling;
-    const travelIdBumped = travelId !== prevTravelIdRef.current;
-
-    if (travelIdBumped) {
-      prevTravelIdRef.current = travelId;
-      if (isTraveling && prevFrameArrivedCloseRef.current) {
-        skipRampForThisTravelRef.current = true;
-      } else {
-        skipRampForThisTravelRef.current = false;
-      }
-    }
-
+    trackTravelTransition(
+      travelId,
+      isTraveling,
+      prevTravelIdRef,
+      prevFrameArrivedCloseRef,
+      skipRampForThisTravelRef,
+    );
     if (arrivedClose) {
       skipRampForThisTravelRef.current = false;
     }
 
-    let factor = 1;
-    if (!arrivedClose) {
-      if (skipRampForThisTravelRef.current) {
-        factor = 1;
-      } else {
-        const p = cameraTravelSpringProgressRef.current ?? 0;
-        factor = smoothstep(p);
-      }
-    } else {
-      factor = 1;
-    }
-
+    const factor = resolveOffsetFactor(
+      arrivedClose,
+      skipRampForThisTravelRef.current,
+    );
     prevFrameArrivedCloseRef.current = arrivedClose;
 
     const sheetOpen = useStore.getState().mobilePlanetInfoSheetOpen;
     const canShowPlanetInfo =
-      activeBody !== null && viewMode === 'close' && !isTraveling;
+      activeBody !== null &&
+      viewMode === 'close' &&
+      navigationMode === 'cinematic' &&
+      !isTraveling;
+    updatePreSheetCanvas(
+      canShowPlanetInfo,
+      sheetOpen,
+      width,
+      height,
+      preSheetCanvasRef,
+    );
 
-    if (!canShowPlanetInfo) {
-      preSheetCanvasRef.current = null;
-    } else if (!sheetOpen) {
-      preSheetCanvasRef.current = { w: size.width, h: size.height };
-    }
-
-    const w = size.width;
-    const h = size.height;
     const offsetBaseH =
       sheetOpen && preSheetCanvasRef.current !== null
         ? preSheetCanvasRef.current.h
-        : h;
+        : height;
     const offsetY = PLANET_VIEWPORT_UPSHIFT_FRACTION * offsetBaseH * factor;
 
     if (offsetY < 1e-4) {
-      if (camera.view?.enabled) {
-        camera.clearViewOffset();
-        camera.aspect = size.width / size.height;
-        camera.updateProjectionMatrix();
-      }
+      clearCameraViewOffset(camera, width, height);
       return;
     }
 
-    camera.setViewOffset(w, h, 0, offsetY, w, h);
+    camera.setViewOffset(width, height, 0, offsetY, width, height);
   }, 1);
 
   return null;

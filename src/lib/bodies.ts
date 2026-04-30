@@ -14,7 +14,7 @@ import {
 
 export type BodyId = PlanetId | MoonId | SatelliteId;
 
-export type BodyDefinition =
+type BodyDefinition =
   | { kind: 'planet'; def: PlanetDefinition }
   | { kind: 'moon'; def: MoonDefinition }
   | { kind: 'satellite'; def: SatelliteDefinition };

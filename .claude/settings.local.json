@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(*)",
+      "Bash(C:/code/projectHelioTrip-sprint1/node_modules/.bin/eslint --max-warnings=0 C:/code/projectHelioTrip-sprint1/src/components/atoms/XpBadge.tsx C:/code/projectHelioTrip-sprint1/src/components/organisms/PlanetPanel.tsx C:/code/projectHelioTrip-sprint1/src/components/templates/hud/HudPrimaryNavRegion.tsx C:/code/projectHelioTrip-sprint1/src/components/templates/hud/HudDetailRegion.tsx)"
     ]
   }
 }
