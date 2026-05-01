@@ -8,9 +8,11 @@ import {
 } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { PortraitRotateOverlay } from "./components/molecules/PortraitRotateOverlay";
 import { HUD } from "./components/templates/HUD";
 import { LoadingScreen } from "./components/templates/LoadingScreen";
 import { SceneErrorBoundary } from "./components/templates/SceneErrorBoundary";
+import { usePhoneLandscapePortraitLock } from "./hooks/usePhoneLandscapePortraitLock";
 import { useStore } from "./store/useStore";
 import { parseShareLink } from "./lib/shareLink";
 
@@ -29,6 +31,7 @@ const LazyScene = lazy(async () => {
 });
 
 export const App = () => {
+  const portraitLock = usePhoneLandscapePortraitLock();
   const locale = useStore((s) => s.locale);
   const appStartMsRef = useRef<number | null>(null);
   const [minGateDone, setMinGateDone] = useState(false);
@@ -97,17 +100,43 @@ export const App = () => {
 
   const dismissOverlay = minGateDone && sceneReady;
 
+  const sceneBoundary = (
+    <SceneErrorBoundary onRetry={handleRetryScene}>
+      <Suspense fallback={null}>
+        <LazyScene key={sceneMountKey} onSceneReady={handleSceneReady} />
+      </Suspense>
+    </SceneErrorBoundary>
+  );
+
   return (
     <>
       {gateMounted ? (
         <LoadingScreen dismiss={dismissOverlay} onDismissed={handleDismissed} />
       ) : null}
-      <SceneErrorBoundary onRetry={handleRetryScene}>
-        <Suspense fallback={null}>
-          <LazyScene key={sceneMountKey} onSceneReady={handleSceneReady} />
-        </Suspense>
-      </SceneErrorBoundary>
-      <HUD />
+      <div
+        className={
+          "fixed inset-0 z-0 min-h-0 " +
+          (portraitLock.active
+            ? "flex items-center justify-center bg-[hsl(231_38%_10%)]"
+            : "")
+        }
+      >
+        <div
+          className="relative isolate min-h-0"
+          style={
+            portraitLock.active
+              ? {
+                  width: portraitLock.stageWidth,
+                  height: portraitLock.stageHeight,
+                }
+              : { width: "100%", height: "100%" }
+          }
+        >
+          <div className="absolute inset-0 z-0 min-h-0">{sceneBoundary}</div>
+          <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
+        </div>
+        {portraitLock.active ? <PortraitRotateOverlay /> : null}
+      </div>
       <Analytics />
       <SpeedInsights />
     </>

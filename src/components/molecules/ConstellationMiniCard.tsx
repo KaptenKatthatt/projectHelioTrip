@@ -41,6 +41,7 @@ export const ConstellationMiniCard = ({
   return (
     <>
       <div
+        data-testid="constellation-mini-card"
         role="button"
         tabIndex={0}
         onClick={() => setExpanded(true)}

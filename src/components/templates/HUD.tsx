@@ -20,7 +20,14 @@ const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "c
   challenge: "challenge",
 };
 
-export const HUD = () => {
+export type HudFrame = "viewport" | "stage";
+
+type HUDProps = {
+  /** `stage`: position relative to the letterboxed portrait stage; `viewport`: fixed to the window. */
+  readonly hudFrame?: HudFrame;
+};
+
+export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
   const { t, bodyName } = useTranslation();
   const layoutTier = useResponsiveLayout();
   const mobileLayout = layoutTier === "compact";
@@ -104,7 +111,8 @@ export const HUD = () => {
   return (
     <div
       className={
-        "pointer-events-none fixed inset-0 z-10 flex flex-col justify-between font-sans text-white " +
+        "pointer-events-none z-10 flex flex-col justify-between font-sans text-white " +
+        (hudFrame === "stage" ? "absolute inset-0 " : "fixed inset-0 ") +
         (mobileLayout
           ? "p-3 pt-10 pb-[calc(7rem+env(safe-area-inset-bottom))]"
           : layoutTier === "expanded"

@@ -103,6 +103,9 @@ export const sv: Translation = {
     constellationSeasonAutumn: "Höst",
     backToConstellationsList: "Tillbaka till listan med stjärnbilder",
     nextConstellation: "Nästa stjärnbild",
+    portraitOnlyTitle: "Porträttläge krävs",
+    portraitOnlyBody:
+      "Spelet fungerar bara i porträttläge. Vänligen vänd tillbaka telefonen.",
   },
   phase3: {
     dailyChallenge: "Dagens utmaning",
