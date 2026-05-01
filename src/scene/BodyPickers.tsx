@@ -17,6 +17,7 @@ import {
 } from '../lib/bodyPickPointer';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 /**
  * Picking radius is `max(bodyRadius * 1.2, screenPxToWorld(20))` — so
@@ -51,6 +52,7 @@ export const BodyPickers = () => {
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelTo = useStore((s) => s.travelTo);
+  const mobileLayout = useIsMobileLayout();
 
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
@@ -78,8 +80,20 @@ export const BodyPickers = () => {
 
   const onSelect = useCallback(
     (id: BodyId) => {
-      requestSuppressNextPlanetInfoCanvasDismiss();
       const s = useStore.getState();
+      // Keep in sync with `enabled` in MobilePlanetInfoCanvasDismiss: only that
+      // path calls consumePlanetInfoCanvasDismissSuppress on pointerup.
+      const showPlanetInfoUi =
+        s.activeBody !== null &&
+        s.viewMode !== 'overview' &&
+        !s.isTraveling;
+      if (
+        mobileLayout &&
+        s.mobilePlanetInfoSheetOpen &&
+        showPlanetInfoUi
+      ) {
+        requestSuppressNextPlanetInfoCanvasDismiss();
+      }
       if (
         s.activeBody === id &&
         s.viewMode === 'close' &&
@@ -90,7 +104,7 @@ export const BodyPickers = () => {
       }
       travelTo(id);
     },
-    [travelTo],
+    [mobileLayout, travelTo],
   );
 
   /**
