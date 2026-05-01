@@ -70,7 +70,7 @@ test("stars sheet closes on pick and opens mini-card story", async ({ page }) =>
   await expect(starsSheet).toHaveCount(0);
 
   await expect(page.getByRole("button", { name: "Stjärnbilder" })).toBeVisible();
-  const miniCard = page.locator("button", { hasText: "✦" }).first();
+  const miniCard = page.getByTestId("constellation-mini-card");
   await expect(miniCard).toBeVisible();
   await miniCard.click();
   await expect(page.getByRole("tab", { name: "Berättelse" }).first()).toBeVisible();
@@ -89,7 +89,7 @@ test("rapid constellation picks keep a visible selected constellation", async ({
   await firstPick.click();
   await expect(starsSheet).toHaveCount(0);
 
-  const miniCard = page.locator("button", { hasText: "✦" }).first();
+  const miniCard = page.getByTestId("constellation-mini-card");
   await expect(miniCard).toBeVisible();
   const firstMiniCardText = (await miniCard.textContent()) ?? "";
 
