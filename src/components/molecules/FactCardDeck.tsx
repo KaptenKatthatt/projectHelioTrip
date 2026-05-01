@@ -13,12 +13,12 @@ type Props = {
 };
 
 export const FactCardDeck = ({ bodyId, showLevelToggle = false }: Props) => {
-  const level = useStore((s) => s.learningLevel);
   const triggerQuiz = useStore((s) => s.triggerQuiz);
   const { t, locale } = useTranslation();
 
-  const cards = getFactCardsForBody(bodyId, level);
-  const quizQuestions = getQuizQuestionsForBody(bodyId, level);
+  // Show all facts regardless of level
+  const cards = getFactCardsForBody(bodyId, 'both');
+  const quizQuestions = getQuizQuestionsForBody(bodyId, 'both');
   const hasQuiz = quizQuestions.length > 0;
 
   const handleTestYourself = () => {
@@ -29,15 +29,13 @@ export const FactCardDeck = ({ bodyId, showLevelToggle = false }: Props) => {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {showLevelToggle && <LevelToggle />}
-
+    <div className="flex flex-col h-full relative">
       {cards.length === 0 ? (
         <p className="text-xs text-white/40 text-center py-4">
           {t.learn.ui.noFactCards}
         </p>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex-1 space-y-2">
           {cards.map((card) => (
             <FactCard key={card.id} card={card} locale={locale} />
           ))}
@@ -45,14 +43,16 @@ export const FactCardDeck = ({ bodyId, showLevelToggle = false }: Props) => {
       )}
 
       {hasQuiz && (
-        <button
-          type="button"
-          onClick={handleTestYourself}
-          className="pointer-events-auto mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20"
-        >
-          {t.learn.ui.testYourself}
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </button>
+        <div className="sticky bottom-0 pt-3 mt-2 border-t border-white/10 bg-[#05060a] pb-2 z-10">
+          <button
+            type="button"
+            onClick={handleTestYourself}
+            className="pointer-events-auto w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-3 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20"
+          >
+            {t.learn.ui.testYourself}
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
       )}
     </div>
   );
