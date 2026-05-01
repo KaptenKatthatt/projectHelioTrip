@@ -82,20 +82,42 @@ export const PlanetOrbitControls = () => {
     if (!controls) return;
 
     getBodyWorldPosition(activeBody, tmpTarget);
-    // Intentional: orbit target uses the same mobile lift as framing so the
-    // selected body stays at the approved on-screen height in close view.
-    tmpTarget.y = applyMobilePlanetScreenLift(
-      camera,
-      camera.position.distanceTo(tmpTarget),
-      tmpTarget.y,
-      size,
-      isMobileLayout,
-    );
-
+    
+    // When switching layouts, we need to recalculate the target position
+    // and snap the camera to maintain the correct view distance and angle
     if (!initializedRef.current) {
+      // First, get the raw target position
+      const rawTarget = tmpTarget.clone();
+      
+      // Calculate the lifted target for mobile if needed
+      tmpTarget.y = applyMobilePlanetScreenLift(
+        camera,
+        camera.position.distanceTo(tmpTarget),
+        tmpTarget.y,
+        size,
+        isMobileLayout,
+      );
+
+      // If we're transitioning between layouts, we need to adjust the camera position
+      // to maintain the same relative view, rather than just snapping the target
+      if (prevMobileLayoutRef.current !== isMobileLayout) {
+        // Calculate the current relative offset from the old target
+        tmpDelta.subVectors(camera.position, controls.target);
+        // Apply it to the new target
+        camera.position.copy(tmpTarget).add(tmpDelta);
+      }
+
       controls.target.copy(tmpTarget);
       initializedRef.current = true;
     } else {
+      tmpTarget.y = applyMobilePlanetScreenLift(
+        camera,
+        camera.position.distanceTo(tmpTarget),
+        tmpTarget.y,
+        size,
+        isMobileLayout,
+      );
+      
       tmpDelta.subVectors(tmpTarget, controls.target);
       camera.position.add(tmpDelta);
       controls.target.copy(tmpTarget);
