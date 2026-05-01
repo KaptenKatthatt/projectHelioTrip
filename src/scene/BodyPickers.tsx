@@ -10,6 +10,10 @@ import {
   getBodyWorldPosition,
   type BodyId,
 } from '../lib/bodies';
+import {
+  registerBodyPickPointer,
+  unregisterBodyPickPointer,
+} from '../lib/bodyPickPointer';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -20,7 +24,8 @@ import { useTranslation } from '../hooks/useTranslation';
  * inner solar system without needing to zoom in first.
  */
 const PICK_SCREEN_PX = 20;
-const CLICK_PIXEL_THRESHOLD = 5;
+/** Must stay in sync with overview orbit drag threshold — see OverviewLookControls. */
+const CLICK_PIXEL_THRESHOLD = 10;
 /**
  * Vertical offset between the body's center and the label, expressed
  * in screen pixels. Clamped to be at least `bodyRadius * 1.3` so the
@@ -184,27 +189,33 @@ const PickableBody = ({
   }, [id, onHoverLeave]);
 
   const handlePointerDown = useCallback((event: ThreeEvent<PointerEvent>) => {
+    registerBodyPickPointer(event.pointerId);
     downPosRef.current = { x: event.clientX, y: event.clientY };
   }, []);
 
   const handlePointerUp = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
-      const down = downPosRef.current;
-      downPosRef.current = null;
-      if (!down) return;
-      const dx = event.clientX - down.x;
-      const dy = event.clientY - down.y;
-      if (dx * dx + dy * dy > CLICK_PIXEL_THRESHOLD * CLICK_PIXEL_THRESHOLD) {
-        return;
+      try {
+        const down = downPosRef.current;
+        downPosRef.current = null;
+        if (!down) return;
+        const dx = event.clientX - down.x;
+        const dy = event.clientY - down.y;
+        if (dx * dx + dy * dy > CLICK_PIXEL_THRESHOLD * CLICK_PIXEL_THRESHOLD) {
+          return;
+        }
+        event.stopPropagation();
+        onSelect(id);
+      } finally {
+        unregisterBodyPickPointer(event.pointerId);
       }
-      event.stopPropagation();
-      onSelect(id);
     },
     [id, onSelect],
   );
 
-  const handlePointerCancel = useCallback(() => {
+  const handlePointerCancel = useCallback((event: ThreeEvent<PointerEvent>) => {
     downPosRef.current = null;
+    unregisterBodyPickPointer(event.pointerId);
   }, []);
 
   return (
