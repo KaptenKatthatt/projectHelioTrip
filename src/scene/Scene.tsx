@@ -8,6 +8,7 @@ import { ConstellationViewportOffset } from "./ConstellationViewportOffset";
 import { MobileViewOffset } from "./MobileViewOffset";
 import { ViewportResizeSync } from "./ViewportResizeSync";
 import { MobilePlanetInfoCanvasDismiss } from "./MobilePlanetInfoCanvasDismiss";
+import { ConstellationRotationControls } from "./ConstellationRotationControls";
 import { OverviewLookControls } from "./OverviewLookControls";
 import { SkyFocusCamera } from "./SkyFocusCamera";
 import { TimeManager } from "./TimeManager";
@@ -161,6 +162,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
       ) : null}
       <OverviewLookControls />
       <GlobalZoom />
+      <ConstellationRotationControls />
       <PlanetViewportOffset />
       <ConstellationViewportOffset />
       <Suspense fallback={null}>

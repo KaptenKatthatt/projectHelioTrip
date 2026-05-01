@@ -24,10 +24,6 @@ Ha inte uppdrag på lär?
 
 Döp om uppdrag till achievements eller gör den mer till uppdrag och spel, lär bara lär
 
-Raketen syns inte när man lämnar lär och uppdrag
-
-Stöd för liggande mobilvy eller blockera det?
-
 Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
 
 //DONE
@@ -42,3 +38,6 @@ Ta bort rymdväder och den andra
 Flyg fritt ska ersättas bara av raketikonen, den ska ligga till vänster om playknappen när utforskaläget är aktivt - Ta bort den från Mer menyn
 
 Större playknapp
+
+Stöd för liggande mobilvy eller blockera det?
+Raketen syns inte när man lämnar lär och uppdrag

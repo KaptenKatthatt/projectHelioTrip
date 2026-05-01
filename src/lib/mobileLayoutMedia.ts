@@ -24,3 +24,11 @@ export function matchesMobileLayout(): boolean {
     window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches
   );
 }
+
+/**
+ * Constellation two-finger rotation on canvas: compact/tablet widths and any
+ * touch-primary viewport (e.g. iPad landscape ≥1280px). Avoids gating on
+ * {@link MOBILE_LAYOUT_MEDIA_QUERY} alone, which misses many tablets.
+ */
+export const CONSTELLATION_PINCH_ROTATE_MQ =
+  '(max-width: 1279px), (hover: none)';
