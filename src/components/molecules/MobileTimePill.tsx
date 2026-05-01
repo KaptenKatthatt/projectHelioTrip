@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useTimePlaybackState } from '../../hooks/useTimePlaybackState';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatDaysPerSecond } from '../../lib/timePlayback';
-import { ConstellationViewControls } from '../ConstellationViewControls';
 import { BottomSheet } from './BottomSheet';
 import { TimePlaybackControls } from '../organisms/TimePlaybackControls';
 
@@ -22,9 +21,7 @@ export const MobileTimePill = () => {
 
   return (
     <>
-      {inConstellationView ? (
-        <ConstellationViewControls />
-      ) : (
+      {inConstellationView ? null : (
         <div
           role="group"
           aria-label={t.ui.timeControls}

@@ -60,7 +60,7 @@ export const HudDetailRegion = ({
     gameMode === "explore" &&
     navigationMode === "free";
   const floatingButtonBottomClass = showConstellationMiniCard
-    ? "bottom-[calc(12.5rem+env(safe-area-inset-bottom))]"
+    ? "bottom-[calc(15.5rem+env(safe-area-inset-bottom))]"
     : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]";
 
   if (!mobileLayout) return null;
