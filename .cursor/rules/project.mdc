@@ -29,5 +29,9 @@ alwaysApply: true
 - No dead code or unused imports.
 - Performance matters: avoid unnecessary allocation, memoize heavy work.
 
+## CI / Vercel
+- Production build uses `tsc` with `noUnusedLocals` / `noUnusedParameters` (see `tsconfig`). Unused imports, props, or destructured values **fail the build**.
+- Before claiming a task is done, run `npm run build` (or at least `npx tsc --noEmit`) and fix all TS errors. Do not leave placeholder props “for later” on components.
+
 ## Communication
 - If the agent asked a question and got no answer, ask again before continuing work.

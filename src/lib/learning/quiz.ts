@@ -623,7 +623,11 @@ export const QUIZ_QUESTIONS: ReadonlyArray<QuizQuestion> = [
 export const getQuizQuestionsForBody = (
   bodyId: BodyId,
   level: FactCardLevel,
-): ReadonlyArray<QuizQuestion> =>
-  QUIZ_QUESTIONS.filter(
+): ReadonlyArray<QuizQuestion> => {
+  if (level === 'both') {
+    return QUIZ_QUESTIONS.filter((q) => q.bodyId === bodyId);
+  }
+  return QUIZ_QUESTIONS.filter(
     (q) => q.bodyId === bodyId && (q.level === level || q.level === 'both'),
   );
+};

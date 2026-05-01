@@ -14,10 +14,7 @@ type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;
   readonly showPlanetInfoUi: boolean;
   readonly showMissionUi: boolean;
-  readonly activeBody: string | null;
   readonly selectedConstellation: string | null;
-  readonly mobileBodyTitle: string;
-  readonly mobileBodyColor: string | null;
   readonly minimizePanelLabel: string;
   readonly expandPanelLabel: string;
   readonly progressTitle: string;
@@ -27,10 +24,7 @@ export const HudPrimaryNavRegion = ({
   mobileLayout,
   showPlanetInfoUi,
   showMissionUi,
-  activeBody,
   selectedConstellation,
-  mobileBodyTitle,
-  mobileBodyColor,
   minimizePanelLabel,
   expandPanelLabel,
   progressTitle,
@@ -59,27 +53,11 @@ export const HudPrimaryNavRegion = ({
             <ConstellationStoryCard />
           ) : null}
           {showPlanetInfoUi ? (
-            <CollapsibleHudPanel
-              key={activeBody}
-              title={mobileBodyTitle}
-              collapsedTitlePrefix={
-                mobileBodyColor ? (
-                  <span
-                    className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/20"
-                    style={{ backgroundColor: mobileBodyColor }}
-                  />
-                ) : null
-              }
-              className="relative w-full max-w-sm"
-              defaultCollapsed
-              collapseLabel={minimizePanelLabel}
-              expandLabel={expandPanelLabel}
-              collapseOnExpandedHeaderClick
-            >
+            <div className="pointer-events-auto max-h-[calc(100dvh-8rem)] overflow-y-auto custom-scrollbar rounded-2xl animate-slide-up">
               <PlanetPanel />
-            </CollapsibleHudPanel>
+            </div>
           ) : null}
-          {showPlanetInfoUi || selectedConstellation === null ? (
+          {!showPlanetInfoUi && selectedConstellation === null ? (
             <CollapsibleHudPanel
               title={progressTitle}
               className="relative w-full max-w-sm"
@@ -92,13 +70,13 @@ export const HudPrimaryNavRegion = ({
               )}
             </CollapsibleHudPanel>
           ) : null}
-          {showMissionUi && (showPlanetInfoUi || selectedConstellation === null) ? (
+          {showMissionUi && !showPlanetInfoUi && selectedConstellation === null ? (
             <MissionCard className="w-full max-w-sm" />
           ) : null}
-          {showMissionUi && selectedConstellation === null ? (
+          {showMissionUi && !showPlanetInfoUi && selectedConstellation === null ? (
             <DailyChallengeCard className="max-w-sm" />
           ) : null}
-          {showMissionUi && selectedConstellation === null ? (
+          {showMissionUi && !showPlanetInfoUi && selectedConstellation === null ? (
             <NarrativeMessage />
           ) : null}
           <FreeFlightHelp />

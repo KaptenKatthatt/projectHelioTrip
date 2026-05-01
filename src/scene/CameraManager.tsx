@@ -66,7 +66,7 @@ export const CameraManager = () => {
 
     const travel = createTravelFromState(state, startPos, startForward);
     if (!travel) {
-      useStore.setState({ isTravelAnimating: false });
+      useStore.setState({ isTravelAnimating: false, isTraveling: false });
       cameraTravelSpringProgressRef.current = null;
       return;
     }

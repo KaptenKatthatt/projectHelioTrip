@@ -332,7 +332,7 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
 
       {activeTab === "facts" && (
         <div className="mt-4">
-          <FactCardDeck bodyId={activeBody} showLevelToggle />
+          <FactCardDeck bodyId={activeBody} />
         </div>
       )}
 

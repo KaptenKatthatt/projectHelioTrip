@@ -29,7 +29,7 @@ import {
   inferShareLinkContextType,
   type ShareLinkState,
 } from "../lib/shareLink";
-import { DEFAULT_TIME_SCALE } from "../lib/timePlayback";
+import { DEFAULT_TIME_SCALE, TIME_SPEED_PRESETS } from "../lib/timePlayback";
 import type { FactCardLevel } from "../lib/learning/bodyContent";
 import { type TitleId, XP_AWARDS, resolveTitle } from "../lib/learning/xp";
 
@@ -447,6 +447,10 @@ export const useStore = create<Store>()(
 
       travelTo: (id) => {
         analytics.planetSelected(id);
+        const currentState = useStore.getState();
+        const slowDownSpeed = TIME_SPEED_PRESETS[0] ?? 0.25;
+        const shouldSlowDown = currentState.isPlaying && currentState.timeScale !== slowDownSpeed;
+
         set((state) => ({
           activeBody: id,
           isTraveling: true,
@@ -455,9 +459,16 @@ export const useStore = create<Store>()(
           navigationMode: "cinematic",
           selectedConstellation: null,
           constellationUserSpinRad: 0,
+          ...(shouldSlowDown ? { timeScale: slowDownSpeed } : {}),
         }));
         recordVisitedBody(id);
         dispatchDomainEvent({ kind: "body_focused", bodyId: id });
+        if (shouldSlowDown) {
+          dispatchDomainEvent({
+            kind: "time_scale_changed",
+            daysPerSecond: slowDownSpeed,
+          });
+        }
       },
 
       travelToOverview: () =>

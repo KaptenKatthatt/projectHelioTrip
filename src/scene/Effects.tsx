@@ -31,7 +31,15 @@ const VIGNETTE_PROPS = { offset: 0.35, darkness: 0.55 } as const;
 export const Effects = () => {
   const { effectsMode, effectComposerMsaa } = getGraphicsPreset();
   const viewMode = useStore((s) => s.viewMode);
-  const shouldUseDof = effectsMode === 'full' && viewMode === 'close';
+  const isTraveling = useStore((s) => s.isTraveling);
+  /**
+   * DoF uses Kawase blur at reduced resolution; with viewMode already "close"
+   * while the camera is still in overview, the whole frame reads as a sudden
+   * "resolution drop" and stays mushy until the fly-in finishes. Keep close-up
+   * DoF only after cinematic travel settles.
+   */
+  const shouldUseDof =
+    effectsMode === 'full' && viewMode === 'close' && !isTraveling;
 
   if (!shouldUseDof) {
     return (
