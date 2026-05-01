@@ -10,6 +10,7 @@ Gör en redesign och utveckling av Lär och Uppdragsdelen, lägg till några fle
 
 Är texturerna på planeterna suddiga vid friflygläge?
 
+//User testing
 Låsa på planeter allteftersom man åker till dom
 
 Gå till utforska avslutar uppdrag.
@@ -18,15 +19,13 @@ Kan inte lämna stjärnbilder
 
 Ta bort hög och mellanstadiet kategorier, ha bara en
 
-Rotera stjärnbilder med fingrar på mobil
-
 Ha inte uppdrag på lär?
 
 Döp om uppdrag till achievements eller gör den mer till uppdrag och spel, lär bara lär
 
-Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
 
 //DONE
+✅Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
 ✅Implementera Atomic design/ Refactor UI designsystem
 
 ✅Kolla så att stjärnbilderna stämmer med hur de ser ut i verkligheten
@@ -41,3 +40,5 @@ Större playknapp
 
 Stöd för liggande mobilvy eller blockera det?
 Raketen syns inte när man lämnar lär och uppdrag
+
+Rotera stjärnbilder med fingrar på mobil
