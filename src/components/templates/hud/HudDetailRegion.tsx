@@ -6,9 +6,7 @@ import type { Translation } from "../../../i18n/translations";
 import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
-import { LanguageToggle } from "../../molecules/LanguageToggle";
 import { ConstellationMiniCard } from "../../molecules/ConstellationMiniCard";
-import { AboutDialog } from "../../organisms/AboutDialog";
 import { ConstellationList } from "../../organisms/ConstellationList";
 import { MissionCard } from "../../organisms/MissionCard";
 import { PlanetPanel, type PanelTab } from "../../organisms/PlanetPanel";
@@ -142,17 +140,6 @@ export const HudDetailRegion = ({
       >
         <div className="p-3">
           <ProgressPanel compact className="w-full" />
-        </div>
-      </BottomSheet>
-
-      <BottomSheet
-        open={openNavSheet === "more"}
-        onClose={closeNavSheets}
-        title={t.ui.bottomNavMore}
-      >
-        <div className="flex flex-col gap-3 p-4">
-          <LanguageToggle />
-          <AboutDialog />
         </div>
       </BottomSheet>
 

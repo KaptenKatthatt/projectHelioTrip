@@ -5,34 +5,49 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { AUTHOR_WEBSITE_URL } from "../../lib/footerLinks";
 import { LanguageToggle } from "../molecules/LanguageToggle";
 
-export const AboutDialog = () => {
+type AboutDialogProps = {
+  readonly open?: boolean;
+  readonly onClose?: () => void;
+};
+
+export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
   const titleId = useId();
   const descId = useId();
+
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openInternal;
+
+  const handleClose = (): void => {
+    if (controlled) onClose?.();
+    else setOpenInternal(false);
+  };
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, controlled, onClose]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? titleId : undefined}
-        aria-label={t.ui.aboutOpen}
-        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10"
-      >
-        <Info className="h-4 w-4" aria-hidden />
-      </button>
+      {!controlled && (
+        <button
+          type="button"
+          onClick={() => setOpenInternal(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={open ? titleId : undefined}
+          aria-label={t.ui.aboutOpen}
+          className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10"
+        >
+          <Info className="h-4 w-4" aria-hidden />
+        </button>
+      )}
 
       {open
         ? createPortal(
@@ -44,7 +59,7 @@ export const AboutDialog = () => {
                 type="button"
                 aria-label={t.ui.aboutClose}
                 className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               />
               <div className="relative z-10 flex w-full min-h-0 max-w-md flex-1 flex-col items-end gap-2 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] sm:max-h-[min(90dvh,40rem)] sm:flex-none">
                 <LanguageToggle />
@@ -79,7 +94,7 @@ export const AboutDialog = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setOpen(false)}
+                    onClick={handleClose}
                     className="mt-6 w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
                   >
                     {t.ui.aboutClose}
