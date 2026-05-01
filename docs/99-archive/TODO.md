@@ -1,12 +1,4 @@
 //User testing
-Låsa upp planeter allteftersom man åker till dom
-
-Gå till utforska avslutar uppdrag.
-
-Gör en redesign och utveckling av Lär och Uppdragsdelen, lägg till några fler saker på varje steg, lägg till en lärande sida för varje planet och måne
-Ha inte uppdrag på lär?
-
-Döp om uppdrag till achievements eller gör den mer till uppdrag och spel, lär bara lär
 
 //DONE
 ✅Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
