@@ -42,8 +42,8 @@ test("free-flight FAB and more sheet content", async ({ page }) => {
   await autopilotFab.click();
   await expect(page.getByRole("button", { name: "Flyg fritt" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Mer" }).click();
-  const moreSheet = page.getByRole("dialog", { name: "Mer" });
+  await page.getByRole("button", { name: "Om appen" }).click();
+  const moreSheet = page.getByRole("dialog", { name: "Om HelioTrip" });
   await expect(moreSheet).toBeVisible();
   await expect(moreSheet.getByRole("button", { name: "Flyg fritt" })).toHaveCount(0);
 });

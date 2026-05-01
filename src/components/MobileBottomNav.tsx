@@ -1,7 +1,9 @@
-import { BookOpen, Globe2, MoreHorizontal, Stars, Trophy } from "lucide-react";
+import { BookOpen, Globe2, Info, Stars, Trophy } from "lucide-react";
+import { useState } from "react";
 import type { GameMode } from "../lib/missions/types";
 import { useTranslation } from "../hooks/useTranslation";
 import type { MobileHudSheetId } from "../lib/mobileHudSheetIds";
+import { AboutDialog } from "./organisms/AboutDialog";
 
 type MobileBottomNavProps = {
   readonly openSheet: MobileHudSheetId | null;
@@ -14,13 +16,12 @@ type MobileBottomNavProps = {
 const TABS: readonly {
   id: MobileHudSheetId;
   icon: typeof Globe2;
-  labelKey: "explore" | "stars" | "learn" | "challenge" | "more";
+  labelKey: "explore" | "stars" | "learn" | "challenge";
 }[] = [
   { id: "explore", icon: Globe2, labelKey: "explore" },
   { id: "stars", icon: Stars, labelKey: "stars" },
   { id: "learn", icon: BookOpen, labelKey: "learn" },
   { id: "challenge", icon: Trophy, labelKey: "challenge" },
-  { id: "more", icon: MoreHorizontal, labelKey: "more" },
 ];
 
 const tabIsActive = (
@@ -45,10 +46,10 @@ export const MobileBottomNav = ({
   starsContextActive,
 }: MobileBottomNavProps) => {
   const { t } = useTranslation();
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const labelFor = (key: (typeof TABS)[number]["labelKey"]): string => {
     if (key === "stars") return t.ui.bottomNavStars;
-    if (key === "more") return t.ui.bottomNavMore;
     if (key === "explore") return t.phase3.gameMode.explore;
     if (key === "learn") return t.phase3.gameMode.learn;
     return t.phase3.gameMode.challenge;
@@ -97,6 +98,19 @@ export const MobileBottomNav = ({
           </button>
         );
       })}
+      <button
+        type="button"
+        onClick={() => setAboutOpen(true)}
+        aria-label={t.ui.aboutOpen}
+        className="flex min-w-0 flex-1 flex-col items-center gap-1 py-2 transition text-white/45 hover:text-white/70"
+      >
+        <Info className="h-5 w-5 shrink-0" aria-hidden />
+        <span className="truncate text-xs font-medium tracking-wide">
+          {t.ui.bottomNavMore}
+        </span>
+        <span className="h-1 w-1 shrink-0 rounded-full transition bg-transparent" aria-hidden />
+      </button>
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </nav>
   );
 };
