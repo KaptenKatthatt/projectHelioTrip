@@ -3,8 +3,6 @@ import { ChevronLeft, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import type { Translation } from "../../../i18n/translations";
-import { CommunityPulseBadge } from "../../atoms/CommunityPulseBadge";
-import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
 import { BottomSheet } from "../../molecules/BottomSheet";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
@@ -120,8 +118,6 @@ export const HudDetailRegion = ({
       >
         <div className="flex flex-col gap-3 p-3">
           <DailyChallengeCard />
-          <SpaceWeatherBadge />
-          <CommunityPulseBadge />
           <MissionCard compact className="w-full" />
           {showPlanetInfoUi ? (
             <button

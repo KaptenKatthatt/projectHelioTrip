@@ -1,6 +1,4 @@
 import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
-import { CommunityPulseBadge } from "../../atoms/CommunityPulseBadge";
-import { SpaceWeatherBadge } from "../../atoms/SpaceWeatherBadge";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
 import { NarrativeMessage } from "../../molecules/NarrativeMessage";
@@ -100,8 +98,6 @@ export const HudPrimaryNavRegion = ({
           {showMissionUi && selectedConstellation === null ? (
             <DailyChallengeCard className="max-w-sm" />
           ) : null}
-          {showMissionUi && selectedConstellation === null ? <SpaceWeatherBadge /> : null}
-          {showMissionUi && selectedConstellation === null ? <CommunityPulseBadge /> : null}
           {showMissionUi && selectedConstellation === null ? (
             <NarrativeMessage />
           ) : null}
