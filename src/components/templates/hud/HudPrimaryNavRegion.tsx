@@ -59,7 +59,7 @@ export const HudPrimaryNavRegion = ({
             <ConstellationStoryCard />
           ) : null}
           {showPlanetInfoUi ? (
-            <div className="pointer-events-auto max-h-[calc(100dvh-8rem)] overflow-y-auto custom-scrollbar rounded-2xl">
+            <div className="pointer-events-auto max-h-[calc(100dvh-8rem)] overflow-y-auto custom-scrollbar rounded-2xl animate-slide-up">
               <PlanetPanel />
             </div>
           ) : null}
