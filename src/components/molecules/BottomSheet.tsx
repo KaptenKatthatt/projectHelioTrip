@@ -132,7 +132,7 @@ export const BottomSheet = ({
           <div className={'border-b border-white/10 py-1 ' + headerPadX}>{titleTopContent}</div>
         ) : null}
         {title ? (
-          <div className={'border-b border-white/10' + headerPadX} style={headerStyle}>
+          <div className={'border-b border-white/10 ' + headerPadX} style={headerStyle}>
             <div className="flex items-center gap-1">
               <div className="flex shrink-0 items-center justify-center text-white/85">
                 {titleLeftAction ?? null}
