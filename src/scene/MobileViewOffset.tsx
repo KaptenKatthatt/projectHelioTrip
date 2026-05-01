@@ -5,10 +5,10 @@ import { useStore } from "../store/useStore";
 
 /**
  * Fraction of the viewport height that the canvas is shifted upward on the
- * mobile layout, so that the solar system sits higher on the screen at first
- * glance.
+ * mobile layout. Kept at 0 so the WebGL view fills to the bottom nav — a
+ * positive value leaves an empty band (page background) above the menu.
  */
-const MOBILE_VERTICAL_SHIFT_FRACTION = 0.15;
+const MOBILE_VERTICAL_SHIFT_FRACTION = 0;
 
 /**
  * Moves the entire canvas element upward with a CSS transform when the mobile
