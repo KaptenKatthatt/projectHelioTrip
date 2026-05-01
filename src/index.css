@@ -57,6 +57,21 @@
   .animate-slide-up {
     animation: slide-up 0.3s ease-out forwards;
   }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(229 22% 23% / 0.8) transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: hsl(229 22% 23% / 0.8);
+    border-radius: 2px;
+  }
 }
 
 html,

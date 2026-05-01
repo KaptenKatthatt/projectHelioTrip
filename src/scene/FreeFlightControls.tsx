@@ -138,7 +138,7 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   const nx = lx * inv;
   const ny = ly * inv;
   const mag = Math.min(1, (length - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE));
-  // Exponentiell kurva för mjukare finkontroll vid små spakrörelser
+  // Exponential curve for smoother fine control at small stick deflections
   const smoothMag = mag * mag;
   const lookEuler = new Euler().setFromQuaternion(camera.quaternion, "YXZ");
   lookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;

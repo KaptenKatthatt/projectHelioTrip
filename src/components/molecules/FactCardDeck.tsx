@@ -41,7 +41,7 @@ export const FactCardDeck = ({ bodyId }: Props) => {
       )}
 
       {hasQuiz && (
-        <div className="sticky bottom-0 pt-3 mt-2 border-t border-white/10 bg-[#05060a] pb-2 z-10">
+        <div className="sticky bottom-0 pt-3 mt-2 border-t border-white/10 bg-space-dark-900 pb-2 z-10">
           <button
             type="button"
             onClick={handleTestYourself}
