@@ -72,7 +72,10 @@ export const HUD = () => {
   const handleToggleNavSheet = (id: MobileHudSheetId): void => {
     const next = openNavSheet === id ? null : id;
     setOpenNavSheet(next);
-    if (next === null) return;
+    if (next === null) {
+      setGameMode("explore");
+      return;
+    }
 
     setMobilePlanetInfoSheetOpen(false);
     const nextGameMode = SHEET_GAME_MODE[next];
@@ -82,6 +85,7 @@ export const HUD = () => {
 
   const closeNavSheets = (): void => {
     setOpenNavSheet(null);
+    setGameMode("explore");
   };
 
   const handleResetToStart = (): void => {

@@ -1,16 +1,8 @@
 Gör allting context aware, så att bara relaterade saker visas på rätt ställe
 
-Flyg fritt ska ersättas bara av raketikonen, den ska ligga till vänster om playknappen när utforskaläget är aktivt - Ta bort den från Mer menyn
-
-✅Stäng av blurret på planeten när man tryckt på den och informationspanelen visas
-
-✅Kolla så att stjärnbilderna stämmer med hur de ser ut i verkligheten
-
 Redesign på desktop enligt mobilläget
 
 Gör ett ipadläge som är som ett större mobilläge, med samma virtuella styrspakar
-
-✅Implementera Atomic design/ Refactor UI designsystem
 
 Gå över till CSS Modules?
 
@@ -28,16 +20,25 @@ Ta bort hög och mellanstadiet kategorier, ha bara en
 
 Rotera stjärnbilder med fingrar på mobil
 
-Ta bort rymdväder och den andra
-
 Ha inte uppdrag på lär?
 
 Döp om uppdrag till achievements eller gör den mer till uppdrag och spel, lär bara lär
 
 Raketen syns inte när man lämnar lär och uppdrag
 
-Större playknapp
-
 Stöd för liggande mobilvy eller blockera det?
 
 Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
+
+//DONE
+✅Implementera Atomic design/ Refactor UI designsystem
+
+✅Kolla så att stjärnbilderna stämmer med hur de ser ut i verkligheten
+
+✅Stäng av blurret på planeten när man tryckt på den och informationspanelen visas
+
+Ta bort rymdväder och den andra
+
+Flyg fritt ska ersättas bara av raketikonen, den ska ligga till vänster om playknappen när utforskaläget är aktivt - Ta bort den från Mer menyn
+
+Större playknapp
