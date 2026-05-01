@@ -1,1 +1,0 @@
-var e=.2,t=(t,n,r,i,a)=>{let o=i.width<=i.height;if(!a||!o||!t.isPerspectiveCamera||t.fov===void 0)return r;let s=t.fov*Math.PI/180*.5;return r-Math.tan(s)*n*2*e};export{t};

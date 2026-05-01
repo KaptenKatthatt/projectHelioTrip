@@ -28,3 +28,6 @@ test-results/
 
 .fallow/
 *.fallow
+
+# Vercel CLI: local project link + build output (projectId/orgId must not be committed)
+.vercel/

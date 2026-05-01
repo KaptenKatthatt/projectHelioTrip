@@ -1,1 +1,0 @@
-import{a as e,h as t,o as n}from"./vendor-drei-controls-D7FWcZ2G.js";import{a as r,i,n as a,o,r as s}from"./vendor-misc-D2vC9rsQ.js";var c=[`primitive`].concat(Object.keys(t).filter(e=>/^[A-Z]/.test(e)).map(e=>e[0].toLowerCase()+e.slice(1)));r.assign({createStringInterpolator:i,colors:s,frameLoop:`demand`}),e(()=>{o.advance()}),a(c,{applyAnimatedValues:n}).animated;
