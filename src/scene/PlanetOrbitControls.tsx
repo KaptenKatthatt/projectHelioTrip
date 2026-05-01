@@ -34,9 +34,29 @@ export const PlanetOrbitControls = () => {
    * below would apply a huge jump on the first frame (subtracting the old
    * body's position from the new one).
    */
+  const prevMobileLayoutRef = useRef(isMobileLayout);
+  const prevSizeRef = useRef({ width: size.width, height: size.height });
+
   useEffect(() => {
     initializedRef.current = false;
   }, [activeBody, enabled]);
+
+  /**
+   * Re-initialize the orbit anchor when the layout or window size changes significantly.
+   * This prevents the camera from getting squashed or jumping wildly when switching
+   * between mobile and desktop views in devtools, or when rotating a device.
+   */
+  useEffect(() => {
+    if (
+      prevMobileLayoutRef.current !== isMobileLayout ||
+      Math.abs(prevSizeRef.current.width - size.width) > 100 ||
+      Math.abs(prevSizeRef.current.height - size.height) > 100
+    ) {
+      initializedRef.current = false;
+      prevMobileLayoutRef.current = isMobileLayout;
+      prevSizeRef.current = { width: size.width, height: size.height };
+    }
+  }, [isMobileLayout, size.width, size.height]);
 
   useEffect(() => {
     const controls = controlsRef.current;
