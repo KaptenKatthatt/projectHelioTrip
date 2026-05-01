@@ -45,8 +45,8 @@ const SOFT_ZONE_RADIUS_MIN = 1.5;
 
 const MOVE_TOUCH_DEADZONE = 0.12;
 const LOOK_TOUCH_DEADZONE = 0.14;
-const LOOK_YAW_SPEED = 0.7;
-const LOOK_PITCH_SPEED = 0.7;
+const LOOK_YAW_SPEED = 0.4;
+const LOOK_PITCH_SPEED = 0.4;
 const PI_2 = Math.PI / 2;
 
 type CollisionBody =
@@ -138,9 +138,11 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   const nx = lx * inv;
   const ny = ly * inv;
   const mag = Math.min(1, (length - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE));
+  // Exponentiell kurva för mjukare finkontroll vid små spakrörelser
+  const smoothMag = mag * mag;
   const lookEuler = new Euler().setFromQuaternion(camera.quaternion, "YXZ");
-  lookEuler.y -= nx * mag * LOOK_YAW_SPEED * delta;
-  lookEuler.x -= ny * mag * LOOK_PITCH_SPEED * delta;
+  lookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;
+  lookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
   lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
   camera.quaternion.setFromEuler(lookEuler);
 };
