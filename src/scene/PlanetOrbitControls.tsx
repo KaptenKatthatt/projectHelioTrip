@@ -34,29 +34,9 @@ export const PlanetOrbitControls = () => {
    * below would apply a huge jump on the first frame (subtracting the old
    * body's position from the new one).
    */
-  const prevMobileLayoutRef = useRef(isMobileLayout);
-  const prevSizeRef = useRef({ width: size.width, height: size.height });
-
   useEffect(() => {
     initializedRef.current = false;
   }, [activeBody, enabled]);
-
-  /**
-   * Re-initialize the orbit anchor when the layout or window size changes significantly.
-   * This prevents the camera from getting squashed or jumping wildly when switching
-   * between mobile and desktop views in devtools, or when rotating a device.
-   */
-  useEffect(() => {
-    if (
-      prevMobileLayoutRef.current !== isMobileLayout ||
-      Math.abs(prevSizeRef.current.width - size.width) > 100 ||
-      Math.abs(prevSizeRef.current.height - size.height) > 100
-    ) {
-      initializedRef.current = false;
-      prevMobileLayoutRef.current = isMobileLayout;
-      prevSizeRef.current = { width: size.width, height: size.height };
-    }
-  }, [isMobileLayout, size.width, size.height]);
 
   useEffect(() => {
     const controls = controlsRef.current;
@@ -82,42 +62,20 @@ export const PlanetOrbitControls = () => {
     if (!controls) return;
 
     getBodyWorldPosition(activeBody, tmpTarget);
-    
-    // When switching layouts, we need to recalculate the target position
-    // and snap the camera to maintain the correct view distance and angle
+    // Intentional: orbit target uses the same mobile lift as framing so the
+    // selected body stays at the approved on-screen height in close view.
+    tmpTarget.y = applyMobilePlanetScreenLift(
+      camera,
+      camera.position.distanceTo(tmpTarget),
+      tmpTarget.y,
+      size,
+      isMobileLayout,
+    );
+
     if (!initializedRef.current) {
-      // First, get the raw target position
-      const rawTarget = tmpTarget.clone();
-      
-      // Calculate the lifted target for mobile if needed
-      tmpTarget.y = applyMobilePlanetScreenLift(
-        camera,
-        camera.position.distanceTo(tmpTarget),
-        tmpTarget.y,
-        size,
-        isMobileLayout,
-      );
-
-      // If we're transitioning between layouts, we need to adjust the camera position
-      // to maintain the same relative view, rather than just snapping the target
-      if (prevMobileLayoutRef.current !== isMobileLayout) {
-        // Calculate the current relative offset from the old target
-        tmpDelta.subVectors(camera.position, controls.target);
-        // Apply it to the new target
-        camera.position.copy(tmpTarget).add(tmpDelta);
-      }
-
       controls.target.copy(tmpTarget);
       initializedRef.current = true;
     } else {
-      tmpTarget.y = applyMobilePlanetScreenLift(
-        camera,
-        camera.position.distanceTo(tmpTarget),
-        tmpTarget.y,
-        size,
-        isMobileLayout,
-      );
-      
       tmpDelta.subVectors(tmpTarget, controls.target);
       camera.position.add(tmpDelta);
       controls.target.copy(tmpTarget);

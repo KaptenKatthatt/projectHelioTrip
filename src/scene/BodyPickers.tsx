@@ -12,6 +12,7 @@ import {
 } from '../lib/bodies';
 import {
   registerBodyPickPointer,
+  requestSuppressNextPlanetInfoCanvasDismiss,
   unregisterBodyPickPointer,
 } from '../lib/bodyPickPointer';
 import { useStore } from '../store/useStore';
@@ -50,12 +51,6 @@ export const BodyPickers = () => {
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelTo = useStore((s) => s.travelTo);
-  const mobilePlanetInfoSheetOpen = useStore(
-    (s) => s.mobilePlanetInfoSheetOpen,
-  );
-  const setMobilePlanetInfoSheetOpen = useStore(
-    (s) => s.setMobilePlanetInfoSheetOpen,
-  );
 
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
@@ -83,13 +78,19 @@ export const BodyPickers = () => {
 
   const onSelect = useCallback(
     (id: BodyId) => {
-      if (mobilePlanetInfoSheetOpen) {
-        setMobilePlanetInfoSheetOpen(false);
+      requestSuppressNextPlanetInfoCanvasDismiss();
+      const s = useStore.getState();
+      if (
+        s.activeBody === id &&
+        s.viewMode === 'close' &&
+        !s.isTraveling &&
+        s.navigationMode !== 'free'
+      ) {
         return;
       }
       travelTo(id);
     },
-    [travelTo, mobilePlanetInfoSheetOpen, setMobilePlanetInfoSheetOpen],
+    [travelTo],
   );
 
   /**

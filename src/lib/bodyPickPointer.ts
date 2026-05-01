@@ -16,3 +16,20 @@ export const unregisterBodyPickPointer = (pointerId: number): void => {
 
 export const isBodyPickPointer = (pointerId: number): boolean =>
   activePointerIds.has(pointerId);
+
+/**
+ * Body mesh taps use the same canvas target as "dismiss sheet" logic.
+ * Consume this on the window pointerup phase so {@link MobilePlanetInfoCanvasDismiss}
+ * does not close the info sheet when the user tapped a planet.
+ */
+let suppressNextPlanetInfoCanvasDismiss = false;
+
+export const requestSuppressNextPlanetInfoCanvasDismiss = (): void => {
+  suppressNextPlanetInfoCanvasDismiss = true;
+};
+
+export const consumePlanetInfoCanvasDismissSuppress = (): boolean => {
+  if (!suppressNextPlanetInfoCanvasDismiss) return false;
+  suppressNextPlanetInfoCanvasDismiss = false;
+  return true;
+};
