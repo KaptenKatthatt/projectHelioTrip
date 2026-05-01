@@ -103,6 +103,9 @@ export const en: Translation = {
     constellationSeasonAutumn: "Autumn",
     backToConstellationsList: "Back to the constellations list",
     nextConstellation: "Next constellation",
+    portraitOnlyTitle: "Portrait mode required",
+    portraitOnlyBody:
+      "This experience only works in portrait. Please rotate your phone upright.",
   },
   phase3: {
     dailyChallenge: "Daily challenge",

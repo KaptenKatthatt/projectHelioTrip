@@ -85,6 +85,8 @@ export type Translation = {
     constellationSeasonAutumn: string;
     backToConstellationsList: string;
     nextConstellation: string;
+    portraitOnlyTitle: string;
+    portraitOnlyBody: string;
   };
   phase3: {
     dailyChallenge: string;

@@ -59,10 +59,11 @@ test("free-flight FAB is hidden while stars sheet is open", async ({ page }) => 
   await expect(freeFlightFab).toHaveCount(0);
 });
 
-test("stars sheet closes on pick and opens mini-card story", async ({ page }) => {
+test("constellation sheet: mini-card story and switching selection", async ({ page }) => {
   await bootstrapMobileSv(page);
 
-  await page.getByRole("button", { name: "Stjärnor" }).click();
+  const starsTrigger = page.getByRole("button", { name: "Stjärnor" });
+  await starsTrigger.click();
   const starsSheet = page.getByRole("dialog", { name: "Stjärnbilder" });
   await expect(starsSheet).toBeVisible();
 
@@ -70,36 +71,20 @@ test("stars sheet closes on pick and opens mini-card story", async ({ page }) =>
   await expect(starsSheet).toHaveCount(0);
 
   await expect(page.getByRole("button", { name: "Stjärnbilder" })).toBeVisible();
-  const miniCard = page.locator("button", { hasText: "✦" }).first();
-  await expect(miniCard).toBeVisible();
-  await miniCard.click();
-  await expect(page.getByRole("tab", { name: "Berättelse" }).first()).toBeVisible();
-});
-
-test("rapid constellation picks keep a visible selected constellation", async ({ page }) => {
-  await bootstrapMobileSv(page);
-
-  const starsTrigger = page.getByRole("button", { name: "Stjärnor" });
-
-  await starsTrigger.click();
-  const starsSheet = page.getByRole("dialog", { name: "Stjärnbilder" });
-  await expect(starsSheet).toBeVisible();
-
-  const firstPick = starsSheet.getByRole("button", { name: /Okänd stjärnbild/i }).first();
-  await firstPick.click();
-  await expect(starsSheet).toHaveCount(0);
-
-  const miniCard = page.locator("button", { hasText: "✦" }).first();
+  const miniCard = page.getByTestId("constellation-mini-card");
   await expect(miniCard).toBeVisible();
   const firstMiniCardText = (await miniCard.textContent()) ?? "";
 
-  // Re-open quickly and pick another constellation to stress state transitions.
+  await miniCard.click();
+  await expect(page.getByRole("tab", { name: "Berättelse" }).first()).toBeVisible();
+  await page.keyboard.press("Escape");
+
   await starsTrigger.click();
   await expect(starsSheet).toBeVisible();
-  const secondPick = starsSheet
+  await starsSheet
     .getByRole("button", { name: /Okänd stjärnbild/i })
-    .nth(1);
-  await secondPick.click();
+    .nth(1)
+    .click();
   await expect(starsSheet).toHaveCount(0);
 
   await expect(miniCard).toBeVisible();
