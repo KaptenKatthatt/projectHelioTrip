@@ -4,15 +4,13 @@ import { getFactCardsForBody } from "../../lib/learning/bodyContent";
 import { getQuizQuestionsForBody } from "../../lib/learning/quiz";
 import { useStore } from "../../store/useStore";
 import { useTranslation } from "../../hooks/useTranslation";
-import { LevelToggle } from "../atoms/LevelToggle";
 import { FactCard } from "./FactCard";
 
 type Props = {
   readonly bodyId: BodyId;
-  readonly showLevelToggle?: boolean;
 };
 
-export const FactCardDeck = ({ bodyId, showLevelToggle = false }: Props) => {
+export const FactCardDeck = ({ bodyId }: Props) => {
   const triggerQuiz = useStore((s) => s.triggerQuiz);
   const { t, locale } = useTranslation();
 

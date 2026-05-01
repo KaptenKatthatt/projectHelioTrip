@@ -14,10 +14,7 @@ type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;
   readonly showPlanetInfoUi: boolean;
   readonly showMissionUi: boolean;
-  readonly activeBody: string | null;
   readonly selectedConstellation: string | null;
-  readonly mobileBodyTitle: string;
-  readonly mobileBodyColor: string | null;
   readonly minimizePanelLabel: string;
   readonly expandPanelLabel: string;
   readonly progressTitle: string;
@@ -27,10 +24,7 @@ export const HudPrimaryNavRegion = ({
   mobileLayout,
   showPlanetInfoUi,
   showMissionUi,
-  activeBody,
   selectedConstellation,
-  mobileBodyTitle,
-  mobileBodyColor,
   minimizePanelLabel,
   expandPanelLabel,
   progressTitle,
