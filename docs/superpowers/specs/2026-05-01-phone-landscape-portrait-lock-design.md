@@ -78,19 +78,17 @@ While the lock is active:
 
 ### 3.2 Layout integration (`App.tsx`)
 
-- When lock is **inactive:** keep current structure (Scene + HUD as siblings under `body` behavior — unchanged).
+- **Stable React tree:** `SceneErrorBoundary` / `LazyScene` must stay under the **same parent chain** when the lock toggles. Do **not** render the scene inside mutually exclusive `portraitLock.active ? … : …` branches that change component nesting — that would unmount/remount WebGL. Instead, one outer `fixed` shell always wraps a **single** inner “stage” `div` whose `width` / `height` switch between `100%` (lock off) and letterboxed px (lock on); optional flex centering and background apply only when the lock is active.
 
-- When lock is **active:**
+- When lock is **inactive:** outer shell is `fixed inset-0` without flex center; inner stage is `width/height: 100%`.
 
-  - **Outer shell:** `fixed inset-0 flex items-center justify-center` (centers the stage).
+- When lock is **active:** outer shell adds `flex items-center justify-center` and stage background token; inner stage uses explicit **px** from the hook.
 
-  - **Stage:** `position: relative`, explicit `width` / `height` from the hook (px). Contains:
+  1. **Scene** — fills the inner stage via an `absolute inset-0` wrapper (`Canvas` still `height: 100%`).
 
-    1. **Scene** — Canvas must fill the stage (wrapper `div` with `width: 100%; height: 100%` around R3F `Canvas` if not already present).
+  2. **HUD** — `fixed inset-0` vs `absolute inset-0` via `hudFrame` so controls align with the stage when locked.
 
-    2. **HUD** — must use **`absolute inset-0`** (or equivalent) **relative to the stage**, not `fixed` to the viewport, so controls align with the letterboxed portrait frame.
-
-- **Overlay** — sibling rendered after stage (or portal) with higher `z-index`, still under the same `App` tree.
+- **Overlay** — conditional sibling after the inner stage, higher `z-index`, same outer shell.
 
 **HUD change:** Introduce a prop or small variant, e.g. `frame: 'viewport' | 'stage'`, default `'viewport'` (`fixed inset-0`). When `'stage'`, use `absolute inset-0` on the root HUD container. No change to HUD internals beyond the root positioning class.
 

@@ -113,26 +113,30 @@ export const App = () => {
       {gateMounted ? (
         <LoadingScreen dismiss={dismissOverlay} onDismissed={handleDismissed} />
       ) : null}
-      {portraitLock.active ? (
-        <div className="fixed inset-0 z-0 flex items-center justify-center bg-[hsl(231_38%_10%)]">
-          <div
-            className="relative isolate"
-            style={{
-              width: portraitLock.stageWidth,
-              height: portraitLock.stageHeight,
-            }}
-          >
-            <div className="absolute inset-0 z-0 min-h-0">{sceneBoundary}</div>
-            <HUD hudFrame="stage" />
-          </div>
-          <PortraitRotateOverlay />
+      <div
+        className={
+          "fixed inset-0 z-0 min-h-0 " +
+          (portraitLock.active
+            ? "flex items-center justify-center bg-[hsl(231_38%_10%)]"
+            : "")
+        }
+      >
+        <div
+          className="relative isolate min-h-0"
+          style={
+            portraitLock.active
+              ? {
+                  width: portraitLock.stageWidth,
+                  height: portraitLock.stageHeight,
+                }
+              : { width: "100%", height: "100%" }
+          }
+        >
+          <div className="absolute inset-0 z-0 min-h-0">{sceneBoundary}</div>
+          <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
         </div>
-      ) : (
-        <>
-          <div className="fixed inset-0 z-0 min-h-0">{sceneBoundary}</div>
-          <HUD hudFrame="viewport" />
-        </>
-      )}
+        {portraitLock.active ? <PortraitRotateOverlay /> : null}
+      </div>
       <Analytics />
       <SpeedInsights />
     </>
