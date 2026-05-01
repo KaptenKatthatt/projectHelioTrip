@@ -84,26 +84,28 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
   }, []);
 
   return (
-    <Canvas
-      camera={{
-        position: [
-          INITIAL_OVERVIEW_CAMERA_POSITION.x,
-          INITIAL_OVERVIEW_CAMERA_POSITION.y,
-          INITIAL_OVERVIEW_CAMERA_POSITION.z,
-        ],
-        fov: INITIAL_OVERVIEW_FOV,
-        near: 0.1,
-        far: 8000,
-      }}
-      gl={{
-        antialias: graphicsPreset.antialias,
-        powerPreference: "high-performance",
-        stencil: false,
-        depth: true,
-      }}
-      dpr={dprCap}
-      onCreated={handleCanvasCreated}
-    >
+    <div className="h-full w-full min-h-0">
+      <Canvas
+        className="block h-full w-full touch-none"
+        camera={{
+          position: [
+            INITIAL_OVERVIEW_CAMERA_POSITION.x,
+            INITIAL_OVERVIEW_CAMERA_POSITION.y,
+            INITIAL_OVERVIEW_CAMERA_POSITION.z,
+          ],
+          fov: INITIAL_OVERVIEW_FOV,
+          near: 0.1,
+          far: 8000,
+        }}
+        gl={{
+          antialias: graphicsPreset.antialias,
+          powerPreference: "high-performance",
+          stencil: false,
+          depth: true,
+        }}
+        dpr={dprCap}
+        onCreated={handleCanvasCreated}
+      >
       <ViewportResizeSync />
       <MobilePlanetInfoCanvasDismiss />
       <MobileViewOffset />
@@ -173,5 +175,6 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
         <LazyEffects />
       </Suspense>
     </Canvas>
+    </div>
   );
 };

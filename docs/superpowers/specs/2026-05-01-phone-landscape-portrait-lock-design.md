@@ -58,7 +58,13 @@ While the lock is active:
 
 ### 2.3 Loading screen
 
-No change required for the initial loading gate: existing `LoadingScreen` behavior stays as-is. If the user rotates during load, the lock applies once the main scene + HUD mount (implementation can attach the wrapper at `App` level around scene + HUD only).
+`LoadingScreen` stays a **full-viewport** overlay (`fixed`, high `z-index`) so boot UX is unchanged. The **scene + HUD** mount inside the **portrait stage** as soon as the lock conditions are met, including **while the loading overlay is visible**, so WebGL initializes at the **letterboxed stage size** from the first frame — not at full landscape and then resizing (see §2.4).
+
+### 2.4 First-frame stage sizing (polish)
+
+**Goal:** Avoid initializing the WebGL canvas at **full landscape** viewport and then **jumping** to the letterboxed portrait stage when the user opened the app already in landscape (or rotated during the loading gate).
+
+**Approach:** When the portrait lock is active, **`App`** wraps `Scene` + `HUD` in the computed stage from the **first render** where those conditions hold — not only after `LoadingScreen` unmounts. `LoadingScreen` remains an independent full-screen sibling; it does not need to embed the stage. This is **polish** for a stable aspect and resize story; it is **not** required for correct asset loading.
 
 ---
 
