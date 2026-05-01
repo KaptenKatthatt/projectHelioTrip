@@ -80,7 +80,6 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
     const next = openNavSheet === id ? null : id;
     setOpenNavSheet(next);
     if (next === null) {
-      setGameMode("explore");
       return;
     }
 
@@ -92,7 +91,6 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
 
   const closeNavSheets = (): void => {
     setOpenNavSheet(null);
-    setGameMode("explore");
   };
 
   const handleResetToStart = (): void => {
