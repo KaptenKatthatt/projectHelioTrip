@@ -15,16 +15,16 @@
 
 Show the portrait-lock experience when **all** of the following hold:
 
-1. **Mobile layout** — `matchesMobileLayout()` / `useIsMobileLayout()` is true (reuse existing `MOBILE_LAYOUT_MEDIA_QUERY` semantics).
+1. **Handheld touch context** — `matchesPortraitLockTouchDevice()` in `src/lib/portraitStage.ts`: **`(hover: none) and (pointer: coarse)`** (typical phones) **or** **`(hover: none) and (pointer: fine)`** plus the same **landscape + max-height + max-width** bounds used for Pixel-class Android in `mobileLayoutMedia.ts`. This **must not** use `matchesMobileLayout()` alone: its `(max-width: 639px)` branch would lock **mouse desktops** in a narrow landscape window (e.g. 600×500).
 2. **Physical landscape** — `(orientation: landscape)` via `matchMedia`, with `resize` / `orientationchange` listeners so the flag updates immediately after rotation.
 3. **Phone guard (exclude tablets)** — `Math.min(window.innerWidth, window.innerHeight) <= PHONE_MAX_SHORT_EDGE_PX`.
 
-**Constant:** `PHONE_MAX_SHORT_EDGE_PX` lives next to mobile layout helpers (e.g. `src/lib/mobileLayoutMedia.ts` or a tiny adjacent module). **Recommended initial value: `600`.** Rationale: typical phones keep the shorter viewport edge well below 600px even in landscape; tablets usually have a shorter edge ≥ ~600–744px, so they stay unlocked in landscape while still using desktop/tablet HUD per existing breakpoints.
+**Constant:** `PHONE_MAX_SHORT_EDGE_PX` lives in `src/lib/portraitStage.ts`. **Recommended initial value: `600`.** Rationale: typical phones keep the shorter viewport edge well below 600px even in landscape; tablets usually have a shorter edge ≥ ~600–744px, so they stay unlocked in landscape while still using desktop/tablet HUD per existing breakpoints.
 
 **Edge cases:**
 
 - If a future device blurs the threshold, tune only the constant; do not fork layout logic.
-- Devices that are “mobile layout” in landscape only via the existing `(orientation: landscape) and (max-height: 520px) and (max-width: 960px)` clause remain covered; the short-edge cap prevents locking on large foldables or small tablets if they ever match mobile layout incorrectly.
+- Fine-pointer phones in landscape stay covered by the second `matchMedia` clause; `hover: none` keeps mouse desktops out of that path.
 
 ---
 
@@ -119,7 +119,7 @@ Implementation copy can follow the user’s Swedish wording; English equivalent 
 
 - **Manual:** Tablet / desktop — landscape does **not** trigger lock.
 
-- **Automated (optional follow-up):** Playwright viewport with landscape dimensions and `matchesMobileLayout` forced via injected `matchMedia` stub if tests need stability without real devices.
+- **Automated (optional follow-up):** Playwright viewport with landscape dimensions and `matchesPortraitLockTouchDevice` / coarse-pointer `matchMedia` stubbed if tests need stability without real devices.
 
 ---
 

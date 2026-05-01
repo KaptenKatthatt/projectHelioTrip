@@ -16,15 +16,15 @@ describe('computePortraitStageSize', () => {
 });
 
 describe('shouldPhoneLandscapePortraitLock', () => {
-  it('is true for mobile layout landscape with a phone-sized short edge', () => {
+  it('is true for handheld touch landscape with a phone-sized short edge', () => {
     expect(
       shouldPhoneLandscapePortraitLock(844, 390, true, true),
     ).toBe(true);
   });
 
-  it('is false when not mobile layout', () => {
+  it('is false without handheld touch signals (e.g. narrow mouse desktop)', () => {
     expect(
-      shouldPhoneLandscapePortraitLock(844, 390, false, true),
+      shouldPhoneLandscapePortraitLock(600, 500, false, true),
     ).toBe(false);
   });
 

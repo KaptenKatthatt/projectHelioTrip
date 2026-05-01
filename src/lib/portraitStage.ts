@@ -1,4 +1,7 @@
-import { matchesMobileLayout } from './mobileLayoutMedia';
+import {
+  COARSE_TOUCH_PRIMARY_MQ,
+  FINE_POINTER_PHONE_LANDSCAPE_MQ,
+} from './mobileLayoutMedia';
 
 /** Shorter viewport edge above this is treated as tablet-class — no portrait lock in landscape. */
 export const PHONE_MAX_SHORT_EDGE_PX = 600;
@@ -29,13 +32,22 @@ export function computePortraitStageSize(
   return { width: Math.round(short), height: Math.round(long) };
 }
 
+/** True for phone-class touch input, not narrow mouse-desktop windows (see code review: max-width-only mobile layout). */
+export function matchesPortraitLockTouchDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia(COARSE_TOUCH_PRIMARY_MQ).matches ||
+    window.matchMedia(FINE_POINTER_PHONE_LANDSCAPE_MQ).matches
+  );
+}
+
 export function shouldPhoneLandscapePortraitLock(
   viewportW: number,
   viewportH: number,
-  isMobileLayout: boolean,
+  isHandheldTouchLike: boolean,
   isLandscape: boolean,
 ): boolean {
-  if (!isMobileLayout || !isLandscape) return false;
+  if (!isHandheldTouchLike || !isLandscape) return false;
   return Math.min(viewportW, viewportH) <= PHONE_MAX_SHORT_EDGE_PX;
 }
 
@@ -53,7 +65,7 @@ export function readPhoneLandscapePortraitLock(): {
   const active = shouldPhoneLandscapePortraitLock(
     vw,
     vh,
-    matchesMobileLayout(),
+    matchesPortraitLockTouchDevice(),
     isLandscape,
   );
 

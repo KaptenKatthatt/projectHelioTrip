@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { MOBILE_LAYOUT_MEDIA_QUERY } from '../lib/mobileLayoutMedia';
+import {
+  COARSE_TOUCH_PRIMARY_MQ,
+  FINE_POINTER_PHONE_LANDSCAPE_MQ,
+} from '../lib/mobileLayoutMedia';
 import { readPhoneLandscapePortraitLock } from '../lib/portraitStage';
 
 export type PhoneLandscapePortraitLock = {
@@ -16,16 +19,19 @@ export const usePhoneLandscapePortraitLock = (): PhoneLandscapePortraitLock => {
       setState(readPhoneLandscapePortraitLock());
     };
 
-    const mqlMobile = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY);
+    const mqlCoarseTouch = window.matchMedia(COARSE_TOUCH_PRIMARY_MQ);
+    const mqlFinePhoneLandscape = window.matchMedia(FINE_POINTER_PHONE_LANDSCAPE_MQ);
     const mqlLandscape = window.matchMedia('(orientation: landscape)');
-    mqlMobile.addEventListener('change', sync);
+    mqlCoarseTouch.addEventListener('change', sync);
+    mqlFinePhoneLandscape.addEventListener('change', sync);
     mqlLandscape.addEventListener('change', sync);
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', sync);
     sync();
 
     return () => {
-      mqlMobile.removeEventListener('change', sync);
+      mqlCoarseTouch.removeEventListener('change', sync);
+      mqlFinePhoneLandscape.removeEventListener('change', sync);
       mqlLandscape.removeEventListener('change', sync);
       window.removeEventListener('resize', sync);
       window.removeEventListener('orientationchange', sync);
