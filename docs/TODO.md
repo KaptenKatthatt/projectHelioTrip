@@ -1,28 +1,12 @@
-Gör allting context aware, så att bara relaterade saker visas på rätt ställe
-
-Redesign på desktop enligt mobilläget
-
-Gör ett ipadläge som är som ett större mobilläge, med samma virtuella styrspakar
-
-Gå över till CSS Modules?
-
-Gör en redesign och utveckling av Lär och Uppdragsdelen, lägg till några fler saker på varje steg, lägg till en lärande sida för varje planet och måne
-
-Är texturerna på planeterna suddiga vid friflygläge?
-
 //User testing
-Låsa på planeter allteftersom man åker till dom
+Låsa upp planeter allteftersom man åker till dom
 
 Gå till utforska avslutar uppdrag.
 
-Kan inte lämna stjärnbilder
-
-Ta bort hög och mellanstadiet kategorier, ha bara en
-
+Gör en redesign och utveckling av Lär och Uppdragsdelen, lägg till några fler saker på varje steg, lägg till en lärande sida för varje planet och måne
 Ha inte uppdrag på lär?
 
 Döp om uppdrag till achievements eller gör den mer till uppdrag och spel, lär bara lär
-
 
 //DONE
 ✅Stäng av eller sakta ner rotationen på månen eller planeten om man kommer närmare. Sätt ner den till 0,25
@@ -42,3 +26,5 @@ Stöd för liggande mobilvy eller blockera det?
 Raketen syns inte när man lämnar lär och uppdrag
 
 Rotera stjärnbilder med fingrar på mobil
+
+Ta bort hög och mellanstadiet kategorier, ha bara en
