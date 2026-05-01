@@ -10,6 +10,11 @@ import {
   getBodyWorldPosition,
   type BodyId,
 } from '../lib/bodies';
+import {
+  registerBodyPickPointer,
+  requestSuppressNextPlanetInfoCanvasDismiss,
+  unregisterBodyPickPointer,
+} from '../lib/bodyPickPointer';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -20,7 +25,8 @@ import { useTranslation } from '../hooks/useTranslation';
  * inner solar system without needing to zoom in first.
  */
 const PICK_SCREEN_PX = 20;
-const CLICK_PIXEL_THRESHOLD = 5;
+/** Must stay in sync with overview orbit drag threshold — see OverviewLookControls. */
+const CLICK_PIXEL_THRESHOLD = 10;
 /**
  * Vertical offset between the body's center and the label, expressed
  * in screen pixels. Clamped to be at least `bodyRadius * 1.3` so the
@@ -45,12 +51,6 @@ export const BodyPickers = () => {
   const viewMode = useStore((s) => s.viewMode);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelTo = useStore((s) => s.travelTo);
-  const mobilePlanetInfoSheetOpen = useStore(
-    (s) => s.mobilePlanetInfoSheetOpen,
-  );
-  const setMobilePlanetInfoSheetOpen = useStore(
-    (s) => s.setMobilePlanetInfoSheetOpen,
-  );
 
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
@@ -78,13 +78,19 @@ export const BodyPickers = () => {
 
   const onSelect = useCallback(
     (id: BodyId) => {
-      if (mobilePlanetInfoSheetOpen) {
-        setMobilePlanetInfoSheetOpen(false);
+      requestSuppressNextPlanetInfoCanvasDismiss();
+      const s = useStore.getState();
+      if (
+        s.activeBody === id &&
+        s.viewMode === 'close' &&
+        !s.isTraveling &&
+        s.navigationMode !== 'free'
+      ) {
         return;
       }
       travelTo(id);
     },
-    [travelTo, mobilePlanetInfoSheetOpen, setMobilePlanetInfoSheetOpen],
+    [travelTo],
   );
 
   /**
@@ -184,27 +190,33 @@ const PickableBody = ({
   }, [id, onHoverLeave]);
 
   const handlePointerDown = useCallback((event: ThreeEvent<PointerEvent>) => {
+    registerBodyPickPointer(event.pointerId);
     downPosRef.current = { x: event.clientX, y: event.clientY };
   }, []);
 
   const handlePointerUp = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
-      const down = downPosRef.current;
-      downPosRef.current = null;
-      if (!down) return;
-      const dx = event.clientX - down.x;
-      const dy = event.clientY - down.y;
-      if (dx * dx + dy * dy > CLICK_PIXEL_THRESHOLD * CLICK_PIXEL_THRESHOLD) {
-        return;
+      try {
+        const down = downPosRef.current;
+        downPosRef.current = null;
+        if (!down) return;
+        const dx = event.clientX - down.x;
+        const dy = event.clientY - down.y;
+        if (dx * dx + dy * dy > CLICK_PIXEL_THRESHOLD * CLICK_PIXEL_THRESHOLD) {
+          return;
+        }
+        event.stopPropagation();
+        onSelect(id);
+      } finally {
+        unregisterBodyPickPointer(event.pointerId);
       }
-      event.stopPropagation();
-      onSelect(id);
     },
     [id, onSelect],
   );
 
-  const handlePointerCancel = useCallback(() => {
+  const handlePointerCancel = useCallback((event: ThreeEvent<PointerEvent>) => {
     downPosRef.current = null;
+    unregisterBodyPickPointer(event.pointerId);
   }, []);
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
+import { consumePlanetInfoCanvasDismissSuppress } from "../lib/bodyPickPointer";
 import { useStore } from "../store/useStore";
 
 /** Pixels of movement before a pointer gesture counts as orbit drag, not a tap. */
@@ -55,6 +56,7 @@ export const MobilePlanetInfoCanvasDismiss = (): null => {
       if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > TAP_MOVE_PX) {
         return;
       }
+      if (consumePlanetInfoCanvasDismissSuppress()) return;
       setSheetOpenRef.current(false);
     };
 
