@@ -1,6 +1,14 @@
 import { Hono, type Context } from 'hono';
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { cors } from 'hono/cors';
 import { timingSafeEqual } from 'crypto';
+import bcrypt from 'bcryptjs';
+import {
+  ADMIN_SESSION_COOKIE,
+  adminSessionMaxAgeSec,
+  createAdminSessionValue,
+  verifyAdminSessionValue,
+} from './adminSession.js';
 import {
   fetchHorizonsVectors,
   HorizonsError,
@@ -52,7 +60,13 @@ const parseDate = (raw: string | undefined): Date | null => {
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
+const ANALYTICS_ADMIN_PASSWORD_BCRYPT =
+  process.env.ANALYTICS_ADMIN_PASSWORD_BCRYPT?.trim() ?? '';
+const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET?.trim() ?? '';
 const EPHEMERIS_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400';
+
+const useSecureAdminCookie = (): boolean =>
+  process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 
 const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   if (ANALYTICS_ADMIN_TOKEN.length === 0) return false;
@@ -61,6 +75,18 @@ const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   const providedBuffer = Buffer.from(provided, 'utf8');
   if (expectedBuffer.length !== providedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, providedBuffer);
+};
+
+const hasValidAdminSession = (c: Context): boolean => {
+  if (ADMIN_SESSION_SECRET.length === 0) return false;
+  const raw = getCookie(c, ADMIN_SESSION_COOKIE);
+  return verifyAdminSessionValue(raw, ADMIN_SESSION_SECRET);
+};
+
+const canAccessAnalyticsSummary = (c: Context): boolean => {
+  if (hasValidAdminSession(c)) return true;
+  const headerToken = c.req.header('x-analytics-token')?.trim();
+  return hasValidAnalyticsToken(headerToken);
 };
 
 const horizonsUpstreamResponse = (error: unknown) => {
@@ -126,10 +152,54 @@ export const buildApp = (): Hono => {
     return c.json({ ok: true });
   });
 
+  app.post('/admin/login', async (c) => {
+    if (
+      ANALYTICS_ADMIN_PASSWORD_BCRYPT.length === 0 ||
+      ADMIN_SESSION_SECRET.length === 0
+    ) {
+      return c.json({ error: 'admin_auth_not_configured' }, 503);
+    }
+
+    const body = await c.req.json().catch(() => null);
+    const passwordRaw =
+      body &&
+      typeof body === 'object' &&
+      !Array.isArray(body) &&
+      'password' in body
+        ? (body as { password?: unknown }).password
+        : undefined;
+    const password =
+      typeof passwordRaw === 'string' ? passwordRaw : '';
+
+    if (
+      password.length === 0 ||
+      !(await bcrypt.compare(password, ANALYTICS_ADMIN_PASSWORD_BCRYPT))
+    ) {
+      return c.json({ error: 'forbidden' }, 403);
+    }
+
+    const token = createAdminSessionValue(ADMIN_SESSION_SECRET);
+    setCookie(c, ADMIN_SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: useSecureAdminCookie(),
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: adminSessionMaxAgeSec(),
+    });
+
+    return c.json({ ok: true });
+  });
+
+  app.post('/admin/logout', (c) => {
+    deleteCookie(c, ADMIN_SESSION_COOKIE, {
+      path: '/',
+    });
+    return c.json({ ok: true });
+  });
+
   app.get('/analytics/summary', async (c) => {
     const analyticsStore = await import('./analyticsStore.js');
-    const headerToken = c.req.header('x-analytics-token')?.trim() || undefined;
-    if (!hasValidAnalyticsToken(headerToken)) {
+    if (!canAccessAnalyticsSummary(c)) {
       return c.json({ error: 'forbidden' }, 403);
     }
     try {

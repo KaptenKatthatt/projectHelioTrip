@@ -137,7 +137,31 @@ The analytics dashboard shows:
 
 #### Protecting the summary endpoint
 
-When `ANALYTICS_ADMIN_TOKEN` is set, `GET /api/analytics/summary` requires that exact token in the **`x-analytics-token`** HTTP header. The in-app admin page stores the token locally and sends this header. Do not pass the token in query strings (logs, history, referrers).
+Use **either** password login (recommended for `/admin/analytics`) **or** a legacy shared token.
+
+**Recommended (browser dashboard)**
+
+1. Generate a bcrypt hash of a strong password (cost factor 10–12), for example locally:
+
+   `node -e "console.log(require('bcryptjs').hashSync('YOUR_PASSWORD', 10))"`
+
+2. Set in Vercel (Production + Preview):
+
+   - `ANALYTICS_ADMIN_PASSWORD_BCRYPT` — the full bcrypt string starting with `$2`
+   - `ADMIN_SESSION_SECRET` — long random secret used only to sign the HTTP-only session cookie (for example `openssl rand -hex 32`)
+
+3. Open `/admin/analytics`, sign in once per browser; the app loads stats using `GET /api/analytics/summary` with cookies (`credentials: include`). Sign out clears the session server-side.
+
+**Legacy (scripts / curl)**
+
+When `ANALYTICS_ADMIN_TOKEN` is set, `GET /api/analytics/summary` also accepts that exact value in the **`x-analytics-token`** HTTP header (timing-safe comparison). Prefer login + cookie for the web UI so secrets are not stored in `localStorage`. Do not pass tokens in query strings (logs, history, referrers).
+
+#### Deployment sanity check
+
+If the admin page shows errors such as “API not found”, verify that server routes are deployed:
+
+- Open `GET /api/health` on the same origin as the site — it must return JSON `{ "status": "ok", ... }`.
+- If `/api/health` returns 404, fix Vercel project settings (for example **Root Directory** must include the repo root so the `api/` folder is deployed as serverless functions), then redeploy.
 
 ### Vercel Analytics & Speed Insights
 
@@ -155,12 +179,14 @@ To persist data, connect Supabase:
    - `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`; both are read by the server)
    - optional `ANALYTICS_SUPABASE_TABLE` (default `analytics_events_daily`)
    - optional `ANALYTICS_SUPABASE_INCREMENT_RPC` (default `increment_analytics_event`)
-   - `ANALYTICS_ADMIN_TOKEN` (strongly recommended for production; protects `/api/analytics/summary`)
+   - **`ANALYTICS_ADMIN_PASSWORD_BCRYPT`** and **`ADMIN_SESSION_SECRET`** (recommended; see “Protecting the summary endpoint”), **or** legacy **`ANALYTICS_ADMIN_TOKEN`**
 4. Redeploy.
 
 After that, `/api/analytics/event` writes to Supabase and `/admin/analytics` reads from Supabase.
 
-Security note: `POST /api/analytics/event` is a write endpoint that stores aggregated analytics in Supabase (when configured). Keep `GET /api/analytics/summary` protected in production with `ANALYTICS_ADMIN_TOKEN` and validate the token only from the `x-analytics-token` header in your server handler.
+Without Supabase on Vercel, aggregates live under `/tmp` inside the serverless runtime and are **not durable** across invocations — configure Supabase for production analytics.
+
+Security note: `POST /api/analytics/event` is a write endpoint that stores aggregated analytics in Supabase (when configured). Keep `GET /api/analytics/summary` protected in production using login + session cookie and/or `ANALYTICS_ADMIN_TOKEN` as described above.
 
 ---
 

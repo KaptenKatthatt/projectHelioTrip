@@ -12,7 +12,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     {window.location.pathname.startsWith('/admin/analytics') ? (
-      <AdminAnalyticsPage />
+      <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
+        <AdminAnalyticsPage />
+      </div>
     ) : (
       <App />
     )}
