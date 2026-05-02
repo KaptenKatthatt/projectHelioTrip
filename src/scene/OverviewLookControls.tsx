@@ -6,6 +6,10 @@ import {
   isBodyPickPointer,
   unregisterBodyPickPointer,
 } from "../lib/bodyPickPointer";
+import {
+  isPointerEventOnCanvas,
+  subscribeWindowPointerListeners,
+} from "../lib/windowPointerListeners";
 
 const LOOK_SENSITIVITY = 0.003;
 const MAX_PITCH = Math.PI / 2 - 0.05;
@@ -32,12 +36,8 @@ export const OverviewLookControls = () => {
     const canvas = gl.domElement;
     const canvasPointerIds = canvasPointerIdsRef.current;
 
-    const pointerOnCanvas = (event: PointerEvent): boolean =>
-      event.target === canvas ||
-      (event.target instanceof Node && canvas.contains(event.target));
-
     const onPointerDown = (event: PointerEvent): void => {
-      if (pointerOnCanvas(event)) {
+      if (isPointerEventOnCanvas(canvas, event)) {
         const hadPointer = canvasPointerIds.size > 0;
         canvasPointerIds.add(event.pointerId);
         if (hadPointer && enabled) {
@@ -103,16 +103,14 @@ export const OverviewLookControls = () => {
       endDrag();
     };
 
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
+    const unsubscribePointers = subscribeWindowPointerListeners({
+      pointerdown: onPointerDown,
+      pointermove: onPointerMove,
+      pointerup: onPointerUp,
+    });
 
     return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
+      unsubscribePointers();
       canvasPointerIds.clear();
       canvas.style.cursor = "";
     };

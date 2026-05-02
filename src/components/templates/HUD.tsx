@@ -20,7 +20,7 @@ const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "c
   challenge: "challenge",
 };
 
-export type HudFrame = "viewport" | "stage";
+type HudFrame = "viewport" | "stage";
 
 type HUDProps = {
   /** `stage`: position relative to the letterboxed portrait stage; `viewport`: fixed to the window. */

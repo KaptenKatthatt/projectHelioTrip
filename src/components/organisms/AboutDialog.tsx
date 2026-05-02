@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AUTHOR_WEBSITE_URL } from "../../lib/footerLinks";
@@ -19,10 +19,10 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
   const controlled = openProp !== undefined;
   const open = controlled ? openProp : openInternal;
 
-  const handleClose = (): void => {
+  const handleClose = useCallback((): void => {
     if (controlled) onClose?.();
     else setOpenInternal(false);
-  };
+  }, [controlled, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -31,7 +31,7 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, controlled, onClose]);
+  }, [open, handleClose]);
 
   return (
     <>

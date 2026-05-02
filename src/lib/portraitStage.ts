@@ -4,7 +4,7 @@ import {
 } from './mobileLayoutMedia';
 
 /** Shorter viewport edge above this is treated as tablet-class — no portrait lock in landscape. */
-export const PHONE_MAX_SHORT_EDGE_PX = 600;
+const PHONE_MAX_SHORT_EDGE_PX = 600;
 
 export type PortraitStageSize = {
   width: number;
@@ -33,7 +33,7 @@ export function computePortraitStageSize(
 }
 
 /** True for phone-class touch input, not narrow mouse-desktop windows (see code review: max-width-only mobile layout). */
-export function matchesPortraitLockTouchDevice(): boolean {
+function matchesPortraitLockTouchDevice(): boolean {
   if (typeof window === 'undefined') return false;
   return (
     window.matchMedia(COARSE_TOUCH_PRIMARY_MQ).matches ||

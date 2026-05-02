@@ -81,6 +81,18 @@ const extractSessionCookie = (setCookie: string | null): string => {
   return `heliotrip_admin_session=${match![1]}`;
 };
 
+const expectLocalFileSummaryOk = async (response: Response) => {
+  expect(response.status).toBe(200);
+  const payload = await response.json();
+  expect(payload).toEqual(
+    expect.objectContaining({
+      storage: "local-file",
+      byEvent: expect.any(Array),
+      byDay: expect.any(Array),
+    }),
+  );
+};
+
 describe("analytics API routes", () => {
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
@@ -125,15 +137,7 @@ describe("analytics API routes", () => {
         "x-analytics-token": "topsecret",
       },
     });
-    expect(allowed.status).toBe(200);
-    const payload = await allowed.json();
-    expect(payload).toEqual(
-      expect.objectContaining({
-        storage: "local-file",
-        byEvent: expect.any(Array),
-        byDay: expect.any(Array),
-      }),
-    );
+    await expectLocalFileSummaryOk(allowed);
   });
 
   it("allows analytics summary after password login session", async () => {
@@ -156,15 +160,7 @@ describe("analytics API routes", () => {
     const allowed = await app.request("/api/analytics/summary", {
       headers: { Cookie: cookie },
     });
-    expect(allowed.status).toBe(200);
-    const payload = await allowed.json();
-    expect(payload).toEqual(
-      expect.objectContaining({
-        storage: "local-file",
-        byEvent: expect.any(Array),
-        byDay: expect.any(Array),
-      }),
-    );
+    await expectLocalFileSummaryOk(allowed);
   });
 
   it("rejects wrong admin password", async () => {

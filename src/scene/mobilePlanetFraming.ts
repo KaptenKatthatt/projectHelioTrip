@@ -1,6 +1,6 @@
 import type { Vector3 } from "three";
 
-export const MOBILE_PLANET_SCREEN_LIFT_FRACTION = 0.2;
+const MOBILE_PLANET_SCREEN_LIFT_FRACTION = 0.2;
 
 type ViewportSize = {
   readonly width: number;

@@ -8,6 +8,10 @@ import { useThree } from "@react-three/fiber";
 import { useStore } from "../store/useStore";
 import { useOverviewCinematicEnabled } from "../hooks/useOverviewCinematicEnabled";
 import { CONSTELLATION_PINCH_ROTATE_MQ } from "../lib/mobileLayoutMedia";
+import {
+  isPointerEventOnCanvas,
+  subscribeWindowPointerListeners,
+} from "../lib/windowPointerListeners";
 
 const getAngleBetweenPointers = (
   pointer1: { x: number; y: number },
@@ -58,12 +62,8 @@ export const ConstellationRotationControls = () => {
     const canvasPointerIds = canvasPointerIdsRef.current;
     const pointerPositions = pointerPositionsRef.current;
 
-    const pointerOnCanvas = (event: PointerEvent): boolean =>
-      event.target === canvas ||
-      (event.target instanceof Node && canvas.contains(event.target));
-
     const onPointerDown = (event: PointerEvent): void => {
-      if (pointerOnCanvas(event)) {
+      if (isPointerEventOnCanvas(canvas, event)) {
         canvasPointerIds.add(event.pointerId);
         pointerPositions.set(event.pointerId, {
           x: event.clientX,
@@ -121,16 +121,14 @@ export const ConstellationRotationControls = () => {
       }
     };
 
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
+    const unsubscribePointers = subscribeWindowPointerListeners({
+      pointerdown: onPointerDown,
+      pointermove: onPointerMove,
+      pointerup: onPointerUp,
+    });
 
     return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
+      unsubscribePointers();
       canvasPointerIds.clear();
       pointerPositions.clear();
       lastAngleRef.current = null;
