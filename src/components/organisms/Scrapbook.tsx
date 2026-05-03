@@ -15,10 +15,13 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
 
   useEffect(() => {
     if (open) {
-      loadAllPhotos().then(setPhotos);
-    } else {
-      setSelectedIndex(null);
+      void loadAllPhotos().then(setPhotos);
+      return;
     }
+    const id = requestAnimationFrame(() => {
+      setSelectedIndex(null);
+    });
+    return () => cancelAnimationFrame(id);
   }, [open]);
 
   const handleDelete = async (id: string) => {

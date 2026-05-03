@@ -5,6 +5,75 @@ import { X, Info } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import * as THREE from "three";
 
+type MarsRockInstance = {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+};
+
+const terrainRng = (seed: number): (() => number) => {
+  let state = seed >>> 0;
+  return (): number => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0xffff_ffff;
+  };
+};
+
+const buildMarsTerrainGeometryAndRocks = (): {
+  geometry: THREE.PlaneGeometry;
+  rocks: MarsRockInstance[];
+} => {
+  const rnd = terrainRng(0x4d61_7273);
+  const geo = new THREE.PlaneGeometry(300, 300, 64, 64);
+  geo.rotateX(-Math.PI / 2);
+
+  const positions = geo.attributes.position!.array as Float32Array;
+
+  const noise = (x: number, z: number): number =>
+    Math.sin(x * 0.05) * Math.cos(z * 0.05) * 5 +
+    Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2 +
+    Math.sin(x * 0.2 + z * 0.1) * 0.5;
+
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i] ?? 0;
+    const z = positions[i + 2] ?? 0;
+    const distFromCenter = Math.sqrt(x * x + z * z);
+    const flattenFactor = Math.min(1, Math.max(0, (distFromCenter - 5) / 15));
+    let y = noise(x, z);
+    if (distFromCenter > 80 && distFromCenter < 120) {
+      y += Math.sin(((distFromCenter - 80) / 40) * Math.PI) * 12;
+    }
+    positions[i + 1] = y * flattenFactor - 0.1;
+  }
+
+  geo.computeVertexNormals();
+
+  const rockData: MarsRockInstance[] = [];
+  const count = 250;
+  for (let i = 0; i < count; i++) {
+    const rx = (rnd() - 0.5) * 200;
+    const rz = (rnd() - 0.5) * 200;
+    const dist = Math.sqrt(rx * rx + rz * rz);
+    if (dist < 6) continue;
+
+    const flattenFactor = Math.min(1, Math.max(0, (dist - 5) / 15));
+    const ry = noise(rx, rz) * flattenFactor;
+    const baseScale = rnd() * 2 + 0.5 + (dist > 50 ? rnd() * 4 : 0);
+
+    rockData.push({
+      position: [rx, ry - baseScale * 0.3, rz],
+      rotation: [rnd() * Math.PI, rnd() * Math.PI, rnd() * Math.PI],
+      scale: [
+        baseScale * (0.5 + rnd() * 1.5),
+        baseScale * (0.3 + rnd() * 0.7),
+        baseScale * (0.5 + rnd() * 1.5),
+      ],
+    });
+  }
+
+  return { geometry: geo, rocks: rockData };
+};
+
 const Rover = () => {
   const { scene } = useGLTF("/Mars 2020 Perseverance Rover.glb");
   return (
@@ -36,76 +105,16 @@ const CameraZoomController = () => {
 };
 
 const Terrain = () => {
-  const groundTexture = useTexture("/textures/mars_surface.png");
-  groundTexture.wrapS = THREE.RepeatWrapping;
-  groundTexture.wrapT = THREE.RepeatWrapping;
-  groundTexture.repeat.set(40, 40);
+  const rawGroundTexture = useTexture("/textures/mars_surface.png");
+  const groundTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(40, 40);
+    return texture;
+  }, [rawGroundTexture]);
 
-  // Generate a procedural 3D terrain
-  const { geometry, rocks } = useMemo(() => {
-    // Reduced segments for performance (64x64 instead of 128x128)
-    const geo = new THREE.PlaneGeometry(300, 300, 64, 64);
-    geo.rotateX(-Math.PI / 2);
-
-    const positions = geo.attributes.position!.array as Float32Array;
-
-    const noise = (x: number, z: number) => {
-      return (
-        Math.sin(x * 0.05) * Math.cos(z * 0.05) * 5 +
-        Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2 +
-        Math.sin(x * 0.2 + z * 0.1) * 0.5
-      );
-    };
-
-    // Sculpt terrain
-    for (let i = 0; i < positions.length; i += 3) {
-      const x = positions[i] ?? 0;
-      const z = positions[i + 2] ?? 0;
-
-      // Flatten the center where the rover sits
-      const distFromCenter = Math.sqrt(x * x + z * z);
-      const flattenFactor = Math.min(1, Math.max(0, (distFromCenter - 5) / 15));
-
-      let y = noise(x, z);
-      
-      // Add a distant crater ridge
-      if (distFromCenter > 80 && distFromCenter < 120) {
-         y += Math.sin((distFromCenter - 80) / 40 * Math.PI) * 12;
-      }
-
-      positions[i + 1] = y * flattenFactor - 0.1; // Apply flatten
-    }
-    
-    geo.computeVertexNormals();
-
-    // Generate rocks
-    const rockData = [];
-    const count = 250; // Reduced from 400
-    for (let i = 0; i < count; i++) {
-      const rx = (Math.random() - 0.5) * 200;
-      const rz = (Math.random() - 0.5) * 200;
-      const dist = Math.sqrt(rx * rx + rz * rz);
-      if (dist < 6) continue; // Keep clear of rover
-
-      // Find Y height at this position
-      const flattenFactor = Math.min(1, Math.max(0, (dist - 5) / 15));
-      let ry = noise(rx, rz) * flattenFactor;
-      
-      const baseScale = Math.random() * 2 + 0.5 + (dist > 50 ? Math.random() * 4 : 0);
-      
-      rockData.push({
-        position: [rx, ry - baseScale * 0.3, rz] as [number, number, number],
-        rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI] as [number, number, number],
-        scale: [
-          baseScale * (0.5 + Math.random() * 1.5),
-          baseScale * (0.3 + Math.random() * 0.7), // squashed vertically
-          baseScale * (0.5 + Math.random() * 1.5)
-        ] as [number, number, number],
-      });
-    }
-
-    return { geometry: geo, rocks: rockData };
-  }, []);
+  const { geometry, rocks } = useMemo(() => buildMarsTerrainGeometryAndRocks(), []);
 
   return (
     <group>

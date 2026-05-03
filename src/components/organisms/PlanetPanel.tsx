@@ -129,9 +129,11 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
   const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
 
   useEffect(() => {
-    if (gameMode === "learn") {
+    if (gameMode !== "learn") return;
+    const id = requestAnimationFrame(() => {
       setActiveTab("facts");
-    }
+    });
+    return () => cancelAnimationFrame(id);
   }, [gameMode]);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
