@@ -12,12 +12,16 @@ import { HudOverlayRegion } from "./hud/HudOverlayRegion";
 import { HudPrimaryNavRegion } from "./hud/HudPrimaryNavRegion";
 import { HudTopBarRegion } from "./hud/HudTopBarRegion";
 import { MobileContextStrip } from "../molecules/MobileContextStrip";
+import { CameraTool } from "../molecules/CameraTool";
+import { GravityLabControls } from "../molecules/GravityLabControls";
+import { MarsSurface } from "../organisms/MarsSurface";
 
-const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge">> = {
+const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge" | "lab">> = {
   explore: "explore",
   stars: "explore",
   learn: "learn",
   challenge: "challenge",
+  lab: "lab",
 };
 
 type HudFrame = "viewport" | "stage";
@@ -39,7 +43,7 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
   const showPlanetPanel = activeBody !== null && viewMode !== "overview";
   const showPlanetInfoUi =
     showPlanetPanel && !isTraveling && !isTravelAnimating;
-  const showMissionUi = gameMode !== "explore";
+  const showMissionUi = gameMode !== "explore" && gameMode !== "lab";
   const mobileBodyTitle =
     activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
   const mobileBodyColor = activeBody !== null ? getBodyColor(activeBody) : null;
@@ -169,6 +173,13 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
         }
       />
       <HudOverlayRegion />
+      {mobileLayout && (
+        <CameraTool className="fixed left-4 bottom-32 z-50" />
+      )}
+      <div className="pointer-events-none fixed right-4 top-1/4 z-20 flex flex-col items-end">
+        <GravityLabControls />
+      </div>
+      <MarsSurface />
     </div>
   );
 };

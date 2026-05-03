@@ -6,6 +6,7 @@ import { useStore } from "../../store/useStore";
 import { HudPanelToggleButton } from "../atoms/HudPanelToggleButton";
 import { ConstellationList } from "./ConstellationList";
 import { PlanetSelector } from "./PlanetSelector";
+import { CameraTool } from "../molecules/CameraTool";
 
 type SectionId = "planets" | "constellations";
 
@@ -32,73 +33,81 @@ export const NavigationAccordion = () => {
     setOpenSection((current) => (current === section ? null : section));
   };
 
+  const isAnyOpen = openSection !== null;
+
   return (
-    <nav
-      className={
-        "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
-        (mobileLayout ? "" : "sm:w-56")
-      }
-    >
-      <button
-        type="button"
-        onClick={() => toggleSection("planets")}
-        aria-expanded={openSection === "planets"}
-        aria-label={`${openSection === "planets" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.planets}`}
+    <div className={`flex items-end gap-3 ${isAnyOpen ? "flex-row" : "flex-row-reverse"}`}>
+      <nav
         className={
-          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
-          (openSection === "planets"
-            ? "bg-white/12 text-white/85"
-            : "text-white/45 hover:bg-white/8 hover:text-white/70")
+          "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
+          (mobileLayout ? "" : "sm:w-56")
         }
       >
-        <span>{t.ui.planets}</span>
-        <HudPanelToggleButton asSpan expanded={openSection === "planets"} />
-      </button>
-      {openSection === "planets" ? (
-        <div
+        <button
+          type="button"
+          onClick={() => toggleSection("planets")}
+          aria-expanded={openSection === "planets"}
+          aria-label={`${openSection === "planets" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.planets}`}
           className={
-            "min-h-0 overflow-y-auto pr-1 " +
-            (mobileLayout
-              ? "max-h-[min(26rem,55dvh)]"
-              : "max-h-[min(32rem,62dvh)]")
+            "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
+            (openSection === "planets"
+              ? "bg-white/12 text-white/85"
+              : "text-white/45 hover:bg-white/8 hover:text-white/70")
           }
         >
-          <PlanetSelector
-            className="flex w-full flex-col gap-0.5"
-            showHeading={false}
-            onSelect={() => {
-              if (!mobileLayout) return;
+          <span>{t.ui.planets}</span>
+          <HudPanelToggleButton asSpan expanded={openSection === "planets"} />
+        </button>
+        {openSection === "planets" ? (
+          <div
+            className={
+              "min-h-0 overflow-y-auto pr-1 " +
+              (mobileLayout
+                ? "max-h-[min(26rem,55dvh)]"
+                : "max-h-[min(32rem,62dvh)]")
+            }
+          >
+            <PlanetSelector
+              className="flex w-full flex-col gap-0.5"
+              showHeading={false}
+              onSelect={() => {
+                if (!mobileLayout) return;
+                setOpenSection(null);
+              }}
+            />
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => toggleSection("constellations")}
+          aria-expanded={openSection === "constellations"}
+          aria-label={`${openSection === "constellations" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.constellations}`}
+          className={
+            "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
+            (openSection === "constellations"
+              ? "bg-white/12 text-white/85"
+              : "text-white/45 hover:bg-white/8 hover:text-white/70")
+          }
+        >
+          <span>{t.ui.constellations}</span>
+          <HudPanelToggleButton
+            asSpan
+            expanded={openSection === "constellations"}
+          />
+        </button>
+        {openSection === "constellations" ? (
+          <ConstellationList
+            onPick={() => {
               setOpenSection(null);
             }}
           />
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={() => toggleSection("constellations")}
-        aria-expanded={openSection === "constellations"}
-        aria-label={`${openSection === "constellations" ? t.ui.minimizePanel : t.ui.expandPanel}: ${t.ui.constellations}`}
-        className={
-          "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-medium uppercase tracking-[0.2em] transition " +
-          (openSection === "constellations"
-            ? "bg-white/12 text-white/85"
-            : "text-white/45 hover:bg-white/8 hover:text-white/70")
-        }
-      >
-        <span>{t.ui.constellations}</span>
-        <HudPanelToggleButton
-          asSpan
-          expanded={openSection === "constellations"}
-        />
-      </button>
-      {openSection === "constellations" ? (
-        <ConstellationList
-          onPick={() => {
-            setOpenSection(null);
-          }}
-        />
-      ) : null}
-    </nav>
+        ) : null}
+      </nav>
+      
+      {!mobileLayout && (
+        <CameraTool className="mb-2" />
+      )}
+    </div>
   );
 };

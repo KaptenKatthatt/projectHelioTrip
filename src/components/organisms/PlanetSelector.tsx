@@ -124,7 +124,18 @@ export const PlanetSelector = ({
                 }
                 style={{ backgroundColor: row.color }}
               />
-              <span className="truncate">{bodyName(row.id)}</span>
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <span className="min-w-0 truncate">{bodyName(row.id)}</span>
+                {row.id === "mars" ? (
+                  <img
+                    src="/mars-rover-icon.png"
+                    alt=""
+                    width={12}
+                    height={12}
+                    className="h-3 w-3 shrink-0 object-contain opacity-55 group-hover:opacity-75"
+                  />
+                ) : null}
+              </span>
             </button>
           );
         }

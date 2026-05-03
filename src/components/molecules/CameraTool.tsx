@@ -1,0 +1,74 @@
+import { Camera } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
+import { useStore } from "../../store/useStore";
+import { savePhoto } from "../../lib/photoStore";
+import { Scrapbook } from "../organisms/Scrapbook";
+
+export type CameraToolProps = {
+  readonly className?: string;
+  readonly vertical?: boolean;
+};
+
+export const CameraTool = ({ className, vertical = true }: CameraToolProps) => {
+  const { bodyName } = useTranslation();
+  const activeBody = useStore((s) => s.activeBody);
+  const [flash, setFlash] = useState(false);
+
+  const [scrapbookOpen, setScrapbookOpen] = useState(false);
+
+  const takePhoto = async () => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return;
+
+    // Show flash
+    setFlash(true);
+    setTimeout(() => setFlash(false), 300);
+
+    // Capture
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    
+    // Determine location string
+    const locationLabel = activeBody ? bodyName(activeBody) : "Deep Space";
+    
+    await savePhoto({
+      id: crypto.randomUUID(),
+      dataUrl,
+      timestampMs: Date.now(),
+      locationLabel,
+    });
+    
+    useStore.getState().recordPhotoTaken(activeBody);
+  };
+
+  return (
+    <>
+      <div className={`pointer-events-auto flex gap-3 ${vertical ? "flex-col" : "flex-row"} ${className ?? ""}`}>
+        <button
+          type="button"
+          onClick={takePhoto}
+          aria-label="Ta Foto"
+          title="Ta Foto"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95"
+        >
+          <Camera className="h-6 w-6" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => setScrapbookOpen(true)}
+          aria-label="Visa Album"
+          title="Visa Album"
+          className={`flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-lg backdrop-blur-md transition hover:bg-white/15 active:scale-95 ${vertical ? "mx-auto" : ""}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        </button>
+      </div>
+
+      {flash && (
+        <div className="pointer-events-none fixed inset-0 z-[100] bg-white opacity-80 transition-opacity duration-300" />
+      )}
+
+      <Scrapbook open={scrapbookOpen} onClose={() => setScrapbookOpen(false)} />
+    </>
+  );
+};

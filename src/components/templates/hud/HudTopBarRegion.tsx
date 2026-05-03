@@ -15,6 +15,7 @@ const MODE_ACCENT: Record<GameMode, string> = {
   explore: "",
   learn: "bg-cyan-400",
   challenge: "bg-emerald-400",
+  lab: "bg-indigo-400",
 };
 
 export const HudTopBarRegion = ({

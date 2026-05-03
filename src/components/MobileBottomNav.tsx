@@ -1,4 +1,4 @@
-import { BookOpen, Globe2, Info, Stars, Trophy } from "lucide-react";
+import { BookOpen, FlaskConical, Globe2, Info, Stars, Trophy } from "lucide-react";
 import { useState } from "react";
 import type { GameMode } from "../lib/missions/types";
 import { useTranslation } from "../hooks/useTranslation";
@@ -16,12 +16,13 @@ type MobileBottomNavProps = {
 const TABS: readonly {
   id: MobileHudSheetId;
   icon: typeof Globe2;
-  labelKey: "explore" | "stars" | "learn" | "challenge";
+  labelKey: "explore" | "stars" | "learn" | "challenge" | "lab";
 }[] = [
   { id: "explore", icon: Globe2, labelKey: "explore" },
   { id: "stars", icon: Stars, labelKey: "stars" },
   { id: "learn", icon: BookOpen, labelKey: "learn" },
   { id: "challenge", icon: Trophy, labelKey: "challenge" },
+  { id: "lab", icon: FlaskConical, labelKey: "lab" },
 ];
 
 const tabIsActive = (
@@ -33,6 +34,7 @@ const tabIsActive = (
   if (openSheet !== null) return openSheet === tabId;
   if (tabId === "learn") return gameMode === "learn";
   if (tabId === "challenge") return gameMode === "challenge";
+  if (tabId === "lab") return gameMode === "lab";
   if (tabId === "explore")
     return gameMode === "explore" && !starsContextActive;
   if (tabId === "stars") return starsContextActive;
@@ -52,7 +54,8 @@ export const MobileBottomNav = ({
     if (key === "stars") return t.ui.bottomNavStars;
     if (key === "explore") return t.phase3.gameMode.explore;
     if (key === "learn") return t.phase3.gameMode.learn;
-    return t.phase3.gameMode.challenge;
+    if (key === "challenge") return t.phase3.gameMode.challenge;
+    return t.phase3.gameMode.lab;
   };
 
   return (
@@ -90,7 +93,9 @@ export const MobileBottomNav = ({
                     ? "bg-cyan-400"
                     : id === "challenge"
                       ? "bg-emerald-400"
-                      : "bg-white"
+                      : id === "lab"
+                        ? "bg-indigo-400"
+                        : "bg-white"
                   : "bg-transparent",
               ].join(" ")}
               aria-hidden
