@@ -27,11 +27,11 @@ test('renders analytics summary on admin page after API returns data', async ({
   await page.goto('/admin/analytics?mock_auth=true');
 
   await expect(
-    page.getByRole('heading', { name: 'HelioTrip analytics' }),
+    page.getByRole('heading', { name: 'HelioTrip Analytics' }),
   ).toBeVisible();
   await expect(page.getByText('Storage')).toBeVisible();
   await expect(page.getByText('Local file')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'By event' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'All Events' })).toBeVisible();
   await expect(page.getByText('No events yet.')).not.toBeVisible();
   await expect(page.getByText('language_changed')).toBeVisible();
   await expect(page.getByText('2', { exact: true }).first()).toBeVisible();

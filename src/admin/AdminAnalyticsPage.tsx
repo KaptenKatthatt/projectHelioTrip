@@ -110,12 +110,15 @@ const chartDays = (byDay: DaySummary[], maxBars: number): DaySummary[] => {
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+type TooltipPayloadEntry = { name: string; value: number; color: string };
+type CustomTooltipProps = { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string };
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-white/10 bg-[hsl(230_30%_15%)] p-3 shadow-xl">
         <p className="mb-1 text-sm font-medium text-[hsl(223_25%_91%)]">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipPayloadEntry, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {entry.name}: <span className="font-semibold">{entry.value}</span>
           </p>
@@ -359,7 +362,7 @@ const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<
                       <YAxis stroke="hsl(225, 16%, 68%)" fontSize={12} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="count" name="Events" radius={[4, 4, 0, 0]}>
-                        {missionFunnel.map((entry, index) => (
+                        {missionFunnel.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Bar>
@@ -388,7 +391,7 @@ const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {modeData.map((entry, index) => (
+                        {modeData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
