@@ -374,11 +374,13 @@ const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {modeData.length > 0 && (
-              <section className="ds-panel p-6">
-                <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-4">
-                  Game Modes
-                </h2>
+            <section className="ds-panel p-6">
+              <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-4">
+                Game Modes
+              </h2>
+              {modeData.length === 0 ? (
+                <p className="text-sm text-[hsl(225_16%_68%)]">No mode-change data yet.</p>
+              ) : (
                 <div className="h-64 w-full relative">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -399,11 +401,13 @@ const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
-                    <span className="text-2xl font-bold text-white">{modeData.reduce((a,b)=>a+b.value, 0)}</span>
+                    <span className="text-2xl font-bold text-white">
+                      {modeData.reduce((a, b) => a + b.value, 0)}
+                    </span>
                   </div>
                 </div>
-              </section>
-            )}
+              )}
+            </section>
 
             <section className="ds-panel space-y-3 p-6 max-h-[400px] overflow-y-auto">
               <div className="flex justify-between items-end mb-4">
