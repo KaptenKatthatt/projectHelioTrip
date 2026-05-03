@@ -1,14 +1,8 @@
 import { Hono, type Context } from 'hono';
-import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
+
 import { cors } from 'hono/cors';
 import { timingSafeEqual } from 'crypto';
-import bcrypt from 'bcryptjs';
-import {
-  ADMIN_SESSION_COOKIE,
-  adminSessionMaxAgeSec,
-  createAdminSessionValue,
-  verifyAdminSessionValue,
-} from './adminSession.js';
+import { verifyToken } from '@clerk/backend';
 import {
   fetchHorizonsVectors,
   HorizonsError,
@@ -60,13 +54,22 @@ const parseDate = (raw: string | undefined): Date | null => {
 
 const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
 const ANALYTICS_ADMIN_TOKEN = process.env.ANALYTICS_ADMIN_TOKEN?.trim() ?? '';
-const ANALYTICS_ADMIN_PASSWORD_BCRYPT =
-  process.env.ANALYTICS_ADMIN_PASSWORD_BCRYPT?.trim() ?? '';
-const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET?.trim() ?? '';
+const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY?.trim() ?? '';
 const EPHEMERIS_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400';
 
-const useSecureAdminCookie = (): boolean =>
-  process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+const hasValidClerkToken = async (c: Context): Promise<boolean> => {
+  if (CLERK_SECRET_KEY.length === 0) return false;
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  
+  const token = authHeader.replace('Bearer ', '');
+  try {
+    const verified = await verifyToken(token, { secretKey: CLERK_SECRET_KEY });
+    return !!verified;
+  } catch (err) {
+    return false;
+  }
+};
 
 const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   if (ANALYTICS_ADMIN_TOKEN.length === 0) return false;
@@ -77,14 +80,8 @@ const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   return timingSafeEqual(expectedBuffer, providedBuffer);
 };
 
-const hasValidAdminSession = (c: Context): boolean => {
-  if (ADMIN_SESSION_SECRET.length === 0) return false;
-  const raw = getCookie(c, ADMIN_SESSION_COOKIE);
-  return verifyAdminSessionValue(raw, ADMIN_SESSION_SECRET);
-};
-
-const canAccessAnalyticsSummary = (c: Context): boolean => {
-  if (hasValidAdminSession(c)) return true;
+const canAccessAnalyticsSummary = async (c: Context): Promise<boolean> => {
+  if (await hasValidClerkToken(c)) return true;
   const headerToken = c.req.header('x-analytics-token')?.trim();
   return hasValidAnalyticsToken(headerToken);
 };
@@ -152,54 +149,11 @@ export const buildApp = (): Hono => {
     return c.json({ ok: true });
   });
 
-  app.post('/admin/login', async (c) => {
-    if (
-      ANALYTICS_ADMIN_PASSWORD_BCRYPT.length === 0 ||
-      ADMIN_SESSION_SECRET.length === 0
-    ) {
-      return c.json({ error: 'admin_auth_not_configured' }, 503);
-    }
 
-    const body = await c.req.json().catch(() => null);
-    const passwordRaw =
-      body &&
-      typeof body === 'object' &&
-      !Array.isArray(body) &&
-      'password' in body
-        ? (body as { password?: unknown }).password
-        : undefined;
-    const password =
-      typeof passwordRaw === 'string' ? passwordRaw : '';
-
-    if (
-      password.length === 0 ||
-      !(await bcrypt.compare(password, ANALYTICS_ADMIN_PASSWORD_BCRYPT))
-    ) {
-      return c.json({ error: 'forbidden' }, 403);
-    }
-
-    const token = createAdminSessionValue(ADMIN_SESSION_SECRET);
-    setCookie(c, ADMIN_SESSION_COOKIE, token, {
-      httpOnly: true,
-      secure: useSecureAdminCookie(),
-      sameSite: 'Lax',
-      path: '/',
-      maxAge: adminSessionMaxAgeSec(),
-    });
-
-    return c.json({ ok: true });
-  });
-
-  app.post('/admin/logout', (c) => {
-    deleteCookie(c, ADMIN_SESSION_COOKIE, {
-      path: '/',
-    });
-    return c.json({ ok: true });
-  });
 
   app.get('/analytics/summary', async (c) => {
     const analyticsStore = await import('./analyticsStore.js');
-    if (!canAccessAnalyticsSummary(c)) {
+    if (!(await canAccessAnalyticsSummary(c))) {
       return c.json({ error: 'forbidden' }, 403);
     }
     try {

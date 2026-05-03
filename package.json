@@ -7,7 +7,7 @@
     "postinstall": "patch-package",
     "dev": "concurrently -k -n web,api -c blue,magenta \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "vite",
-    "dev:api": "tsx watch scripts/dev-server.ts",
+    "dev:api": "tsx watch --env-file=.env scripts/dev-server.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "npm run test:unit",
@@ -24,6 +24,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/backend": "^3.4.4",
+    "@clerk/clerk-react": "^5.61.6",
     "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "9.6.0",
@@ -31,7 +33,6 @@
     "@supabase/supabase-js": "^2.104.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "bcryptjs": "^3.0.3",
     "hono": "^4.12.14",
     "lucide-react": "^1.8.0",
     "postprocessing": "^6.39.1",
@@ -47,7 +48,6 @@
     "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.4",
     "@testing-library/react": "^16.3.2",
-    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

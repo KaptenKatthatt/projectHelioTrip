@@ -1,11 +1,11 @@
-import { ChevronDown, ChevronRight, LogOut, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 import {
   useCallback,
   useEffect,
   useMemo,
   useState,
-  type FormEvent,
 } from "react";
+import { SignIn, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 
 type EventBreakdown = {
   value: string;
@@ -112,13 +112,10 @@ const chartDays = (byDay: DaySummary[], maxBars: number): DaySummary[] => {
 };
 
 export const AdminAnalyticsPage = () => {
-  const [password, setPassword] = useState("");
+  const { getToken } = useAuth();
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [sessionKnown, setSessionKnown] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(
     () => new Set(),
   );
@@ -131,12 +128,16 @@ export const AdminAnalyticsPage = () => {
     setLoading(true);
     setError(null);
     try {
+      const token = await getToken();
+      if (!token) {
+        setSummary(null);
+        return false;
+      }
       const response = await fetch("/api/analytics/summary", {
-        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) {
         setSummary(null);
-        setHasSession(false);
         if (response.status === 403) {
           setError(null);
           return false;
@@ -149,70 +150,20 @@ export const AdminAnalyticsPage = () => {
         throw new Error("invalid_analytics_summary_payload");
       }
       setSummary(raw);
-      setHasSession(true);
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : "unknown_error";
       setError(message);
       setSummary(null);
-      setHasSession(false);
       return false;
     } finally {
       setLoading(false);
-      setSessionKnown(true);
     }
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
-    const id = window.setTimeout(() => {
-      void fetchSummary();
-    }, 0);
-    return () => window.clearTimeout(id);
+    void fetchSummary();
   }, [fetchSummary]);
-
-  const onLogin = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoginLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ password }),
-      });
-      if (!response.ok) {
-        setError(httpErrorMessage(response.status));
-        setHasSession(false);
-        return;
-      }
-      setPassword("");
-      await fetchSummary();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "unknown_error";
-      setError(message);
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  const onLogout = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await fetch("/api/admin/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setSummary(null);
-      setHasSession(false);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "unknown_error";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleEventExpanded = (name: string) => {
     setExpandedEvents((prev) => {
@@ -244,7 +195,7 @@ export const AdminAnalyticsPage = () => {
     [dailyChart],
   );
 
-  const showLoginGate = sessionKnown && !hasSession && !loading;
+
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 py-8">
@@ -259,7 +210,7 @@ export const AdminAnalyticsPage = () => {
         </p>
       </header>
 
-      {sessionKnown && hasSession ? (
+      <SignedIn>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -270,48 +221,23 @@ export const AdminAnalyticsPage = () => {
             <RefreshCw className="h-4 w-4" aria-hidden />
             Refresh
           </button>
-          <button
-            type="button"
-            onClick={() => void onLogout()}
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-[hsl(223_25%_91%)] transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <LogOut className="h-4 w-4" aria-hidden />
-            Sign out
-          </button>
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "h-9 w-9",
+              },
+            }}
+          />
         </div>
-      ) : null}
+      </SignedIn>
 
-      {showLoginGate ? (
-        <form
-          onSubmit={(e) => void onLogin(e)}
-          className="ds-panel space-y-3 p-4"
-        >
-          <label className="block space-y-2">
-            <span className="text-sm text-[hsl(225_16%_68%)]">
-              Admin password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-white/15 bg-black/50 px-3 py-2 text-sm text-[hsl(223_25%_91%)] outline-none focus:border-[hsl(232_89%_66%)]/60"
-              placeholder="Password"
-              autoComplete="current-password"
-              name="helio-admin-password"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={password.trim().length === 0 || loginLoading}
-            className="rounded-xl border border-[hsl(232_89%_66%)]/40 bg-[hsl(238_84%_60%)]/20 px-4 py-2 text-sm font-medium text-[hsl(223_25%_91%)] enabled:hover:bg-[hsl(238_84%_60%)]/30 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loginLoading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-      ) : null}
+      <SignedOut>
+        <div className="ds-panel flex justify-center p-8">
+          <SignIn routing="hash" forceRedirectUrl="/admin/analytics" />
+        </div>
+      </SignedOut>
 
-      {!sessionKnown || loading ? (
+      {loading ? (
         <p className="text-sm text-[hsl(225_16%_68%)]">Loading…</p>
       ) : null}
 
@@ -324,7 +250,7 @@ export const AdminAnalyticsPage = () => {
         </p>
       ) : null}
 
-      {summary && hasSession ? (
+      {summary ? (
         <>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <article className="ds-panel p-4">
