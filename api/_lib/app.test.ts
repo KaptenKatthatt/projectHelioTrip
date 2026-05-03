@@ -6,8 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 type AppModule = typeof import("./app");
 
-const TEST_BCRYPT_HASH =
-  "$2b$08$6mia2yGylofyZmb5ZJHDGulXsWkv2m70bvwXJk5E1u4Oo12Fvbn/C";
+
 
 const ORIGINAL_ENV = { ...process.env };
 const tempDirs: string[] = [];
@@ -38,20 +37,14 @@ const postAnalyticsEvent = (
 const loadApp = async ({
   analyticsFilePath,
   analyticsAdminToken,
-  analyticsAdminPasswordBcrypt,
-  adminSessionSecret,
 }: {
   analyticsFilePath: string;
   analyticsAdminToken?: string;
-  analyticsAdminPasswordBcrypt?: string;
-  adminSessionSecret?: string;
 }): Promise<AppModule> => {
   vi.resetModules();
   process.env.ANALYTICS_FILE = analyticsFilePath;
   process.env.ANALYTICS_ADMIN_TOKEN = analyticsAdminToken ?? "";
-  process.env.ANALYTICS_ADMIN_PASSWORD_BCRYPT =
-    analyticsAdminPasswordBcrypt ?? "";
-  process.env.ADMIN_SESSION_SECRET = adminSessionSecret ?? "";
+  process.env.CLERK_SECRET_KEY = "sk_test_mock";
   process.env.SUPABASE_URL = "";
   process.env.SUPABASE_SECRET_KEY = "";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "";
@@ -59,27 +52,22 @@ const loadApp = async ({
   return import("./app");
 };
 
+vi.mock("@clerk/backend", () => ({
+  verifyToken: vi.fn(),
+}));
+
 const createTestApp = async (opts?: {
   analyticsAdminToken?: string;
-  analyticsAdminPasswordBcrypt?: string;
-  adminSessionSecret?: string;
 }) => {
   const tempDir = await createTempDir();
   const { buildApp } = await loadApp({
     analyticsFilePath: path.join(tempDir, "events.json"),
     analyticsAdminToken: opts?.analyticsAdminToken,
-    analyticsAdminPasswordBcrypt: opts?.analyticsAdminPasswordBcrypt,
-    adminSessionSecret: opts?.adminSessionSecret,
   });
   return buildApp();
 };
 
-const extractSessionCookie = (setCookie: string | null): string => {
-  expect(setCookie).toBeTruthy();
-  const match = setCookie!.match(/heliotrip_admin_session=([^;]+)/);
-  expect(match).toBeTruthy();
-  return `heliotrip_admin_session=${match![1]}`;
-};
+
 
 const expectLocalFileSummaryOk = async (response: Response) => {
   expect(response.status).toBe(200);
@@ -140,53 +128,34 @@ describe("analytics API routes", () => {
     await expectLocalFileSummaryOk(allowed);
   });
 
-  it("allows analytics summary after password login session", async () => {
-    const app = await createTestApp({
-      analyticsAdminPasswordBcrypt: TEST_BCRYPT_HASH,
-      adminSessionSecret: "unit-test-session-secret-min-32-chars!!",
+  it("allows analytics summary with valid Clerk token", async () => {
+    const { verifyToken } = await import("@clerk/backend");
+    vi.mocked(verifyToken).mockResolvedValue({ sub: "user_123" } as unknown as Awaited<ReturnType<typeof verifyToken>>);
+
+    const app = await createTestApp();
+    const response = await app.request("/api/analytics/summary", {
+      headers: {
+        Authorization: "Bearer valid-clerk-token",
+      },
     });
 
-    const blocked = await app.request("/api/analytics/summary");
-    expect(blocked.status).toBe(403);
-
-    const loginRes = await app.request("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: "topsecret" }),
+    await expectLocalFileSummaryOk(response);
+    expect(verifyToken).toHaveBeenCalledWith("valid-clerk-token", {
+      secretKey: "sk_test_mock",
     });
-    expect(loginRes.status).toBe(200);
-
-    const cookie = extractSessionCookie(loginRes.headers.get("set-cookie"));
-    const allowed = await app.request("/api/analytics/summary", {
-      headers: { Cookie: cookie },
-    });
-    await expectLocalFileSummaryOk(allowed);
   });
 
-  it("rejects wrong admin password", async () => {
-    const app = await createTestApp({
-      analyticsAdminPasswordBcrypt: TEST_BCRYPT_HASH,
-      adminSessionSecret: "unit-test-session-secret-min-32-chars!!",
+  it("rejects analytics summary with invalid Clerk token", async () => {
+    const { verifyToken } = await import("@clerk/backend");
+    vi.mocked(verifyToken).mockRejectedValue(new Error("invalid token"));
+
+    const app = await createTestApp();
+    const response = await app.request("/api/analytics/summary", {
+      headers: {
+        Authorization: "Bearer invalid-token",
+      },
     });
 
-    const loginRes = await app.request("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: "wrong" }),
-    });
-    expect(loginRes.status).toBe(403);
-  });
-
-  it("returns 503 when admin login is not configured", async () => {
-    const app = await createTestApp({
-      analyticsAdminPasswordBcrypt: TEST_BCRYPT_HASH,
-    });
-
-    const loginRes = await app.request("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: "topsecret" }),
-    });
-    expect(loginRes.status).toBe(503);
+    expect(response.status).toBe(403);
   });
 });
