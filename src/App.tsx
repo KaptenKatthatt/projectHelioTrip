@@ -15,6 +15,7 @@ import { SceneErrorBoundary } from "./components/templates/SceneErrorBoundary";
 import { usePhoneLandscapePortraitLock } from "./hooks/usePhoneLandscapePortraitLock";
 import { useStore } from "./store/useStore";
 import { parseShareLink } from "./lib/shareLink";
+import { analytics } from "./lib/analytics";
 
 /** Minimum time the loading screen is shown (ms). Increase for a longer "splash", decrease for faster dismissal. */
 const MIN_LOADING_MS = 5000;
@@ -78,6 +79,20 @@ export const App = () => {
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
     window.history.replaceState(null, "", cleanUrl);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.innerWidth < 768;
+    analytics.deviceType(isMobile ? "mobile" : "desktop");
+
+    const hour = new Date().getHours();
+    let timeOfDay: "morning" | "afternoon" | "evening" | "night" = "night";
+    if (hour >= 6 && hour < 12) timeOfDay = "morning";
+    else if (hour >= 12 && hour < 18) timeOfDay = "afternoon";
+    else if (hour >= 18 && hour < 22) timeOfDay = "evening";
+    
+    analytics.timeOfDay(timeOfDay);
   }, []);
 
   useEffect(() => {

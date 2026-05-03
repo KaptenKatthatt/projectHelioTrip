@@ -24,7 +24,7 @@ test('renders analytics summary on admin page after API returns data', async ({
     });
   });
 
-  await page.goto('/admin/analytics');
+  await page.goto('/admin/analytics?mock_auth=true');
 
   await expect(
     page.getByRole('heading', { name: 'HelioTrip analytics' }),

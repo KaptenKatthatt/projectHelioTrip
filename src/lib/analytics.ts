@@ -21,7 +21,13 @@ type AnonymousEventName =
   | "checklist_progress"
   | "achievement_unlocked"
   | "share_link_created"
-  | "share_link_restored";
+  | "share_link_restored"
+  | "time_spent_on_planet"
+  | "photo_taken"
+  | "scrapbook_opened"
+  | "device_type"
+  | "time_of_day"
+  | "learn_now_clicked";
 
 type AnonymousEventPayload = Readonly<Record<string, string>>;
 let analyticsDisabledForSession = false;
@@ -98,5 +104,23 @@ export const analytics = {
   },
   resetToSolarSystemStart(): void {
     sendEvent("solar_system_start_clicked");
+  },
+  timeSpentOnPlanet(bucket: string): void {
+    sendEvent("time_spent_on_planet", { bucket });
+  },
+  photoTaken(): void {
+    sendEvent("photo_taken");
+  },
+  scrapbookOpened(): void {
+    sendEvent("scrapbook_opened");
+  },
+  deviceType(type: "mobile" | "desktop"): void {
+    sendEvent("device_type", { type });
+  },
+  timeOfDay(time: "morning" | "afternoon" | "evening" | "night"): void {
+    sendEvent("time_of_day", { time });
+  },
+  learnNowClicked(): void {
+    sendEvent("learn_now_clicked");
   },
 };
