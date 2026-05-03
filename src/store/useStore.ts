@@ -634,13 +634,13 @@ export const useStore = create<Store>()(
 
       awardXp: (amount) =>
         set((state) => {
+          if (state.gameMode === "explore") return state;
           const nextXp = state.xp + amount;
           const nextTitle = resolveTitle(
             nextXp,
             completedMissionIdsList(state.missionProgress),
           );
-          const showGain = state.gameMode !== "explore";
-          return { xp: nextXp, title: nextTitle, recentXpGain: showGain ? amount : null };
+          return { xp: nextXp, title: nextTitle, recentXpGain: amount };
         }),
 
       recordQuizResult: (quizId, stars) => {

@@ -114,9 +114,9 @@ export const en: Translation = {
       explore: 'Explore',
       learn: 'Learn',
       challenge: 'Challenge',
-      exploreDescription: 'Free roaming, no objectives.',
-      learnDescription: 'Guided tours with short explanations.',
-      challengeDescription: 'Missions with clear goals and progression.',
+      exploreDescription: 'Fly around and look in peace and quiet.',
+      learnDescription: 'Join tours and learn about space.',
+      challengeDescription: 'Solve riddles and collect badges.',
     },
     missionCard: {
       activeMission: 'Active mission',

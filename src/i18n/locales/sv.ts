@@ -113,9 +113,9 @@ export const sv: Translation = {
       explore: 'Utforska',
       learn: 'Lär',
       challenge: 'Uppdrag',
-      exploreDescription: 'Fritt läge utan mål.',
-      learnDescription: 'Guidade turer med korta förklaringar.',
-      challengeDescription: 'Uppdrag med tydliga mål och progression.',
+      exploreDescription: 'Flyg runt och titta i lugn och ro.',
+      learnDescription: 'Följ med på turer och lär dig om rymden.',
+      challengeDescription: 'Lös gåtor och samla märken.',
     },
     missionCard: {
       activeMission: 'Aktivt uppdrag',

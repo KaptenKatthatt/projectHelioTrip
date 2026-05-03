@@ -3,9 +3,9 @@ import { GAME_MODES, type GameMode } from "../../lib/missions/types";
 import { useStore } from "../../store/useStore";
 
 const MODE_ACTIVE_CLASS: Record<GameMode, string> = {
-  explore: "bg-white/90 text-black",
-  learn: "bg-cyan-400 text-black",
-  challenge: "bg-emerald-400 text-black",
+  explore: "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]",
+  learn: "bg-cyan-400 text-black shadow-[0_0_15px_rgba(34,211,238,0.3)]",
+  challenge: "bg-emerald-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.3)]",
 };
 
 type GameModeSwitcherProps = {
@@ -20,6 +20,7 @@ export const GameModeSwitcher = ({
   const { t } = useTranslation();
   const gameMode = useStore((s) => s.gameMode);
   const setGameMode = useStore((s) => s.setGameMode);
+
   const handleModeClick = (mode: GameMode): void => {
     if (gameMode === mode && mode !== "explore") {
       setGameMode("explore");
@@ -34,38 +35,57 @@ export const GameModeSwitcher = ({
     challenge: t.phase3.gameMode.challenge,
   };
 
+  const descriptions: Record<GameMode, string> = {
+    explore: t.phase3.gameMode.exploreDescription,
+    learn: t.phase3.gameMode.learnDescription,
+    challenge: t.phase3.gameMode.challengeDescription,
+  };
+
   return (
     <div
       role="radiogroup"
       aria-label={t.phase3.gameMode.label}
       className={
-        "pointer-events-auto flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 " +
+        "pointer-events-auto flex flex-col gap-2 rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-xl " +
         (className ?? "")
       }
     >
-      {GAME_MODES.map((mode) => {
-        const active = gameMode === mode;
-        return (
-          <button
-            key={mode}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => handleModeClick(mode)}
-            className={
-              "rounded-lg transition " +
-              (compact
-                ? "px-2 py-1 text-[11px] font-medium tracking-wide "
-                : "px-3 py-1.5 text-xs font-medium tracking-wide ") +
-              (active
-                ? MODE_ACTIVE_CLASS[mode]
-                : "text-white/60 hover:text-white hover:bg-white/10")
-            }
-          >
-            {labels[mode]}
-          </button>
-        );
-      })}
+      {!compact && (
+        <span className="ds-eyebrow px-2 pt-1">{t.phase3.gameMode.label}</span>
+      )}
+      <div className="flex items-center gap-1">
+        {GAME_MODES.map((mode) => {
+          const active = gameMode === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              title={descriptions[mode]}
+              onClick={() => handleModeClick(mode)}
+              className={
+                "group relative flex flex-1 flex-col items-center justify-center rounded-xl transition-all duration-300 " +
+                (compact
+                  ? "px-2 py-1.5 text-[10px] font-bold "
+                  : "px-3 py-2 text-xs font-bold ") +
+                (active
+                  ? MODE_ACTIVE_CLASS[mode]
+                  : "text-white/50 hover:bg-white/5 hover:text-white")
+              }
+            >
+              <span className="relative z-10 uppercase tracking-wider">
+                {labels[mode]}
+              </span>
+              {active && !compact && (
+                <div className="absolute -bottom-8 left-1/2 w-max -translate-x-1/2 rounded-lg bg-black/80 px-2 py-1 text-[10px] font-medium text-white/70 opacity-0 transition-opacity group-hover:opacity-100">
+                  {descriptions[mode]}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
