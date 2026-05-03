@@ -311,9 +311,9 @@ const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
             <img
               src="/mars-rover-icon.png"
               alt=""
-              width={12}
-              height={12}
-              className="h-3 w-3 shrink-0 object-contain opacity-70"
+              width={18}
+              height={18}
+              className="h-[18px] w-[18px] shrink-0 object-contain invert opacity-70"
             />
           ) : null}
         </span>
