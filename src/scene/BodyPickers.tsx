@@ -304,9 +304,18 @@ const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
             opacity: show ? 1 : 0,
             transition: `opacity ${LABEL_FADE_MS}ms ease-in-out`,
           }}
-          className="rounded-md border border-white/10 bg-black/60 px-2 py-0.5 font-mono text-xs text-white/95 backdrop-blur-sm"
+          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-black/60 px-2 py-0.5 font-mono text-xs text-white/95 backdrop-blur-sm"
         >
           {bodyName(bodyId)}
+          {bodyId === 'mars' ? (
+            <img
+              src="/mars-rover-icon.png"
+              alt=""
+              width={12}
+              height={12}
+              className="h-3 w-3 shrink-0 object-contain opacity-70"
+            />
+          ) : null}
         </span>
       </Html>
     </group>

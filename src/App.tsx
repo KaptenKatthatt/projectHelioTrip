@@ -99,6 +99,8 @@ export const App = () => {
   }, [sceneReady]);
 
   const dismissOverlay = minGateDone && sceneReady;
+  const isLanded = useStore((s) => s.isLanded);
+  const marsTransitionState = useStore((s) => s.marsTransitionState);
 
   const sceneBoundary = (
     <SceneErrorBoundary onRetry={handleRetryScene}>
@@ -113,6 +115,19 @@ export const App = () => {
       {gateMounted ? (
         <LoadingScreen dismiss={dismissOverlay} onDismissed={handleDismissed} />
       ) : null}
+      
+      {/* Cinematic Mars Transition Overlay */}
+      <div 
+        className={`pointer-events-none fixed inset-0 z-[300] bg-black ease-in-out ${
+          marsTransitionState !== 'idle' ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          transitionProperty: 'opacity',
+          transitionDuration: '500ms',
+          transitionDelay: marsTransitionState === 'landing' ? '2500ms' : marsTransitionState === 'taking_off' ? '3000ms' : '0ms'
+        }}
+      />
+
       <div
         className={
           "fixed inset-0 z-0 min-h-0 " +
@@ -132,7 +147,15 @@ export const App = () => {
               : { width: "100%", height: "100%" }
           }
         >
-          <div className="absolute inset-0 z-0 min-h-0">{sceneBoundary}</div>
+          <div 
+            className="absolute inset-0 z-0 min-h-0 transition-transform duration-[3000ms] ease-in-out"
+            style={{ 
+              transform: (marsTransitionState !== 'idle' || isLanded) ? 'scale(5)' : 'scale(1)',
+              transformOrigin: 'center center'
+            }}
+          >
+            {sceneBoundary}
+          </div>
           <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
         </div>
         {portraitLock.active ? <PortraitRotateOverlay /> : null}

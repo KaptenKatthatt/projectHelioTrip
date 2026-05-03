@@ -12,6 +12,7 @@ import { MissionCard } from "../../organisms/MissionCard";
 import { PlanetPanel, type PanelTab } from "../../organisms/PlanetPanel";
 import { PlanetSelector } from "../../organisms/PlanetSelector";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
+import { GravityLabControls } from "../../molecules/GravityLabControls";
 import { useStore } from "../../../store/useStore";
 
 type HudDetailRegionProps = {
@@ -140,6 +141,16 @@ export const HudDetailRegion = ({
       >
         <div className="p-3">
           <ProgressPanel compact className="w-full" />
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        open={openNavSheet === "lab"}
+        onClose={closeNavSheets}
+        title={t.phase3.gameMode.lab}
+      >
+        <div className="p-3">
+          <GravityLabControls />
         </div>
       </BottomSheet>
 

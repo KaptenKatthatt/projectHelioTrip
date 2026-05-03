@@ -73,6 +73,25 @@ export const propagate = (
   return out;
 };
 
+/**
+ * Computes the body's instantaneous velocity at `timeMs`.
+ * Returns AU/day.
+ */
+export const propagateVelocity = (
+  el: OrbitalElements,
+  timeMs: number,
+  out: Vector3,
+): Vector3 => {
+  const eps = 100; // 100ms
+  const p1 = new Vector3();
+  const p2 = new Vector3();
+  propagate(el, timeMs - eps, p1, 1.0);
+  propagate(el, timeMs + eps, p2, 1.0);
+  
+  const dtDays = (2 * eps) / MS_PER_DAY;
+  return out.subVectors(p2, p1).divideScalar(dtDays);
+};
+
 const SMALL = 1e-12;
 
 /**

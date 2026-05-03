@@ -96,8 +96,13 @@ type SimulationState = {
   quizStreakDays: number;
   /** Last date key (YYYY-MM-DD) when a quiz was completed. */
   lastQuizCompletedOn: string | null;
-  /** Constellations the user has discovered at least once. */
   discoveredConstellations: ReadonlyArray<ConstellationId>;
+  // Phase 4 additions (Gravity Lab)
+  gravityLabActive: boolean;
+  sunMassMultiplier: number;
+  gravityLabResetTrigger: number;
+  // Phase 4 additions (Mars Explorer)
+  isLanded: boolean;
 };
 
 type SimulationActions = {
@@ -136,6 +141,13 @@ type SimulationActions = {
   acknowledgeXpGain: () => void;
   toggleLeftRail: () => void;
   claimPatienceReward: (bodyId: BodyId) => boolean;
+  recordPhotoTaken: (targetBodyId: BodyId | null) => void;
+  setGravityLabActive: (active: boolean) => void;
+  setSunMassMultiplier: (multiplier: number) => void;
+  triggerGravityLabReset: () => void;
+  setIsLanded: (landed: boolean) => void;
+  marsTransitionState: 'idle' | 'landing' | 'taking_off';
+  setMarsTransitionState: (state: 'idle' | 'landing' | 'taking_off') => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -435,6 +447,11 @@ export const useStore = create<Store>()(
       quizStreakDays: 0,
       lastQuizCompletedOn: null,
       discoveredConstellations: [],
+      gravityLabActive: false,
+      sunMassMultiplier: 1.0,
+      gravityLabResetTrigger: 0,
+      isLanded: false,
+      marsTransitionState: 'idle',
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -704,6 +721,16 @@ export const useStore = create<Store>()(
         });
         return true;
       },
+
+      recordPhotoTaken: (targetBodyId) => {
+        dispatchDomainEvent({ kind: "photo_taken", targetBodyId });
+      },
+
+      setGravityLabActive: (active) => set({ gravityLabActive: active }),
+      setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
+      triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
+      setIsLanded: (landed) => set({ isLanded: landed }),
+      setMarsTransitionState: (state) => set({ marsTransitionState: state }),
 
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();

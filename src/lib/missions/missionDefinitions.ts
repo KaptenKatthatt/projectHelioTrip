@@ -151,6 +151,25 @@ export const MISSION_DEFINITIONS: ReadonlyArray<MissionDefinition> = [
       },
     ],
   },
+  {
+    id: "photo_safari",
+    availableModes: ["challenge", "learn"],
+    titleKey: "photo_safari.title",
+    descriptionKey: "photo_safari.description",
+    ordered: false,
+    steps: [
+      {
+        id: "photo_earth",
+        trigger: { kind: "take_photo", targetBodyId: "earth" },
+        copyKey: "photo_safari.photo_earth",
+      },
+      {
+        id: "photo_jupiter",
+        trigger: { kind: "take_photo", targetBodyId: "jupiter" },
+        copyKey: "photo_safari.photo_jupiter",
+      },
+    ],
+  },
 ];
 
 export const getMissionDefinition = (

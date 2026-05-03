@@ -96,9 +96,11 @@ export type Translation = {
       explore: string;
       learn: string;
       challenge: string;
+      lab: string;
       exploreDescription: string;
       learnDescription: string;
       challengeDescription: string;
+      labDescription: string;
     };
     missionCard: {
       activeMission: string;
@@ -141,6 +143,7 @@ export type Translation = {
       free_flight_loop: { title: string; description: string };
       water_hunt: { title: string; description: string };
       gravity_sling: { title: string; description: string };
+      photo_safari: { title: string; description: string };
     };
     steps: Record<string, string>;
   };

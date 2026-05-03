@@ -43,6 +43,11 @@ const triggerMatchesEvent = (
       );
     case "quiz_completed":
       return event.kind === "quiz_completed" && event.quizId === trigger.quizId;
+    case "take_photo":
+      return (
+        event.kind === "photo_taken" &&
+        (trigger.targetBodyId === undefined || trigger.targetBodyId === event.targetBodyId)
+      );
   }
 };
 

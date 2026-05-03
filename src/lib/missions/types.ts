@@ -1,16 +1,17 @@
 import type { BodyId } from "../bodies";
 import type { ConstellationId } from "../constellations";
 
-export type GameMode = "explore" | "learn" | "challenge";
+export type GameMode = "explore" | "learn" | "challenge" | "lab";
 
 export const GAME_MODES: readonly GameMode[] = [
   "explore",
   "learn",
   "challenge",
+  "lab",
 ];
 
 export const isGameMode = (value: unknown): value is GameMode =>
-  value === "explore" || value === "learn" || value === "challenge";
+  value === "explore" || value === "learn" || value === "challenge" || value === "lab";
 
 export type NavigationModeLite = "cinematic" | "free";
 
@@ -24,14 +25,16 @@ export type MissionDomainEvent =
   | { kind: "time_scale_changed"; daysPerSecond: number }
   | { kind: "navigation_mode_changed"; mode: NavigationModeLite }
   | { kind: "constellation_focused"; constellationId: ConstellationId }
-  | { kind: "quiz_completed"; quizId: string };
+  | { kind: "quiz_completed"; quizId: string }
+  | { kind: "photo_taken"; targetBodyId: BodyId | null };
 
 export type MissionStepTrigger =
   | { kind: "visit_body"; bodyId: BodyId }
   | { kind: "time_scale_at_least"; minimumDaysPerSecond: number }
   | { kind: "navigation_mode_is"; mode: NavigationModeLite }
   | { kind: "constellation_focused"; constellationId?: ConstellationId }
-  | { kind: "quiz_completed"; quizId: string };
+  | { kind: "quiz_completed"; quizId: string }
+  | { kind: "take_photo"; targetBodyId?: BodyId };
 
 export type MissionStep = {
   readonly id: string;

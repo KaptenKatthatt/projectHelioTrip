@@ -6,6 +6,7 @@ const MODE_ACTIVE_CLASS: Record<GameMode, string> = {
   explore: "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]",
   learn: "bg-cyan-400 text-black shadow-[0_0_15px_rgba(34,211,238,0.3)]",
   challenge: "bg-emerald-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.3)]",
+  lab: "bg-indigo-400 text-black shadow-[0_0_15px_rgba(129,140,248,0.3)]",
 };
 
 type GameModeSwitcherProps = {
@@ -21,9 +22,15 @@ export const GameModeSwitcher = ({
   const gameMode = useStore((s) => s.gameMode);
   const setGameMode = useStore((s) => s.setGameMode);
 
+  const travelToOverview = useStore((s) => s.travelToOverview);
+
   const handleModeClick = (mode: GameMode): void => {
-    if (gameMode === mode && mode !== "explore") {
-      setGameMode("explore");
+    if (gameMode === mode) {
+      if (mode !== "explore") {
+        setGameMode("explore");
+      } else {
+        travelToOverview();
+      }
       return;
     }
     setGameMode(mode);
@@ -33,12 +40,14 @@ export const GameModeSwitcher = ({
     explore: t.phase3.gameMode.explore,
     learn: t.phase3.gameMode.learn,
     challenge: t.phase3.gameMode.challenge,
+    lab: t.phase3.gameMode.lab,
   };
 
   const descriptions: Record<GameMode, string> = {
     explore: t.phase3.gameMode.exploreDescription,
     learn: t.phase3.gameMode.learnDescription,
     challenge: t.phase3.gameMode.challengeDescription,
+    lab: t.phase3.gameMode.labDescription,
   };
 
   return (

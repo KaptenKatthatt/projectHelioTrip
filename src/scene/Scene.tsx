@@ -103,6 +103,7 @@ export const Scene = ({ onSceneReady }: SceneProps) => {
           powerPreference: "high-performance",
           stencil: false,
           depth: true,
+          preserveDrawingBuffer: true,
         }}
         dpr={dprCap}
         onCreated={handleCanvasCreated}

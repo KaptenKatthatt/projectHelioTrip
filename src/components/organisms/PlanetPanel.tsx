@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useStore } from "../../store/useStore";
 import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
 import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -123,9 +124,15 @@ const formatOrbitPeriod = (
 export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
-  const { activeBody, viewMode } = useActiveBodyViewGameMode();
+  const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
 
   const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
+
+  useEffect(() => {
+    if (gameMode === "learn") {
+      setActiveTab("facts");
+    }
+  }, [gameMode]);
 
   const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
   const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
@@ -327,6 +334,29 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
             <ExternalLink className="h-4 w-4" aria-hidden />
             {t.ui.readOnWikipedia}
           </button>
+          
+          {activeBody === "mars" && (
+            <button
+              type="button"
+              onClick={() => {
+                const store = useStore.getState();
+                store.setMarsTransitionState('landing');
+                
+                // Wait for the fade out to finish (3000ms), then mount the Mars surface
+                setTimeout(() => {
+                  store.setIsLanded(true);
+                  // Brief pause before fading back in
+                  setTimeout(() => {
+                    store.setMarsTransitionState('idle');
+                  }, 100);
+                }, 3000);
+              }}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-3 text-sm font-bold text-orange-400 transition hover:bg-orange-500/20 hover:border-orange-500/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 15 2 2 4-4"/><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M2 12h20"/></svg>
+              LANDA PÅ MARS
+            </button>
+          )}
         </>
       )}
 
