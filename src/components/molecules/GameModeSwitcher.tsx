@@ -21,6 +21,7 @@ export const GameModeSwitcher = ({
   const { t } = useTranslation();
   const gameMode = useStore((s) => s.gameMode);
   const setGameMode = useStore((s) => s.setGameMode);
+  const isStarsActive = useStore((s) => s.selectedConstellation !== null);
 
   const travelToOverview = useStore((s) => s.travelToOverview);
 
@@ -65,28 +66,32 @@ export const GameModeSwitcher = ({
       <div className="flex items-center gap-1">
         {GAME_MODES.map((mode) => {
           const active = gameMode === mode;
+          const disabled = mode === "lab" && isStarsActive;
           return (
             <button
               key={mode}
               type="button"
               role="radio"
               aria-checked={active}
-              title={descriptions[mode]}
+              disabled={disabled}
+              title={disabled ? undefined : descriptions[mode]}
               onClick={() => handleModeClick(mode)}
               className={
                 "group relative flex flex-1 flex-col items-center justify-center rounded-xl transition-all duration-300 " +
                 (compact
                   ? "px-2 py-1.5 text-[10px] font-bold "
                   : "px-3 py-2 text-xs font-bold ") +
-                (active
-                  ? MODE_ACTIVE_CLASS[mode]
-                  : "text-white/50 hover:bg-white/5 hover:text-white")
+                (disabled
+                  ? "text-white/20 cursor-not-allowed "
+                  : active
+                    ? MODE_ACTIVE_CLASS[mode]
+                    : "text-white/50 hover:bg-white/5 hover:text-white")
               }
             >
               <span className="relative z-10 uppercase tracking-wider">
                 {labels[mode]}
               </span>
-              {active && !compact && (
+              {active && !compact && !disabled && (
                 <div className="absolute -bottom-8 left-1/2 w-max -translate-x-1/2 rounded-lg bg-black/80 px-2 py-1 text-[10px] font-medium text-white/70 opacity-0 transition-opacity group-hover:opacity-100">
                   {descriptions[mode]}
                 </div>
