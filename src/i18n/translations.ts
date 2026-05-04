@@ -181,6 +181,22 @@ export type Translation = {
       learningStreakLabel: string;
       learningStreakResetHint: string;
     };
+    gravityLab: {
+      title: string;
+      pickObject: string;
+      pickPlanet: string;
+      dropButton: string;
+      resetButton: string;
+      resultFallTime: string;
+      resultImpactSpeed: string;
+      resultGravity: string;
+      resultMass: string;
+      factAllFallSame: string;
+      object_apple: string;
+      object_car: string;
+      object_elephant: string;
+      heightLabel: string;
+    };
     xpTitles: {
       rookie: string;
       stargazer: string;
