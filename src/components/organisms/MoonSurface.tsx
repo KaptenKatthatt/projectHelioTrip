@@ -46,7 +46,7 @@ export const buildMoonTerrainGeometryAndRocks = (): {
     const x = positions[i] ?? 0;
     const z = positions[i + 2] ?? 0;
     const distFromCenter = Math.sqrt(x * x + z * z);
-    const flattenFactor = Math.min(1, Math.max(0, (distFromCenter - 5) / 12));
+    const flattenFactor = Math.min(1, Math.max(0, (distFromCenter - 6) / 12));
     positions[i + 1] = noise(x, z) * flattenFactor - 0.05;
   }
 
@@ -60,7 +60,7 @@ export const buildMoonTerrainGeometryAndRocks = (): {
     const dist = Math.sqrt(rx * rx + rz * rz);
     if (dist < 6) continue;
 
-    const flattenFactor = Math.min(1, Math.max(0, (dist - 5) / 12));
+    const flattenFactor = Math.min(1, Math.max(0, (dist - 6) / 12));
     const ry = noise(rx, rz) * flattenFactor;
     // Moon rocks are smaller and flatter than Mars rocks
     const baseScale = rnd() * 1.2 + 0.3 + (dist > 50 ? rnd() * 2 : 0);
