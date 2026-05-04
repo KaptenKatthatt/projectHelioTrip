@@ -343,7 +343,7 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
               onClick={() => {
                 const store = useStore.getState();
                 store.setMarsTransitionState('landing');
-                
+
                 // Wait for the fade out to finish (3000ms), then mount the Mars surface
                 setTimeout(() => {
                   store.setIsLanded(true);
@@ -357,6 +357,25 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 15 2 2 4-4"/><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M2 12h20"/></svg>
               LANDA PÅ MARS
+            </button>
+          )}
+          {activeBody === "moon" && (
+            <button
+              type="button"
+              onClick={() => {
+                const store = useStore.getState();
+                store.setMoonTransitionState('landing');
+                setTimeout(() => {
+                  store.setIsLandedOnMoon(true);
+                  setTimeout(() => {
+                    store.setMoonTransitionState('idle');
+                  }, 100);
+                }, 1500);
+              }}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-400/30 bg-blue-400/10 px-3 py-3 text-sm font-bold text-blue-300 transition hover:bg-blue-400/20 hover:border-blue-400/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+              LANDA PÅ MÅNEN
             </button>
           )}
         </>
