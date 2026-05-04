@@ -70,15 +70,21 @@ export const MobileBottomNav = ({
           gameMode,
           starsContextActive,
         );
+        const disabled = id === "lab" && (openSheet === "stars" || starsContextActive);
         return (
           <button
             key={id}
             type="button"
+            disabled={disabled}
             onClick={() => onToggleSheet(id)}
             aria-pressed={active}
             className={
               "flex min-w-0 flex-1 flex-col items-center gap-1 py-2 transition " +
-              (active ? "text-white" : "text-white/45 hover:text-white/70")
+              (disabled 
+                ? "text-white/20 cursor-not-allowed " 
+                : active 
+                  ? "text-white" 
+                  : "text-white/45 hover:text-white/70")
             }
           >
             <Icon className="h-5 w-5 shrink-0" aria-hidden />

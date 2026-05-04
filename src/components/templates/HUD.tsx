@@ -174,7 +174,7 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
       />
       <HudOverlayRegion />
       {mobileLayout && (
-        <CameraTool className="fixed left-4 bottom-32 z-50" />
+        <CameraTool className="fixed left-4 bottom-32 z-10" />
       )}
       <div className="pointer-events-none fixed right-4 top-1/4 z-20 flex flex-col items-end">
         <GravityLabControls />

@@ -465,8 +465,8 @@ export const useStore = create<Store>()(
       travelTo: (id) => {
         analytics.planetSelected(id);
         const currentState = useStore.getState();
-        const slowDownSpeed = TIME_SPEED_PRESETS[0] ?? 0.25;
-        const shouldSlowDown = currentState.isPlaying && currentState.timeScale !== slowDownSpeed;
+        const targetSpeed = id === 'sun' ? (TIME_SPEED_PRESETS[2] ?? 7) : (TIME_SPEED_PRESETS[0] ?? 0.25);
+        const shouldChangeSpeed = currentState.timeScale !== targetSpeed;
 
         set((state) => ({
           activeBody: id,
@@ -476,28 +476,43 @@ export const useStore = create<Store>()(
           navigationMode: "cinematic",
           selectedConstellation: null,
           constellationUserSpinRad: 0,
-          ...(shouldSlowDown ? { timeScale: slowDownSpeed } : {}),
+          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
         }));
         recordVisitedBody(id);
         dispatchDomainEvent({ kind: "body_focused", bodyId: id });
-        if (shouldSlowDown) {
+        if (shouldChangeSpeed) {
           dispatchDomainEvent({
             kind: "time_scale_changed",
-            daysPerSecond: slowDownSpeed,
+            daysPerSecond: targetSpeed,
           });
         }
       },
 
-      travelToOverview: () =>
+      travelToOverview: () => {
+        const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
+        const shouldChangeSpeed = useStore.getState().timeScale !== targetSpeed;
+
         set((state) => ({
           isTraveling: true,
           viewMode: "overview",
           travelId: state.travelId + 1,
           navigationMode: "cinematic",
-        })),
+          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
+        }));
+
+        if (shouldChangeSpeed) {
+          dispatchDomainEvent({
+            kind: "time_scale_changed",
+            daysPerSecond: targetSpeed,
+          });
+        }
+      },
 
       resetSolarSystemStart: () => {
         analytics.resetToSolarSystemStart();
+        const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
+        const shouldChangeSpeed = useStore.getState().timeScale !== targetSpeed;
+
         set((state) => ({
           activeBody: null,
           selectedConstellation: null,
@@ -507,7 +522,15 @@ export const useStore = create<Store>()(
           travelId: state.travelId + 1,
           navigationMode: "cinematic",
           overviewCameraResetId: state.overviewCameraResetId + 1,
+          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
         }));
+
+        if (shouldChangeSpeed) {
+          dispatchDomainEvent({
+            kind: "time_scale_changed",
+            daysPerSecond: targetSpeed,
+          });
+        }
       },
 
       arrive: () => set({ isTraveling: false }),
