@@ -12,7 +12,7 @@ import { MissionCard } from "../../organisms/MissionCard";
 import { PlanetPanel, type PanelTab } from "../../organisms/PlanetPanel";
 import { PlanetSelector } from "../../organisms/PlanetSelector";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
-import { GravityLabControls } from "../../molecules/GravityLabControls";
+import { LabAccordion } from "../../molecules/LabAccordion";
 import { useStore } from "../../../store/useStore";
 
 type HudDetailRegionProps = {
@@ -150,7 +150,7 @@ export const HudDetailRegion = ({
         title={t.phase3.gameMode.lab}
       >
         <div className="p-3">
-          <GravityLabControls />
+          <LabAccordion />
         </div>
       </BottomSheet>
 

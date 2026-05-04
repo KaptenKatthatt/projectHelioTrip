@@ -14,6 +14,7 @@ import { HudTopBarRegion } from "./hud/HudTopBarRegion";
 import { MobileContextStrip } from "../molecules/MobileContextStrip";
 import { CameraTool } from "../molecules/CameraTool";
 import { GravityLabControls } from "../molecules/GravityLabControls";
+import { LabAccordion } from "../molecules/LabAccordion";
 import { MarsSurface } from "../organisms/MarsSurface";
 
 const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge" | "lab">> = {
@@ -176,9 +177,17 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
       {mobileLayout && (
         <CameraTool className="fixed left-4 bottom-32 z-10" />
       )}
-      <div className="pointer-events-none fixed right-4 top-1/4 z-20 flex flex-col items-end">
-        <GravityLabControls />
-      </div>
+      {gameMode === "lab" ? (
+        <div className="pointer-events-none fixed right-4 top-16 z-20 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div className="pointer-events-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl min-w-[280px] max-w-[340px]">
+            <LabAccordion />
+          </div>
+        </div>
+      ) : (
+        <div className="pointer-events-none fixed right-4 top-1/4 z-20 flex flex-col items-end">
+          <GravityLabControls />
+        </div>
+      )}
       <MarsSurface />
     </div>
   );

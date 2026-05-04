@@ -1,14 +1,19 @@
 import { useStore } from "../../store/useStore";
 
-export const GravityLabControls = () => {
+type GravityLabControlsProps = {
+  /** When true, renders without the outer panel container (for use inside LabAccordion). */
+  readonly embedded?: boolean;
+};
+
+export const GravityLabControls = ({ embedded = false }: GravityLabControlsProps) => {
   const gameMode = useStore((s) => s.gameMode);
   const sunMassMultiplier = useStore((s) => s.sunMassMultiplier);
   const setSunMassMultiplier = useStore((s) => s.setSunMassMultiplier);
 
-  if (gameMode !== "lab") return null;
+  if (!embedded && gameMode !== "lab") return null;
 
-  return (
-    <div className="pointer-events-auto flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl min-w-[240px]">
+  const content = (
+    <>
       <div className="flex flex-col gap-1">
         <label htmlFor="sun-mass" className="ds-eyebrow text-white/70">
           Solens Massa: {sunMassMultiplier.toFixed(1)}x
@@ -44,6 +49,17 @@ export const GravityLabControls = () => {
           Återställ
         </button>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex flex-col gap-4">{content}</div>;
+  }
+
+  return (
+    <div className="pointer-events-auto flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl min-w-[240px]">
+      {content}
     </div>
   );
 };
+
