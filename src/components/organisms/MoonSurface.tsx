@@ -235,3 +235,57 @@ const EarthSphere = () => {
     </group>
   );
 };
+
+const LunarModule = () => {
+  const { scene } = useGLTF('/Apollo%20Lunar%20Module.glb');
+  return (
+    <group position={[0, 0, 0]}>
+      <primitive object={scene} scale={2.0} />
+      <ContactShadows opacity={0.4} scale={14} blur={2} far={4} />
+    </group>
+  );
+};
+
+const MoonLandingScene = () => {
+  const moonTransitionState = useStore((s) => s.moonTransitionState);
+  const [isFlyingIn, setIsFlyingIn] = useState(true);
+  const initialCameraPosition: [number, number, number] = isFlyingIn ? [15, 60, 40] : [8, 3, 8];
+
+  return (
+    <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
+      <Suspense fallback={null}>
+        <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
+
+        {/* No <Sky> — Moon has no atmosphere */}
+        <color attach="background" args={['#000310']} />
+
+        <ambientLight intensity={0.15} color="#0a0f2a" />
+        <directionalLight
+          position={[80, 60, 20]}
+          intensity={3.0}
+          color="#fff8f0"
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-camera-left={-20}
+          shadow-camera-right={20}
+          shadow-camera-top={20}
+          shadow-camera-bottom={-20}
+        />
+
+        <StarField />
+        <EarthSphere />
+        <LunarModule />
+        <MoonTerrain />
+
+        {moonTransitionState !== 'taking_off' && !isFlyingIn && (
+          <OrbitControls
+            makeDefault
+            minDistance={4}
+            maxDistance={20}
+            maxPolarAngle={Math.PI / 2 - 0.1}
+          />
+        )}
+      </Suspense>
+    </Canvas>
+  );
+};
