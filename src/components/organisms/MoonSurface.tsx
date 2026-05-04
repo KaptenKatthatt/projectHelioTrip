@@ -201,7 +201,7 @@ const StarField = () => {
 
   return (
     <points geometry={geometry}>
-      <pointsMaterial color="#c8d8ff" size={0.35} sizeAttenuation />
+      <pointsMaterial color="#c8d8ff" size={0.3} sizeAttenuation />
     </points>
   );
 };
