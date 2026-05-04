@@ -83,7 +83,7 @@ const buildMarsTerrainGeometryAndRocks = (): {
 };
 
 const Rover = () => {
-  const { scene } = useGLTF('/Mars 2020 Perseverance Rover.glb');
+  const { scene } = useGLTF('/Mars%202020%20Perseverance%20Rover.glb');
   return (
     <group position={[0, 0, 0]}>
       <primitive object={scene} scale={1.5} />
@@ -117,12 +117,13 @@ const CameraZoomController = ({
         targetPosRef.current.y = Math.max(targetPosRef.current.y, 40); // Ensure it lifts up higher for a drone-like shot
         animStateRef.current = { startPos: camera.position.clone(), startTime: performance.now() };
       }
+      if (!animStateRef.current || !targetPosRef.current) return;
 
-      const elapsed = performance.now() - animStateRef.current!.startTime;
+      const elapsed = performance.now() - animStateRef.current.startTime;
       const progress = Math.min(elapsed / 3500, 1.0);
       const easeIn = progress * progress * progress; // easeInCubic
 
-      camera.position.lerpVectors(animStateRef.current!.startPos, targetPosRef.current, easeIn);
+      camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
       camera.lookAt(0, 0, 0);
     } else if (isFlyingIn) {
       if (!targetPosRef.current) {
@@ -134,17 +135,18 @@ const CameraZoomController = ({
           startTime: performance.now() + 500,
         };
       }
+      if (!animStateRef.current || !targetPosRef.current) return;
 
       const now = performance.now();
-      if (now < animStateRef.current!.startTime) {
-        camera.position.copy(animStateRef.current!.startPos);
+      if (now < animStateRef.current.startTime) {
+        camera.position.copy(animStateRef.current.startPos);
       } else {
-        const elapsed = now - animStateRef.current!.startTime;
+        const elapsed = now - animStateRef.current.startTime;
         const progress = Math.min(elapsed / 6500, 1.0);
         const easeOutQuart = 1 - Math.pow(1 - progress, 4); // easeOutQuart for cinematic entry
 
         camera.position.lerpVectors(
-          animStateRef.current!.startPos,
+          animStateRef.current.startPos,
           targetPosRef.current,
           easeOutQuart,
         );
@@ -263,9 +265,12 @@ export const MarsSurface = () => {
 const MarsRoverScene = () => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
+  const initialCameraPosition: [number, number, number] = isFlyingIn
+    ? [15, 60, 40]
+    : [8, 3, 8];
 
   return (
-    <Canvas shadows camera={{ position: [8, 3, 8], fov: 45 }}>
+    <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
       <Suspense fallback={null}>
         <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
         <Sky

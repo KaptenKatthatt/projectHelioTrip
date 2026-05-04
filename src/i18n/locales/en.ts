@@ -257,7 +257,44 @@ export const en: Translation = {
       object_apple: 'Apple',
       object_car: 'Car',
       object_elephant: 'Elephant',
-      heightLabel: 'Height: 20 m',
+      heightLabel: 'Height: {height} m',
+      planets: {
+        mercury: { name: 'Mercury' },
+        venus: {
+          name: 'Venus',
+          fact: "Venus has nearly the same gravity as Earth, but the surface temperature is 460°C!",
+        },
+        earth: { name: 'Earth' },
+        moon: {
+          name: 'Moon',
+          fact: 'An astronaut weighing 80 kg on Earth would weigh only 13 kg on the Moon!',
+        },
+        mars: {
+          name: 'Mars',
+          fact: 'You could jump almost 3× higher on Mars. Basketball would be very different!',
+        },
+        jupiter: {
+          name: 'Jupiter',
+          fact: "Jupiter's gravity is so strong it captures asteroids that would otherwise hit Earth.",
+        },
+        saturn: {
+          name: 'Saturn',
+          fact: "Despite being enormous, Saturn has nearly the same surface gravity as Earth — it's made of gas!",
+        },
+        uranus: { name: 'Uranus' },
+        neptune: {
+          name: 'Neptune',
+          fact: 'If you dropped an apple on Neptune, it would fall slightly faster than on Earth.',
+        },
+        pluto: {
+          name: 'Pluto',
+          fact: 'Gravity on Pluto is so weak you could jump over a two-storey building.',
+        },
+      },
+    },
+    labAccordion: {
+      orbitTitle: 'Orbital Mechanics — Sun Mass',
+      dropTitle: 'Gravity Lab — Drop & Compare',
     },
     xpTitles: {
       rookie: 'Rookie',

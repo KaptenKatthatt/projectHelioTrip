@@ -2,14 +2,19 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import type { Translation } from "../../i18n/translations";
 import {
   DROPPABLE_OBJECTS,
   DROP_HEIGHT_METERS,
   GRAVITY_PLANETS,
+  getDroppableObject,
+  getGravityPlanet,
   type DroppableObjectId,
   type GravityPlanetId,
   type ImpactType,
@@ -23,7 +28,7 @@ import styles from "./GravityDropLab.module.css";
 
 // -- State machine types --
 
-type Phase = "idle" | "ready" | "falling" | "impact";
+type Phase = "ready" | "falling" | "impact";
 
 const INITIAL_DROP_FRAME: DropFrame = {
   y: 0,
@@ -45,8 +50,8 @@ export const GravityDropLab = () => {
   const [selectedPlanet, setSelectedPlanet] =
     useState<GravityPlanetId>("earth");
 
-  const planet = GRAVITY_PLANETS.find((p) => p.id === selectedPlanet)!;
-  const obj = DROPPABLE_OBJECTS.find((o) => o.id === selectedObject)!;
+  const planet = getGravityPlanet(selectedPlanet)!;
+  const obj = getDroppableObject(selectedObject)!;
 
   // State machine
   const [phase, setPhase] = useState<Phase>("ready");
@@ -82,11 +87,18 @@ export const GravityDropLab = () => {
   }, []);
 
   // Formatters
-  const numFmt = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-  const intFmt = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+  const numFmt = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+    [locale],
+  );
+  const intFmt = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }),
+    [locale],
+  );
 
   const handleReset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
@@ -133,7 +145,7 @@ export const GravityDropLab = () => {
   const impactClass = showResult ? getImpactClass(obj.impactType) : "";
 
   // Fun fact about the planet
-  const funFact = getFunFact(selectedPlanet, locale);
+  const funFact = getFunFact(selectedPlanet, grav);
 
   return (
     <div className="flex flex-col gap-4">
@@ -162,7 +174,12 @@ export const GravityDropLab = () => {
               aria-pressed={selectedObject === o.id}
             >
               <span className="text-base">{o.emoji}</span>
-              {locale === "sv" ? grav[`object_${o.id}` as keyof typeof grav] : grav[`object_${o.id}` as keyof typeof grav]}
+              {grav[
+                `object_${o.id}` as Extract<
+                  keyof GravityLabCopy,
+                  `object_${string}`
+                >
+              ]}
             </button>
           ))}
         </div>
@@ -197,7 +214,7 @@ export const GravityDropLab = () => {
                 className="inline-block h-2.5 w-2.5 rounded-full ring-1 ring-white/20"
                 style={{ backgroundColor: p.color }}
               />
-              {getPlanetDisplayName(p.id, locale)}
+              {getPlanetDisplayName(p.id, grav)}
             </button>
           ))}
         </div>
@@ -212,7 +229,7 @@ export const GravityDropLab = () => {
       >
         {/* Height markers */}
         <span className={styles.heightMarker} style={{ top: "5%" }}>
-          {DROP_HEIGHT_METERS}m
+          {grav.heightLabel.replace("{height}", intFmt.format(DROP_HEIGHT_METERS))}
         </span>
         <span className={styles.heightMarker} style={{ top: "44%" }}>
           {DROP_HEIGHT_METERS / 2}m
@@ -302,13 +319,15 @@ export const GravityDropLab = () => {
       {showResult && (
         <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
           <div className="space-y-1.5">
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}>
+            <div className={`flex justify-between text-xs ${styles.resultRow}`}
+              style={{ "--result-row-index": 0 } as CSSProperties}>
               <span className="text-white/55">{grav.resultFallTime}</span>
               <span className="font-mono text-white">
                 {numFmt.format(impact.fallDuration)}s
               </span>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}>
+            <div className={`flex justify-between text-xs ${styles.resultRow}`}
+              style={{ "--result-row-index": 1 } as CSSProperties}>
               <span className="text-white/55">{grav.resultImpactSpeed}</span>
               <span className="font-mono text-white">
                 {numFmt.format(impact.impactVelocity)} m/s
@@ -317,16 +336,18 @@ export const GravityDropLab = () => {
                 </span>
               </span>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}>
+            <div className={`flex justify-between text-xs ${styles.resultRow}`}
+              style={{ "--result-row-index": 2 } as CSSProperties}>
               <span className="text-white/55">{grav.resultGravity}</span>
               <span className="font-mono text-white">
                 {numFmt.format(planet.surfaceGravity)} m/s²
                 <span className="text-white/30 ml-1">
-                  ({numFmt.format(planet.surfaceGravity / 9.81)}× {getPlanetDisplayName("earth", locale)})
+                  ({numFmt.format(planet.surfaceGravity / 9.81)}× {getPlanetDisplayName("earth", grav)})
                 </span>
               </span>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}>
+            <div className={`flex justify-between text-xs ${styles.resultRow}`}
+              style={{ "--result-row-index": 3 } as CSSProperties}>
               <span className="text-white/55">{grav.resultMass}</span>
               <span className="font-mono text-white">
                 {obj.mass >= 1 ? intFmt.format(obj.mass) : obj.mass} kg
@@ -355,6 +376,8 @@ export const GravityDropLab = () => {
 
 // -- Helpers --
 
+type GravityLabCopy = Translation["learn"]["gravityLab"];
+
 function getImpactClass(impactType: ImpactType): string {
   switch (impactType) {
     case "splat":
@@ -366,61 +389,11 @@ function getImpactClass(impactType: ImpactType): string {
   }
 }
 
-function getPlanetDisplayName(
-  id: GravityPlanetId,
-  locale: string,
-): string {
-  const names: Record<GravityPlanetId, { sv: string; en: string }> = {
-    mercury: { sv: "Merkurius", en: "Mercury" },
-    venus: { sv: "Venus", en: "Venus" },
-    earth: { sv: "Jorden", en: "Earth" },
-    moon: { sv: "Månen", en: "Moon" },
-    mars: { sv: "Mars", en: "Mars" },
-    jupiter: { sv: "Jupiter", en: "Jupiter" },
-    saturn: { sv: "Saturnus", en: "Saturn" },
-    uranus: { sv: "Uranus", en: "Uranus" },
-    neptune: { sv: "Neptunus", en: "Neptune" },
-    pluto: { sv: "Pluto", en: "Pluto" },
-  };
-  return names[id]?.[locale === "sv" ? "sv" : "en"] ?? id;
+function getPlanetDisplayName(id: GravityPlanetId, grav: GravityLabCopy): string {
+  return grav.planets[id]?.name ?? id;
 }
 
-function getFunFact(
-  id: GravityPlanetId,
-  locale: string,
-): string | null {
-  const facts: Partial<
-    Record<GravityPlanetId, { sv: string; en: string }>
-  > = {
-    moon: {
-      sv: "En astronaut som väger 80 kg på Jorden väger bara 13 kg på Månen!",
-      en: "An astronaut weighing 80 kg on Earth would weigh only 13 kg on the Moon!",
-    },
-    jupiter: {
-      sv: "Jupiters gravitation är så stark att den fångar upp asteroider som annars skulle träffa Jorden.",
-      en: "Jupiter's gravity is so strong it captures asteroids that would otherwise hit Earth.",
-    },
-    mars: {
-      sv: "Du kan hoppa nästan 3× högre på Mars. Basket skulle vara annorlunda!",
-      en: "You could jump almost 3× higher on Mars. Basketball would be very different!",
-    },
-    pluto: {
-      sv: "Gravitationen på Pluto är så svag att du skulle kunna hoppa över ett tvåvåningshus.",
-      en: "Gravity on Pluto is so weak you could jump over a two-storey building.",
-    },
-    saturn: {
-      sv: "Trots att Saturnus är enormt stor har den nästan samma ytgravitation som Jorden — den är nämligen gjord av gas!",
-      en: "Despite being enormous, Saturn has nearly the same surface gravity as Earth — it's made of gas!",
-    },
-    neptune: {
-      sv: "Om du tappade ett äpple på Neptunus skulle det falla lite snabbare än på Jorden.",
-      en: "If you dropped an apple on Neptune, it would fall slightly faster than on Earth.",
-    },
-    venus: {
-      sv: "Venus har nästan samma gravitation som Jorden, men temperaturen på ytan är 460°C!",
-      en: "Venus has nearly the same gravity as Earth, but the surface temperature is 460°C!",
-    },
-  };
-  const fact = facts[id];
-  return fact ? fact[locale === "sv" ? "sv" : "en"] : null;
+function getFunFact(id: GravityPlanetId, grav: GravityLabCopy): string | null {
+  const fact = grav.planets[id]?.fact;
+  return fact ? fact : null;
 }

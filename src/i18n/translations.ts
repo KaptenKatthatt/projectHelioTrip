@@ -1,6 +1,7 @@
 import type { PlanetId } from "../lib/planets";
 import type { MoonId } from "../lib/moons";
 import type { SatelliteId } from "../lib/satellites";
+import type { GravityPlanetId } from "../lib/learning/gravityData";
 import { en } from "./locales/en";
 import { sv } from "./locales/sv";
 
@@ -196,6 +197,17 @@ export type Translation = {
       object_car: string;
       object_elephant: string;
       heightLabel: string;
+      planets: Record<
+        GravityPlanetId,
+        {
+          name: string;
+          fact?: string;
+        }
+      >;
+    };
+    labAccordion: {
+      orbitTitle: string;
+      dropTitle: string;
     };
     xpTitles: {
       rookie: string;

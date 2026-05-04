@@ -155,7 +155,8 @@ export const sv: Translation = {
     missions: {
       solar_system_start: {
         title: 'Den blå kulan & Den röda grannen',
-        description: 'Börja hemma där det finns vatten, och hitta sedan planeten som kallas den röda.',
+        description:
+          'Börja hemma där det finns vatten, och hitta sedan planeten som kallas den röda.',
       },
       jupiter_moons: {
         title: 'Jättens följeslagare',
@@ -167,7 +168,8 @@ export const sv: Translation = {
       },
       iss_hunt: {
         title: 'Människor i rymden',
-        description: 'Något snurrar runt jorden med människor ombord. Kan du hitta den stora maskinen?',
+        description:
+          'Något snurrar runt jorden med människor ombord. Kan du hitta den stora maskinen?',
       },
       free_flight_loop: {
         title: 'Släpp ratten!',
@@ -175,11 +177,13 @@ export const sv: Translation = {
       },
       water_hunt: {
         title: 'Det gömda ishavet',
-        description: 'Dr. Astra letar efter vatten. Följ spåren utåt i solsystemet till en frusen värld.',
+        description:
+          'Dr. Astra letar efter vatten. Följ spåren utåt i solsystemet till en frusen värld.',
       },
       gravity_sling: {
         title: 'Rymdens katapult',
-        description: 'Hur åker man snabbare i rymden? Lär dig hur man använder stora planeter som en slunga.',
+        description:
+          'Hur åker man snabbare i rymden? Lär dig hur man använder stora planeter som en slunga.',
       },
       photo_safari: {
         title: 'Rymd-Paparazzi',
@@ -243,7 +247,7 @@ export const sv: Translation = {
       learningStreakResetHint: 'Gör ett quiz varje dag för att behålla din streak.',
     },
     gravityLab: {
-      title: 'Gravitations-labbet',
+      title: 'Gravitationslabbet',
       pickObject: 'Välj objekt',
       pickPlanet: 'Välj planet',
       dropButton: 'Släpp!',
@@ -252,11 +256,49 @@ export const sv: Translation = {
       resultImpactSpeed: 'Hastighet vid nedslag',
       resultGravity: 'Gravitationsstyrka',
       resultMass: 'Massa',
-      factAllFallSame: 'Alla föremål faller lika snabbt i vakuum — oavsett massa! Galileo visade detta redan på 1500-talet.',
+      factAllFallSame:
+        'Alla föremål faller lika snabbt i vakuum — oavsett massa! Galileo visade detta redan på 1500-talet.',
       object_apple: 'Äpple',
       object_car: 'Bil',
       object_elephant: 'Elefant',
-      heightLabel: 'Höjd: 20 m',
+      heightLabel: 'Höjd: {height} m',
+      planets: {
+        mercury: { name: 'Merkurius' },
+        venus: {
+          name: 'Venus',
+          fact: 'Venus har nästan samma gravitation som Jorden, men temperaturen på ytan är 460°C!',
+        },
+        earth: { name: 'Jorden' },
+        moon: {
+          name: 'Månen',
+          fact: 'En astronaut som väger 80 kg på Jorden väger bara 13 kg på Månen!',
+        },
+        mars: {
+          name: 'Mars',
+          fact: 'Du kan hoppa nästan 3× högre på Mars. Basket skulle vara annorlunda!',
+        },
+        jupiter: {
+          name: 'Jupiter',
+          fact: 'Jupiters gravitation är så stark att den fångar upp asteroider som annars skulle träffa Jorden.',
+        },
+        saturn: {
+          name: 'Saturnus',
+          fact: 'Trots att Saturnus är enormt stor har den nästan samma ytgravitation som Jorden — den är nämligen gjord av gas!',
+        },
+        uranus: { name: 'Uranus' },
+        neptune: {
+          name: 'Neptunus',
+          fact: 'Om du tappade ett äpple på Neptunus skulle det falla lite snabbare än på Jorden.',
+        },
+        pluto: {
+          name: 'Pluto',
+          fact: 'Gravitationen på Pluto är så svag att du skulle kunna hoppa över ett tvåvåningshus.',
+        },
+      },
+    },
+    labAccordion: {
+      orbitTitle: 'Banmekanik — Solens massa',
+      dropTitle: 'Gravitationslabbet — Släpp & jämför',
     },
     xpTitles: {
       rookie: 'Nybörjare',

@@ -7,12 +7,12 @@ export type GravityPlanetId =
   | 'mercury'
   | 'venus'
   | 'earth'
+  | 'moon'
   | 'mars'
   | 'jupiter'
   | 'saturn'
   | 'uranus'
   | 'neptune'
-  | 'moon'
   | 'pluto';
 
 export type GravityPlanetInfo = {

@@ -39,6 +39,25 @@ export const computeDropFrame = (
   dropHeight: number,
   elapsedSeconds: number,
 ): DropFrame => {
+  if (
+    !Number.isFinite(surfaceGravity) ||
+    surfaceGravity <= 0
+  ) {
+    throw new Error(
+      `computeDropFrame: surfaceGravity must be a finite number > 0, got ${surfaceGravity}`,
+    );
+  }
+  if (!Number.isFinite(dropHeight) || dropHeight < 0) {
+    throw new Error(
+      `computeDropFrame: dropHeight must be a finite number >= 0, got ${dropHeight}`,
+    );
+  }
+  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0) {
+    throw new Error(
+      `computeDropFrame: elapsedSeconds must be a finite number >= 0, got ${elapsedSeconds}`,
+    );
+  }
+
   const y = 0.5 * surfaceGravity * elapsedSeconds * elapsedSeconds;
   const velocity = surfaceGravity * elapsedSeconds;
 
@@ -72,6 +91,20 @@ export const computeImpactResult = (
   surfaceGravity: number,
   dropHeight: number,
 ): ImpactResult => {
+  if (
+    !Number.isFinite(surfaceGravity) ||
+    surfaceGravity <= 0
+  ) {
+    throw new Error(
+      `computeImpactResult: surfaceGravity must be a finite number > 0, got ${surfaceGravity}`,
+    );
+  }
+  if (!Number.isFinite(dropHeight) || dropHeight < 0) {
+    throw new Error(
+      `computeImpactResult: dropHeight must be a finite number >= 0, got ${dropHeight}`,
+    );
+  }
+
   const fallDuration = Math.sqrt((2 * dropHeight) / surfaceGravity);
   const impactVelocity = surfaceGravity * fallDuration;
   return { impactVelocity, fallDuration };
