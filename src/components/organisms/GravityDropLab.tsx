@@ -335,11 +335,11 @@ export const GravityDropLab = () => {
 function getImpactClass(impactType: ImpactType): string {
   switch (impactType) {
     case "splat":
-      return styles.impactSplat;
+      return styles.impactSplat ?? "";
     case "crash":
-      return styles.impactCrash;
+      return styles.impactCrash ?? "";
     case "thud":
-      return styles.impactThud;
+      return styles.impactThud ?? "";
   }
 }
 
