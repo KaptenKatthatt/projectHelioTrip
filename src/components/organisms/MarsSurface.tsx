@@ -172,6 +172,16 @@ const Terrain = () => {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(40, 40);
+    texture.needsUpdate = true;
+    return texture;
+  }, [rawGroundTexture]);
+
+  const rockTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+    texture.needsUpdate = true;
     return texture;
   }, [rawGroundTexture]);
 
@@ -183,10 +193,9 @@ const Terrain = () => {
         <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.05} color="#d47c59" />
       </mesh>
 
-      {/* Rocks */}
       <Instances range={rocks.length} castShadow receiveShadow>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.1} color="#a65d40" />
+        <icosahedronGeometry args={[1, 1]} />
+        <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.05} color="#a05038" />
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}
