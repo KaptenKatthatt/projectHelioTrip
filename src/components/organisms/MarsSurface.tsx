@@ -1,6 +1,6 @@
 import { useGLTF, OrbitControls, ContactShadows, useTexture, Sky, Instances, Instance } from "@react-three/drei";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import { X, Info } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import * as THREE from "three";
@@ -84,20 +84,52 @@ const Rover = () => {
   );
 };
 
-const CameraZoomController = () => {
+const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boolean, setIsFlyingIn: (v: boolean) => void }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const { camera } = useThree();
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
+  const animStateRef = useRef<{ startPos: THREE.Vector3, startTime: number } | null>(null);
 
-  useFrame((_state, delta) => {
+  useFrame(() => {
     if (marsTransitionState === 'taking_off') {
       if (!targetPosRef.current) {
         targetPosRef.current = camera.position.clone().multiplyScalar(6);
         targetPosRef.current.y = Math.max(targetPosRef.current.y, 40); // Ensure it lifts up higher for a drone-like shot
+        animStateRef.current = { startPos: camera.position.clone(), startTime: performance.now() };
       }
-      camera.position.lerp(targetPosRef.current, delta * 0.4); // Slower, more cinematic lerp
+      
+      const elapsed = performance.now() - animStateRef.current!.startTime;
+      const progress = Math.min(elapsed / 3500, 1.0);
+      const easeIn = progress * progress * progress; // easeInCubic
+      
+      camera.position.lerpVectors(animStateRef.current!.startPos, targetPosRef.current, easeIn);
+      camera.lookAt(0, 0, 0);
+    } else if (isFlyingIn) {
+      if (!targetPosRef.current) {
+        targetPosRef.current = new THREE.Vector3(8, 3, 8);
+        camera.position.set(15, 60, 40);
+        // Wait 500ms for the black screen fade-in before starting the camera movement
+        animStateRef.current = { startPos: new THREE.Vector3(15, 60, 40), startTime: performance.now() + 500 };
+      }
+      
+      const now = performance.now();
+      if (now < animStateRef.current!.startTime) {
+        camera.position.copy(animStateRef.current!.startPos);
+      } else {
+        const elapsed = now - animStateRef.current!.startTime;
+        const progress = Math.min(elapsed / 6500, 1.0);
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4); // easeOutQuart for cinematic entry
+        
+        camera.position.lerpVectors(animStateRef.current!.startPos, targetPosRef.current, easeOutQuart);
+        
+        if (progress >= 1.0) {
+          setIsFlyingIn(false);
+        }
+      }
+      camera.lookAt(0, 0, 0);
     } else {
       targetPosRef.current = null;
+      animStateRef.current = null;
     }
   });
 
@@ -196,11 +228,12 @@ export const MarsSurface = () => {
 
 const MarsRoverScene = () => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
+  const [isFlyingIn, setIsFlyingIn] = useState(true);
   
   return (
     <Canvas shadows camera={{ position: [8, 3, 8], fov: 45 }}>
       <Suspense fallback={null}>
-        <CameraZoomController />
+        <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
         <Sky 
           distance={450000} 
           sunPosition={[20, 5, 20]} 
@@ -229,7 +262,7 @@ const MarsRoverScene = () => {
         <Rover />
         <Terrain />
         
-        {marsTransitionState !== 'taking_off' && (
+        {marsTransitionState !== 'taking_off' && !isFlyingIn && (
           <OrbitControls makeDefault minDistance={4} maxDistance={20} maxPolarAngle={Math.PI / 2 - 0.1} />
         )}
       </Suspense>
