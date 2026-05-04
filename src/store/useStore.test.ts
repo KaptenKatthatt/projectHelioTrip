@@ -141,4 +141,28 @@ describe("useStore", () => {
     expect(state.selectedConstellation).toBe("orion");
     expect(state.travelId).toBe(beforeTravelId);
   });
+
+  describe('moon landing state', () => {
+    it('isLandedOnMoon defaults to false', async () => {
+      const { useStore } = await loadStore();
+      expect(useStore.getState().isLandedOnMoon).toBe(false);
+    });
+
+    it('setIsLandedOnMoon sets the value', async () => {
+      const { useStore } = await loadStore();
+      useStore.getState().setIsLandedOnMoon(true);
+      expect(useStore.getState().isLandedOnMoon).toBe(true);
+    });
+
+    it('moonTransitionState defaults to idle', async () => {
+      const { useStore } = await loadStore();
+      expect(useStore.getState().moonTransitionState).toBe('idle');
+    });
+
+    it('setMoonTransitionState sets the value', async () => {
+      const { useStore } = await loadStore();
+      useStore.getState().setMoonTransitionState('landing');
+      expect(useStore.getState().moonTransitionState).toBe('landing');
+    });
+  });
 });

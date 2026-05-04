@@ -103,6 +103,7 @@ type SimulationState = {
   gravityLabResetTrigger: number;
   // Phase 4 additions (Mars Explorer)
   isLanded: boolean;
+  isLandedOnMoon: boolean;
 };
 
 type SimulationActions = {
@@ -148,6 +149,9 @@ type SimulationActions = {
   setIsLanded: (landed: boolean) => void;
   marsTransitionState: 'idle' | 'landing' | 'taking_off';
   setMarsTransitionState: (state: 'idle' | 'landing' | 'taking_off') => void;
+  setIsLandedOnMoon: (landed: boolean) => void;
+  moonTransitionState: 'idle' | 'landing' | 'taking_off';
+  setMoonTransitionState: (state: 'idle' | 'landing' | 'taking_off') => void;
 };
 
 export type Store = SimulationState & SimulationActions;
@@ -451,7 +455,9 @@ export const useStore = create<Store>()(
       sunMassMultiplier: 1.0,
       gravityLabResetTrigger: 0,
       isLanded: false,
+      isLandedOnMoon: false,
       marsTransitionState: 'idle',
+      moonTransitionState: 'idle',
 
       setActiveBody: (id) => set({ activeBody: id }),
 
@@ -754,6 +760,8 @@ export const useStore = create<Store>()(
       triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
       setIsLanded: (landed) => set({ isLanded: landed }),
       setMarsTransitionState: (state) => set({ marsTransitionState: state }),
+      setIsLandedOnMoon: (landed) => set({ isLandedOnMoon: landed }),
+      setMoonTransitionState: (state) => set({ moonTransitionState: state }),
 
       restoreFromShareLink: (snapshot) => {
         const state = useStore.getState();
