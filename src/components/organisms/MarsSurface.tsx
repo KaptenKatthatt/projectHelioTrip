@@ -104,6 +104,12 @@ const CameraZoomController = ({
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
   const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
 
+  useEffect(() => {
+    // Reset animation state when the transition mode changes
+    targetPosRef.current = null;
+    animStateRef.current = null;
+  }, [marsTransitionState]);
+
   useFrame(() => {
     if (marsTransitionState === 'taking_off') {
       if (!targetPosRef.current) {
