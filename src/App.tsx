@@ -116,6 +116,8 @@ export const App = () => {
   const dismissOverlay = minGateDone && sceneReady;
   const isLanded = useStore((s) => s.isLanded);
   const marsTransitionState = useStore((s) => s.marsTransitionState);
+  const moonTransitionState = useStore((s) => s.moonTransitionState);
+  const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
 
   const sceneBoundary = (
     <SceneErrorBoundary onRetry={handleRetryScene}>
@@ -132,7 +134,7 @@ export const App = () => {
       ) : null}
       
       {/* Cinematic Mars Transition Overlay */}
-      <div 
+      <div
         className={`pointer-events-none fixed inset-0 z-[300] bg-black ease-in-out ${
           marsTransitionState !== 'idle' ? 'opacity-100' : 'opacity-0'
         }`}
@@ -140,6 +142,23 @@ export const App = () => {
           transitionProperty: 'opacity',
           transitionDuration: '500ms',
           transitionDelay: marsTransitionState === 'landing' ? '2500ms' : marsTransitionState === 'taking_off' ? '3000ms' : '0ms'
+        }}
+      />
+
+      {/* Cinematic Moon Transition Overlay */}
+      <div
+        className={`pointer-events-none fixed inset-0 z-[300] bg-black ease-in-out ${
+          moonTransitionState !== 'idle' ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          transitionProperty: 'opacity',
+          transitionDuration: '500ms',
+          transitionDelay:
+            moonTransitionState === 'landing'
+              ? '1000ms'
+              : moonTransitionState === 'taking_off'
+                ? '3000ms'
+                : '0ms',
         }}
       />
 
@@ -162,10 +181,13 @@ export const App = () => {
               : { width: "100%", height: "100%" }
           }
         >
-          <div 
+          <div
             className="absolute inset-0 z-0 min-h-0 transition-transform duration-[3000ms] ease-in-out"
-            style={{ 
-              transform: (marsTransitionState !== 'idle' || isLanded) ? 'scale(5)' : 'scale(1)',
+            style={{
+              transform:
+                (marsTransitionState !== 'idle' || isLanded || moonTransitionState !== 'idle' || isLandedOnMoon)
+                  ? 'scale(5)'
+                  : 'scale(1)',
               transformOrigin: 'center center'
             }}
           >
