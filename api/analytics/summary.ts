@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 import { dispatchApi } from '../_lib/vercelDispatch.js';
 
 export const GET = (request: Request) => dispatchApi(request);

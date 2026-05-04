@@ -5,7 +5,11 @@ import { useStore } from "../store/useStore";
 import { PLANETS } from "../lib/planets";
 import { MOONS, MOON_AU_SCALE } from "../lib/moons";
 import { computeSatelliteOffset, SATELLITES } from "../lib/satellites";
-import { propagate } from "../lib/kepler";
+import {
+  propagate,
+  setEclipticAuFromEa,
+  solveKeplerEccentricAnomaly,
+} from "../lib/kepler";
 import {
   MOON_ORBITAL_ELEMENTS,
   PLANET_ORBITAL_ELEMENTS,
@@ -17,6 +21,39 @@ import {
 } from "../lib/positionsBus";
 import { AU_SCALE, MS_PER_DAY } from "../lib/constants";
 import { type PhysicsState, stepPhysics } from "../lib/physicsLabEngine";
+
+const LAB_VELOCITY_EPS_DAYS = 0.001;
+
+function seedGravityLabBodiesFromOrbitalEphemerides(
+  currentMs: number,
+  into: Record<string, PhysicsState>,
+): void {
+  for (const planet of PLANETS) {
+    const el = PLANET_ORBITAL_ELEMENTS[planet.id];
+    if (!el) continue;
+
+    const pos = new Vector3();
+    const vel = new Vector3();
+
+    const dtDays = (currentMs - el.epochMs) / MS_PER_DAY;
+    const n = (Math.PI * 2) / el.periodDays;
+    const meanAnomaly = el.m0Rad + n * dtDays;
+    const ea = solveKeplerEccentricAnomaly(el.e, meanAnomaly);
+    setEclipticAuFromEa(el, ea, pos);
+
+    const meanAnomaly2 = meanAnomaly + n * LAB_VELOCITY_EPS_DAYS;
+    const ea2 = solveKeplerEccentricAnomaly(el.e, meanAnomaly2);
+    const posEps = new Vector3();
+    setEclipticAuFromEa(el, ea2, posEps);
+    vel.set(
+      (posEps.x - pos.x) / LAB_VELOCITY_EPS_DAYS,
+      (posEps.y - pos.y) / LAB_VELOCITY_EPS_DAYS,
+      (posEps.z - pos.z) / LAB_VELOCITY_EPS_DAYS,
+    );
+
+    into[planet.id] = { pos, vel };
+  }
+}
 
 type SimulationClockState = {
   simulationTime: Date;
@@ -79,56 +116,10 @@ export const useTimeManager = (): void => {
                        (isLab && lastLabResetRef.current !== store.gravityLabResetTrigger);
 
     if (needsReset) {
-      for (const planet of PLANETS) {
-        const el = PLANET_ORBITAL_ELEMENTS[planet.id];
-        if (!el) continue;
-        
-        // We need PURE ecliptic coordinates for the physics engine
-        // Propagate with scale 1.0 but WITHOUT the three.js axis swap
-        const pos = new Vector3();
-        const vel = new Vector3();
-        
-        // Manual propagation to get pure ecliptic X, Y, Z
-        const dtDays = (currentMs - el.epochMs) / MS_PER_DAY;
-        const n = (Math.PI * 2) / el.periodDays;
-        const m = el.m0Rad + n * dtDays;
-        let ea = m;
-        for (let k = 0; k < 6; k++) {
-          ea -= (ea - el.e * Math.sin(ea) - m) / (1 - el.e * Math.cos(ea));
-        }
-        const xPf = el.a * (Math.cos(ea) - el.e);
-        const yPf = el.a * Math.sqrt(Math.max(0, 1 - el.e * el.e)) * Math.sin(ea);
-        
-        const cosI = Math.cos(el.iRad);
-        const sinI = Math.sin(el.iRad);
-        const cosO = Math.cos(el.omegaRad);
-        const sinO = Math.sin(el.omegaRad);
-        const cosW = Math.cos(el.wRad);
-        const sinW = Math.sin(el.wRad);
-
-        const xEc = (cosO * cosW - sinO * sinW * cosI) * xPf + (-cosO * sinW - sinO * cosW * cosI) * yPf;
-        const yEc = (sinO * cosW + cosO * sinW * cosI) * xPf + (-sinO * sinW + cosO * cosW * cosI) * yPf;
-        const zEc = sinW * sinI * xPf + cosW * sinI * yPf;
-        
-        pos.set(xEc, yEc, zEc);
-        
-        // Velocity (approx via finite difference in ecliptic space)
-        const eps = 0.001; // days
-        const m2 = m + n * eps;
-        let ea2 = m2;
-        for (let k = 0; k < 6; k++) {
-          ea2 -= (ea2 - el.e * Math.sin(ea2) - m2) / (1 - el.e * Math.cos(ea2));
-        }
-        const xPf2 = el.a * (Math.cos(ea2) - el.e);
-        const yPf2 = el.a * Math.sqrt(Math.max(0, 1 - el.e * el.e)) * Math.sin(ea2);
-        const xEc2 = (cosO * cosW - sinO * sinW * cosI) * xPf2 + (-cosO * sinW - sinO * cosW * cosI) * yPf2;
-        const yEc2 = (sinO * cosW + cosO * sinW * cosI) * xPf2 + (-sinO * sinW + cosO * cosW * cosI) * yPf2;
-        const zEc2 = sinW * sinI * xPf2 + cosW * sinI * yPf2;
-        
-        vel.set((xEc2 - xEc) / eps, (yEc2 - yEc) / eps, (zEc2 - zEc) / eps);
-        
-        physicsStatesRef.current[planet.id] = { pos, vel };
-      }
+      seedGravityLabBodiesFromOrbitalEphemerides(
+        currentMs,
+        physicsStatesRef.current,
+      );
       lastLabResetRef.current = store.gravityLabResetTrigger;
     }
     lastLabModeRef.current = store.gameMode;

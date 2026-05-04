@@ -23,6 +23,48 @@ export type OrbitalElements = {
 const TAU = Math.PI * 2;
 const KEPLER_ITERATIONS = 6;
 
+/** Newton iteration for eccentric anomaly given eccentricity `e` and mean anomaly `m`. */
+export const solveKeplerEccentricAnomaly = (e: number, m: number): number => {
+  let ea = m;
+  for (let k = 0; k < KEPLER_ITERATIONS; k++) {
+    const f = ea - e * Math.sin(ea) - m;
+    const fp = 1 - e * Math.cos(ea);
+    ea -= f / fp;
+  }
+  return ea;
+};
+
+/**
+ * Perifocal position at eccentric anomaly `ea`, rotated into the ecliptic
+ * frame (AU, unscaled). Used by `propagate` and by the physics lab init.
+ */
+export const setEclipticAuFromEa = (
+  el: Pick<OrbitalElements, "a" | "e" | "iRad" | "omegaRad" | "wRad">,
+  ea: number,
+  out: Vector3,
+): void => {
+  const e = el.e;
+  const xPf = el.a * (Math.cos(ea) - e);
+  const yPf = el.a * Math.sqrt(Math.max(0, 1 - e * e)) * Math.sin(ea);
+
+  const cosI = Math.cos(el.iRad);
+  const sinI = Math.sin(el.iRad);
+  const cosO = Math.cos(el.omegaRad);
+  const sinO = Math.sin(el.omegaRad);
+  const cosW = Math.cos(el.wRad);
+  const sinW = Math.sin(el.wRad);
+
+  const xEc =
+    (cosO * cosW - sinO * sinW * cosI) * xPf +
+    (-cosO * sinW - sinO * cosW * cosI) * yPf;
+  const yEc =
+    (sinO * cosW + cosO * sinW * cosI) * xPf +
+    (-sinO * sinW + cosO * cosW * cosI) * yPf;
+  const zEc = sinW * sinI * xPf + cosW * sinI * yPf;
+
+  out.set(xEc, yEc, zEc);
+};
+
 /**
  * Computes the body's position at `timeMs` from its orbital elements and
  * writes it into `out`. The result is in the three.js frame (Y-up, Z
@@ -40,56 +82,14 @@ export const propagate = (
   const dtDays = (timeMs - el.epochMs) / MS_PER_DAY;
   const n = TAU / el.periodDays;
   const m = el.m0Rad + n * dtDays;
+  const ea = solveKeplerEccentricAnomaly(el.e, m);
 
-  const e = el.e;
-  let ea = m;
-  for (let k = 0; k < KEPLER_ITERATIONS; k++) {
-    const f = ea - e * Math.sin(ea) - m;
-    const fp = 1 - e * Math.cos(ea);
-    ea -= f / fp;
-  }
-
-  const cosE = Math.cos(ea);
-  const sinE = Math.sin(ea);
-  const xPf = el.a * (cosE - e);
-  const yPf = el.a * Math.sqrt(Math.max(0, 1 - e * e)) * sinE;
-
-  const cosI = Math.cos(el.iRad);
-  const sinI = Math.sin(el.iRad);
-  const cosO = Math.cos(el.omegaRad);
-  const sinO = Math.sin(el.omegaRad);
-  const cosW = Math.cos(el.wRad);
-  const sinW = Math.sin(el.wRad);
-
-  const xEc =
-    (cosO * cosW - sinO * sinW * cosI) * xPf +
-    (-cosO * sinW - sinO * cosW * cosI) * yPf;
-  const yEc =
-    (sinO * cosW + cosO * sinW * cosI) * xPf +
-    (-sinO * sinW + cosO * cosW * cosI) * yPf;
-  const zEc = sinW * sinI * xPf + cosW * sinI * yPf;
-
+  setEclipticAuFromEa(el, ea, out);
+  const xEc = out.x;
+  const yEc = out.y;
+  const zEc = out.z;
   out.set(xEc * scale, zEc * scale, -yEc * scale);
   return out;
-};
-
-/**
- * Computes the body's instantaneous velocity at `timeMs`.
- * Returns AU/day.
- */
-export const propagateVelocity = (
-  el: OrbitalElements,
-  timeMs: number,
-  out: Vector3,
-): Vector3 => {
-  const eps = 100; // 100ms
-  const p1 = new Vector3();
-  const p2 = new Vector3();
-  propagate(el, timeMs - eps, p1, 1.0);
-  propagate(el, timeMs + eps, p2, 1.0);
-  
-  const dtDays = (2 * eps) / MS_PER_DAY;
-  return out.subVectors(p2, p1).divideScalar(dtDays);
 };
 
 const SMALL = 1e-12;
