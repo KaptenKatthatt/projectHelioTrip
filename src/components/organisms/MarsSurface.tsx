@@ -1,9 +1,17 @@
-import { useGLTF, OrbitControls, ContactShadows, useTexture, Sky, Instances, Instance } from "@react-three/drei";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import { X, Info } from "lucide-react";
-import { useStore } from "../../store/useStore";
-import * as THREE from "three";
+import {
+  useGLTF,
+  OrbitControls,
+  ContactShadows,
+  useTexture,
+  Sky,
+  Instances,
+  Instance,
+} from '@react-three/drei';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Suspense, useMemo, useRef, useState } from 'react';
+import { X, Info } from 'lucide-react';
+import { useStore } from '../../store/useStore';
+import * as THREE from 'three';
 
 type MarsRockInstance = {
   position: [number, number, number];
@@ -75,7 +83,7 @@ const buildMarsTerrainGeometryAndRocks = (): {
 };
 
 const Rover = () => {
-  const { scene } = useGLTF("/Mars 2020 Perseverance Rover.glb");
+  const { scene } = useGLTF('/Mars 2020 Perseverance Rover.glb');
   return (
     <group position={[0, 0, 0]}>
       <primitive object={scene} scale={1.5} />
@@ -84,11 +92,17 @@ const Rover = () => {
   );
 };
 
-const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boolean, setIsFlyingIn: (v: boolean) => void }) => {
+const CameraZoomController = ({
+  isFlyingIn,
+  setIsFlyingIn,
+}: {
+  isFlyingIn: boolean;
+  setIsFlyingIn: (v: boolean) => void;
+}) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const { camera } = useThree();
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
-  const animStateRef = useRef<{ startPos: THREE.Vector3, startTime: number } | null>(null);
+  const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
 
   useFrame(() => {
     if (marsTransitionState === 'taking_off') {
@@ -97,11 +111,11 @@ const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boole
         targetPosRef.current.y = Math.max(targetPosRef.current.y, 40); // Ensure it lifts up higher for a drone-like shot
         animStateRef.current = { startPos: camera.position.clone(), startTime: performance.now() };
       }
-      
+
       const elapsed = performance.now() - animStateRef.current!.startTime;
       const progress = Math.min(elapsed / 3500, 1.0);
       const easeIn = progress * progress * progress; // easeInCubic
-      
+
       camera.position.lerpVectors(animStateRef.current!.startPos, targetPosRef.current, easeIn);
       camera.lookAt(0, 0, 0);
     } else if (isFlyingIn) {
@@ -109,9 +123,12 @@ const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boole
         targetPosRef.current = new THREE.Vector3(8, 3, 8);
         camera.position.set(15, 60, 40);
         // Wait 500ms for the black screen fade-in before starting the camera movement
-        animStateRef.current = { startPos: new THREE.Vector3(15, 60, 40), startTime: performance.now() + 500 };
+        animStateRef.current = {
+          startPos: new THREE.Vector3(15, 60, 40),
+          startTime: performance.now() + 500,
+        };
       }
-      
+
       const now = performance.now();
       if (now < animStateRef.current!.startTime) {
         camera.position.copy(animStateRef.current!.startPos);
@@ -119,9 +136,13 @@ const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boole
         const elapsed = now - animStateRef.current!.startTime;
         const progress = Math.min(elapsed / 6500, 1.0);
         const easeOutQuart = 1 - Math.pow(1 - progress, 4); // easeOutQuart for cinematic entry
-        
-        camera.position.lerpVectors(animStateRef.current!.startPos, targetPosRef.current, easeOutQuart);
-        
+
+        camera.position.lerpVectors(
+          animStateRef.current!.startPos,
+          targetPosRef.current,
+          easeOutQuart,
+        );
+
         if (progress >= 1.0) {
           setIsFlyingIn(false);
         }
@@ -137,7 +158,7 @@ const CameraZoomController = ({ isFlyingIn, setIsFlyingIn }: { isFlyingIn: boole
 };
 
 const Terrain = () => {
-  const rawGroundTexture = useTexture("/textures/mars_surface.png");
+  const rawGroundTexture = useTexture('/textures/mars_surface.png');
   const groundTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
     texture.wrapS = THREE.RepeatWrapping;
@@ -153,7 +174,7 @@ const Terrain = () => {
       <mesh geometry={geometry} receiveShadow>
         <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.05} color="#d47c59" />
       </mesh>
-      
+
       {/* Rocks */}
       <Instances range={rocks.length} castShadow receiveShadow>
         <icosahedronGeometry args={[1, 0]} />
@@ -174,24 +195,28 @@ export const MarsSurface = () => {
   if (!isLanded) return null;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-[200] flex flex-col bg-[#1a0a05]">
+    <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#1a0a05]">
       {/* 3D Scene */}
       <div className="absolute inset-0">
         <MarsRoverScene />
       </div>
 
-      <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
         <header className="flex items-center justify-between p-6">
           <div className="pointer-events-auto flex flex-col">
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-orange-500">Mars Explorer</h2>
-            <p className="text-sm font-medium text-orange-200/60">Fokuserad på: Perseverance Rover</p>
+            <h2 className="text-3xl font-black tracking-tighter text-orange-500 uppercase">
+              Mars Explorer
+            </h2>
+            <p className="text-sm font-medium text-orange-200/60">
+              Fokuserad på: Perseverance Rover
+            </p>
           </div>
           <button
             type="button"
             onClick={() => {
               // Start the camera zoom out first
               setMarsTransitionState('taking_off');
-              
+
               // Wait for the camera to pull away (e.g. 3.5s), then fade to black and unmount
               setTimeout(() => {
                 setIsLanded(false);
@@ -206,20 +231,23 @@ export const MarsSurface = () => {
           </button>
         </header>
 
-        <div className="mt-auto p-6 flex items-end justify-between">
-           <div className="pointer-events-auto max-w-sm rounded-2xl border border-orange-500/20 bg-black/60 p-4 backdrop-blur-md">
-              <div className="flex items-center gap-2 mb-2 text-orange-400">
-                <Info className="h-4 w-4" />
-                <span className="ds-eyebrow">Visste du?</span>
-              </div>
-              <p className="text-xs leading-relaxed text-white/80">
-                Perseverance landade i Jezero-kratern den 18 februari 2021. Dess uppdrag är att söka efter tecken på forntida liv och samla in stenprover.
-              </p>
-           </div>
-           
-           <div className="pointer-events-auto flex flex-col gap-2">
-              <p className="ds-eyebrow text-right text-white/40 mb-1">Dra med musen för att se dig omkring</p>
-           </div>
+        <div className="mt-auto flex items-end justify-between p-6">
+          <div className="pointer-events-auto max-w-sm rounded-2xl border border-orange-500/20 bg-black/60 p-4 backdrop-blur-md">
+            <div className="mb-2 flex items-center gap-2 text-orange-400">
+              <Info className="h-4 w-4" />
+              <span className="ds-eyebrow">Visste du?</span>
+            </div>
+            <p className="text-xs leading-relaxed text-white/80">
+              Perseverance landade i Jezero-kratern den 18 februari 2021. Dess uppdrag är att söka
+              efter tecken på forntida liv och samla in stenprover.
+            </p>
+          </div>
+
+          <div className="pointer-events-auto flex flex-col gap-2">
+            <p className="ds-eyebrow mb-1 text-right text-white/40">
+              Dra med musen för att se dig omkring
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -229,23 +257,23 @@ export const MarsSurface = () => {
 const MarsRoverScene = () => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
-  
+
   return (
     <Canvas shadows camera={{ position: [8, 3, 8], fov: 45 }}>
       <Suspense fallback={null}>
         <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
-        <Sky 
-          distance={450000} 
-          sunPosition={[20, 5, 20]} 
-          inclination={0} 
-          azimuth={0.25} 
+        <Sky
+          distance={450000}
+          sunPosition={[20, 5, 20]}
+          inclination={0}
+          azimuth={0.25}
           mieCoefficient={0.02}
           mieDirectionalG={0.8}
           rayleigh={3}
           turbidity={15}
         />
-        <fog attach="fog" args={["#c26f4f", 10, 150]} />
-        
+        <fog attach="fog" args={['#c26f4f', 10, 150]} />
+
         <ambientLight intensity={1.0} color="#ffd4bd" />
         <directionalLight
           position={[50, 100, 20]}
@@ -258,12 +286,17 @@ const MarsRoverScene = () => {
           shadow-camera-top={20}
           shadow-camera-bottom={-20}
         />
-        
+
         <Rover />
         <Terrain />
-        
+
         {marsTransitionState !== 'taking_off' && !isFlyingIn && (
-          <OrbitControls makeDefault minDistance={4} maxDistance={20} maxPolarAngle={Math.PI / 2 - 0.1} />
+          <OrbitControls
+            makeDefault
+            minDistance={4}
+            maxDistance={20}
+            maxPolarAngle={Math.PI / 2 - 0.1}
+          />
         )}
       </Suspense>
     </Canvas>
