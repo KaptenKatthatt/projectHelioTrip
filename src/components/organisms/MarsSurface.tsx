@@ -8,7 +8,7 @@ import {
   Instance,
 } from '@react-three/drei';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import * as THREE from 'three';
