@@ -142,3 +142,96 @@ const CameraZoomController = ({
 
   return null;
 };
+
+const MoonTerrain = () => {
+  const rawGroundTexture = useTexture('/textures/moon/diffuse.webp');
+
+  const groundTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(30, 30);
+    texture.needsUpdate = true;
+    return texture;
+  }, [rawGroundTexture]);
+
+  const rockTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+    texture.needsUpdate = true;
+    return texture;
+  }, [rawGroundTexture]);
+
+  const { geometry, rocks } = useMemo(() => buildMoonTerrainGeometryAndRocks(), []);
+
+  return (
+    <group>
+      <mesh geometry={geometry} receiveShadow>
+        <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.0} color="#888ea0" />
+      </mesh>
+      <Instances range={rocks.length} castShadow receiveShadow>
+        <icosahedronGeometry args={[1, 1]} />
+        <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.0} color="#606470" />
+        {rocks.map((rock, i) => (
+          <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
+        ))}
+      </Instances>
+    </group>
+  );
+};
+
+const StarField = () => {
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    const count = 200;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI * 0.5; // upper hemisphere only
+      const r = 380 + Math.random() * 20;
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = r * Math.cos(phi);
+      positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, []);
+
+  return (
+    <points geometry={geometry}>
+      <pointsMaterial color="#c8d8ff" size={0.35} sizeAttenuation />
+    </points>
+  );
+};
+
+const EarthSphere = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [diffuse, normal, roughness] = useTexture([
+    '/textures/earth/diffuse.webp',
+    '/textures/earth/normal.webp',
+    '/textures/earth/roughness.webp',
+  ]);
+
+  useFrame(() => {
+    if (meshRef.current) meshRef.current.rotation.y += 0.001;
+  });
+
+  return (
+    <group position={[-60, 80, -120]}>
+      <mesh ref={meshRef} castShadow={false}>
+        <sphereGeometry args={[8, 32, 32]} />
+        <meshStandardMaterial
+          map={diffuse}
+          normalMap={normal}
+          roughnessMap={roughness}
+          roughness={1}
+          metalness={0}
+        />
+      </mesh>
+      {/* Subtle blue fill light from Earth direction */}
+      <pointLight color="#3060cc" intensity={0.4} distance={300} />
+    </group>
+  );
+};
