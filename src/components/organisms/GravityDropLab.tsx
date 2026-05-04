@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import {
   DROPPABLE_OBJECTS,
@@ -19,6 +25,14 @@ import styles from "./GravityDropLab.module.css";
 
 type Phase = "idle" | "ready" | "falling" | "impact";
 
+const INITIAL_DROP_FRAME: DropFrame = {
+  y: 0,
+  velocity: 0,
+  elapsed: 0,
+  progress: 0,
+  hasLanded: false,
+};
+
 // -- Component --
 
 export const GravityDropLab = () => {
@@ -31,37 +45,29 @@ export const GravityDropLab = () => {
   const [selectedPlanet, setSelectedPlanet] =
     useState<GravityPlanetId>("earth");
 
+  const planet = GRAVITY_PLANETS.find((p) => p.id === selectedPlanet)!;
+  const obj = DROPPABLE_OBJECTS.find((o) => o.id === selectedObject)!;
+
   // State machine
   const [phase, setPhase] = useState<Phase>("ready");
 
   // Animation state
-  const [frame, setFrame] = useState<DropFrame>({
-    y: 0,
-    velocity: 0,
-    elapsed: 0,
-    progress: 0,
-    hasLanded: false,
-  });
+  const [frame, setFrame] = useState<DropFrame>(() => ({ ...INITIAL_DROP_FRAME }));
 
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
+  const gravityRef = useRef(planet.surfaceGravity);
+  const tickRef = useRef<(timestamp: number) => void>(() => {});
 
-  const planet = GRAVITY_PLANETS.find((p) => p.id === selectedPlanet)!;
-  const obj = DROPPABLE_OBJECTS.find((o) => o.id === selectedObject)!;
+  useLayoutEffect(() => {
+    gravityRef.current = planet.surfaceGravity;
+  }, [planet.surfaceGravity]);
 
-  // Formatters
-  const numFmt = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-  const intFmt = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
-
-  // --- Animation loop ---
-  const tick = useCallback(
-    (timestamp: number) => {
+  useLayoutEffect(() => {
+    tickRef.current = (timestamp: number) => {
       const elapsed = (timestamp - startTimeRef.current) / 1000;
       const nextFrame = computeDropFrame(
-        planet.surfaceGravity,
+        gravityRef.current,
         DROP_HEIGHT_METERS,
         elapsed,
       );
@@ -70,34 +76,51 @@ export const GravityDropLab = () => {
       if (nextFrame.hasLanded) {
         setPhase("impact");
       } else {
-        rafRef.current = requestAnimationFrame(tick);
+        rafRef.current = requestAnimationFrame((t) => tickRef.current(t));
       }
-    },
-    [planet.surfaceGravity],
-  );
+    };
+  }, []);
 
-  const handleDrop = useCallback(() => {
-    setPhase("falling");
-    setFrame({ y: 0, velocity: 0, elapsed: 0, progress: 0, hasLanded: false });
-    startTimeRef.current = performance.now();
-    rafRef.current = requestAnimationFrame(tick);
-  }, [tick]);
+  // Formatters
+  const numFmt = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const intFmt = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
 
   const handleReset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     setPhase("ready");
-    setFrame({ y: 0, velocity: 0, elapsed: 0, progress: 0, hasLanded: false });
+    setFrame({ ...INITIAL_DROP_FRAME });
+  }, []);
+
+  const selectObject = useCallback(
+    (id: DroppableObjectId) => {
+      handleReset();
+      setSelectedObject(id);
+    },
+    [handleReset],
+  );
+
+  const selectPlanet = useCallback(
+    (id: GravityPlanetId) => {
+      handleReset();
+      setSelectedPlanet(id);
+    },
+    [handleReset],
+  );
+
+  const handleDrop = useCallback(() => {
+    setPhase("falling");
+    setFrame({ ...INITIAL_DROP_FRAME });
+    startTimeRef.current = performance.now();
+    rafRef.current = requestAnimationFrame((t) => tickRef.current(t));
   }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
-
-  // Reset when planet or object changes
-  useEffect(() => {
-    handleReset();
-  }, [selectedPlanet, selectedObject, handleReset]);
 
   const impact = computeImpactResult(planet.surfaceGravity, DROP_HEIGHT_METERS);
   const canDrop = phase === "ready";
@@ -129,7 +152,7 @@ export const GravityDropLab = () => {
             <button
               key={o.id}
               type="button"
-              onClick={() => setSelectedObject(o.id)}
+              onClick={() => selectObject(o.id)}
               className={[
                 "pointer-events-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all",
                 selectedObject === o.id
@@ -155,7 +178,7 @@ export const GravityDropLab = () => {
             <button
               key={p.id}
               type="button"
-              onClick={() => setSelectedPlanet(p.id)}
+              onClick={() => selectPlanet(p.id)}
               className={[
                 "pointer-events-auto flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all",
                 selectedPlanet === p.id
