@@ -191,7 +191,7 @@ export const App = () => {
               transformOrigin: 'center center'
             }}
           >
-            {sceneBoundary}
+            {!isLanded && !isLandedOnMoon ? sceneBoundary : null}
           </div>
           <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
         </div>
