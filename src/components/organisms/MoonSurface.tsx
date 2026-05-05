@@ -289,3 +289,135 @@ const MoonLandingScene = () => {
     </Canvas>
   );
 };
+
+type MoonFact = {
+  title: { sv: string; en: string };
+  body: { sv: string; en: string };
+};
+
+export const MOON_FACTS: MoonFact[] = [
+  {
+    title: {
+      sv: 'Neil Armstrongs första steg',
+      en: "Neil Armstrong's first step",
+    },
+    body: {
+      sv: 'Den 21 juli 1969 klev Neil Armstrong ut ur landaren kl. 02:56 UTC och satte mänsklighetens första fot på månen.',
+      en: "On 21 July 1969 at 02:56 UTC Neil Armstrong stepped out of the lander and placed humanity's first footprint on the Moon.",
+    },
+  },
+  {
+    title: { sv: '"Ett litet steg…"', en: '"One small step…"' },
+    body: {
+      sv: "\"That's one small step for man, one giant leap for mankind\" — citatet sändes live till uppskattningsvis 600 miljoner TV-tittare.",
+      en: "\"That's one small step for man, one giant leap for mankind\" — broadcast live to an estimated 600 million television viewers.",
+    },
+  },
+  {
+    title: { sv: 'Tranquility Base', en: 'Tranquility Base' },
+    body: {
+      sv: 'Apollo 11 landade i Mare Tranquillitatis — ett relativt flackt och stenfattigt område valt för säkerhetens skull.',
+      en: 'Apollo 11 landed in Mare Tranquillitatis (Sea of Tranquility) — a relatively flat, rock-free area chosen for safety.',
+    },
+  },
+  {
+    title: { sv: '21 timmar på ytan', en: '21 hours on the surface' },
+    body: {
+      sv: 'Astronauterna tillbringade 21 timmar och 36 minuter på månens yta, varav 2,5 timmar utanför landaren i rymddräkt (EVA).',
+      en: 'The crew spent 21 hours and 36 minutes on the lunar surface, including 2.5 hours outside the lander in spacesuits (EVA).',
+    },
+  },
+  {
+    title: { sv: '21,5 kg månsten', en: '21.5 kg of Moon rock' },
+    body: {
+      sv: 'Armstrong och Aldrin samlade in 21,5 kg bergarter och månstoft — prover som forskare fortfarande analyserar idag.',
+      en: 'Armstrong och Aldrin collected 21.5 kg of rocks and lunar soil — samples that scientists are still analysing today.',
+    },
+  },
+];
+
+const ProgressBar = ({ resetKey }: { resetKey: number }) => {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    setActive(false);
+    const t = setTimeout(() => setActive(true), 20);
+    return () => clearTimeout(t);
+  }, [resetKey]);
+
+  return (
+    <div className="mt-2.5 h-0.5 rounded-full bg-white/5 overflow-hidden">
+      <div
+        className="h-full rounded-full bg-blue-400/50"
+        style={{
+          width: active ? '100%' : '0%',
+          transition: active ? 'width 4s linear' : 'none',
+        }}
+      />
+    </div>
+  );
+};
+
+export const FactSlideshow = () => {
+  const [current, setCurrent] = useState(0);
+  const [resetKey, setResetKey] = useState(0);
+  const locale = useStore((s) => s.locale);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startInterval = () => {
+    if (intervalRef.current !== null) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setCurrent((c) => (c + 1) % MOON_FACTS.length);
+      setResetKey((k) => k + 1);
+    }, 4000);
+  };
+
+  useEffect(() => {
+    startInterval();
+    return () => {
+      if (intervalRef.current !== null) clearInterval(intervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const jumpTo = (idx: number) => {
+    setCurrent(idx);
+    setResetKey((k) => k + 1);
+    startInterval();
+  };
+
+  const fact = MOON_FACTS[current]!;
+  const title = locale === 'sv' ? fact.title.sv : fact.title.en;
+  const body = locale === 'sv' ? fact.body.sv : fact.body.en;
+
+  return (
+    <div className="pointer-events-auto max-w-sm rounded-2xl border border-blue-400/15 bg-black/60 p-4 backdrop-blur-md">
+      <div className="mb-2 flex items-center gap-2 text-blue-400">
+        <Info className="h-4 w-4" aria-hidden />
+        <span className="ds-eyebrow">Apollo 11 · 1969</span>
+      </div>
+      <p className="text-sm font-semibold text-blue-100/90 mb-1 leading-snug">{title}</p>
+      <p className="text-xs leading-relaxed text-blue-100/70">{body}</p>
+      <div className="flex justify-center gap-1.5 mt-3">
+        {MOON_FACTS.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Fakta ${i + 1}`}
+            onClick={() => jumpTo(i)}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width: i === current ? '16px' : '5px',
+              height: '5px',
+              background:
+                i === current
+                  ? 'rgba(160,180,255,0.85)'
+                  : 'rgba(160,180,255,0.25)',
+            }}
+          />
+        ))}
+      </div>
+      <ProgressBar resetKey={resetKey} />
+    </div>
+  );
+};
