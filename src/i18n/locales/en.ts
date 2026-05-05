@@ -308,4 +308,34 @@ export const en: Translation = {
       orbital_mechanic: 'Orbital Mechanic',
     },
   },
+  moonSurface: {
+    title: 'Moon Explorer',
+    subtitle: 'Focused on: Apollo 11 — Tranquility Base',
+    factLabel: 'Apollo 11 · 1969',
+    factAriaLabel: (n) => `Fact ${n}`,
+    closeAriaLabel: 'Close Moon scene',
+    mouseHint: 'Drag with mouse to look around',
+    facts: [
+      {
+        title: "Neil Armstrong's first step",
+        body: "On 21 July 1969 at 02:56 UTC Neil Armstrong stepped out of the lander and placed humanity's first footprint on the Moon.",
+      },
+      {
+        title: '"One small step…"',
+        body: '"That\'s one small step for man, one giant leap for mankind" — broadcast live to an estimated 600 million television viewers.',
+      },
+      {
+        title: 'Tranquility Base',
+        body: 'Apollo 11 landed in Mare Tranquillitatis (Sea of Tranquility) — a relatively flat, rock-free area chosen for safety.',
+      },
+      {
+        title: '21 hours on the surface',
+        body: 'The crew spent 21 hours and 36 minutes on the lunar surface, including 2.5 hours outside the lander in spacesuits (EVA).',
+      },
+      {
+        title: '21.5 kg of Moon rock',
+        body: 'Armstrong and Aldrin collected 21.5 kg of rocks and lunar soil — samples that scientists are still analysing today.',
+      },
+    ],
+  },
 };

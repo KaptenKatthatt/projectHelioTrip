@@ -1,85 +1,29 @@
-import { ChevronDown, ChevronRight, RefreshCw, Activity, Calendar, Database } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import {
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { SignIn, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
-
-type EventBreakdown = {
-  value: string;
-  count: number;
-};
-
-type EventSummary = {
-  name: string;
-  total: number;
-  breakdown: EventBreakdown[];
-};
-
-type DaySummary = {
-  date: string;
-  total: number;
-};
-
-type AnalyticsSummary = {
-  updatedAt: string;
-  storage: "supabase" | "local-file";
-  byEvent: EventSummary[];
-  byDay: DaySummary[];
-};
-
-const NBR_TIMES_ACTIVATED_LABEL = "nbr_times_activated";
+  formatBreakdownLabel,
+} from "./analytics/types";
+import type { AnalyticsSummary, DaySummary } from "./analytics/types";
+import { SummaryCards } from "./analytics/SummaryCards";
+import { DailyVolumeChart } from "./analytics/DailyVolumeChart";
+import { BreakdownCharts } from "./analytics/BreakdownCharts";
+import { EventList } from "./analytics/EventList";
+import { SignIn, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
-
-const isEventBreakdown = (value: unknown): value is EventBreakdown =>
-  isObject(value) &&
-  typeof value.value === "string" &&
-  typeof value.count === "number" &&
-  Number.isFinite(value.count);
-
-const isEventSummary = (value: unknown): value is EventSummary =>
-  isObject(value) &&
-  typeof value.name === "string" &&
-  typeof value.total === "number" &&
-  Number.isFinite(value.total) &&
-  Array.isArray(value.breakdown) &&
-  value.breakdown.every(isEventBreakdown);
-
-const isDaySummary = (value: unknown): value is DaySummary =>
-  isObject(value) &&
-  typeof value.date === "string" &&
-  typeof value.total === "number" &&
-  Number.isFinite(value.total);
 
 const isAnalyticsSummary = (value: unknown): value is AnalyticsSummary =>
   isObject(value) &&
   typeof value.updatedAt === "string" &&
   (value.storage === "supabase" || value.storage === "local-file") &&
   Array.isArray(value.byEvent) &&
-  value.byEvent.every(isEventSummary) &&
-  Array.isArray(value.byDay) &&
-  value.byDay.every(isDaySummary);
-
-const formatBreakdownLabel = (value: string): string =>
-  value === "none" ? NBR_TIMES_ACTIVATED_LABEL : value;
+  Array.isArray(value.byDay);
 
 const httpErrorMessage = (status: number): string => {
   if (status === 403) return "Wrong password or missing permission.";
@@ -106,27 +50,6 @@ const chartDays = (byDay: DaySummary[], maxBars: number): DaySummary[] => {
   const sorted = [...byDay].sort((a, b) => a.date.localeCompare(b.date));
   if (sorted.length <= maxBars) return sorted;
   return sorted.slice(sorted.length - maxBars);
-};
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-type TooltipPayloadEntry = { name: string; value: number; color: string };
-type CustomTooltipProps = { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string };
-
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-xl border border-white/10 bg-[hsl(230_30%_15%)] p-3 shadow-xl">
-        <p className="mb-1 text-sm font-medium text-[hsl(223_25%_91%)]">{label}</p>
-        {payload.map((entry: TooltipPayloadEntry, index: number) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: <span className="font-semibold">{entry.value}</span>
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
 };
 
 const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<string | null>; userButton?: React.ReactNode; }) => {
@@ -245,222 +168,10 @@ const AnalyticsDashboard = ({ getToken, userButton }: { getToken: () => Promise<
 
       {summary ? (
         <div className="space-y-6">
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <article className="ds-panel p-5 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 opacity-10 transition-transform group-hover:scale-110">
-                <Activity size={100} />
-              </div>
-              <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-[hsl(225_16%_68%)] flex items-center gap-2">
-                <Activity className="h-4 w-4" /> Last 14 days
-              </h2>
-              <p className="mt-3 tabular-nums text-4xl font-semibold leading-9 text-white">
-                {total14d.toLocaleString()}
-              </p>
-              <p className="mt-2 text-xs text-[hsl(225_16%_68%)]">Event counts (UTC)</p>
-            </article>
-            <article className="ds-panel p-5 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 opacity-10 transition-transform group-hover:scale-110">
-                <Calendar size={100} />
-              </div>
-              <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-[hsl(225_16%_68%)] flex items-center gap-2">
-                <Calendar className="h-4 w-4" /> Last 30 days
-              </h2>
-              <p className="mt-3 tabular-nums text-4xl font-semibold leading-9 text-white">
-                {total30d.toLocaleString()}
-              </p>
-              <p className="mt-2 text-xs text-[hsl(225_16%_68%)]">Event counts (UTC)</p>
-            </article>
-            <article className="ds-panel p-5 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 opacity-10 transition-transform group-hover:scale-110">
-                <Database size={100} />
-              </div>
-              <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-[hsl(225_16%_68%)] flex items-center gap-2">
-                <Database className="h-4 w-4" /> Storage
-              </h2>
-              <p className="mt-3 text-2xl font-semibold leading-9 text-white">
-                {summary.storage === "supabase" ? "Supabase" : "Local file"}
-              </p>
-              <p className="mt-2 text-xs text-[hsl(225_16%_68%)]">Source for aggregates</p>
-            </article>
-          </section>
-
-          <section className="ds-panel p-6">
-            <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-6">
-              Daily Volume
-            </h2>
-            {dailyChart.length === 0 ? (
-              <p className="text-sm text-[hsl(225_16%_68%)]">No daily data yet.</p>
-            ) : (
-              <div className="h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={dailyChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(238, 84%, 60%)" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(238, 84%, 60%)" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={(val) => val.slice(5)} 
-                      stroke="hsl(225, 16%, 68%)" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      dy={10}
-                    />
-                    <YAxis 
-                      stroke="hsl(225, 16%, 68%)" 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="total" name="Events" stroke="hsl(238, 84%, 60%)" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </section>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section className="ds-panel p-6">
-              <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-4">
-                Top 5 Planets
-              </h2>
-              {topPlanets.length === 0 ? (
-                <p className="text-sm text-[hsl(225_16%_68%)]">No planet data yet.</p>
-              ) : (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topPlanets} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={true} vertical={false} />
-                      <XAxis type="number" stroke="hsl(225, 16%, 68%)" fontSize={12} />
-                      <YAxis dataKey="name" type="category" stroke="hsl(225, 16%, 68%)" fontSize={12} width={80} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="count" name="Visits" fill="hsl(280, 84%, 60%)" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </section>
-
-            <section className="ds-panel p-6">
-              <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-4">
-                Mission Funnel
-              </h2>
-              {missionFunnel.length === 0 ? (
-                <p className="text-sm text-[hsl(225_16%_68%)]">No mission data yet.</p>
-              ) : (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={missionFunnel} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-                      <XAxis dataKey="name" stroke="hsl(225, 16%, 68%)" fontSize={12} />
-                      <YAxis stroke="hsl(225, 16%, 68%)" fontSize={12} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="count" name="Events" radius={[4, 4, 0, 0]}>
-                        {missionFunnel.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </section>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section className="ds-panel p-6">
-              <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)] mb-4">
-                Game Modes
-              </h2>
-              {modeData.length === 0 ? (
-                <p className="text-sm text-[hsl(225_16%_68%)]">No mode-change data yet.</p>
-              ) : (
-                <div className="h-64 w-full relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={modeData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {modeData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
-                    <span className="text-2xl font-bold text-white">
-                      {modeData.reduce((a, b) => a + b.value, 0)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <section className="ds-panel space-y-3 p-6 max-h-[400px] overflow-y-auto">
-              <div className="flex justify-between items-end mb-4">
-                <h2 className="text-xl font-semibold leading-8 text-[hsl(223_25%_91%)]">
-                  All Events
-                </h2>
-                <span className="text-xs text-[hsl(225_16%_68%)]">
-                  Updated: {summary.updatedAt ? new Date(summary.updatedAt).toLocaleString() : "n/a"}
-                </span>
-              </div>
-              {byEvent.length === 0 ? (
-                <p className="text-sm text-[hsl(225_16%_68%)]">No events yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {byEvent.map((event) => {
-                    const expanded = expandedEvents.has(event.name);
-                    return (
-                      <article key={event.name} className="rounded-2xl border border-white/10 bg-white/5 transition-colors hover:bg-white/10">
-                        <button
-                          type="button"
-                          onClick={() => toggleEventExpanded(event.name)}
-                          className="flex w-full items-center justify-between p-3 text-left"
-                          aria-expanded={expanded}
-                        >
-                          <span className="flex min-w-0 items-center gap-2 font-medium text-[hsl(223_25%_91%)]">
-                            {expanded ? (
-                              <ChevronDown className="h-4 w-4 shrink-0 text-[hsl(225_16%_68%)]" aria-hidden />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 shrink-0 text-[hsl(225_16%_68%)]" aria-hidden />
-                            )}
-                            <span className="truncate">{event.name}</span>
-                          </span>
-                          <span className="shrink-0 tabular-nums text-sm font-semibold text-[hsl(223_25%_91%)] bg-white/10 px-2 py-1 rounded-md">
-                            {event.total.toLocaleString()}
-                          </span>
-                        </button>
-                        {expanded && event.breakdown.length > 0 ? (
-                          <ul className="space-y-1 border-t border-white/10 p-3 pt-2 text-sm text-[hsl(225_16%_68%)] bg-black/20 rounded-b-2xl">
-                            {event.breakdown.map((item) => (
-                              <li key={`${event.name}-${item.value}`} className="flex justify-between gap-4">
-                                <span className="min-w-0 truncate">{formatBreakdownLabel(item.value)}</span>
-                                <span className="shrink-0 tabular-nums text-[hsl(223_25%_91%)]">{item.count.toLocaleString()}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-          </div>
+          <SummaryCards summary={summary} total14d={total14d} total30d={total30d} />
+          <DailyVolumeChart data={dailyChart} />
+          <BreakdownCharts topPlanets={topPlanets} missionFunnel={missionFunnel} modeData={modeData} />
+          <EventList events={byEvent} expandedEvents={expandedEvents} onToggleExpand={toggleEventExpanded} updatedAt={summary.updatedAt} />
         </div>
       ) : null}
     </main>

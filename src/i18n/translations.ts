@@ -221,6 +221,15 @@ export type Translation = {
       orbital_mechanic: string;
     };
   };
+  moonSurface: {
+    title: string;
+    subtitle: string;
+    factLabel: string;
+    factAriaLabel: (n: number) => string;
+    closeAriaLabel: string;
+    facts: Array<{ title: string; body: string }>;
+    mouseHint: string;
+  };
 };
 
 export const translations: Record<Locale, Translation> = { en, sv };

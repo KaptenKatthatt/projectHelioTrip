@@ -11,20 +11,13 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
 
 type MarsRockInstance = {
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
-};
-
-const terrainRng = (seed: number): (() => number) => {
-  let state = seed >>> 0;
-  return (): number => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0xffff_ffff;
-  };
 };
 
 const buildMarsTerrainGeometryAndRocks = (): {
@@ -172,6 +165,16 @@ const Terrain = () => {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(40, 40);
+    texture.needsUpdate = true;
+    return texture;
+  }, [rawGroundTexture]);
+
+  const rockTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+    texture.needsUpdate = true;
     return texture;
   }, [rawGroundTexture]);
 
@@ -183,10 +186,9 @@ const Terrain = () => {
         <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.05} color="#d47c59" />
       </mesh>
 
-      {/* Rocks */}
       <Instances range={rocks.length} castShadow receiveShadow>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.1} color="#a65d40" />
+        <icosahedronGeometry args={[1, 1]} />
+        <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.05} color="#a05038" />
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}
@@ -224,18 +226,14 @@ export const MarsSurface = () => {
             onClick={() => {
               // Start the camera zoom out first
               setMarsTransitionState('taking_off');
-
-              // Wait for the camera to pull away (e.g. 3.5s), then fade to black and unmount
+              setIsLanded(false);
               setTimeout(() => {
-                setIsLanded(false);
-                setTimeout(() => {
-                  setMarsTransitionState('idle');
-                }, 100);
-              }, 3500);
+                setMarsTransitionState('idle');
+              }, 500);
             }}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden />
           </button>
         </header>
 
