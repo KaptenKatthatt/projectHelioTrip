@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Info } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 
+export const FACT_ROTATION_INTERVAL_MS = 8000;
+
 export const FactSlideshow = () => {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(0);
@@ -18,7 +20,7 @@ export const FactSlideshow = () => {
 
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % t.moonSurface.facts.length);
-    }, 4000);
+    }, FACT_ROTATION_INTERVAL_MS);
 
     return () => {
       if (timerRef.current !== null) clearInterval(timerRef.current);
@@ -29,7 +31,7 @@ export const FactSlideshow = () => {
     if (timerRef.current !== null) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % t.moonSurface.facts.length);
-    }, 4000);
+    }, FACT_ROTATION_INTERVAL_MS);
     setCurrent(idx);
   };
 

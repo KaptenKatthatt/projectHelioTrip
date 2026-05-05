@@ -2,7 +2,7 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
-import { FactSlideshow } from './MoonSurface/FactSlideshow';
+import { FactSlideshow, FACT_ROTATION_INTERVAL_MS } from './MoonSurface/FactSlideshow';
 
 const MOCK_FACTS = [
   { title: 'Fact 1 Title', body: 'Fact 1 Body' },
@@ -43,18 +43,18 @@ describe('FactSlideshow', () => {
     expect(screen.getByText(MOCK_FACTS[0]!.title)).toBeInTheDocument();
   });
 
-  it('auto-advances to the next card after 4 seconds', () => {
+  it('auto-advances to the next card after each rotation interval', () => {
     render(<FactSlideshow />);
     act(() => {
-      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(FACT_ROTATION_INTERVAL_MS);
     });
     expect(screen.getByText(MOCK_FACTS[1]!.title)).toBeInTheDocument();
   });
 
-  it('wraps from last card back to first after 4 seconds', () => {
+  it('wraps from last card back to first after full cycle', () => {
     render(<FactSlideshow />);
     act(() => {
-      vi.advanceTimersByTime(4000 * MOCK_FACTS.length);
+      vi.advanceTimersByTime(FACT_ROTATION_INTERVAL_MS * MOCK_FACTS.length);
     });
     expect(screen.getByText(MOCK_FACTS[0]!.title)).toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe('FactSlideshow', () => {
     await user.click(dots[2]!);
     expect(screen.getByText(MOCK_FACTS[2]!.title)).toBeInTheDocument();
     act(() => {
-      vi.advanceTimersByTime(3999);
+      vi.advanceTimersByTime(FACT_ROTATION_INTERVAL_MS - 1);
     });
     expect(screen.getByText(MOCK_FACTS[2]!.title)).toBeInTheDocument();
   });
