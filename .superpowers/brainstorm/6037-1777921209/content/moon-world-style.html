@@ -1,0 +1,125 @@
+<h2>Månvärldens visuella stil</h2>
+<p class="subtitle">Välj den känsla som passar bäst för Moon Surface-scenen</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="stark" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="
+        background: linear-gradient(180deg, #000005 0%, #05050f 40%, #0a0a14 60%, #1c1c1c 100%);
+        height: 160px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px 8px 0 0;
+      ">
+        <!-- Stars -->
+        <div style="position:absolute;inset:0;">
+          <div style="position:absolute;top:8%;left:15%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0.9"></div>
+          <div style="position:absolute;top:12%;left:35%;width:1px;height:1px;background:#fff;border-radius:50%;opacity:0.8"></div>
+          <div style="position:absolute;top:5%;left:60%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:1"></div>
+          <div style="position:absolute;top:20%;left:75%;width:1px;height:1px;background:#fff;border-radius:50%;opacity:0.7"></div>
+          <div style="position:absolute;top:25%;left:88%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0.9"></div>
+          <div style="position:absolute;top:15%;left:45%;width:1px;height:1px;background:#eef;border-radius:50%;opacity:0.6"></div>
+          <div style="position:absolute;top:30%;left:22%;width:1px;height:1px;background:#fff;border-radius:50%;opacity:0.5"></div>
+          <div style="position:absolute;top:8%;left:82%;width:1px;height:1px;background:#ddf;border-radius:50%;opacity:0.8"></div>
+        </div>
+        <!-- Terrain -->
+        <div style="
+          position:absolute;
+          bottom:0;left:0;right:0;
+          height:55px;
+          background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+          clip-path: polygon(0% 100%, 0% 60%, 5% 55%, 12% 65%, 20% 45%, 30% 55%, 45% 30%, 55% 50%, 65% 35%, 75% 55%, 85% 40%, 95% 55%, 100% 50%, 100% 100%);
+        "></div>
+        <!-- Harsh sunlight ray -->
+        <div style="
+          position:absolute;top:0;right:60px;
+          width:80px;height:80px;
+          background: radial-gradient(ellipse at top right, rgba(255,255,230,0.08) 0%, transparent 70%);
+        "></div>
+        <!-- LEM model placeholder -->
+        <div style="
+          position:absolute;
+          bottom:20px;left:50%;transform:translateX(-50%);
+          width:32px;height:28px;
+          background: #c8b87a;
+          clip-path: polygon(20% 100%, 80% 100%, 90% 60%, 70% 50%, 70% 20%, 30% 20%, 30% 50%, 10% 60%);
+        "></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Dramatisk & Realistisk</h3>
+      <p>Kolsvart stjärnhimmel utan atmosfär. Kalla gråtoner med hård kontrast. Precis som Apollo-foton.</p>
+      <ul style="font-size:12px;color:#aaa;margin-top:8px;padding-left:16px;">
+        <li>Bakgrundsfärg: djupt svart #000008</li>
+        <li>Terräng: grå + silverton (#1a1a1a → #3a3a3a)</li>
+        <li>Accent: silver/vit + blekt guld</li>
+        <li>Ingen fog — oändlig sikt</li>
+        <li>Stjärnor synliga i himlen</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" data-choice="earth-glow" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="
+        background: linear-gradient(180deg, #000310 0%, #010820 40%, #0d1228 60%, #1a1c24 100%);
+        height: 160px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px 8px 0 0;
+      ">
+        <!-- Stars -->
+        <div style="position:absolute;inset:0;">
+          <div style="position:absolute;top:8%;left:15%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0.9"></div>
+          <div style="position:absolute;top:12%;left:35%;width:1px;height:1px;background:#fff;border-radius:50%;opacity:0.8"></div>
+          <div style="position:absolute;top:5%;left:60%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:1"></div>
+          <div style="position:absolute;top:20%;left:75%;width:1px;height:1px;background:#fff;border-radius:50%;opacity:0.7"></div>
+          <div style="position:absolute;top:25%;left:88%;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0.9"></div>
+        </div>
+        <!-- Earth in sky -->
+        <div style="
+          position:absolute;top:10px;right:25px;
+          width:36px;height:36px;
+          border-radius:50%;
+          background: radial-gradient(circle at 40% 35%, #3a6fd8 0%, #1a4a9a 40%, #0a2060 70%, #050f30 100%);
+          box-shadow: 0 0 12px rgba(80,140,255,0.25);
+        ">
+          <div style="position:absolute;top:30%;left:20%;width:40%;height:20%;background:rgba(255,255,255,0.7);border-radius:50%;transform:rotate(-20deg)"></div>
+        </div>
+        <!-- Subtle blue ambient glow -->
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%, rgba(80,120,255,0.06) 0%, transparent 60%)"></div>
+        <!-- Terrain with blue tint -->
+        <div style="
+          position:absolute;
+          bottom:0;left:0;right:0;
+          height:55px;
+          background: linear-gradient(180deg, #252830 0%, #181a22 100%);
+          clip-path: polygon(0% 100%, 0% 60%, 5% 55%, 12% 65%, 20% 45%, 30% 55%, 45% 30%, 55% 50%, 65% 35%, 75% 55%, 85% 40%, 95% 55%, 100% 50%, 100% 100%);
+        "></div>
+        <!-- LEM placeholder -->
+        <div style="
+          position:absolute;
+          bottom:20px;left:50%;transform:translateX(-50%);
+          width:32px;height:28px;
+          background: #b8a87a;
+          clip-path: polygon(20% 100%, 80% 100%, 90% 60%, 70% 50%, 70% 20%, 30% 20%, 30% 50%, 10% 60%);
+        "></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Poetisk & Romantisk</h3>
+      <p>Blå Jord synlig på himlen. Svagt blå-grå toning på terrängfärger. Mer "Apollo-poster"-känsla.</p>
+      <ul style="font-size:12px;color:#aaa;margin-top:8px;padding-left:16px;">
+        <li>Bakgrundsfärg: djupt mörkblå #000310</li>
+        <li>Terräng: grå med blå understimning</li>
+        <li>Accent: isblå + silver</li>
+        <li>Jord synlig uppe till höger i himlen</li>
+        <li>Subtilt blått ambient-ljus</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:20px;font-size:12px;">💡 Båda alternativen behåller samma struktur som Mars-scenen — procedurellt terräng, GLB-modell, fly-in-kamera och orbit-kontroller.</p>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Månvärldens stil</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0f1a;
+    color: #e0e4f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #f0f4ff; }
+  .subtitle { font-size: 14px; color: #7080a0; margin-bottom: 28px; }
+  .cards { display: flex; gap: 20px; }
+  .card {
+    flex: 1;
+    border-radius: 14px;
+    border: 2px solid #222840;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    background: #111420;
+  }
+  .card:hover { border-color: #4466cc; transform: translateY(-2px); }
+  .card.selected { border-color: #5588ff; box-shadow: 0 0 0 1px #5588ff; }
+
+  /* ---- SCENE A: Dramatisk & Realistisk ---- */
+  .scene-stark {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    background: #000008;
+  }
+  .scene-stark .sky {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #000005 0%, #010108 60%, #080808 100%);
+  }
+  .scene-stark .star { position: absolute; border-radius: 50%; background: #fff; }
+  .scene-stark .terrain {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: linear-gradient(180deg, #2e2e2e 0%, #1a1a1a 100%);
+    border-top: 1px solid #3a3a3a;
+  }
+  .scene-stark .terrain::before {
+    content: '';
+    position: absolute;
+    top: -28px; left: 0; right: 0; height: 30px;
+    background: inherit;
+    clip-path: polygon(0 100%, 4% 40%, 10% 70%, 18% 20%, 28% 60%, 38% 10%, 50% 50%, 62% 15%, 72% 55%, 82% 25%, 92% 60%, 100% 35%, 100% 100%);
+  }
+  .scene-stark .lem {
+    position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+  }
+  .scene-stark .lem-body {
+    position: absolute; bottom: 0; left: -18px;
+    width: 36px; height: 24px;
+    background: #c8b878;
+    border-radius: 4px 4px 0 0;
+  }
+  .scene-stark .lem-leg-l {
+    position: absolute; bottom: -12px; left: -26px;
+    width: 14px; height: 14px;
+    border-left: 3px solid #aaa; border-bottom: 3px solid #aaa;
+    border-radius: 0 0 0 4px;
+  }
+  .scene-stark .lem-leg-r {
+    position: absolute; bottom: -12px; right: -26px;
+    width: 14px; height: 14px;
+    border-right: 3px solid #aaa; border-bottom: 3px solid #aaa;
+    border-radius: 0 0 4px 0;
+  }
+  .scene-stark .lem-ant {
+    position: absolute; top: -14px; left: -1px;
+    width: 2px; height: 14px; background: #ddd;
+  }
+  .scene-stark .sun-light {
+    position: absolute; top: -20px; right: -20px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle at 80% 20%, rgba(255,255,220,0.12) 0%, transparent 60%);
+  }
+
+  /* ---- SCENE B: Poetisk & Romantisk ---- */
+  .scene-romantic {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    background: #000310;
+  }
+  .scene-romantic .sky {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #000312 0%, #010820 50%, #0c1030 100%);
+  }
+  .scene-romantic .star { position: absolute; border-radius: 50%; background: #ccd8ff; }
+  .scene-romantic .earth {
+    position: absolute; top: 18px; right: 32px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #4a80e8 0%, #1a4ab0 45%, #0a2060 75%, #040f30 100%);
+    box-shadow: 0 0 16px rgba(70,130,255,0.3), 0 0 4px rgba(70,130,255,0.5);
+  }
+  .scene-romantic .earth::after {
+    content: '';
+    position: absolute;
+    top: 28%; left: 18%; width: 45%; height: 22%;
+    background: rgba(255,255,255,0.65);
+    border-radius: 50%;
+    transform: rotate(-25deg);
+  }
+  .scene-romantic .earth-glow {
+    position: absolute; top: 0; right: 0;
+    width: 160px; height: 160px;
+    background: radial-gradient(ellipse at 90% 10%, rgba(60,100,255,0.07) 0%, transparent 65%);
+  }
+  .scene-romantic .terrain {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 72px;
+    background: linear-gradient(180deg, #22263a 0%, #14172a 100%);
+    border-top: 1px solid #2e3450;
+  }
+  .scene-romantic .terrain::before {
+    content: '';
+    position: absolute;
+    top: -28px; left: 0; right: 0; height: 30px;
+    background: inherit;
+    clip-path: polygon(0 100%, 4% 40%, 10% 70%, 18% 20%, 28% 60%, 38% 10%, 50% 50%, 62% 15%, 72% 55%, 82% 25%, 92% 60%, 100% 35%, 100% 100%);
+  }
+  .scene-romantic .lem {
+    position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+  }
+  .scene-romantic .lem-body {
+    position: absolute; bottom: 0; left: -18px;
+    width: 36px; height: 24px;
+    background: #b8aa70;
+    border-radius: 4px 4px 0 0;
+  }
+  .scene-romantic .lem-leg-l {
+    position: absolute; bottom: -12px; left: -26px;
+    width: 14px; height: 14px;
+    border-left: 3px solid #8899cc; border-bottom: 3px solid #8899cc;
+    border-radius: 0 0 0 4px;
+  }
+  .scene-romantic .lem-leg-r {
+    position: absolute; bottom: -12px; right: -26px;
+    width: 14px; height: 14px;
+    border-right: 3px solid #8899cc; border-bottom: 3px solid #8899cc;
+    border-radius: 0 0 4px 0;
+  }
+  .scene-romantic .lem-ant {
+    position: absolute; top: -14px; left: -1px;
+    width: 2px; height: 14px; background: #c0caee;
+  }
+
+  .card-body { padding: 18px; }
+  .card-body h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .card-body p { font-size: 13px; color: #8090b0; margin-bottom: 10px; line-height: 1.5; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 20px; border: 1px solid #2a3050;
+    color: #7080a0;
+    background: #161a2e;
+  }
+  .tag.accent-silver { border-color: #555; color: #bbb; background: #1e1e1e; }
+  .tag.accent-blue { border-color: #334; color: #88aadd; background: #0e1428; }
+
+  .footer { margin-top: 22px; font-size: 12px; color: #50607a; text-align: center; }
+  .selected-label {
+    margin-top: 16px; text-align: center;
+    font-size: 13px; color: #5588ff; display: none;
+  }
+</style>
+<script>
+  function selectCard(el) {
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+</script>
+</head>
+<body>
+  <h1>Månvärldens visuella stil</h1>
+  <p class="subtitle">Välj den känsla som passar bäst för Moon Surface-scenen</p>
+
+  <div class="cards">
+
+    <!-- OPTION A -->
+    <div class="card" onclick="selectCard(this)">
+      <div class="scene-stark">
+        <div class="sky"></div>
+        <div class="sun-light"></div>
+        <!-- Stars -->
+        <div class="star" style="top:8%;left:12%;width:2px;height:2px;opacity:0.95"></div>
+        <div class="star" style="top:14%;left:38%;width:1px;height:1px;opacity:0.8"></div>
+        <div class="star" style="top:5%;left:58%;width:2px;height:2px;opacity:1"></div>
+        <div class="star" style="top:22%;left:72%;width:1px;height:1px;opacity:0.7"></div>
+        <div class="star" style="top:28%;left:86%;width:2px;height:2px;opacity:0.9"></div>
+        <div class="star" style="top:18%;left:48%;width:1px;height:1px;opacity:0.6"></div>
+        <div class="star" style="top:35%;left:20%;width:1px;height:1px;opacity:0.5"></div>
+        <div class="star" style="top:10%;left:80%;width:1px;height:1px;opacity:0.8"></div>
+        <div class="star" style="top:40%;left:65%;width:1px;height:1px;opacity:0.4"></div>
+        <div class="terrain"></div>
+        <!-- LEM -->
+        <div class="lem">
+          <div class="lem-body"></div>
+          <div class="lem-ant"></div>
+          <div class="lem-leg-l"></div>
+          <div class="lem-leg-r"></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h2>A — Dramatisk &amp; Realistisk</h2>
+        <p>Kolsvart stjärnhimmel utan atmosfär. Kalla gråtoner med hård kontrast. Precis som NASA:s Apollo-fotografier.</p>
+        <div class="tags">
+          <span class="tag accent-silver">Svart himmel</span>
+          <span class="tag accent-silver">Grå terräng</span>
+          <span class="tag accent-silver">Silver + blekt guld</span>
+          <span class="tag accent-silver">Ingen fog</span>
+          <span class="tag accent-silver">Stark sol</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="card" onclick="selectCard(this)">
+      <div class="scene-romantic">
+        <div class="sky"></div>
+        <div class="earth-glow"></div>
+        <!-- Stars -->
+        <div class="star" style="top:8%;left:12%;width:2px;height:2px;opacity:0.9"></div>
+        <div class="star" style="top:14%;left:25%;width:1px;height:1px;opacity:0.7"></div>
+        <div class="star" style="top:5%;left:50%;width:2px;height:2px;opacity:0.85"></div>
+        <div class="star" style="top:22%;left:15%;width:1px;height:1px;opacity:0.6"></div>
+        <div class="star" style="top:30%;left:55%;width:1px;height:1px;opacity:0.5"></div>
+        <div class="star" style="top:12%;left:65%;width:1px;height:1px;opacity:0.75"></div>
+        <!-- Earth -->
+        <div class="earth"></div>
+        <div class="terrain"></div>
+        <!-- LEM -->
+        <div class="lem">
+          <div class="lem-body"></div>
+          <div class="lem-ant"></div>
+          <div class="lem-leg-l"></div>
+          <div class="lem-leg-r"></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h2>B — Poetisk &amp; Romantisk</h2>
+        <p>Blå Jord synlig på himlen. Svag blå-grå toning på terrängen. Mer "Apollo-poster"-känsla — ikonisk och vacker.</p>
+        <div class="tags">
+          <span class="tag accent-blue">Jord i himlen</span>
+          <span class="tag accent-blue">Blå understimning</span>
+          <span class="tag accent-blue">Isblå + silver</span>
+          <span class="tag accent-blue">Subtilt ambient-ljus</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="footer">💡 Båda alternativen: procedurellt månterräng · Apollo Lunar Module GLB · fly-in-kamera · orbit-kontroller</p>
+</body>
+</html>
