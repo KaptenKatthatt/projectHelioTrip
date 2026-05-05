@@ -110,81 +110,80 @@ export const buildMoonTerrainGeometryAndRocks = (): {
   return { geometry: geo, rocks: rockData };
 };
 
+// --- CAMERA CONFIGURATION ---
+// Adjust these values to control the landing animation
+const CAMERA_SETTINGS = {
+  // Initial position when the landing sequence starts
+  FLY_IN_START: new THREE.Vector3(15, 60, 40),
+  // Final position after landing (distance from the lunar module at [0,0,0])
+  FLY_IN_END: new THREE.Vector3(8, 3, 8),
+  // Duration of the landing animation in milliseconds (controls "panning speed")
+  FLY_IN_DURATION: 6500,
+  // Delay before the landing animation starts
+  FLY_IN_DELAY: 500,
+
+  // Animation when leaving the Moon surface
+  TAKE_OFF_DURATION: 3500,
+  TAKE_OFF_HEIGHT_MIN: 40,
+  TAKE_OFF_DISTANCE_MULT: 6,
+};
+
 const CameraZoomController = ({
   isFlyingIn,
-
   setIsFlyingIn,
 }: {
   isFlyingIn: boolean;
-
   setIsFlyingIn: (v: boolean) => void;
 }) => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
-
   const { camera } = useThree();
-
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
-
   const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
 
   useEffect(() => {
     targetPosRef.current = null;
-
     animStateRef.current = null;
   }, [moonTransitionState]);
 
   useFrame(() => {
     if (moonTransitionState === 'taking_off') {
       if (!targetPosRef.current) {
-        targetPosRef.current = camera.position.clone().multiplyScalar(6);
-
-        targetPosRef.current.y = Math.max(targetPosRef.current.y, 40);
-
+        targetPosRef.current = camera.position.clone().multiplyScalar(CAMERA_SETTINGS.TAKE_OFF_DISTANCE_MULT);
+        targetPosRef.current.y = Math.max(targetPosRef.current.y, CAMERA_SETTINGS.TAKE_OFF_HEIGHT_MIN);
         animStateRef.current = { startPos: camera.position.clone(), startTime: performance.now() };
       }
 
       if (!animStateRef.current || !targetPosRef.current) return;
 
       const elapsed = performance.now() - animStateRef.current.startTime;
-
-      const progress = Math.min(elapsed / 3500, 1.0);
-
+      const progress = Math.min(elapsed / CAMERA_SETTINGS.TAKE_OFF_DURATION, 1.0);
       const easeIn = progress * progress * progress;
 
       camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
-
       camera.lookAt(0, 0, 0);
     } else if (isFlyingIn) {
       if (!targetPosRef.current) {
-        targetPosRef.current = new THREE.Vector3(8, 3, 8);
-
-        camera.position.set(15, 60, 40);
-
+        targetPosRef.current = CAMERA_SETTINGS.FLY_IN_END;
+        camera.position.copy(CAMERA_SETTINGS.FLY_IN_START);
         animStateRef.current = {
-          startPos: new THREE.Vector3(15, 60, 40),
-
-          startTime: performance.now() + 500,
+          startPos: CAMERA_SETTINGS.FLY_IN_START.clone(),
+          startTime: performance.now() + CAMERA_SETTINGS.FLY_IN_DELAY,
         };
       }
 
       if (!animStateRef.current || !targetPosRef.current) return;
 
       const now = performance.now();
-
       if (now < animStateRef.current.startTime) {
         camera.position.copy(animStateRef.current.startPos);
       } else {
         const elapsed = now - animStateRef.current.startTime;
-
-        const progress = Math.min(elapsed / 6500, 1.0);
-
+        const progress = Math.min(elapsed / CAMERA_SETTINGS.FLY_IN_DURATION, 1.0);
         const easeOutQuart = 1 - Math.pow(1 - progress, 4);
 
         camera.position.lerpVectors(
           animStateRef.current.startPos,
-
           targetPosRef.current,
-
           easeOutQuart,
         );
 
@@ -194,7 +193,6 @@ const CameraZoomController = ({
       camera.lookAt(0, 0, 0);
     } else {
       targetPosRef.current = null;
-
       animStateRef.current = null;
     }
   });
@@ -204,32 +202,21 @@ const CameraZoomController = ({
 
 const MoonTerrain = () => {
   const rawGroundTexture = useTexture('/textures/moon/diffuse.webp');
-
   const groundTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
-
     texture.wrapS = THREE.RepeatWrapping;
-
     texture.wrapT = THREE.RepeatWrapping;
-
     texture.repeat.set(30, 30);
-
     texture.needsUpdate = true;
-
     return texture;
   }, [rawGroundTexture]);
 
   const rockTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
-
     texture.wrapS = THREE.RepeatWrapping;
-
     texture.wrapT = THREE.RepeatWrapping;
-
     texture.repeat.set(1, 1);
-
     texture.needsUpdate = true;
-
     return texture;
   }, [rawGroundTexture]);
 
@@ -243,9 +230,7 @@ const MoonTerrain = () => {
 
       <Instances range={rocks.length} castShadow receiveShadow>
         <icosahedronGeometry args={[1, 1]} />
-
         <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.0} color="#606470" />
-
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}
@@ -257,27 +242,17 @@ const MoonTerrain = () => {
 const StarField = () => {
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-
     const count = 200;
-
     const positions = new Float32Array(count * 3);
-
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
-
       const phi = Math.random() * Math.PI * 0.5; // upper hemisphere only
-
       const r = 380 + Math.random() * 20;
-
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-
       positions[i * 3 + 1] = r * Math.cos(phi);
-
       positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
     }
-
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
     return geo;
   }, []);
 
@@ -290,12 +265,9 @@ const StarField = () => {
 
 const EarthSphere = () => {
   const meshRef = useRef<THREE.Mesh>(null);
-
   const [diffuse, normal, roughness] = useTexture([
     '/textures/earth/diffuse.webp',
-
     '/textures/earth/normal.webp',
-
     '/textures/earth/roughness.webp',
   ]);
 
@@ -307,7 +279,6 @@ const EarthSphere = () => {
     <group position={[-60, 80, -120]}>
       <mesh ref={meshRef} castShadow={false}>
         <sphereGeometry args={[8, 32, 32]} />
-
         <meshStandardMaterial
           map={diffuse}
           normalMap={normal}
@@ -318,7 +289,6 @@ const EarthSphere = () => {
       </mesh>
 
       {/* Subtle blue fill light from Earth direction */}
-
       <pointLight color="#3060cc" intensity={0.4} distance={300} />
     </group>
   );
@@ -330,7 +300,6 @@ const LunarModule = () => {
   return (
     <group position={[0, 0, 0]}>
       <primitive object={scene} scale={2.0} />
-
       <ContactShadows opacity={0.4} scale={14} blur={2} far={4} />
     </group>
   );
@@ -338,22 +307,20 @@ const LunarModule = () => {
 
 const MoonLandingScene = () => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
-
   const [isFlyingIn, setIsFlyingIn] = useState(true);
 
-  const initialCameraPosition: [number, number, number] = isFlyingIn ? [15, 60, 40] : [8, 3, 8];
+  const initialCameraPosition = isFlyingIn 
+    ? CAMERA_SETTINGS.FLY_IN_START.toArray() 
+    : CAMERA_SETTINGS.FLY_IN_END.toArray();
 
   return (
-    <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
+    <Canvas shadows camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}>
       <Suspense fallback={null}>
         <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
 
         {/* No <Sky> — Moon has no atmosphere */}
-
         <color attach="background" args={['#000310']} />
-
         <ambientLight intensity={0.15} color="#0a0f2a" />
-
         <directionalLight
           position={[80, 60, 20]}
           intensity={3.0}
@@ -367,11 +334,8 @@ const MoonLandingScene = () => {
         />
 
         <StarField />
-
         <EarthSphere />
-
         <LunarModule />
-
         <MoonTerrain />
 
         {moonTransitionState !== 'taking_off' && !isFlyingIn && (
@@ -387,45 +351,14 @@ const MoonLandingScene = () => {
   );
 };
 
-const ProgressBar = ({ resetKey }: { resetKey: number }) => {
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    setActive(false);
-
-    const t = setTimeout(() => setActive(true), 20);
-
-    return () => clearTimeout(t);
-  }, [resetKey]);
-
-  return (
-    <div className="mt-2.5 h-0.5 overflow-hidden rounded-full bg-white/5">
-      <div
-        className="h-full rounded-full bg-blue-400/50"
-        style={{
-          width: active ? '100%' : '0%',
-
-          transition: active ? 'width 4s linear' : 'none',
-        }}
-      />
-    </div>
-  );
-};
-
 export const FactSlideshow = () => {
   const { t } = useTranslation();
-
   const [current, setCurrent] = useState(0);
-
-  const [resetKey, setResetKey] = useState(0);
-
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % t.moonSurface.facts.length);
-
-      setResetKey((k) => k + 1);
     }, 4000);
 
     return () => {
@@ -435,34 +368,24 @@ export const FactSlideshow = () => {
 
   const jumpTo = (idx: number) => {
     if (timerRef.current !== null) clearInterval(timerRef.current);
-
     timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % t.moonSurface.facts.length);
-
-      setResetKey((k) => k + 1);
     }, 4000);
-
     setCurrent(idx);
-
-    setResetKey((k) => k + 1);
   };
 
   const fact = t.moonSurface.facts[current]!;
-
   const title = fact.title;
-
   const body = fact.body;
 
   return (
     <div className="pointer-events-auto max-w-sm rounded-2xl border border-blue-400/15 bg-black/60 p-4 backdrop-blur-md">
       <div className="mb-2 flex items-center gap-2 text-blue-400">
         <Info className="h-4 w-4" aria-hidden />
-
         <span className="ds-eyebrow">{t.moonSurface.factLabel}</span>
       </div>
 
       <p className="mb-1 text-sm leading-snug font-semibold text-blue-100/90">{title}</p>
-
       <p className="text-xs leading-relaxed text-blue-100/70">{body}</p>
 
       <div className="mt-3 flex justify-center gap-1.5">
@@ -475,16 +398,12 @@ export const FactSlideshow = () => {
             className="rounded-full transition-all duration-300"
             style={{
               width: i === current ? '16px' : '5px',
-
               height: '5px',
-
               background: i === current ? 'rgba(160,180,255,0.85)' : 'rgba(160,180,255,0.25)',
             }}
           />
         ))}
       </div>
-
-      <ProgressBar resetKey={resetKey} />
     </div>
   );
 };
