@@ -31,13 +31,39 @@ vec4 textureNoTile(sampler2D tex, vec2 uv) {
   }
   return col / wsum;
 }
+
+// Value noise for large-scale terrain variation (operates at terrain scale, not tile scale)
+float macroHash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float macroNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(macroHash(i), macroHash(i + vec2(1.0, 0.0)), f.x),
+    mix(macroHash(i + vec2(0.0, 1.0)), macroHash(i + vec2(1.0, 1.0)), f.x),
+    f.y
+  );
+}
+
+// Two-octave FBM that creates large non-repeating patches across the terrain
+float terrainMacroVariation(vec2 worldUv) {
+  float n  = macroNoise(worldUv * 3.5) * 0.65;
+       n += macroNoise(worldUv * 7.3 + vec2(4.1, 8.7)) * 0.35;
+  return 0.78 + n * 0.44; // range ~[0.78, 1.22]
+}
 `;
+
+const REPEAT = 30.0;
 
 function applyStochasticTiling(shader: THREE.WebGLProgramParametersWithUniforms) {
   shader.fragmentShader = STOCHASTIC_GLSL + shader.fragmentShader;
+  // Replace texture2D call with stochastic sampling + macro brightness variation
   shader.fragmentShader = shader.fragmentShader.replace(
     'texture2D( map, vMapUv )',
-    'textureNoTile( map, vMapUv )',
+    `(textureNoTile( map, vMapUv ) * terrainMacroVariation( vMapUv / ${REPEAT.toFixed(1)} ))`,
   );
 }
 
