@@ -1,3 +1,10 @@
+/**
+ * Mobile Canvas Interaction Manager
+ * 
+ * Handles closing the mobile planet info bottom sheet when the user 
+ * taps on the 3D canvas. Differentiates between short taps (dismiss) 
+ * and long drags (orbit control).
+ */
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";

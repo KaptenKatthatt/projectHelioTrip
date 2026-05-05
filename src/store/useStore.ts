@@ -4,7 +4,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { BodyId } from "../lib/bodies";
 import type { ConstellationId } from "../lib/constellations";
 import { detectLocale, isLocale } from "../i18n/translations";
-import type { Locale } from "../i18n/translations";
 import { INITIAL_OVERVIEW_CAMERA_POSITION } from "../lib/initialCamera";
 import { analytics } from "../lib/analytics";
 import {
@@ -32,6 +31,8 @@ import {
 import { DEFAULT_TIME_SCALE, TIME_SPEED_PRESETS } from "../lib/timePlayback";
 import type { FactCardLevel } from "../lib/learning/bodyContent";
 import { type TitleId, XP_AWARDS, resolveTitle } from "../lib/learning/xp";
+import { createSimulationSlice, SimulationSlice } from "./slices/createSimulationSlice";
+import { createGameSlice, GameSlice } from "./slices/createGameSlice";
 
 const completedMissionIdsList = (
   missionProgress: Readonly<Record<string, MissionProgress>>,
@@ -40,126 +41,19 @@ const completedMissionIdsList = (
     .filter(([, p]) => p.completed)
     .map(([id]) => id);
 
-export type ViewMode = "close" | "overview";
-
-type NavigationMode = "cinematic" | "free";
-
-type RecentAchievement = {
-  readonly id: AchievementId;
-  readonly unlockedAtMs: number;
-};
-
-type SimulationState = {
-  activeBody: BodyId | null;
-  cameraPosition: Vector3;
-  isTraveling: boolean;
-  isTravelAnimating: boolean;
-  simulationTime: Date;
-  timeScale: number;
-  isPlaying: boolean;
-  viewMode: ViewMode;
-  travelId: number;
-  overviewCameraResetId: number;
-  locale: Locale;
-  navigationMode: NavigationMode;
-  selectedConstellation: ConstellationId | null;
-  constellationLinesVisible: boolean;
-  /**
-   * Extra spin (rad) around the celestial radial through the constellation center;
-   * pedagogical only, cleared when switching constellations.
-   */
-  constellationUserSpinRad: number;
-  skyFocusId: number;
-  // Phase 3 additions
-  gameMode: GameMode;
-  activeMissionId: string | null;
-  missionProgress: Readonly<Record<string, MissionProgress>>;
-  visitedBodies: ReadonlyArray<BodyId>;
-  unlockedAchievements: ReadonlyArray<AchievementId>;
-  recentAchievement: RecentAchievement | null;
-  /** Mobile-only: planet info bottom sheet open (not persisted). */
-  mobilePlanetInfoSheetOpen: boolean;
-  // Learning mode additions
-  learningLevel: FactCardLevel;
-  xp: number;
-  title: TitleId;
-  completedQuizzes: Readonly<Record<string, number>>;
-  /** Quiz id waiting to be presented as an overlay (not persisted). */
-  pendingQuizId: string | null;
-  /** XP amount from last awardXp call in learn/challenge mode (not persisted). */
-  recentXpGain: number | null;
-  /** Desktop left navigation rail open state. */
-  leftRailOpen: boolean;
-  /** Last rewarded day key per body for patience reward gating. */
-  patienceRewardedOnByBody: Readonly<Partial<Record<BodyId, string>>>;
-  /** Current daily quiz streak count. */
-  quizStreakDays: number;
-  /** Last date key (YYYY-MM-DD) when a quiz was completed. */
-  lastQuizCompletedOn: string | null;
-  discoveredConstellations: ReadonlyArray<ConstellationId>;
-  // Phase 4 additions (Gravity Lab)
-  gravityLabActive: boolean;
-  sunMassMultiplier: number;
-  gravityLabResetTrigger: number;
-  // Phase 4 additions (Mars Explorer)
-  isLanded: boolean;
-  isLandedOnMoon: boolean;
-};
-
-type SimulationActions = {
-  setActiveBody: (id: BodyId | null) => void;
-  setCameraPosition: (position: Vector3) => void;
-  setIsTraveling: (traveling: boolean) => void;
-  setSimulationTime: (time: Date) => void;
+export type Store = SimulationSlice & GameSlice & {
   travelTo: (id: BodyId) => void;
   travelToOverview: () => void;
   resetSolarSystemStart: () => void;
-  arrive: () => void;
-  resetSimulationTime: () => void;
-  setTimeScale: (scale: number) => void;
-  setIsPlaying: (playing: boolean) => void;
-  togglePlay: () => void;
-  setViewMode: (mode: ViewMode) => void;
-  setLocale: (locale: Locale) => void;
-  setNavigationMode: (mode: NavigationMode) => void;
-  setSelectedConstellation: (id: ConstellationId | null) => void;
   focusSkyTarget: (id: ConstellationId) => void;
-  toggleConstellationLinesVisible: () => void;
-  adjustConstellationSpin: (deltaRad: number) => void;
-  // Phase 3 additions
-  setGameMode: (mode: GameMode) => void;
-  startMission: (missionId: string) => void;
-  abandonMission: () => void;
-  acknowledgeAchievement: () => void;
-  restoreFromShareLink: (state: ShareLinkState) => void;
-  setMobilePlanetInfoSheetOpen: (open: boolean) => void;
-  // Learning mode additions
-  setLearningLevel: (level: FactCardLevel) => void;
-  awardXp: (amount: number) => void;
-  recordQuizResult: (quizId: string, stars: number) => void;
-  triggerQuiz: (quizId: string) => void;
-  dismissQuiz: () => void;
-  acknowledgeXpGain: () => void;
-  toggleLeftRail: () => void;
-  claimPatienceReward: (bodyId: BodyId) => boolean;
   recordPhotoTaken: (targetBodyId: BodyId | null) => void;
-  setGravityLabActive: (active: boolean) => void;
-  setSunMassMultiplier: (multiplier: number) => void;
-  triggerGravityLabReset: () => void;
-  setIsLanded: (landed: boolean) => void;
-  marsTransitionState: 'idle' | 'landing' | 'taking_off';
-  setMarsTransitionState: (state: 'idle' | 'landing' | 'taking_off') => void;
-  setIsLandedOnMoon: (landed: boolean) => void;
-  moonTransitionState: 'idle' | 'landing' | 'taking_off';
-  setMoonTransitionState: (state: 'idle' | 'landing' | 'taking_off') => void;
+  restoreFromShareLink: (state: ShareLinkState) => void;
 };
-
-export type Store = SimulationState & SimulationActions;
 
 const DEFAULT_CAMERA_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
 
 type PersistedState = {
-  locale: Locale;
+  locale: any;
   gameMode: GameMode;
   missionProgress: Record<string, MissionProgress>;
   visitedBodies: BodyId[];
@@ -314,11 +208,6 @@ const resolveAchievementTrigger = (
   return null;
 };
 
-/**
- * Side-effecting domain dispatcher: runs the pure mission evaluator
- * and achievement matcher against the current store snapshot, then
- * commits the diff back to the store and emits analytics events.
- */
 const dispatchDomainEvent = (event: MissionDomainEvent): void => {
   const state = useStore.getState();
   const nowMs = Date.now();
@@ -359,8 +248,8 @@ const recordVisitedBody = (id: BodyId): void => {
 const buildShareLinkPartialState = (
   snapshot: ShareLinkState,
   state: Store,
-): Partial<SimulationState> => {
-  const partial: Partial<SimulationState> = {};
+): Partial<Store> => {
+  const partial: any = {};
 
   if (snapshot.gameMode !== null) {
     if (snapshot.gameMode !== state.gameMode) {
@@ -416,360 +305,222 @@ const trackShareLinkRestoreAnalytics = (
 
 export const useStore = create<Store>()(
   persist(
-    (set) => ({
-      activeBody: null,
-      cameraPosition: DEFAULT_CAMERA_POSITION.clone(),
-      isTraveling: false,
-      isTravelAnimating: false,
-      simulationTime: new Date(),
-      timeScale: DEFAULT_TIME_SCALE,
-      isPlaying: false,
-      viewMode: "overview",
-      travelId: 0,
-      overviewCameraResetId: 0,
-      locale: detectLocale(),
-      navigationMode: "cinematic",
-      selectedConstellation: null,
-      constellationLinesVisible: true,
-      constellationUserSpinRad: 0,
-      skyFocusId: 0,
-      gameMode: "explore",
-      activeMissionId: null,
-      missionProgress: {},
-      visitedBodies: [],
-      unlockedAchievements: [],
-      recentAchievement: null,
-      mobilePlanetInfoSheetOpen: false,
-      learningLevel: "middle",
-      xp: 0,
-      title: "rookie",
-      completedQuizzes: {},
-      pendingQuizId: null,
-      recentXpGain: null,
-      leftRailOpen: true,
-      patienceRewardedOnByBody: {},
-      quizStreakDays: 0,
-      lastQuizCompletedOn: null,
-      discoveredConstellations: [],
-      gravityLabActive: false,
-      sunMassMultiplier: 1.0,
-      gravityLabResetTrigger: 0,
-      isLanded: false,
-      isLandedOnMoon: false,
-      marsTransitionState: 'idle',
-      moonTransitionState: 'idle',
+    (...args) => {
+      const [set, get] = args;
+      return {
+        ...createSimulationSlice(...args),
+        ...createGameSlice(...args),
 
-      setActiveBody: (id) => set({ activeBody: id }),
+        setLocale: (locale) =>
+          set((state) => {
+            if (state.locale !== locale) {
+              analytics.languageChanged(locale);
+            }
+            return { locale };
+          }),
 
-      setCameraPosition: (position) =>
-        set({ cameraPosition: position.clone() }),
+        togglePlay: () =>
+          set((state) => {
+            analytics.playbackToggled(state.isPlaying);
+            return { isPlaying: !state.isPlaying };
+          }),
 
-      setIsTraveling: (traveling) => set({ isTraveling: traveling }),
+        travelTo: (id) => {
+          analytics.planetSelected(id);
+          const currentState = get();
+          const targetSpeed = id === 'sun' ? (TIME_SPEED_PRESETS[2] ?? 7) : (TIME_SPEED_PRESETS[0] ?? 0.25);
+          const shouldChangeSpeed = currentState.timeScale !== targetSpeed;
 
-      setSimulationTime: (time) => set({ simulationTime: time }),
-
-      travelTo: (id) => {
-        analytics.planetSelected(id);
-        const currentState = useStore.getState();
-        const targetSpeed = id === 'sun' ? (TIME_SPEED_PRESETS[2] ?? 7) : (TIME_SPEED_PRESETS[0] ?? 0.25);
-        const shouldChangeSpeed = currentState.timeScale !== targetSpeed;
-
-        set((state) => ({
-          activeBody: id,
-          isTraveling: true,
-          viewMode: "close",
-          travelId: state.travelId + 1,
-          navigationMode: "cinematic",
-          selectedConstellation: null,
-          constellationUserSpinRad: 0,
-          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
-        }));
-        recordVisitedBody(id);
-        dispatchDomainEvent({ kind: "body_focused", bodyId: id });
-        if (shouldChangeSpeed) {
-          dispatchDomainEvent({
-            kind: "time_scale_changed",
-            daysPerSecond: targetSpeed,
-          });
-        }
-      },
-
-      travelToOverview: () => {
-        const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
-        const shouldChangeSpeed = useStore.getState().timeScale !== targetSpeed;
-
-        set((state) => ({
-          isTraveling: true,
-          viewMode: "overview",
-          travelId: state.travelId + 1,
-          navigationMode: "cinematic",
-          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
-        }));
-
-        if (shouldChangeSpeed) {
-          dispatchDomainEvent({
-            kind: "time_scale_changed",
-            daysPerSecond: targetSpeed,
-          });
-        }
-      },
-
-      resetSolarSystemStart: () => {
-        analytics.resetToSolarSystemStart();
-        const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
-        const shouldChangeSpeed = useStore.getState().timeScale !== targetSpeed;
-
-        set((state) => ({
-          activeBody: null,
-          selectedConstellation: null,
-          constellationUserSpinRad: 0,
-          isTraveling: true,
-          viewMode: "overview",
-          travelId: state.travelId + 1,
-          navigationMode: "cinematic",
-          overviewCameraResetId: state.overviewCameraResetId + 1,
-          ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
-        }));
-
-        if (shouldChangeSpeed) {
-          dispatchDomainEvent({
-            kind: "time_scale_changed",
-            daysPerSecond: targetSpeed,
-          });
-        }
-      },
-
-      arrive: () => set({ isTraveling: false }),
-
-      resetSimulationTime: () => set({ simulationTime: new Date() }),
-
-      setTimeScale: (scale) => {
-        set({ timeScale: scale });
-        dispatchDomainEvent({
-          kind: "time_scale_changed",
-          daysPerSecond: scale,
-        });
-      },
-
-      setIsPlaying: (playing) => set({ isPlaying: playing }),
-
-      togglePlay: () =>
-        set((state) => {
-          analytics.playbackToggled(state.isPlaying);
-          return { isPlaying: !state.isPlaying };
-        }),
-
-      setViewMode: (mode) => set({ viewMode: mode }),
-
-      setLocale: (locale) =>
-        set((state) => {
-          if (state.locale !== locale) {
-            analytics.languageChanged(locale);
-          }
-          return { locale };
-        }),
-
-      setNavigationMode: (mode) => {
-        const previous = useStore.getState().navigationMode;
-        set((state) => {
-          if (mode === "free" && state.navigationMode !== "free") {
-            analytics.freeFlightActivated();
-          }
-          return { navigationMode: mode };
-        });
-        if (previous !== mode) {
-          dispatchDomainEvent({ kind: "navigation_mode_changed", mode });
-        }
-      },
-
-      setSelectedConstellation: (id) =>
-        set((state) => {
-          const keepPose =
-            id !== null && id === state.selectedConstellation;
-          return {
-            selectedConstellation: id,
-            constellationUserSpinRad: keepPose
-              ? state.constellationUserSpinRad
-              : 0,
-          };
-        }),
-
-      focusSkyTarget: (id) => {
-        set((state) => {
-          if (state.selectedConstellation !== id) {
-            analytics.constellationOpened(id);
-          }
-          const keepPose = state.selectedConstellation === id;
-          return {
-            discoveredConstellations: state.discoveredConstellations.includes(id)
-              ? state.discoveredConstellations
-              : [...state.discoveredConstellations, id],
-            selectedConstellation: id,
-            constellationUserSpinRad: keepPose
-              ? state.constellationUserSpinRad
-              : 0,
-            isPlaying: false,
-            isTraveling: !keepPose,
-            viewMode: "overview",
-            // SkyFocusCamera owns constellation transitions. Incrementing `travelId`
-            // here would also start CameraManager travel and create competing camera writes.
-            travelId: state.travelId,
+          set((state) => ({
+            activeBody: id,
+            isTraveling: true,
+            viewMode: "close",
+            travelId: state.travelId + 1,
             navigationMode: "cinematic",
-            skyFocusId: keepPose ? state.skyFocusId : state.skyFocusId + 1,
-          };
-        });
-        dispatchDomainEvent({
-          kind: "constellation_focused",
-          constellationId: id,
-        });
-      },
+            selectedConstellation: null,
+            constellationUserSpinRad: 0,
+            ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
+          }));
+          recordVisitedBody(id);
+          dispatchDomainEvent({ kind: "body_focused", bodyId: id });
+          if (shouldChangeSpeed) {
+            dispatchDomainEvent({
+              kind: "time_scale_changed",
+              daysPerSecond: targetSpeed,
+            });
+          }
+        },
 
-      toggleConstellationLinesVisible: () =>
-        set((state) => ({
-          constellationLinesVisible: !state.constellationLinesVisible,
-        })),
+        travelToOverview: () => {
+          const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
+          const shouldChangeSpeed = get().timeScale !== targetSpeed;
 
-      adjustConstellationSpin: (deltaRad) =>
-        set((state) => ({
-          constellationUserSpinRad: state.constellationUserSpinRad + deltaRad,
-        })),
+          set((state) => ({
+            isTraveling: true,
+            viewMode: "overview",
+            travelId: state.travelId + 1,
+            navigationMode: "cinematic",
+            ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
+          }));
 
-      setGameMode: (mode) =>
-        set((state) => {
-          if (state.gameMode === mode) return state;
-          analytics.modeChanged(mode);
-          const activeMission =
-            mode === "explore" ? null : state.activeMissionId;
-          return { gameMode: mode, activeMissionId: activeMission };
-        }),
+          if (shouldChangeSpeed) {
+            dispatchDomainEvent({
+              kind: "time_scale_changed",
+              daysPerSecond: targetSpeed,
+            });
+          }
+        },
 
-      startMission: (missionId) => {
-        if (!isMissionId(missionId)) return;
-        const state = useStore.getState();
-        const existing = state.missionProgress[missionId];
-        const nowMs = Date.now();
-        const nextProgress: MissionProgress =
-          existing && !existing.completed
-            ? existing
-            : createInitialProgress(missionId, nowMs);
-        set({
-          activeMissionId: missionId,
-          missionProgress: {
-            ...state.missionProgress,
-            [missionId]: nextProgress,
-          },
-        });
-        if (!existing || existing.completed) {
-          analytics.missionStarted(missionId);
-        }
-      },
+        resetSolarSystemStart: () => {
+          analytics.resetToSolarSystemStart();
+          const targetSpeed = TIME_SPEED_PRESETS[2] ?? 7;
+          const shouldChangeSpeed = get().timeScale !== targetSpeed;
 
-      abandonMission: () => {
-        const state = useStore.getState();
-        if (state.activeMissionId === null) return;
-        analytics.missionAbandoned(state.activeMissionId);
-        set({ activeMissionId: null });
-      },
+          set((state) => ({
+            activeBody: null,
+            selectedConstellation: null,
+            constellationUserSpinRad: 0,
+            isTraveling: true,
+            viewMode: "overview",
+            travelId: state.travelId + 1,
+            navigationMode: "cinematic",
+            overviewCameraResetId: state.overviewCameraResetId + 1,
+            ...(shouldChangeSpeed ? { timeScale: targetSpeed } : {}),
+          }));
 
-      acknowledgeAchievement: () => set({ recentAchievement: null }),
+          if (shouldChangeSpeed) {
+            dispatchDomainEvent({
+              kind: "time_scale_changed",
+              daysPerSecond: targetSpeed,
+            });
+          }
+        },
 
-      setMobilePlanetInfoSheetOpen: (open) =>
-        set({ mobilePlanetInfoSheetOpen: open }),
+        focusSkyTarget: (id) => {
+          set((state) => {
+            if (state.selectedConstellation !== id) {
+              analytics.constellationOpened(id);
+            }
+            const keepPose = state.selectedConstellation === id;
+            return {
+              discoveredConstellations: state.discoveredConstellations.includes(id)
+                ? state.discoveredConstellations
+                : [...state.discoveredConstellations, id],
+              selectedConstellation: id,
+              constellationUserSpinRad: keepPose
+                ? state.constellationUserSpinRad
+                : 0,
+              isPlaying: false,
+              isTraveling: !keepPose,
+              viewMode: "overview",
+              travelId: state.travelId,
+              navigationMode: "cinematic",
+              skyFocusId: keepPose ? state.skyFocusId : state.skyFocusId + 1,
+            };
+          });
+          dispatchDomainEvent({
+            kind: "constellation_focused",
+            constellationId: id,
+          });
+        },
 
-      setLearningLevel: (level) => set({ learningLevel: level }),
+        awardXp: (amount) =>
+          set((state) => {
+            if (state.gameMode === "explore") return state;
+            const nextXp = state.xp + amount;
+            const nextTitle = resolveTitle(
+              nextXp,
+              completedMissionIdsList(state.missionProgress),
+            );
+            return { xp: nextXp, title: nextTitle, recentXpGain: amount };
+          }),
 
-      awardXp: (amount) =>
-        set((state) => {
-          if (state.gameMode === "explore") return state;
-          const nextXp = state.xp + amount;
-          const nextTitle = resolveTitle(
-            nextXp,
-            completedMissionIdsList(state.missionProgress),
-          );
-          return { xp: nextXp, title: nextTitle, recentXpGain: amount };
-        }),
+        startMission: (missionId) => {
+          if (!isMissionId(missionId)) return;
+          const state = get();
+          const existing = state.missionProgress[missionId];
+          const nowMs = Date.now();
+          const nextProgress: MissionProgress =
+            existing && !existing.completed
+              ? existing
+              : createInitialProgress(missionId, nowMs);
+          set({
+            activeMissionId: missionId,
+            missionProgress: {
+              ...state.missionProgress,
+              [missionId]: nextProgress,
+            },
+          });
+          if (!existing || existing.completed) {
+            analytics.missionStarted(missionId);
+          }
+        },
 
-      recordQuizResult: (quizId, stars) => {
-        set((state) => {
-          if (state.completedQuizzes[quizId] !== undefined) return state;
-          const xpAmount =
-            stars === 3
-              ? XP_AWARDS.quizThreeStars
-              : stars === 2
-                ? XP_AWARDS.quizTwoStars
-                : XP_AWARDS.quizOneStar;
-          const nextXp = state.xp + xpAmount;
-          const nextTitle = resolveTitle(
-            nextXp,
-            completedMissionIdsList(state.missionProgress),
-          );
+        recordQuizResult: (quizId, stars) => {
+          set((state) => {
+            if (state.completedQuizzes[quizId] !== undefined) return state;
+            const xpAmount =
+              stars === 3
+                ? XP_AWARDS.quizThreeStars
+                : stars === 2
+                  ? XP_AWARDS.quizTwoStars
+                  : XP_AWARDS.quizOneStar;
+            const nextXp = state.xp + xpAmount;
+            const nextTitle = resolveTitle(
+              nextXp,
+              completedMissionIdsList(state.missionProgress),
+            );
+            const today = todayDateKey();
+            const previousDay = state.lastQuizCompletedOn;
+            const dayDelta = previousDay ? daysBetweenDateKeys(previousDay, today) : null;
+            const nextStreak =
+              dayDelta === null
+                ? 1
+                : dayDelta === 0
+                  ? state.quizStreakDays
+                  : dayDelta === 1
+                    ? state.quizStreakDays + 1
+                    : 1;
+
+            return {
+              completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
+              xp: nextXp,
+              title: nextTitle,
+              recentXpGain: xpAmount,
+              quizStreakDays: nextStreak,
+              lastQuizCompletedOn: today,
+            };
+          });
+          dispatchDomainEvent({ kind: "quiz_completed", quizId });
+        },
+
+        claimPatienceReward: (bodyId) => {
+          const state = get();
+          if (state.gameMode === "explore") return false;
           const today = todayDateKey();
-          const previousDay = state.lastQuizCompletedOn;
-          const dayDelta = previousDay ? daysBetweenDateKeys(previousDay, today) : null;
-          const nextStreak =
-            dayDelta === null
-              ? 1
-              : dayDelta === 0
-                ? state.quizStreakDays
-                : dayDelta === 1
-                  ? state.quizStreakDays + 1
-                  : 1;
+          if (state.patienceRewardedOnByBody[bodyId] === today) return false;
+          get().awardXp(XP_AWARDS.bodyPatience);
+          set({
+            patienceRewardedOnByBody: {
+              ...state.patienceRewardedOnByBody,
+              [bodyId]: today,
+            },
+          });
+          return true;
+        },
 
-          return {
-            completedQuizzes: { ...state.completedQuizzes, [quizId]: stars },
-            xp: nextXp,
-            title: nextTitle,
-            recentXpGain: xpAmount,
-            quizStreakDays: nextStreak,
-            lastQuizCompletedOn: today,
-          };
-        });
-        dispatchDomainEvent({ kind: "quiz_completed", quizId });
-      },
+        recordPhotoTaken: (targetBodyId) => {
+          dispatchDomainEvent({ kind: "photo_taken", targetBodyId });
+        },
 
-      triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
-
-      dismissQuiz: () => set({ pendingQuizId: null }),
-
-      acknowledgeXpGain: () => set({ recentXpGain: null }),
-
-      toggleLeftRail: () =>
-        set((state) => ({ leftRailOpen: !state.leftRailOpen })),
-
-      claimPatienceReward: (bodyId) => {
-        const state = useStore.getState();
-        if (state.gameMode === "explore") return false;
-        const today = todayDateKey();
-        if (state.patienceRewardedOnByBody[bodyId] === today) return false;
-        useStore.getState().awardXp(XP_AWARDS.bodyPatience);
-        set({
-          patienceRewardedOnByBody: {
-            ...state.patienceRewardedOnByBody,
-            [bodyId]: today,
-          },
-        });
-        return true;
-      },
-
-      recordPhotoTaken: (targetBodyId) => {
-        dispatchDomainEvent({ kind: "photo_taken", targetBodyId });
-      },
-
-      setGravityLabActive: (active) => set({ gravityLabActive: active }),
-      setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
-      triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
-      setIsLanded: (landed) => set({ isLanded: landed }),
-      setMarsTransitionState: (state) => set({ marsTransitionState: state }),
-      setIsLandedOnMoon: (landed) => set({ isLandedOnMoon: landed }),
-      setMoonTransitionState: (state) => set({ moonTransitionState: state }),
-
-      restoreFromShareLink: (snapshot) => {
-        const state = useStore.getState();
-        const partial = buildShareLinkPartialState(snapshot, state);
-        set(partial as Partial<Store>);
-        trackShareLinkRestoreAnalytics(snapshot, state);
-      },
-    }),
+        restoreFromShareLink: (snapshot) => {
+          const state = get();
+          const partial = buildShareLinkPartialState(snapshot, state);
+          set(partial as Partial<Store>);
+          trackShareLinkRestoreAnalytics(snapshot, state);
+        },
+      };
+    },
     {
       name: "heliotrip-preferences",
       storage: createJSONStorage(() => localStorage),
