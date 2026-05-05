@@ -5,7 +5,7 @@
  * 14 and 30 days, along with the current data source status.
  */
 import { Activity, Calendar, Database } from "lucide-react";
-import { AnalyticsSummary } from "./types";
+import type { AnalyticsSummary } from "./types";
 
 interface SummaryCardsProps {
   summary: AnalyticsSummary;

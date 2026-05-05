@@ -26,12 +26,11 @@ import {
   KM_TO_MILES,
   DISTANCE_SAMPLE_MS,
   DISTANCE_EPSILON_AU,
-  Row,
-  DistancePair,
   worldDistanceToEarthAu,
   resolveOrbitingDistancePair,
   formatOrbitPeriod,
 } from "./PlanetPanel/utils";
+import type { Row, DistancePair } from "./PlanetPanel/utils";
 import { InfoTab } from "./PlanetPanel/InfoTab";
 
 export type PanelTab = "info" | "facts" | "compare";

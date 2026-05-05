@@ -6,7 +6,7 @@
  */
 import { ExternalLink } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Row } from "./utils";
+import type { Row } from "./utils";
 
 interface InfoTabProps {
   rows: Row[];

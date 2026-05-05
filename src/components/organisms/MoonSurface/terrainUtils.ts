@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { terrainRng } from '../../../lib/terrainRng';
-import { MoonRockInstance } from './types';
+import type { MoonRockInstance } from './types';
 
 export const buildMoonTerrainGeometryAndRocks = (): {
   geometry: THREE.PlaneGeometry;

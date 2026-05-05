@@ -10,13 +10,14 @@
  * - simulationTime: Current date/time used for orbital calculations.
  * - timeScale: Speed of the simulation (days per real second).
  */
-import { StateCreator } from 'zustand';
+import type { StateCreator } from 'zustand';
 import { Vector3 } from 'three';
-import { BodyId } from '../../lib/bodies';
+import type { BodyId } from '../../lib/bodies';
 import { INITIAL_OVERVIEW_CAMERA_POSITION } from '../../lib/initialCamera';
-import { DEFAULT_TIME_SCALE, TIME_SPEED_PRESETS } from '../../lib/timePlayback';
-import { Locale, detectLocale } from '../../i18n/translations';
-import { ConstellationId } from '../../lib/constellations';
+import { DEFAULT_TIME_SCALE } from '../../lib/timePlayback';
+import { detectLocale } from '../../i18n/translations';
+import type { Locale } from '../../i18n/translations';
+import type { ConstellationId } from '../../lib/constellations';
 
 export type ViewMode = 'close' | 'overview';
 export type NavigationMode = 'cinematic' | 'free';

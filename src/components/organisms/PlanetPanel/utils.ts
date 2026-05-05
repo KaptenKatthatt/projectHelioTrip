@@ -5,9 +5,9 @@
  * celestial bodies (relative to the Sun and Earth) and formatting orbital 
  * periods into human-readable strings.
  */
-import { PlanetId } from "../../../lib/planets";
+import type { PlanetId } from "../../../lib/planets";
 import { AU_SCALE } from "../../../lib/constants";
-import { getLivePosition, getLiveMoonOffset, getLiveSatelliteOffset } from "../../../lib/positionsBus";
+import { getLivePosition } from "../../../lib/positionsBus";
 
 export type Row = {
   label: string;
@@ -21,6 +21,7 @@ export type DistancePair = {
 
 export const AU_TO_KM = 149_597_870.7;
 export const KM_TO_MILES = 0.621371192;
+export const DISTANCE_SAMPLE_MS = 250;
 export const DISTANCE_EPSILON_AU = 0.00001;
 
 export const worldDistanceToEarthAu = (worldX: number, worldY: number, worldZ: number) => {

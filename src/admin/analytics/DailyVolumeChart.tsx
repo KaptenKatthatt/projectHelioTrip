@@ -5,7 +5,7 @@
  * over the last 30 days.
  */
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import { DaySummary } from "./types";
+import type { DaySummary } from "./types";
 
 interface DailyVolumeChartProps {
   data: DaySummary[];

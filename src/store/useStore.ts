@@ -1,10 +1,8 @@
-import { Vector3 } from "three";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { BodyId } from "../lib/bodies";
 import type { ConstellationId } from "../lib/constellations";
-import { detectLocale, isLocale } from "../i18n/translations";
-import { INITIAL_OVERVIEW_CAMERA_POSITION } from "../lib/initialCamera";
+import { isLocale } from "../i18n/translations";
 import { analytics } from "../lib/analytics";
 import {
   type GameMode,
@@ -28,11 +26,11 @@ import {
   inferShareLinkContextType,
   type ShareLinkState,
 } from "../lib/shareLink";
-import { DEFAULT_TIME_SCALE, TIME_SPEED_PRESETS } from "../lib/timePlayback";
+import { TIME_SPEED_PRESETS } from "../lib/timePlayback";
 import type { FactCardLevel } from "../lib/learning/bodyContent";
-import { type TitleId, XP_AWARDS, resolveTitle } from "../lib/learning/xp";
-import { createSimulationSlice, SimulationSlice } from "./slices/createSimulationSlice";
-import { createGameSlice, GameSlice } from "./slices/createGameSlice";
+import { XP_AWARDS, resolveTitle } from "../lib/learning/xp";
+import { createSimulationSlice, type SimulationSlice } from "./slices/createSimulationSlice";
+import { createGameSlice, type GameSlice } from "./slices/createGameSlice";
 
 const completedMissionIdsList = (
   missionProgress: Readonly<Record<string, MissionProgress>>,
@@ -49,8 +47,6 @@ export type Store = SimulationSlice & GameSlice & {
   recordPhotoTaken: (targetBodyId: BodyId | null) => void;
   restoreFromShareLink: (state: ShareLinkState) => void;
 };
-
-const DEFAULT_CAMERA_POSITION = INITIAL_OVERVIEW_CAMERA_POSITION.clone();
 
 type PersistedState = {
   locale: any;

@@ -5,7 +5,7 @@
  * mission funnel completion rates, and game mode distribution.
  */
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from "recharts";
-import { COLORS, formatBreakdownLabel } from "./types";
+import { COLORS } from "./types";
 
 interface BreakdownChartsProps {
   topPlanets: { name: string; count: number }[];

@@ -6,9 +6,9 @@ import {
   useState,
 } from "react";
 import {
-  AnalyticsSummary,
   formatBreakdownLabel,
 } from "./analytics/types";
+import type { AnalyticsSummary } from "./analytics/types";
 import { SummaryCards } from "./analytics/SummaryCards";
 import { DailyVolumeChart } from "./analytics/DailyVolumeChart";
 import { BreakdownCharts } from "./analytics/BreakdownCharts";

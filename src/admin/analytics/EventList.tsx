@@ -6,7 +6,8 @@
  * (e.g., seeing exactly which planets were selected).
  */
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { EventSummary, formatBreakdownLabel } from "./types";
+import { formatBreakdownLabel } from "./types";
+import type { EventSummary } from "./types";
 
 interface EventListProps {
   events: EventSummary[];

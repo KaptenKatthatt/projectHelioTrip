@@ -316,7 +316,7 @@ export const sv: Translation = {
     title: 'Moon Explorer',
     subtitle: 'Fokuserad på: Apollo 11 — Tranquility Base',
     factLabel: 'Apollo 11 · 1969',
-    factAriaLabel: (n) => "Fakta ${n}",
+    factAriaLabel: (n) => `Fakta ${n}`,
     closeAriaLabel: 'Stäng månscenen',
     mouseHint: 'Dra med musen för att se dig omkring',
     facts: [

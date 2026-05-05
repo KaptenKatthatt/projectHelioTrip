@@ -10,12 +10,13 @@
  * - missionProgress: Status of all started or completed missions.
  * - gravityLabActive: Toggle for the Phase 4 Gravity Lab sandbox.
  */
-import { StateCreator } from 'zustand';
-import { BodyId } from '../../lib/bodies';
-import { ConstellationId } from '../../lib/constellations';
-import { GameMode, MissionProgress, AchievementId } from '../../lib/missions/types';
-import { TitleId } from '../../lib/learning/xp';
-import { FactCardLevel } from '../../lib/learning/bodyContent';
+import type { StateCreator } from 'zustand';
+import type { BodyId } from '../../lib/bodies';
+import type { ConstellationId } from '../../lib/constellations';
+import type { GameMode, MissionProgress } from '../../lib/missions/types';
+import type { AchievementId } from '../../lib/missions/achievements';
+import type { TitleId } from '../../lib/learning/xp';
+import type { FactCardLevel } from '../../lib/learning/bodyContent';
 
 export interface RecentAchievement {
   readonly id: AchievementId;
@@ -63,7 +64,7 @@ export interface GameActions {
 
 export type GameSlice = GameState & GameActions;
 
-export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set, get) => ({
+export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set) => ({
   gameMode: 'explore',
   activeMissionId: null,
   missionProgress: {},
@@ -85,16 +86,16 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set,
   gravityLabResetTrigger: 0,
 
   setGameMode: (mode) => set((state) => ({ gameMode: mode, activeMissionId: mode === 'explore' ? null : state.activeMissionId })),
-  startMission: (missionId) => {}, // Placeholder, will be implemented in store.ts
+  startMission: (_missionId) => {}, // Placeholder, will be implemented in store.ts
   abandonMission: () => set({ activeMissionId: null }),
   acknowledgeAchievement: () => set({ recentAchievement: null }),
   setLearningLevel: (level) => set({ learningLevel: level }),
-  awardXp: (amount) => {}, // Placeholder
-  recordQuizResult: (quizId, stars) => {}, // Placeholder
+  awardXp: (_amount) => {}, // Placeholder
+  recordQuizResult: (_quizId, _stars) => {}, // Placeholder
   triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
   dismissQuiz: () => set({ pendingQuizId: null }),
   acknowledgeXpGain: () => set({ recentXpGain: null }),
-  claimPatienceReward: (bodyId) => false, // Placeholder
+  claimPatienceReward: (_bodyId) => false, // Placeholder
   setGravityLabActive: (active) => set({ gravityLabActive: active }),
   setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
   triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
