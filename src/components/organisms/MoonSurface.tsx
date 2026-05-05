@@ -458,7 +458,7 @@ export const MoonSurface = () => {
             }}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden />
           </button>
         </header>
 
