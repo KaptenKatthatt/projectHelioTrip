@@ -1,0 +1,112 @@
+{
+  "exportedAt": "2026-05-05T14:02:44.566Z",
+  "sourceProject": "projectHelioTrip",
+  "files": [
+    {
+      "source": "context/AGENTS_CONTEXT.md",
+      "destination": "template/context/AGENTS_CONTEXT.md",
+      "requiredCustomization": false,
+      "category": "instructions"
+    },
+    {
+      "source": "context/AGENT_REFERENCE.md",
+      "destination": "template/context/AGENT_REFERENCE.md",
+      "requiredCustomization": true,
+      "category": "instructions"
+    },
+    {
+      "source": "context/DESIGN_SYSTEM.md",
+      "destination": "template/context/DESIGN_SYSTEM.md",
+      "requiredCustomization": true,
+      "category": "instructions"
+    },
+    {
+      "source": ".cursor/rules/project.mdc",
+      "destination": "template/.cursor/rules/project.mdc",
+      "requiredCustomization": true,
+      "category": "rules"
+    },
+    {
+      "source": ".cursor/rules/react-patterns.mdc",
+      "destination": "template/.cursor/rules/react-patterns.mdc",
+      "requiredCustomization": false,
+      "category": "rules"
+    },
+    {
+      "source": ".cursor/rules/typescript.mdc",
+      "destination": "template/.cursor/rules/typescript.mdc",
+      "requiredCustomization": false,
+      "category": "rules"
+    },
+    {
+      "source": ".github/copilot-instructions.md",
+      "destination": "template/.github/copilot-instructions.md",
+      "requiredCustomization": true,
+      "category": "instructions"
+    },
+    {
+      "source": "AGENTS.md",
+      "destination": "template/AGENTS.md",
+      "requiredCustomization": false,
+      "category": "instructions"
+    },
+    {
+      "source": "CLAUDE.md",
+      "destination": "template/CLAUDE.md",
+      "requiredCustomization": false,
+      "category": "instructions"
+    },
+    {
+      "source": "GEMINI.md",
+      "destination": "template/GEMINI.md",
+      "requiredCustomization": false,
+      "category": "instructions"
+    },
+    {
+      "source": "package.json",
+      "destination": "quality-gates/source-reference/package.json",
+      "requiredCustomization": true,
+      "category": "quality-gates"
+    },
+    {
+      "source": "tsconfig.json",
+      "destination": "quality-gates/source-reference/tsconfig.json",
+      "requiredCustomization": false,
+      "category": "quality-gates"
+    },
+    {
+      "source": "tsconfig.app.json",
+      "destination": "quality-gates/source-reference/tsconfig.app.json",
+      "requiredCustomization": false,
+      "category": "quality-gates"
+    },
+    {
+      "source": "tsconfig.node.json",
+      "destination": "quality-gates/source-reference/tsconfig.node.json",
+      "requiredCustomization": false,
+      "category": "quality-gates"
+    },
+    {
+      "source": "eslint.config.js",
+      "destination": "quality-gates/source-reference/eslint.config.js",
+      "requiredCustomization": true,
+      "category": "quality-gates"
+    },
+    {
+      "source": "vitest.config.ts",
+      "destination": "quality-gates/source-reference/vitest.config.ts",
+      "requiredCustomization": true,
+      "category": "quality-gates"
+    },
+    {
+      "source": "playwright.config.ts",
+      "destination": "quality-gates/source-reference/playwright.config.ts",
+      "requiredCustomization": true,
+      "category": "quality-gates"
+    }
+  ],
+  "usage": {
+    "export": "npm run ai:export",
+    "check": "npm run ai:export:check"
+  }
+}

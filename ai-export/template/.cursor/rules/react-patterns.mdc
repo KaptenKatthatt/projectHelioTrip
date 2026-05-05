@@ -1,0 +1,24 @@
+---
+description: React 19 patterns, functional components, and R3F performance
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# React 19 & R3F
+
+## Components
+- ONLY functional components. No class components.
+- `ref` as a normal prop (no `forwardRef` – not needed in React 19).
+- `use()` to consume promises/context where it fits.
+- Actions + `useActionState` / `useOptimistic` for forms/mutations.
+- Extract reusable logic into custom hooks (`useXxx`).
+
+## Rendering performance
+- `useMemo` for heavy work; `useCallback` only when children are memoized.
+- Avoid inline object literals as props to memoized children.
+
+## R3F
+- No allocation in `useFrame` – reuse `Vector3`/`Quaternion` instances outside the loop.
+- `useGLTF` / `useTexture` for assets; call `.preload()` where appropriate.
+- Use `<Instances>` for many identical meshes.
+- Prefer `<Suspense>` + drei loaders over manual loading.
