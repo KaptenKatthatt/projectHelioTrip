@@ -11,21 +11,11 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
 
 type MarsRockInstance = {
-  position: [number, number, number];
-  rotation: [number, number, number];
-  scale: [number, number, number];
-};
 
-const terrainRng = (seed: number): (() => number) => {
-  let state = seed >>> 0;
-  return (): number => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0xffff_ffff;
-  };
-};
 
 const buildMarsTerrainGeometryAndRocks = (): {
   geometry: THREE.PlaneGeometry;
