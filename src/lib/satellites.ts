@@ -29,6 +29,8 @@ export type SatelliteDefinition = {
   phase: number;
   /** Optional path to a GLB model for the satellite. */
   glbPath?: string;
+  /** Scale override for the GLB model. Falls back to radius if omitted. */
+  glbScale?: number;
 };
 
 const DEG = Math.PI / 180;
@@ -45,6 +47,7 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
     ascendingNode: 0,
     phase: 0,
     glbPath: '/International_Space_Station_(ISS)_(A).glb',
+    glbScale: 0.005,
   },
 ];
 

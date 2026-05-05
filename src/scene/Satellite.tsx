@@ -16,13 +16,13 @@ SATELLITES.forEach((s) => {
 
 const GLBSatelliteModel = ({
   path,
-  radius,
+  scale,
 }: {
   path: string;
-  radius: number;
+  scale: number;
 }) => {
   const { scene } = useGLTF(path);
-  return <primitive object={scene} scale={radius} />;
+  return <primitive object={scene} scale={scale} />;
 };
 
 type Props = {
@@ -73,7 +73,7 @@ export const Satellite = ({ satellite }: Props) => {
         >
           <GLBSatelliteModel
             path={satellite.glbPath}
-            radius={satellite.radius}
+            scale={satellite.glbScale ?? satellite.radius}
           />
         </Suspense>
       </group>
