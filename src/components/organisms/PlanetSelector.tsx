@@ -130,9 +130,9 @@ export const PlanetSelector = ({
                   <img
                     src="/mars-rover-icon.png"
                     alt=""
-                    width={18}
-                    height={18}
-                    className="h-[18px] w-[18px] shrink-0 object-contain invert opacity-55 group-hover:opacity-75"
+                    width={15}
+                    height={15}
+                    className="h-[15px] w-[15px] shrink-0 object-contain invert opacity-55 group-hover:opacity-75"
                   />
                 ) : null}
               </span>
@@ -167,7 +167,18 @@ export const PlanetSelector = ({
               className="h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white/20"
               style={{ backgroundColor: row.color }}
             />
-            <span className="truncate">{bodyName(row.id)}</span>
+            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+              <span className="min-w-0 truncate">{bodyName(row.id)}</span>
+              {row.id === "moon" ? (
+                <img
+                  src="/lander_icon.png"
+                  alt=""
+                  width={15}
+                  height={15}
+                  className="h-[15px] w-auto shrink-0 object-contain invert opacity-55 group-hover:opacity-75"
+                />
+              ) : null}
+            </span>
           </button>
         );
       })}

@@ -16,6 +16,7 @@ import { CameraTool } from "../molecules/CameraTool";
 import { GravityLabControls } from "../molecules/GravityLabControls";
 import { LabAccordion } from "../molecules/LabAccordion";
 import { MarsSurface } from "../organisms/MarsSurface";
+import { MoonSurface } from "../organisms/MoonSurface";
 
 const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge" | "lab">> = {
   explore: "explore",
@@ -189,6 +190,7 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
         </div>
       )}
       <MarsSurface />
+      <MoonSurface />
     </div>
   );
 };

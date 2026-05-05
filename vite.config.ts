@@ -52,10 +52,30 @@ export function resolvePublicSiteOrigin(
   const providerOrigin = resolveHostProviderOrigin();
   if (providerOrigin) return providerOrigin;
 
+  const localFallbackOrigin = trimTrailingSlash(
+    (
+      env.VITE_LOCAL_SITE_URL ??
+      process.env.VITE_LOCAL_SITE_URL ??
+      'http://localhost:5173'
+    ).trim(),
+  );
+  const hasCustomLocalFallback =
+    Boolean((env.VITE_LOCAL_SITE_URL ?? '').trim()) ||
+    Boolean((process.env.VITE_LOCAL_SITE_URL ?? '').trim());
+  const isCiBuild = process.env.CI === 'true';
   if (mode === 'production') {
-    throw new Error(
-      'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL (Vercel), CF_PAGES_URL, or Netlify URL vars. See .env.example.',
+    if (isCiBuild) {
+      throw new Error(
+        'Absolute site URL is required for og:image (Facebook / X). Set VITE_PUBLIC_SITE_URL in .env to your origin without a trailing slash (e.g. https://heliotrip.example.com), or build on a host that sets VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL (Vercel), CF_PAGES_URL, or Netlify URL vars. See .env.example.',
+      );
+    }
+    const fallbackSource = hasCustomLocalFallback
+      ? 'VITE_LOCAL_SITE_URL'
+      : 'default local fallback';
+    console.warn(
+      `VITE_PUBLIC_SITE_URL is not set; falling back to ${localFallbackOrigin} (${fallbackSource}) for local production builds.`,
     );
+    return localFallbackOrigin;
   }
 
   return '';
