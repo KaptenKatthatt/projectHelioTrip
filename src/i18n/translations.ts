@@ -227,6 +227,7 @@ export type Translation = {
     factLabel: string;
     factAriaLabel: (n: number) => string;
     closeAriaLabel: string;
+    facts: Array<{ title: string; body: string }>;
     mouseHint: string;
   };
 };

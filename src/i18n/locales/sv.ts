@@ -316,8 +316,30 @@ export const sv: Translation = {
     title: 'Moon Explorer',
     subtitle: 'Fokuserad på: Apollo 11 — Tranquility Base',
     factLabel: 'Apollo 11 · 1969',
-    factAriaLabel: (n) => `Fakta ${n}`,
+    factAriaLabel: (n) => "Fakta ${n}",
     closeAriaLabel: 'Stäng månscenen',
     mouseHint: 'Dra med musen för att se dig omkring',
+    facts: [
+      {
+        title: 'Neil Armstrongs första steg',
+        body: 'Den 21 juli 1969 klev Neil Armstrong ut ur landaren kl. 02:56 UTC och satte mänsklighetens första fot på månen.',
+      },
+      {
+        title: '"Ett litet steg…"',
+        body: "\"That's one small step for man, one giant leap for mankind\" — citatet sändes live till uppskattningsvis 600 miljoner TV-tittare.",
+      },
+      {
+        title: 'Tranquility Base',
+        body: 'Apollo 11 landade i Mare Tranquillitatis — ett relativt flackt och stenfattigt område valt för säkerhetens skull.',
+      },
+      {
+        title: '21 timmar på ytan',
+        body: 'Astronauterna tillbringade 21 timmar och 36 minuter på månens yta, varav 2,5 timmar utanför landaren i rymddräkt (EVA).',
+      },
+      {
+        title: '21,5 kg månsten',
+        body: 'Armstrong och Aldrin samlade in 21,5 kg bergarter och månstoft — prover som forskare fortfarande analyserar idag.',
+      },
+    ],
   },
 };
