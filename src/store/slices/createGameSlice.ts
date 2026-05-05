@@ -86,16 +86,16 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set)
   gravityLabResetTrigger: 0,
 
   setGameMode: (mode) => set((state) => ({ gameMode: mode, activeMissionId: mode === 'explore' ? null : state.activeMissionId })),
-  startMission: (_missionId) => {}, // Placeholder, will be implemented in store.ts
+  startMission: () => {}, // Placeholder, will be implemented in store.ts
   abandonMission: () => set({ activeMissionId: null }),
   acknowledgeAchievement: () => set({ recentAchievement: null }),
   setLearningLevel: (level) => set({ learningLevel: level }),
-  awardXp: (_amount) => {}, // Placeholder
-  recordQuizResult: (_quizId, _stars) => {}, // Placeholder
+  awardXp: () => {}, // Placeholder
+  recordQuizResult: () => {}, // Placeholder
   triggerQuiz: (quizId) => set({ pendingQuizId: quizId }),
   dismissQuiz: () => set({ pendingQuizId: null }),
   acknowledgeXpGain: () => set({ recentXpGain: null }),
-  claimPatienceReward: (_bodyId) => false, // Placeholder
+  claimPatienceReward: () => false, // Placeholder
   setGravityLabActive: (active) => set({ gravityLabActive: active }),
   setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
   triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),

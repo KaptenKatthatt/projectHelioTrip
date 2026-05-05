@@ -12,6 +12,28 @@ vi.mock('@react-three/fiber');
 vi.mock('../hooks/useIsMobileLayout');
 vi.mock('../lib/bodyPickPointer');
 
+type MockStoreState = {
+  mobilePlanetInfoSheetOpen: boolean;
+  viewMode: 'close' | 'overview';
+  activeBody: string | null;
+  isTraveling: boolean;
+  setMobilePlanetInfoSheetOpen: (open: boolean) => void;
+};
+
+type StoreSelector = (state: MockStoreState) => unknown;
+type MockedUseStore = {
+  mockImplementation: (fn: (selector: StoreSelector) => unknown) => void;
+};
+
+type ThreeSelector = (state: { gl: { domElement: HTMLCanvasElement } }) => unknown;
+type MockedUseThree = {
+  mockImplementation: (fn: (selector: ThreeSelector) => unknown) => void;
+};
+
+type MockedHookWithReturn<T> = {
+  mockReturnValue: (value: T) => void;
+};
+
 describe('MobilePlanetInfoCanvasDismiss', () => {
   const mockSetSheetOpen = vi.fn();
   let mockCanvas: HTMLCanvasElement;
@@ -19,8 +41,8 @@ describe('MobilePlanetInfoCanvasDismiss', () => {
   beforeEach(() => {
     mockCanvas = document.createElement('canvas');
     vi.clearAllMocks();
-    (useStore as any).mockImplementation((selector: any) => {
-      const state = {
+    (useStore as unknown as MockedUseStore).mockImplementation((selector) => {
+      const state: MockStoreState = {
         mobilePlanetInfoSheetOpen: true,
         viewMode: 'close',
         activeBody: 'mars',
@@ -29,9 +51,11 @@ describe('MobilePlanetInfoCanvasDismiss', () => {
       };
       return selector(state);
     });
-    (useThree as any).mockImplementation((selector: any) => selector({ gl: { domElement: mockCanvas } }));
-    (useIsMobileLayout as any).mockReturnValue(true);
-    (consumePlanetInfoCanvasDismissSuppress as any).mockReturnValue(false);
+    (useThree as unknown as MockedUseThree).mockImplementation((selector) =>
+      selector({ gl: { domElement: mockCanvas } }),
+    );
+    (useIsMobileLayout as unknown as MockedHookWithReturn<boolean>).mockReturnValue(true);
+    (consumePlanetInfoCanvasDismissSuppress as unknown as MockedHookWithReturn<boolean>).mockReturnValue(false);
   });
 
   it('adds event listeners when enabled', () => {

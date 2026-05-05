@@ -8,7 +8,7 @@ import {
 import {
   formatBreakdownLabel,
 } from "./analytics/types";
-import type { AnalyticsSummary } from "./analytics/types";
+import type { AnalyticsSummary, DaySummary } from "./analytics/types";
 import { SummaryCards } from "./analytics/SummaryCards";
 import { DailyVolumeChart } from "./analytics/DailyVolumeChart";
 import { BreakdownCharts } from "./analytics/BreakdownCharts";
@@ -33,7 +33,7 @@ const httpErrorMessage = (status: number): string => {
   return `HTTP ${status}`;
 };
 
-const sumTotalsLastUtcDays = (byDay: any[], dayCount: number): number => {
+const sumTotalsLastUtcDays = (byDay: DaySummary[], dayCount: number): number => {
   if (dayCount <= 0) return 0;
   const today = new Date();
   let sum = 0;
@@ -46,7 +46,7 @@ const sumTotalsLastUtcDays = (byDay: any[], dayCount: number): number => {
   return sum;
 };
 
-const chartDays = (byDay: any[], maxBars: number): any[] => {
+const chartDays = (byDay: DaySummary[], maxBars: number): DaySummary[] => {
   const sorted = [...byDay].sort((a, b) => a.date.localeCompare(b.date));
   if (sorted.length <= maxBars) return sorted;
   return sorted.slice(sorted.length - maxBars);

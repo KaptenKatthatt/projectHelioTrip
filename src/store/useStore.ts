@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { BodyId } from "../lib/bodies";
 import type { ConstellationId } from "../lib/constellations";
 import { isLocale } from "../i18n/translations";
+import type { Locale } from "../i18n/translations";
 import { analytics } from "../lib/analytics";
 import {
   type GameMode,
@@ -49,7 +50,7 @@ export type Store = SimulationSlice & GameSlice & {
 };
 
 type PersistedState = {
-  locale: any;
+  locale: Locale;
   gameMode: GameMode;
   missionProgress: Record<string, MissionProgress>;
   visitedBodies: BodyId[];
@@ -245,7 +246,7 @@ const buildShareLinkPartialState = (
   snapshot: ShareLinkState,
   state: Store,
 ): Partial<Store> => {
-  const partial: any = {};
+  const partial: Partial<Store> = {};
 
   if (snapshot.gameMode !== null) {
     if (snapshot.gameMode !== state.gameMode) {

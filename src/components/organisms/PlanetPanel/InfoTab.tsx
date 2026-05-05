@@ -6,6 +6,7 @@
  */
 import { ExternalLink } from "lucide-react";
 import { useStore } from "../../../store/useStore";
+import type { Translation } from "../../../i18n/translations";
 import type { Row } from "./utils";
 
 interface InfoTabProps {
@@ -15,7 +16,7 @@ interface InfoTabProps {
   openWikipedia: () => void;
   mobileLayout: boolean;
   omitHeading: boolean;
-  t: any;
+  t: Translation;
 }
 
 export const InfoTab = ({ rows, activeBody, name, openWikipedia, mobileLayout, omitHeading, t }: InfoTabProps) => {

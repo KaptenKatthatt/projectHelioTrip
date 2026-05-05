@@ -5,6 +5,8 @@
  * mission funnel completion rates, and game mode distribution.
  */
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from "recharts";
+import type { TooltipProps } from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { COLORS } from "./types";
 
 interface BreakdownChartsProps {
@@ -13,14 +15,14 @@ interface BreakdownChartsProps {
   modeData: { name: string; value: number }[];
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-white/10 bg-[hsl(230_30%_15%)] p-3 shadow-xl">
-        <p className="mb-1 text-sm font-medium text-[hsl(223_25%_91%)]">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        <p className="mb-1 text-sm font-medium text-[hsl(223_25%_91%)]">{String(label ?? "")}</p>
+        {payload.map((entry, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: <span className="font-semibold">{entry.value}</span>
+            {String(entry.name)}: <span className="font-semibold">{entry.value}</span>
           </p>
         ))}
       </div>
