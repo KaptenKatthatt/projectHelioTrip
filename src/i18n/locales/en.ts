@@ -308,4 +308,12 @@ export const en: Translation = {
       orbital_mechanic: 'Orbital Mechanic',
     },
   },
+  moonSurface: {
+    title: 'Moon Explorer',
+    subtitle: 'Focused on: Apollo 11 — Tranquility Base',
+    factLabel: 'Apollo 11 · 1969',
+    factAriaLabel: (n) => `Fact ${n}`,
+    closeAriaLabel: 'Close Moon scene',
+    mouseHint: 'Drag with mouse to look around',
+  },
 };

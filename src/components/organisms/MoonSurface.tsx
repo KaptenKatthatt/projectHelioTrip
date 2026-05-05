@@ -10,6 +10,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import * as THREE from 'three';
 
 type MoonRockInstance = {
@@ -359,9 +360,9 @@ const ProgressBar = ({ resetKey }: { resetKey: number }) => {
 };
 
 export const FactSlideshow = () => {
+  const { t, locale } = useTranslation();
   const [current, setCurrent] = useState(0);
   const [resetKey, setResetKey] = useState(0);
-  const locale = useStore((s) => s.locale);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -385,14 +386,14 @@ export const FactSlideshow = () => {
   };
 
   const fact = MOON_FACTS[current]!;
-  const title = locale === 'sv' ? fact.title.sv : fact.title.en;
-  const body = locale === 'sv' ? fact.body.sv : fact.body.en;
+  const title = fact.title[locale];
+  const body = fact.body[locale];
 
   return (
     <div className="pointer-events-auto max-w-sm rounded-2xl border border-blue-400/15 bg-black/60 p-4 backdrop-blur-md">
       <div className="mb-2 flex items-center gap-2 text-blue-400">
         <Info className="h-4 w-4" aria-hidden />
-        <span className="ds-eyebrow">Apollo 11 · 1969</span>
+        <span className="ds-eyebrow">{t.moonSurface.factLabel}</span>
       </div>
       <p className="text-sm font-semibold text-blue-100/90 mb-1 leading-snug">{title}</p>
       <p className="text-xs leading-relaxed text-blue-100/70">{body}</p>
@@ -401,7 +402,7 @@ export const FactSlideshow = () => {
           <button
             key={i}
             type="button"
-            aria-label={locale === 'sv' ? `Fakta ${i + 1}` : `Fact ${i + 1}`}
+            aria-label={t.moonSurface.factAriaLabel(i + 1)}
             onClick={() => jumpTo(i)}
             className="rounded-full transition-all duration-300"
             style={{
@@ -421,6 +422,7 @@ export const FactSlideshow = () => {
 };
 
 export const MoonSurface = () => {
+  const { t } = useTranslation();
   const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
   const setIsLandedOnMoon = useStore((s) => s.setIsLandedOnMoon);
   const setMoonTransitionState = useStore((s) => s.setMoonTransitionState);
@@ -438,15 +440,15 @@ export const MoonSurface = () => {
         <header className="flex items-center justify-between p-6">
           <div className="pointer-events-auto flex flex-col">
             <h2 className="text-3xl font-black tracking-tighter text-white uppercase">
-              Moon Explorer
+              {t.moonSurface.title}
             </h2>
             <p className="text-sm font-medium text-blue-200/60">
-              Fokuserad på: Apollo 11 — Tranquility Base
+              {t.moonSurface.subtitle}
             </p>
           </div>
           <button
             type="button"
-            aria-label="Stäng månscenen"
+            aria-label={t.moonSurface.closeAriaLabel}
             onClick={() => {
               setMoonTransitionState('taking_off');
               setTimeout(() => {
@@ -466,7 +468,7 @@ export const MoonSurface = () => {
           <FactSlideshow />
           <div className="pointer-events-auto flex flex-col gap-2">
             <p className="ds-eyebrow mb-1 text-right text-white/40">
-              Dra med musen för att se dig omkring
+              {t.moonSurface.mouseHint}
             </p>
           </div>
         </div>

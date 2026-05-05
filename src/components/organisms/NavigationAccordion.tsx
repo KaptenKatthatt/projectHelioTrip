@@ -33,10 +33,8 @@ export const NavigationAccordion = () => {
     setOpenSection((current) => (current === section ? null : section));
   };
 
-  const isAnyOpen = openSection !== null;
-
   return (
-    <div className={`flex items-end gap-3 ${isAnyOpen ? "flex-row" : "flex-row-reverse"}`}>
+    <div className="flex flex-row items-end gap-3">
       <nav
         className={
           "pointer-events-auto relative flex max-h-full min-h-0 w-full flex-col gap-1 self-end overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-2 backdrop-blur-md " +
