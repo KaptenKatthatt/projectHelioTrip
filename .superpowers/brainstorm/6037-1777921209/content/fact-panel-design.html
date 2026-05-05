@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Fakta-panel design</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #08090f;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 32px 28px;
+    color: #e0e4f0;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #506080; margin-bottom: 32px; }
+
+  .layout {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+  }
+
+  /* Simulated scene background */
+  .scene-bg {
+    flex: 1;
+    height: 340px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #000310 0%, #010820 50%, #0a0d1e 70%, #181c2e 100%);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #1a2040;
+  }
+  .scene-bg .star { position: absolute; border-radius: 50%; background: #ccd8ff; }
+  .scene-bg .earth-ball {
+    position: absolute; top: 22px; right: 36px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #4a80e8 0%, #1a4ab0 45%, #0a2060 75%, #040f30 100%);
+    box-shadow: 0 0 20px rgba(70,130,255,0.3), 0 0 5px rgba(70,130,255,0.4);
+  }
+  .scene-bg .earth-ball::after {
+    content: '';
+    position: absolute;
+    top: 28%; left: 16%; width: 48%; height: 22%;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    transform: rotate(-25deg);
+  }
+  .scene-bg .terrain {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 90px;
+    background: linear-gradient(180deg, #22263a 0%, #12152a 100%);
+  }
+  .scene-bg .terrain::before {
+    content: '';
+    position: absolute;
+    top: -32px; left: 0; right: 0; height: 34px;
+    background: #1a1e30;
+    clip-path: polygon(0 100%, 3% 35%, 9% 65%, 17% 18%, 27% 58%, 37% 8%, 49% 48%, 61% 12%, 71% 52%, 81% 22%, 91% 58%, 100% 30%, 100% 100%);
+  }
+  /* Simplified LEM silhouette */
+  .scene-bg .lem-wrap {
+    position: absolute; bottom: 72px; left: 50%; transform: translateX(-50%);
+  }
+  .scene-bg .lem-body-box {
+    width: 44px; height: 30px;
+    background: #c8b87a;
+    border-radius: 5px 5px 0 0;
+    position: relative;
+  }
+  .scene-bg .lem-ant {
+    width: 2px; height: 18px; background: #ddd;
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  }
+  .scene-bg .lem-legs {
+    display: flex; justify-content: space-between;
+    width: 70px; margin: 0 -13px;
+  }
+  .scene-bg .lem-leg {
+    width: 12px; height: 16px;
+    border-bottom: 3px solid #8899cc;
+  }
+  .scene-bg .lem-leg.left { border-left: 3px solid #8899cc; border-radius: 0 0 0 4px; }
+  .scene-bg .lem-leg.right { border-right: 3px solid #8899cc; border-radius: 0 0 4px 0; }
+
+  /* Fact panel overlay — bottom left, same size as Mars */
+  .fact-panel-wrap {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    width: 288px;
+  }
+
+  .fact-panel {
+    border-radius: 16px;
+    border: 1px solid rgba(160,180,255,0.15);
+    background: rgba(0, 5, 30, 0.72);
+    backdrop-filter: blur(12px);
+    padding: 14px 16px 12px;
+  }
+
+  .fact-eyebrow {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px;
+  }
+  .fact-eyebrow .icon {
+    width: 16px; height: 16px;
+    color: #7090e0;
+    flex-shrink: 0;
+  }
+  .fact-eyebrow span {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #6080c0;
+  }
+
+  .fact-title {
+    font-size: 13px; font-weight: 700;
+    color: #c0d0ff; margin-bottom: 5px;
+    line-height: 1.35;
+  }
+  .fact-body {
+    font-size: 11.5px; color: rgba(200, 215, 255, 0.72);
+    line-height: 1.6;
+  }
+
+  /* Dots */
+  .fact-dots {
+    display: flex; justify-content: center; gap: 5px;
+    margin-top: 12px;
+  }
+  .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(160, 180, 255, 0.25);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .dot.active {
+    background: rgba(160, 180, 255, 0.85);
+    width: 16px; border-radius: 3px;
+  }
+
+  /* Progress bar */
+  .fact-progress {
+    height: 2px; background: rgba(255,255,255,0.06);
+    border-radius: 2px; margin-top: 10px; overflow: hidden;
+  }
+  .fact-progress-bar {
+    height: 100%; background: rgba(130,160,255,0.5);
+    border-radius: 2px;
+    width: 0%;
+    animation: progress 4s linear forwards;
+  }
+  @keyframes progress {
+    from { width: 0% }
+    to { width: 100% }
+  }
+
+  /* Right panel: annotation */
+  .annotation {
+    width: 260px;
+    flex-shrink: 0;
+  }
+  .annotation h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #c0d0ff; }
+  .note {
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-left: 2px solid #334;
+    background: #0e1228;
+    border-radius: 0 8px 8px 0;
+  }
+  .note .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5060a0; margin-bottom: 4px; }
+  .note p { font-size: 12px; color: #8090b0; line-height: 1.5; }
+  .note p strong { color: #a0b0e0; }
+</style>
+</head>
+<body>
+  <h1>Fakta-panel — månens färgschema</h1>
+  <p class="subtitle">Förhandsgranskning av fakta-bildspelet i nedre vänster hörn. Pricken animerar automatiskt efter 4 s.</p>
+
+  <div class="layout">
+    <!-- Simulated scene -->
+    <div class="scene-bg">
+      <!-- Stars -->
+      <div class="star" style="top:6%;left:10%;width:2px;height:2px;opacity:.9"></div>
+      <div class="star" style="top:12%;left:28%;width:1px;height:1px;opacity:.7"></div>
+      <div class="star" style="top:4%;left:52%;width:2px;height:2px;opacity:.85"></div>
+      <div class="star" style="top:18%;left:14%;width:1px;height:1px;opacity:.6"></div>
+      <div class="star" style="top:8%;left:68%;width:1px;height:1px;opacity:.75"></div>
+      <div class="star" style="top:22%;left:42%;width:1px;height:1px;opacity:.55"></div>
+      <div class="star" style="top:28%;left:78%;width:1px;height:1px;opacity:.65"></div>
+      <!-- Earth -->
+      <div class="earth-ball"></div>
+      <!-- Terrain -->
+      <div class="terrain"></div>
+      <!-- LEM -->
+      <div class="lem-wrap">
+        <div class="lem-body-box">
+          <div class="lem-ant"></div>
+        </div>
+        <div class="lem-legs">
+          <div class="lem-leg left"></div>
+          <div class="lem-leg right"></div>
+        </div>
+      </div>
+      <!-- Fact panel overlay -->
+      <div class="fact-panel-wrap">
+        <div class="fact-panel">
+          <div class="fact-eyebrow">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Apollo 11 · 1969</span>
+          </div>
+          <div class="fact-title">Neil Armstrong tog det första steget</div>
+          <div class="fact-body">
+            Den 21 juli 1969 klev Neil Armstrong ut ur landaren och satte sin fot på månens yta — det första mänskliga steget på ett annat himmelskropp.
+          </div>
+          <div class="fact-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="fact-progress">
+            <div class="fact-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annotation panel -->
+    <div class="annotation">
+      <h2>Designbeslut</h2>
+      <div class="note">
+        <div class="label">Färgschema</div>
+        <p>Accenter i <strong>isblå + silver</strong> istf. orange. Border <strong>rgba(160,180,255,0.15)</strong>. Bakgrund djupare mörkblå.</p>
+      </div>
+      <div class="note">
+        <div class="label">Eyebrow-text</div>
+        <p><strong>"Apollo 11 · 1969"</strong> — ersätter "Visste du?" från Mars-panelen. Samma eyebrow-typografi.</p>
+      </div>
+      <div class="note">
+        <div class="label">Navigationsprickar</div>
+        <p>5 prickar (5 fakta-kort). Aktiv prick breddas till en <strong>pill-form</strong>. Ingen text, inga pilar.</p>
+      </div>
+      <div class="note">
+        <div class="label">Förloppsindikator</div>
+        <p>Tunn blå linje under prickarna visar hur länge detta kort har visats. Nollställs vid bläddring.</p>
+      </div>
+      <div class="note">
+        <div class="label">Auto-advance</div>
+        <p>Bläddrar automatiskt var <strong>4:e sekund</strong>. Klick på prick pausar timern och hoppar direkt.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
