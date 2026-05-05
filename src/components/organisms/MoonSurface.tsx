@@ -117,7 +117,7 @@ const CAMERA_SETTINGS = {
   FLY_IN_START: new THREE.Vector3(15, 60, 40),
   // Final position after landing (distance from the lunar module at [0,0,0])
   // Zoomed out slightly and adjusted to see Earth in the background
-  FLY_IN_END: new THREE.Vector3(18, 12, 36),
+  FLY_IN_END: new THREE.Vector3(25, 12, 36),
   // The target point the camera looks at during and after landing
   // This must match the OrbitControls target to avoid jumping
   LOOK_AT_TARGET: new THREE.Vector3(0, 2, 0),
@@ -152,8 +152,13 @@ const CameraZoomController = ({
   useFrame(() => {
     if (moonTransitionState === 'taking_off') {
       if (!targetPosRef.current) {
-        targetPosRef.current = camera.position.clone().multiplyScalar(CAMERA_SETTINGS.TAKE_OFF_DISTANCE_MULT);
-        targetPosRef.current.y = Math.max(targetPosRef.current.y, CAMERA_SETTINGS.TAKE_OFF_HEIGHT_MIN);
+        targetPosRef.current = camera.position
+          .clone()
+          .multiplyScalar(CAMERA_SETTINGS.TAKE_OFF_DISTANCE_MULT);
+        targetPosRef.current.y = Math.max(
+          targetPosRef.current.y,
+          CAMERA_SETTINGS.TAKE_OFF_HEIGHT_MIN,
+        );
         animStateRef.current = { startPos: camera.position.clone(), startTime: performance.now() };
       }
 
@@ -280,22 +285,22 @@ const EarthSphere = () => {
   });
 
   return (
-    <group position={[150, 45, -200]}>
+    <group position={[10, 40, -250]}>
       <mesh ref={meshRef} castShadow={false}>
-        <sphereGeometry args={[12, 32, 32]} />
+        <sphereGeometry args={[5, 32, 32]} />
         <meshStandardMaterial
           map={diffuse}
           normalMap={normal}
           roughnessMap={roughness}
           roughness={1}
           metalness={0}
-          emissive="#112244"
-          emissiveIntensity={0.6}
+          emissive="#224488"
+          emissiveIntensity={1.0}
         />
       </mesh>
 
       {/* Subtle blue fill light from Earth direction */}
-      <pointLight color="#3060cc" intensity={1.5} distance={300} />
+      <pointLight color="#4488ff" intensity={2.0} distance={400} />
     </group>
   );
 };
@@ -315,12 +320,15 @@ const MoonLandingScene = () => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
 
-  const initialCameraPosition = isFlyingIn 
-    ? CAMERA_SETTINGS.FLY_IN_START.toArray() 
+  const initialCameraPosition = isFlyingIn
+    ? CAMERA_SETTINGS.FLY_IN_START.toArray()
     : CAMERA_SETTINGS.FLY_IN_END.toArray();
 
   return (
-    <Canvas shadows camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}>
+    <Canvas
+      shadows
+      camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}
+    >
       <Suspense fallback={null}>
         <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
 
