@@ -523,14 +523,10 @@ export const MoonSurface = () => {
             aria-label={t.moonSurface.closeAriaLabel}
             onClick={() => {
               setMoonTransitionState('taking_off');
-
+              setIsLandedOnMoon(false);
               setTimeout(() => {
-                setIsLandedOnMoon(false);
-
-                setTimeout(() => {
-                  setMoonTransitionState('idle');
-                }, 100);
-              }, 3500);
+                setMoonTransitionState('idle');
+              }, 500);
             }}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >

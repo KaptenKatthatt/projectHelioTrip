@@ -188,10 +188,11 @@ export const App = () => {
                 (marsTransitionState !== 'idle' || isLanded || moonTransitionState !== 'idle' || isLandedOnMoon)
                   ? 'scale(5)'
                   : 'scale(1)',
-              transformOrigin: 'center center'
+              transformOrigin: 'center center',
+              opacity: (isLanded || isLandedOnMoon) ? 0 : 1,
             }}
           >
-            {!isLanded && !isLandedOnMoon ? sceneBoundary : null}
+            {sceneBoundary}
           </div>
           <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
         </div>

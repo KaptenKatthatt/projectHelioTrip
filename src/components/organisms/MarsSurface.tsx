@@ -233,14 +233,10 @@ export const MarsSurface = () => {
             onClick={() => {
               // Start the camera zoom out first
               setMarsTransitionState('taking_off');
-
-              // Wait for the camera to pull away (e.g. 3.5s), then fade to black and unmount
+              setIsLanded(false);
               setTimeout(() => {
-                setIsLanded(false);
-                setTimeout(() => {
-                  setMarsTransitionState('idle');
-                }, 100);
-              }, 3500);
+                setMarsTransitionState('idle');
+              }, 500);
             }}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
