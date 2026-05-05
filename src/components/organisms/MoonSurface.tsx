@@ -116,7 +116,8 @@ const CAMERA_SETTINGS = {
   // Initial position when the landing sequence starts
   FLY_IN_START: new THREE.Vector3(15, 60, 40),
   // Final position after landing (distance from the lunar module at [0,0,0])
-  FLY_IN_END: new THREE.Vector3(8, 3, 8),
+  // Zoomed out slightly and adjusted to see Earth in the background
+  FLY_IN_END: new THREE.Vector3(18, 8, 36),
   // Duration of the landing animation in milliseconds (controls "panning speed")
   FLY_IN_DURATION: 6500,
   // Delay before the landing animation starts
@@ -190,7 +191,7 @@ const CameraZoomController = ({
         if (progress >= 1.0) setIsFlyingIn(false);
       }
 
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, 2, 0); // Look slightly above the ground to frame better
     } else {
       targetPosRef.current = null;
       animStateRef.current = null;
@@ -276,20 +277,22 @@ const EarthSphere = () => {
   });
 
   return (
-    <group position={[-60, 80, -120]}>
+    <group position={[-100, 45, -200]}>
       <mesh ref={meshRef} castShadow={false}>
-        <sphereGeometry args={[8, 32, 32]} />
+        <sphereGeometry args={[12, 32, 32]} />
         <meshStandardMaterial
           map={diffuse}
           normalMap={normal}
           roughnessMap={roughness}
           roughness={1}
           metalness={0}
+          emissive="#112244"
+          emissiveIntensity={0.6}
         />
       </mesh>
 
       {/* Subtle blue fill light from Earth direction */}
-      <pointLight color="#3060cc" intensity={0.4} distance={300} />
+      <pointLight color="#3060cc" intensity={1.5} distance={300} />
     </group>
   );
 };
