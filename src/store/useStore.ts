@@ -315,6 +315,39 @@ export const useStore = create<Store>()(
             return { locale };
           }),
 
+        setTimeScale: (scale) =>
+          set((state) => {
+            if (state.timeScale !== scale) {
+              dispatchDomainEvent({
+                kind: "time_scale_changed",
+                daysPerSecond: scale,
+              });
+            }
+            return { timeScale: scale };
+          }),
+
+        setNavigationMode: (mode) =>
+          set((state) => {
+            if (state.navigationMode !== mode) {
+              dispatchDomainEvent({
+                kind: "navigation_mode_changed",
+                mode,
+              });
+            }
+            return { navigationMode: mode };
+          }),
+
+        setGameMode: (mode) =>
+          set((state) => {
+            if (state.gameMode !== mode) {
+              analytics.modeChanged(mode);
+            }
+            return {
+              gameMode: mode,
+              activeMissionId: mode === "explore" ? null : state.activeMissionId,
+            };
+          }),
+
         togglePlay: () =>
           set((state) => {
             analytics.playbackToggled(state.isPlaying);

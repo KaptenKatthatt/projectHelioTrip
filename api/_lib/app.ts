@@ -80,6 +80,7 @@ const hasValidAnalyticsToken = (provided: string | undefined): boolean => {
   if (typeof provided !== 'string') return false;
   const expectedBuffer = Buffer.from(ANALYTICS_ADMIN_TOKEN, 'utf8');
   const providedBuffer = Buffer.from(provided, 'utf8');
+  if (expectedBuffer.length !== providedBuffer.length) return false;
   return timingSafeEqual(expectedBuffer, providedBuffer);
 };
 

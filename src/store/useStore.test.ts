@@ -110,6 +110,41 @@ describe("useStore", () => {
     expect(spies.languageChanged).toHaveBeenCalledWith(nextLocale);
   });
 
+  it("setGameMode emits analytics only when mode changes", async () => {
+    const { useStore, spies } = await loadStore();
+
+    expect(useStore.getState().gameMode).toBe("explore");
+    useStore.getState().setGameMode("explore");
+    expect(spies.modeChanged).not.toHaveBeenCalled();
+
+    useStore.getState().setGameMode("challenge");
+    expect(useStore.getState().gameMode).toBe("challenge");
+    expect(spies.modeChanged).toHaveBeenCalledWith("challenge");
+  });
+
+  it("setTimeScale emits mission domain event for time-scale triggers", async () => {
+    const { useStore } = await loadStore();
+    useStore.getState().setGameMode("challenge");
+    useStore.getState().startMission("time_travel_short");
+
+    useStore.getState().setTimeScale(30);
+
+    const progress = useStore.getState().missionProgress.time_travel_short;
+    expect(progress?.completedStepIds).toContain("speed_up");
+    expect(progress?.completed).toBe(true);
+  });
+
+  it("setNavigationMode emits mission domain event for navigation triggers", async () => {
+    const { useStore } = await loadStore();
+    useStore.getState().setGameMode("challenge");
+    useStore.getState().startMission("free_flight_loop");
+
+    useStore.getState().setNavigationMode("free");
+
+    const progress = useStore.getState().missionProgress.free_flight_loop;
+    expect(progress?.completedStepIds).toContain("enter_free");
+  });
+
   it("focusSkyTarget switches to overview and tracks first constellation open", async () => {
     const { useStore, spies } = await loadStore();
 
