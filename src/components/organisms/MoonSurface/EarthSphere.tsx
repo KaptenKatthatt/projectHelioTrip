@@ -1,6 +1,6 @@
 /**
  * Earth Visualization for the Moon Surface Background
- * 
+ *
  * Renders a rotating Earth sphere with custom emissive properties to ensure
  * visibility against the black space. Includes a dedicated fill light.
  */
@@ -22,7 +22,7 @@ export const EarthSphere = () => {
   });
 
   return (
-    <group position={[80, 40, -150]}>
+    <group position={[50, 40, -400]}>
       <mesh ref={meshRef} castShadow={false}>
         <sphereGeometry args={[15, 32, 32]} />
         <meshStandardMaterial
