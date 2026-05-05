@@ -156,6 +156,7 @@ export const MoonTerrain = () => {
   ]);
 
   const groundTexture = useMemo(() => {
+    if (!rawA?.image || !rawB?.image) return null;
     const canvas = buildGroundAtlas(
       rawA.image as HTMLImageElement,
       rawB.image as HTMLImageElement,
@@ -171,6 +172,7 @@ export const MoonTerrain = () => {
   }, [rawA, rawB]);
 
   const groundMaterial = useMemo(() => {
+    if (!groundTexture) return null;
     const mat = new THREE.MeshStandardMaterial({
       map: groundTexture,
       roughness: 0.9,
@@ -183,6 +185,7 @@ export const MoonTerrain = () => {
   }, [groundTexture]);
 
   const { geometry, rocks } = useMemo(() => buildMoonTerrainGeometryAndRocks(), []);
+  if (!groundMaterial) return null;
 
   return (
     <group>
@@ -190,7 +193,7 @@ export const MoonTerrain = () => {
 
       <Instances range={rocks.length} castShadow receiveShadow>
         <icosahedronGeometry args={[1, 1]} />
-        <meshStandardMaterial map={rawB} roughness={1} metalness={0.0} color="#909090" />
+        <meshStandardMaterial map={rawB ?? null} roughness={1} metalness={0.0} color="#909090" />
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}

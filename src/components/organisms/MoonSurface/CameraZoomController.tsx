@@ -29,6 +29,10 @@ export const CameraZoomController = ({
     startTime: number 
   } | null>(null);
   const hasCompletedTakeoffRef = useRef(false);
+  const tempMatrix = useRef(new THREE.Matrix4());
+  const tempQuat = useRef(new THREE.Quaternion());
+  const tempLookAtTarget = useRef(new THREE.Vector3(0, 0, 0));
+  const tempLookAtUp = useRef(new THREE.Vector3(0, 1, 0));
 
   useEffect(() => {
     targetPosRef.current = null;
@@ -67,11 +71,19 @@ export const CameraZoomController = ({
       camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
       
       // Calculate the target rotation (looking at center) from the CURRENT position
-      const lookAtMat = new THREE.Matrix4().lookAt(camera.position, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
-      const targetQuat = new THREE.Quaternion().setFromRotationMatrix(lookAtMat);
+      tempMatrix.current.lookAt(
+        camera.position,
+        tempLookAtTarget.current,
+        tempLookAtUp.current,
+      );
+      tempQuat.current.setFromRotationMatrix(tempMatrix.current);
       
       // Smoothly interpolate rotation (slerp) to avoid snapping
-      camera.quaternion.slerpQuaternions(animStateRef.current.startQuat, targetQuat, easeIn);
+      camera.quaternion.slerpQuaternions(
+        animStateRef.current.startQuat,
+        tempQuat.current,
+        easeIn,
+      );
       
       if (progress >= 1.0 && !hasCompletedTakeoffRef.current) {
         hasCompletedTakeoffRef.current = true;
@@ -83,6 +95,7 @@ export const CameraZoomController = ({
         camera.position.copy(CAMERA_SETTINGS.FLY_IN_START);
         animStateRef.current = {
           startPos: CAMERA_SETTINGS.FLY_IN_START.clone(),
+          startQuat: camera.quaternion.clone(),
           startTime: (state.clock.elapsedTime * 1000) + CAMERA_SETTINGS.FLY_IN_DELAY,
         };
       }
