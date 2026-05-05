@@ -419,3 +419,58 @@ export const FactSlideshow = () => {
     </div>
   );
 };
+
+export const MoonSurface = () => {
+  const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const setIsLandedOnMoon = useStore((s) => s.setIsLandedOnMoon);
+  const setMoonTransitionState = useStore((s) => s.setMoonTransitionState);
+
+  if (!isLandedOnMoon) return null;
+
+  return (
+    <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#000310]">
+      {/* 3D Scene */}
+      <div className="absolute inset-0">
+        <MoonLandingScene />
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
+        <header className="flex items-center justify-between p-6">
+          <div className="pointer-events-auto flex flex-col">
+            <h2 className="text-3xl font-black tracking-tighter text-white uppercase">
+              Moon Explorer
+            </h2>
+            <p className="text-sm font-medium text-blue-200/60">
+              Fokuserad på: Apollo 11 — Tranquility Base
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Stäng månscenen"
+            onClick={() => {
+              setMoonTransitionState('taking_off');
+              setTimeout(() => {
+                setIsLandedOnMoon(false);
+                setTimeout(() => {
+                  setMoonTransitionState('idle');
+                }, 100);
+              }, 3500);
+            }}
+            className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </header>
+
+        <div className="mt-auto flex items-end justify-between p-6">
+          <FactSlideshow />
+          <div className="pointer-events-auto flex flex-col gap-2">
+            <p className="ds-eyebrow mb-1 text-right text-white/40">
+              Dra med musen för att se dig omkring
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
