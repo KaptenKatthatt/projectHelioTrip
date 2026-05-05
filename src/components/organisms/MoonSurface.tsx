@@ -117,7 +117,10 @@ const CAMERA_SETTINGS = {
   FLY_IN_START: new THREE.Vector3(15, 60, 40),
   // Final position after landing (distance from the lunar module at [0,0,0])
   // Zoomed out slightly and adjusted to see Earth in the background
-  FLY_IN_END: new THREE.Vector3(18, 8, 36),
+  FLY_IN_END: new THREE.Vector3(18, 12, 36),
+  // The target point the camera looks at during and after landing
+  // This must match the OrbitControls target to avoid jumping
+  LOOK_AT_TARGET: new THREE.Vector3(0, 2, 0),
   // Duration of the landing animation in milliseconds (controls "panning speed")
   FLY_IN_DURATION: 6500,
   // Delay before the landing animation starts
@@ -191,7 +194,7 @@ const CameraZoomController = ({
         if (progress >= 1.0) setIsFlyingIn(false);
       }
 
-      camera.lookAt(0, 2, 0); // Look slightly above the ground to frame better
+      camera.lookAt(CAMERA_SETTINGS.LOOK_AT_TARGET);
     } else {
       targetPosRef.current = null;
       animStateRef.current = null;
@@ -277,7 +280,7 @@ const EarthSphere = () => {
   });
 
   return (
-    <group position={[-100, 45, -200]}>
+    <group position={[150, 45, -200]}>
       <mesh ref={meshRef} castShadow={false}>
         <sphereGeometry args={[12, 32, 32]} />
         <meshStandardMaterial
@@ -344,8 +347,9 @@ const MoonLandingScene = () => {
         {moonTransitionState !== 'taking_off' && !isFlyingIn && (
           <OrbitControls
             makeDefault
-            minDistance={4}
-            maxDistance={20}
+            minDistance={10}
+            maxDistance={60}
+            target={CAMERA_SETTINGS.LOOK_AT_TARGET}
             maxPolarAngle={Math.PI / 2 - 0.1}
           />
         )}
