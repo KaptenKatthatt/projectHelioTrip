@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Info } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 
-const FACT_ROTATION_INTERVAL_MS = 8000;
+export const FACT_ROTATION_INTERVAL_MS = 8000;
 
 export const FactSlideshow = () => {
   const { t } = useTranslation();
