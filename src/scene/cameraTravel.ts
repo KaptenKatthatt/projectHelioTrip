@@ -10,7 +10,7 @@ import {
   INITIAL_OVERVIEW_TARGET,
 } from "../lib/initialCamera";
 import { getLivePosition } from "../lib/positionsBus";
-import type { ViewMode } from "../store/useStore";
+import type { ViewMode } from "../store/slices/createSimulationSlice";
 
 const AIM_DURATION_MS = 1600;
 const FLY_DURATION_MS = 3400;

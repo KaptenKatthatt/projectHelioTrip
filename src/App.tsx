@@ -1,6 +1,4 @@
 import {
-  Suspense,
-  lazy,
   useCallback,
   useEffect,
   useRef,
@@ -11,25 +9,17 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { PortraitRotateOverlay } from "./components/molecules/PortraitRotateOverlay";
 import { HUD } from "./components/templates/HUD";
 import { LoadingScreen } from "./components/templates/LoadingScreen";
-import { SceneErrorBoundary } from "./components/templates/SceneErrorBoundary";
 import { usePhoneLandscapePortraitLock } from "./hooks/usePhoneLandscapePortraitLock";
 import { useStore } from "./store/useStore";
 import { parseShareLink } from "./lib/shareLink";
 import { analytics } from "./lib/analytics";
+import { SceneTransitions } from "./components/templates/App/SceneTransitions";
+import { SceneRouter } from "./components/templates/App/SceneRouter";
 
 /** Minimum time the loading screen is shown (ms). Increase for a longer "splash", decrease for faster dismissal. */
 const MIN_LOADING_MS = 5000;
 /** Failsafe: dismiss loading even if WebGL init never fires onSceneReady. */
 const SCENE_READY_FALLBACK_MS = 12000;
-
-const LazyScene = lazy(async () => {
-  const { Scene } = await import("./scene/Scene");
-  return {
-    default: (props: { readonly onSceneReady?: () => void }) => (
-      <Scene {...props} />
-    ),
-  };
-});
 
 export const App = () => {
   const portraitLock = usePhoneLandscapePortraitLock();
@@ -74,8 +64,6 @@ export const App = () => {
     const snapshot = parseShareLink(window.location.search);
     if (!snapshot) return;
     useStore.getState().restoreFromShareLink(snapshot);
-    // Strip the share params from the URL once restored so reloads
-    // don't keep re-applying them and accidentally fire analytics.
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
     window.history.replaceState(null, "", cleanUrl);
@@ -114,16 +102,6 @@ export const App = () => {
   }, [sceneReady]);
 
   const dismissOverlay = minGateDone && sceneReady;
-  const isLanded = useStore((s) => s.isLanded);
-  const marsTransitionState = useStore((s) => s.marsTransitionState);
-
-  const sceneBoundary = (
-    <SceneErrorBoundary onRetry={handleRetryScene}>
-      <Suspense fallback={null}>
-        <LazyScene key={sceneMountKey} onSceneReady={handleSceneReady} />
-      </Suspense>
-    </SceneErrorBoundary>
-  );
 
   return (
     <>
@@ -131,17 +109,7 @@ export const App = () => {
         <LoadingScreen dismiss={dismissOverlay} onDismissed={handleDismissed} />
       ) : null}
       
-      {/* Cinematic Mars Transition Overlay */}
-      <div 
-        className={`pointer-events-none fixed inset-0 z-[300] bg-black ease-in-out ${
-          marsTransitionState !== 'idle' ? 'opacity-100' : 'opacity-0'
-        }`}
-        style={{
-          transitionProperty: 'opacity',
-          transitionDuration: '500ms',
-          transitionDelay: marsTransitionState === 'landing' ? '2500ms' : marsTransitionState === 'taking_off' ? '3000ms' : '0ms'
-        }}
-      />
+      <SceneTransitions />
 
       <div
         className={
@@ -162,15 +130,11 @@ export const App = () => {
               : { width: "100%", height: "100%" }
           }
         >
-          <div 
-            className="absolute inset-0 z-0 min-h-0 transition-transform duration-[3000ms] ease-in-out"
-            style={{ 
-              transform: (marsTransitionState !== 'idle' || isLanded) ? 'scale(5)' : 'scale(1)',
-              transformOrigin: 'center center'
-            }}
-          >
-            {sceneBoundary}
-          </div>
+          <SceneRouter 
+            sceneMountKey={sceneMountKey} 
+            handleSceneReady={handleSceneReady} 
+            handleRetryScene={handleRetryScene} 
+          />
           <HUD hudFrame={portraitLock.active ? "stage" : "viewport"} />
         </div>
         {portraitLock.active ? <PortraitRotateOverlay /> : null}

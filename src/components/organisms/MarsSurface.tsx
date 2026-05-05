@@ -11,20 +11,13 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
 
 type MarsRockInstance = {
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
-};
-
-const terrainRng = (seed: number): (() => number) => {
-  let state = seed >>> 0;
-  return (): number => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0xffff_ffff;
-  };
 };
 
 const buildMarsTerrainGeometryAndRocks = (): {
@@ -95,19 +88,23 @@ const Rover = () => {
 const CameraZoomController = ({
   isFlyingIn,
   setIsFlyingIn,
+  onTakeoffComplete,
 }: {
   isFlyingIn: boolean;
   setIsFlyingIn: (v: boolean) => void;
+  onTakeoffComplete: () => void;
 }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const { camera } = useThree();
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
   const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
+  const hasCompletedTakeoffRef = useRef(false);
 
   useEffect(() => {
     // Reset animation state when the transition mode changes
     targetPosRef.current = null;
     animStateRef.current = null;
+    hasCompletedTakeoffRef.current = false;
   }, [marsTransitionState]);
 
   useFrame(() => {
@@ -125,6 +122,10 @@ const CameraZoomController = ({
 
       camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
       camera.lookAt(0, 0, 0);
+      if (progress >= 1.0 && !hasCompletedTakeoffRef.current) {
+        hasCompletedTakeoffRef.current = true;
+        onTakeoffComplete();
+      }
     } else if (isFlyingIn) {
       if (!targetPosRef.current) {
         targetPosRef.current = new THREE.Vector3(8, 3, 8);
@@ -172,6 +173,16 @@ const Terrain = () => {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(40, 40);
+    texture.needsUpdate = true;
+    return texture;
+  }, [rawGroundTexture]);
+
+  const rockTexture = useMemo(() => {
+    const texture = rawGroundTexture.clone();
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+    texture.needsUpdate = true;
     return texture;
   }, [rawGroundTexture]);
 
@@ -183,10 +194,9 @@ const Terrain = () => {
         <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.05} color="#d47c59" />
       </mesh>
 
-      {/* Rocks */}
       <Instances range={rocks.length} castShadow receiveShadow>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial map={groundTexture} roughness={1} metalness={0.1} color="#a65d40" />
+        <icosahedronGeometry args={[1, 1]} />
+        <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.05} color="#a05038" />
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}
@@ -197,6 +207,7 @@ const Terrain = () => {
 
 export const MarsSurface = () => {
   const isLanded = useStore((s) => s.isLanded);
+  const marsTransitionState = useStore((s) => s.marsTransitionState);
   const setIsLanded = useStore((s) => s.setIsLanded);
   const setMarsTransitionState = useStore((s) => s.setMarsTransitionState);
 
@@ -206,7 +217,12 @@ export const MarsSurface = () => {
     <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#1a0a05]">
       {/* 3D Scene */}
       <div className="absolute inset-0">
-        <MarsRoverScene />
+        <MarsRoverScene
+          onTakeoffComplete={() => {
+            setIsLanded(false);
+            setMarsTransitionState('idle');
+          }}
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
@@ -222,20 +238,14 @@ export const MarsSurface = () => {
           <button
             type="button"
             onClick={() => {
-              // Start the camera zoom out first
+              if (marsTransitionState === 'taking_off') return;
+              // Start takeoff first; unmount only after the animation completes.
               setMarsTransitionState('taking_off');
-
-              // Wait for the camera to pull away (e.g. 3.5s), then fade to black and unmount
-              setTimeout(() => {
-                setIsLanded(false);
-                setTimeout(() => {
-                  setMarsTransitionState('idle');
-                }, 100);
-              }, 3500);
             }}
+            disabled={marsTransitionState === 'taking_off'}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6" aria-hidden />
           </button>
         </header>
 
@@ -262,7 +272,7 @@ export const MarsSurface = () => {
   );
 };
 
-const MarsRoverScene = () => {
+const MarsRoverScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
   const initialCameraPosition: [number, number, number] = isFlyingIn
@@ -272,7 +282,11 @@ const MarsRoverScene = () => {
   return (
     <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
       <Suspense fallback={null}>
-        <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
+        <CameraZoomController
+          isFlyingIn={isFlyingIn}
+          setIsFlyingIn={setIsFlyingIn}
+          onTakeoffComplete={onTakeoffComplete}
+        />
         <Sky
           distance={450000}
           sunPosition={[20, 5, 20]}

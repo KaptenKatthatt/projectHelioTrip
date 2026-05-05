@@ -1,3 +1,5 @@
+import { analyticsRateLimiter } from './rateLimiter.ts';
+
 import { Hono, type Context } from 'hono';
 
 import { cors } from 'hono/cors';
@@ -122,6 +124,12 @@ export const buildApp = (): Hono => {
   );
 
   app.post('/analytics/event', async (c) => {
+    const ip = c.req.header('x-forwarded-for') ?? c.req.header('cf-connecting-ip') ?? '';
+    const rateLimit = analyticsRateLimiter(ip);
+    if (!rateLimit.allowed) {
+      return c.json({ error: 'too_many_requests', retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000) }, 429);
+    }
+
     const analyticsStore = await import('./analyticsStore.js');
     const body = await c.req.json().catch(() => null);
     if (!body || typeof body !== 'object' || Array.isArray(body)) {

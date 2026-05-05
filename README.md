@@ -14,6 +14,20 @@ On **touch devices**, use **pinch to zoom** to move closer or pull back — natu
 
 ---
 
+## 🤖 Agent Instructions
+
+For human-friendly guidance on where to edit agent instructions, see:
+
+- `context/human_readme.md`
+
+Canonical instruction sources live in:
+
+- `context/AGENTS_CONTEXT.md`
+- `context/AGENT_REFERENCE.md`
+- `context/DESIGN_SYSTEM.md`
+
+---
+
 ## 🚀 Features
 
 - **First-person 3D flight** through a solar-system scene, plus **rocket / free-flight** mode
