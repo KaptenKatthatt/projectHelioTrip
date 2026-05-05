@@ -1,0 +1,14 @@
+---
+description: Strict TypeScript standard for the project
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript
+
+- Strict mode always on. No `any` – use `unknown` plus narrowing.
+- `type` for props, return types, and unions. `interface` only for extensible public APIs.
+- Explicit return types on exported functions and hooks.
+- Prefer `readonly` for immutable props/arrays.
+- Prefer `satisfies` over type assertions when possible.
+- Avoid non-null assertions (`!`). Narrow instead.
