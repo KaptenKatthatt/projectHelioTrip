@@ -5,15 +5,25 @@
  * over the last 30 days.
  */
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import type { TooltipProps } from "recharts";
-import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { DaySummary } from "./types";
 
 interface DailyVolumeChartProps {
   data: DaySummary[];
 }
 
-const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+type TooltipEntry = {
+  color?: string;
+  name?: string | number;
+  value?: string | number;
+};
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+};
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-white/10 bg-[hsl(230_30%_15%)] p-3 shadow-xl">
