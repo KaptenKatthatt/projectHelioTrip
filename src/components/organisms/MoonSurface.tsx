@@ -331,7 +331,7 @@ export const MOON_FACTS: MoonFact[] = [
     title: { sv: '21,5 kg månsten', en: '21.5 kg of Moon rock' },
     body: {
       sv: 'Armstrong och Aldrin samlade in 21,5 kg bergarter och månstoft — prover som forskare fortfarande analyserar idag.',
-      en: 'Armstrong och Aldrin collected 21.5 kg of rocks and lunar soil — samples that scientists are still analysing today.',
+      en: 'Armstrong and Aldrin collected 21.5 kg of rocks and lunar soil — samples that scientists are still analysing today.',
     },
   },
 ];
