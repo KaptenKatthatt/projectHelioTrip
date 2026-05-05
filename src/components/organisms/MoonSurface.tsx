@@ -362,28 +362,26 @@ export const FactSlideshow = () => {
   const [current, setCurrent] = useState(0);
   const [resetKey, setResetKey] = useState(0);
   const locale = useStore((s) => s.locale);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startInterval = () => {
-    if (intervalRef.current !== null) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
       setCurrent((c) => (c + 1) % MOON_FACTS.length);
       setResetKey((k) => k + 1);
     }, 4000);
-  };
-
-  useEffect(() => {
-    startInterval();
     return () => {
-      if (intervalRef.current !== null) clearInterval(intervalRef.current);
+      if (timerRef.current !== null) clearInterval(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const jumpTo = (idx: number) => {
+    if (timerRef.current !== null) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCurrent((c) => (c + 1) % MOON_FACTS.length);
+      setResetKey((k) => k + 1);
+    }, 4000);
     setCurrent(idx);
     setResetKey((k) => k + 1);
-    startInterval();
   };
 
   const fact = MOON_FACTS[current]!;
@@ -403,7 +401,7 @@ export const FactSlideshow = () => {
           <button
             key={i}
             type="button"
-            aria-label={`Fakta ${i + 1}`}
+            aria-label={locale === 'sv' ? `Fakta ${i + 1}` : `Fact ${i + 1}`}
             onClick={() => jumpTo(i)}
             className="rounded-full transition-all duration-300"
             style={{
