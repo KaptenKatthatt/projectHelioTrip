@@ -14,18 +14,22 @@ import { CAMERA_SETTINGS } from './constants';
 export const CameraZoomController = ({
   isFlyingIn,
   setIsFlyingIn,
+  onTakeoffComplete,
 }: {
   isFlyingIn: boolean;
   setIsFlyingIn: (v: boolean) => void;
+  onTakeoffComplete: () => void;
 }) => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
   const { camera } = useThree();
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
   const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
+  const hasCompletedTakeoffRef = useRef(false);
 
   useEffect(() => {
     targetPosRef.current = null;
     animStateRef.current = null;
+    hasCompletedTakeoffRef.current = false;
   }, [moonTransitionState]);
 
   useFrame(() => {
@@ -49,6 +53,10 @@ export const CameraZoomController = ({
 
       camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
       camera.lookAt(0, 0, 0);
+      if (progress >= 1.0 && !hasCompletedTakeoffRef.current) {
+        hasCompletedTakeoffRef.current = true;
+        onTakeoffComplete();
+      }
     } else if (isFlyingIn) {
       if (!targetPosRef.current) {
         targetPosRef.current = CAMERA_SETTINGS.FLY_IN_END;

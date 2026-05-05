@@ -16,7 +16,7 @@ import { EarthSphere } from './EarthSphere';
 import { LunarModule } from './LunarModule';
 import { MoonTerrain } from './MoonTerrain';
 
-export const MoonLandingScene = () => {
+export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
 
@@ -30,7 +30,11 @@ export const MoonLandingScene = () => {
       camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}
     >
       <Suspense fallback={null}>
-        <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
+        <CameraZoomController
+          isFlyingIn={isFlyingIn}
+          setIsFlyingIn={setIsFlyingIn}
+          onTakeoffComplete={onTakeoffComplete}
+        />
 
         {/* No <Sky> — Moon has no atmosphere */}
         <color attach="background" args={['#000310']} />

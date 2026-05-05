@@ -88,19 +88,23 @@ const Rover = () => {
 const CameraZoomController = ({
   isFlyingIn,
   setIsFlyingIn,
+  onTakeoffComplete,
 }: {
   isFlyingIn: boolean;
   setIsFlyingIn: (v: boolean) => void;
+  onTakeoffComplete: () => void;
 }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const { camera } = useThree();
   const targetPosRef = useRef<THREE.Vector3 | null>(null);
   const animStateRef = useRef<{ startPos: THREE.Vector3; startTime: number } | null>(null);
+  const hasCompletedTakeoffRef = useRef(false);
 
   useEffect(() => {
     // Reset animation state when the transition mode changes
     targetPosRef.current = null;
     animStateRef.current = null;
+    hasCompletedTakeoffRef.current = false;
   }, [marsTransitionState]);
 
   useFrame(() => {
@@ -118,6 +122,10 @@ const CameraZoomController = ({
 
       camera.position.lerpVectors(animStateRef.current.startPos, targetPosRef.current, easeIn);
       camera.lookAt(0, 0, 0);
+      if (progress >= 1.0 && !hasCompletedTakeoffRef.current) {
+        hasCompletedTakeoffRef.current = true;
+        onTakeoffComplete();
+      }
     } else if (isFlyingIn) {
       if (!targetPosRef.current) {
         targetPosRef.current = new THREE.Vector3(8, 3, 8);
@@ -199,6 +207,7 @@ const Terrain = () => {
 
 export const MarsSurface = () => {
   const isLanded = useStore((s) => s.isLanded);
+  const marsTransitionState = useStore((s) => s.marsTransitionState);
   const setIsLanded = useStore((s) => s.setIsLanded);
   const setMarsTransitionState = useStore((s) => s.setMarsTransitionState);
 
@@ -208,7 +217,12 @@ export const MarsSurface = () => {
     <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#1a0a05]">
       {/* 3D Scene */}
       <div className="absolute inset-0">
-        <MarsRoverScene />
+        <MarsRoverScene
+          onTakeoffComplete={() => {
+            setIsLanded(false);
+            setMarsTransitionState('idle');
+          }}
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
@@ -224,13 +238,11 @@ export const MarsSurface = () => {
           <button
             type="button"
             onClick={() => {
-              // Start the camera zoom out first
+              if (marsTransitionState === 'taking_off') return;
+              // Start takeoff first; unmount only after the animation completes.
               setMarsTransitionState('taking_off');
-              setIsLanded(false);
-              setTimeout(() => {
-                setMarsTransitionState('idle');
-              }, 500);
             }}
+            disabled={marsTransitionState === 'taking_off'}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
             <X className="h-6 w-6" aria-hidden />
@@ -260,7 +272,7 @@ export const MarsSurface = () => {
   );
 };
 
-const MarsRoverScene = () => {
+const MarsRoverScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
   const initialCameraPosition: [number, number, number] = isFlyingIn
@@ -270,7 +282,11 @@ const MarsRoverScene = () => {
   return (
     <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
       <Suspense fallback={null}>
-        <CameraZoomController isFlyingIn={isFlyingIn} setIsFlyingIn={setIsFlyingIn} />
+        <CameraZoomController
+          isFlyingIn={isFlyingIn}
+          setIsFlyingIn={setIsFlyingIn}
+          onTakeoffComplete={onTakeoffComplete}
+        />
         <Sky
           distance={450000}
           sunPosition={[20, 5, 20]}

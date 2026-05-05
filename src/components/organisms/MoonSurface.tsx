@@ -14,6 +14,7 @@ import { FactSlideshow } from './MoonSurface/FactSlideshow';
 export const MoonSurface = () => {
   const { t } = useTranslation();
   const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const moonTransitionState = useStore((s) => s.moonTransitionState);
   const setIsLandedOnMoon = useStore((s) => s.setIsLandedOnMoon);
   const setMoonTransitionState = useStore((s) => s.setMoonTransitionState);
 
@@ -23,7 +24,12 @@ export const MoonSurface = () => {
     <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#000310]">
       {/* 3D Scene */}
       <div className="absolute inset-0">
-        <MoonLandingScene />
+        <MoonLandingScene
+          onTakeoffComplete={() => {
+            setIsLandedOnMoon(false);
+            setMoonTransitionState('idle');
+          }}
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
@@ -39,12 +45,10 @@ export const MoonSurface = () => {
             type="button"
             aria-label={t.moonSurface.closeAriaLabel}
             onClick={() => {
+              if (moonTransitionState === 'taking_off') return;
               setMoonTransitionState('taking_off');
-              setIsLandedOnMoon(false);
-              setTimeout(() => {
-                setMoonTransitionState('idle');
-              }, 500);
             }}
+            disabled={moonTransitionState === 'taking_off'}
             className="pointer-events-auto rounded-full bg-black/40 p-3 text-white backdrop-blur-md transition hover:bg-white/10"
           >
             <X className="h-6 w-6" aria-hidden />
