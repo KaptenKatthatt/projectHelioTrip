@@ -15,7 +15,10 @@ import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
 
 type MarsRockInstance = {
-
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+};
 
 const buildMarsTerrainGeometryAndRocks = (): {
   geometry: THREE.PlaneGeometry;
