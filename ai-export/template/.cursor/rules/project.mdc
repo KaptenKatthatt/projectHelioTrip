@@ -1,0 +1,39 @@
+---
+description: ProjectHelioTrip – tech stack, structure, and code style
+alwaysApply: true
+---
+
+# ProjectHelioTrip
+
+## Stack
+- Vite + React 19 + TypeScript (strict).
+- 3D: three, @react-three/fiber, @react-three/drei.
+- State: zustand (no Context for global state).
+- Icons: lucide-react.
+
+## Structure
+- `src/components/` – UI components.
+- `src/scene/` – R3F components (Canvas content).
+- `src/store/` – zustand stores.
+- `src/hooks/` – custom hooks.
+- `src/lib/` – framework-agnostic helpers.
+
+## Filenames & exports
+- `PascalCase.tsx` for components, `camelCase.ts` for everything else.
+- Named exports for components – no default exports.
+- One component per file.
+
+## Code style
+- Early return over deep nesting.
+- No comments that only repeat the code.
+- No dead code or unused imports.
+- Performance matters: avoid unnecessary allocation, memoize heavy work.
+
+## CI / Vercel
+- Production build uses `tsc` with `noUnusedLocals` / `noUnusedParameters` (see `tsconfig`). Unused imports, props, or destructured values **fail the build**.
+- Before claiming a task is done, run `npm run build` (or at least `npx tsc --noEmit`) and fix all TS errors. Do not leave placeholder props “for later” on components.
+- After any code change, run `npm run lint` and fix all lint errors before claiming completion.
+
+## Communication
+- If the agent asked a question and got no answer, ask again before continuing work.
+- All comments and instruction text must be written in English.

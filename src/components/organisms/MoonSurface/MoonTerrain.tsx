@@ -3,20 +3,14 @@ import { useTexture, Instances, Instance } from '@react-three/drei';
 import * as THREE from 'three';
 import { buildMoonTerrainGeometryAndRocks } from './terrainUtils';
 
-// 20x20 tiles across the 300-unit terrain
-const TILE_REPEAT = 20;
+// 30x30 tiles across the 300-unit terrain for higher detail
+const TILE_REPEAT = 30;
 
-// Atlas layout: 4 cols × 3 rows = 12 tiles
-//   Cols 0-2, rows 0-2: the 9 tiles from moon-texture_3x3.png
-//   Col 3, row 0: moon_texture.png (center crop)
-//   Col 3, row 1: moon-texture2.png (center crop)
-//   Col 3, row 2: moon-texture2.png (left crop, distinct framing)
 const ATLAS_COLS = 4;
-const ATLAS_ROWS = 3;
-const TILE_PX = 512; // output tile size in the combined atlas
+const ATLAS_ROWS = 2;
+const TILE_PX = 512;
 
 function buildGroundAtlas(
-  src3x3: HTMLImageElement,
   srcA: HTMLImageElement,
   srcB: HTMLImageElement,
 ): HTMLCanvasElement {
@@ -27,133 +21,166 @@ function buildGroundAtlas(
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
-  // Draw the 9 tiles from the 3x3 source into columns 0-2
-  const tW = src3x3.width / 3;
-  const tH = src3x3.height / 3;
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
+  // Fill with a neutral moon gray first
+  ctx.fillStyle = '#888';
+  ctx.fillRect(0, 0, W, H);
+
+  const drawCrops = (img: HTMLImageElement, rowIdx: number) => {
+    const sH = img.height;
+    const stepX = (img.width - sH) / (ATLAS_COLS - 1);
+    for (let col = 0; col < ATLAS_COLS; col++) {
+      ctx.globalAlpha = 1.0;
       ctx.drawImage(
-        src3x3,
-        col * tW, row * tH, tW, tH,
-        col * TILE_PX, row * TILE_PX, TILE_PX, TILE_PX,
+        img,
+        col * stepX, 0, sH, sH,
+        col * TILE_PX, rowIdx * TILE_PX, TILE_PX, TILE_PX,
+      );
+      
+      // Subtly overlay a centered version to hide distinct features at edges
+      ctx.globalAlpha = 0.2;
+      ctx.drawImage(
+        img,
+        (img.width - sH) / 2, 0, sH, sH,
+        col * TILE_PX, rowIdx * TILE_PX, TILE_PX, TILE_PX,
       );
     }
-  }
+  };
 
-  // Column 3: three distinct crops from the two single-tile images
-  const dstX = 3 * TILE_PX;
-  // Row 0: center of srcA
-  const cxA = Math.floor((srcA.width - srcA.height) / 2);
-  ctx.drawImage(srcA, cxA, 0, srcA.height, srcA.height, dstX, 0, TILE_PX, TILE_PX);
-  // Row 1: center of srcB
-  const cxB = Math.floor((srcB.width - srcB.height) / 2);
-  ctx.drawImage(srcB, cxB, 0, srcB.height, srcB.height, dstX, TILE_PX, TILE_PX, TILE_PX);
-  // Row 2: right portion of srcB for a different framing
-  ctx.drawImage(srcB, srcB.width - srcB.height, 0, srcB.height, srcB.height, dstX, 2 * TILE_PX, TILE_PX, TILE_PX);
+  drawCrops(srcA, 0);
+  drawCrops(srcB, 1);
 
   return canvas;
 }
 
-// Stochastic atlas tiling shader:
-// Per tile cell the hash picks one of 12 atlas tiles and applies a random
-// rotation, then bilinearly blends at cell boundaries.
+// Advanced Stochastic Tiling Shader
+// Based on "Procedural Stochastic Textures by Tiling and Blending" (Heitz & Neyret)
+// Uses a triangular grid for 3-tap blending (smoother than 4-tap rectangular)
 const GROUND_SHADER_GLSL = /* glsl */ `
-vec2 stochasticHash(vec2 p) {
-  return fract(sin(vec2(
-    dot(p, vec2(127.1, 311.7)),
-    dot(p, vec2(269.5, 183.3))
-  )) * 43758.5453);
+vec2 hash2(vec2 p) {
+  return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 }
 
-vec4 textureAtlasNoTile(sampler2D atlas, vec2 uv) {
-  vec2 i = floor(uv);
-  vec2 f = fract(uv);
+vec4 sampleStochasticLayer(sampler2D tex, vec2 uv, vec2 dx, vec2 dy) {
+  // Triangular grid skewing
+  mat2 s = mat2(1.0, 0.0, -0.57735027, 1.15470054);
+  vec2 skewedUV = s * uv;
+  
+  vec2 iuv = floor(skewedUV);
+  vec2 fuv = fract(skewedUV);
+  
+  // Barycentric weights
+  vec3 w;
+  w.x = 1.0 - max(fuv.x, fuv.y);
+  w.z = min(fuv.x, fuv.y);
+  w.y = 1.0 - w.x - w.z;
+  
+  // Triangle vertices
+  vec2 v0 = iuv;
+  vec2 v1 = v0 + (fuv.x > fuv.y ? vec2(1.0, 0.0) : vec2(0.0, 1.0));
+  vec2 v2 = v0 + vec2(1.0, 1.0);
+  
   vec4 col = vec4(0.0);
-  float wsum = 0.0;
-
-  for (int x = 0; x <= 1; x++) {
-    for (int y = 0; y <= 1; y++) {
-      vec2 cell = i + vec2(float(x), float(y));
-      vec2 h = stochasticHash(cell);
-
-      // Pick one of 12 tiles (4 cols x 3 rows)
-      float tileIdx  = floor(h.x * 12.0);
-      float tileCol  = mod(tileIdx, 4.0);
-      float tileRow  = floor(tileIdx / 4.0);
-      // Flip Y: canvas row 0 (top) = GL UV y near 1
-      float tileRowGL = 2.0 - tileRow;
-
-      // Random rotation within the tile
-      float ang = h.y * 6.28318;
-      float cs = cos(ang), sn = sin(ang);
-      vec2 d = f - vec2(float(x), float(y));
-      vec2 rotD = vec2(cs * d.x - sn * d.y, sn * d.x + cs * d.y);
-
-      // Local UV [0,1]; inset 3% to avoid atlas bleed at tile edges
-      vec2 localUV = fract(rotD + 0.5);
-      localUV = 0.03 + localUV * 0.94;
-
-      vec2 tileOrigin = vec2(tileCol, tileRowGL) / vec2(4.0, 3.0);
-      vec2 atlasUV   = tileOrigin + localUV / vec2(4.0, 3.0);
-
-      float w = (1.0 - abs(d.x)) * (1.0 - abs(d.y));
-      col   += texture2D(atlas, atlasUV) * w;
-      wsum  += w;
-    }
+  vec2 vertices[3]; vertices[0] = v0; vertices[1] = v1; vertices[2] = v2;
+  float weights[3]; weights[0] = w.x; weights[1] = w.y; weights[2] = w.z;
+  
+  for(int i=0; i<3; i++) {
+    vec2 h = hash2(vertices[i]);
+    
+    // Pick tile (4 cols x 2 rows)
+    float tileIdx = floor(h.x * 8.0);
+    vec2 tilePos = vec2(mod(tileIdx, 4.0), 1.0 - floor(tileIdx / 4.0));
+    
+    // Random rotation/flip
+    float ang = h.y * 6.28318;
+    float cs = cos(ang), sn = sin(ang);
+    mat2 rot = mat2(cs, -sn, sn, cs);
+    
+    // Offset and rotate within the tile
+    vec2 offset = h * 10.0; // random offset to shift patterns
+    vec2 localUV = fract((uv + offset) * rot);
+    
+    // Inset to avoid bleed
+    localUV = 0.01 + localUV * 0.98;
+    vec2 atlasUV = (tilePos + localUV) / vec2(4.0, 2.0);
+    
+    // Use textureGrad to maintain sharp mipmapping across stochastic jumps
+    col += textureGrad(tex, atlasUV, dx / vec2(4.0, 2.0), dy / vec2(4.0, 2.0)) * weights[i];
   }
-  return col / wsum;
+  
+  return col;
+}
+
+vec4 textureMoonSeamless(sampler2D tex, vec2 uv) {
+  // Precompute derivatives for textureGrad
+  vec2 dx = dFdx(uv);
+  vec2 dy = dFdy(uv);
+  
+  // Layer 1: Base high-detail layer
+  vec4 base = sampleStochasticLayer(tex, uv, dx, dy);
+  
+  // Layer 2: Macro-layer at different scale and rotation to break up patterns
+  vec2 uvMacro = uv * 0.371 + vec2(15.7, 12.3);
+  vec4 macro = sampleStochasticLayer(tex, uvMacro, dx * 0.371, dy * 0.371);
+  
+  // Mix layers based on a large noise
+  float noise = fract(sin(dot(uv * 0.03, vec2(12.9898, 78.233))) * 43758.5453);
+  vec4 mixed = mix(base, macro, 0.3 + 0.4 * noise);
+  
+  // Final subtle color grading for moon look
+  mixed.rgb *= 1.05; // Slightly boost brightness
+  
+  return mixed;
 }
 `;
 
-function applyAtlasStochasticTiling(shader: THREE.WebGLProgramParametersWithUniforms) {
-  shader.fragmentShader = GROUND_SHADER_GLSL + shader.fragmentShader;
+function applyMoonSeamlessShader(shader: THREE.WebGLProgramParametersWithUniforms) {
+  shader.fragmentShader = GROUND_SHADER_GLSL + '\n' + shader.fragmentShader;
+  
+  // Replace the entire map_fragment include which is where Three.js 
+  // normally samples the map. This is much more reliable than regex 
+  // on raw texture calls.
   shader.fragmentShader = shader.fragmentShader.replace(
-    'texture2D( map, vMapUv )',
-    'textureAtlasNoTile( map, vMapUv )',
+    '#include <map_fragment>',
+    `
+    #ifdef USE_MAP
+      diffuseColor *= textureMoonSeamless( map, vMapUv );
+    #endif
+    `
   );
 }
 
 export const MoonTerrain = () => {
-  const [raw3x3, rawA, rawB] = useTexture([
-    '/moon-texture_3x3.png',
+  const [rawA, rawB] = useTexture([
     '/moon_texture.png',
     '/moon-texture2.png',
   ]);
 
   const groundTexture = useMemo(() => {
     const canvas = buildGroundAtlas(
-      raw3x3.image as HTMLImageElement,
       rawA.image as HTMLImageElement,
       rawB.image as HTMLImageElement,
     );
     const t = new THREE.CanvasTexture(canvas);
-    t.wrapS = THREE.ClampToEdgeWrapping;
-    t.wrapT = THREE.ClampToEdgeWrapping;
-    // repeat scales vMapUv to (0..TILE_REPEAT); wrapping handled by the shader
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = true;
     t.repeat.set(TILE_REPEAT, TILE_REPEAT);
     return t;
-  }, [raw3x3, rawA, rawB]);
+  }, [rawA, rawB]);
 
   const groundMaterial = useMemo(() => {
     const mat = new THREE.MeshStandardMaterial({
       map: groundTexture,
-      roughness: 1,
+      roughness: 0.9,
       metalness: 0.0,
       color: '#c8cdd0',
     });
-    mat.onBeforeCompile = applyAtlasStochasticTiling;
-    mat.customProgramCacheKey = () => 'moon-atlas-stochastic-v2';
+    mat.onBeforeCompile = applyMoonSeamlessShader;
+    mat.customProgramCacheKey = () => 'moon-seamless-force-v12';
     return mat;
   }, [groundTexture]);
-
-  const rockTexture = useMemo(() => {
-    const t = rawA.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(1, 1);
-    t.needsUpdate = true;
-    return t;
-  }, [rawA]);
 
   const { geometry, rocks } = useMemo(() => buildMoonTerrainGeometryAndRocks(), []);
 
@@ -163,7 +190,7 @@ export const MoonTerrain = () => {
 
       <Instances range={rocks.length} castShadow receiveShadow>
         <icosahedronGeometry args={[1, 1]} />
-        <meshStandardMaterial map={rockTexture} roughness={1} metalness={0.0} color="#909090" />
+        <meshStandardMaterial map={rawB} roughness={1} metalness={0.0} color="#909090" />
         {rocks.map((rock, i) => (
           <Instance key={i} position={rock.position} rotation={rock.rotation} scale={rock.scale} />
         ))}
