@@ -15,7 +15,7 @@ export const HudIconButton = ({
 }: HudIconButtonProps) => {
   const buttonClassName = [
     "inline-flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition",
-    "hover:bg-white/15 hover:text-white",
+    "hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
     className,
   ]
     .filter(Boolean)
