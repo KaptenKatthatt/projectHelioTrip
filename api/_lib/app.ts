@@ -61,7 +61,6 @@ const EPHEMERIS_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400';
 
 const hasValidClerkToken = async (c: Context): Promise<boolean> => {
   const authHeader = c.req.header('Authorization');
-  if (process.env.NODE_ENV !== 'production' && authHeader === 'Bearer mock-token') return true;
   
   if (CLERK_SECRET_KEY.length === 0) return false;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
