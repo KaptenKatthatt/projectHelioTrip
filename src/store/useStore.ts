@@ -173,12 +173,13 @@ const applyMissionEventProgress = (
       [mission.id]: result.progress,
     },
   });
+  const store = useStore.getState();
   for (const stepId of result.newlyCompletedStepIds) {
     analytics.missionStepCompleted(mission.id, stepId);
-    useStore.getState().awardXp(XP_AWARDS.missionStepCompleted);
+    store.awardXp(XP_AWARDS.missionStepCompleted);
     const stepDef = mission.steps.find((s) => s.id === stepId);
     if (stepDef?.triggersQuizId) {
-      useStore.getState().triggerQuiz(stepDef.triggersQuizId);
+      store.triggerQuiz(stepDef.triggersQuizId);
     }
   }
   if (!result.missionJustCompleted) return;
