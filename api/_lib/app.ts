@@ -117,7 +117,40 @@ const respondWithEphemeris = async <T>(
 export const buildApp = (): Hono => {
   const app = new Hono().basePath('/api');
 
-  app.use('*', cors());
+  app.use(
+    '*',
+    cors({
+      origin: (origin) => {
+        if (!origin) return '';
+
+        const trimSlash = (url: string) => url.replace(/\/$/, '');
+        const allowedOrigins = [
+          process.env.VITE_PUBLIC_SITE_URL,
+          process.env.VITE_LOCAL_SITE_URL,
+          'http://localhost:5173',
+          'http://localhost:4173',
+        ]
+          .filter(Boolean)
+          .map((url) => trimSlash(url as string));
+
+        if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+          allowedOrigins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+        }
+        if (process.env.VERCEL_URL) {
+          allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+        }
+        if (process.env.CF_PAGES_URL) {
+          allowedOrigins.push(trimSlash(process.env.CF_PAGES_URL));
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          return origin;
+        }
+
+        return '';
+      },
+    }),
+  );
 
   app.get('/health', (c) =>
     c.json({ status: 'ok', planets: PLANET_IDS, moons: MOON_IDS }),
