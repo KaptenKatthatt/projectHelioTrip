@@ -18,7 +18,13 @@ export type AnalyticsEventName =
   | "checklist_progress"
   | "achievement_unlocked"
   | "share_link_created"
-  | "share_link_restored";
+  | "share_link_restored"
+  | "time_spent_on_planet"
+  | "photo_taken"
+  | "scrapbook_opened"
+  | "device_type"
+  | "time_of_day"
+  | "learn_now_clicked";
 
 type AnalyticsAggregate = {
   date: string;
@@ -164,6 +170,12 @@ const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
   "achievement_unlocked",
   "share_link_created",
   "share_link_restored",
+  "time_spent_on_planet",
+  "photo_taken",
+  "scrapbook_opened",
+  "device_type",
+  "time_of_day",
+  "learn_now_clicked",
 ]);
 
 export const isAnalyticsEventName = (raw: string): raw is AnalyticsEventName =>
