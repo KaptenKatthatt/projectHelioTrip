@@ -1,4 +1,4 @@
-import { analyticsRateLimiter } from './rateLimiter.ts';
+import { analyticsRateLimiter } from './rateLimiter.js';
 
 import { Hono, type Context } from 'hono';
 
