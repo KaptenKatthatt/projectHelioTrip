@@ -61,7 +61,6 @@ const EPHEMERIS_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400';
 
 const hasValidClerkToken = async (c: Context): Promise<boolean> => {
   const authHeader = c.req.header('Authorization');
-  if (process.env.NODE_ENV !== 'production' && authHeader === 'Bearer mock-token') return true;
   
   if (CLERK_SECRET_KEY.length === 0) return false;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
@@ -117,7 +116,40 @@ const respondWithEphemeris = async <T>(
 export const buildApp = (): Hono => {
   const app = new Hono().basePath('/api');
 
-  app.use('*', cors());
+  app.use(
+    '*',
+    cors({
+      origin: (origin) => {
+        if (!origin) return '';
+
+        const trimSlash = (url: string) => url.replace(/\/$/, '');
+        const allowedOrigins = [
+          process.env.VITE_PUBLIC_SITE_URL,
+          process.env.VITE_LOCAL_SITE_URL,
+          'http://localhost:5173',
+          'http://localhost:4173',
+        ]
+          .filter(Boolean)
+          .map((url) => trimSlash(url as string));
+
+        if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+          allowedOrigins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+        }
+        if (process.env.VERCEL_URL) {
+          allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+        }
+        if (process.env.CF_PAGES_URL) {
+          allowedOrigins.push(trimSlash(process.env.CF_PAGES_URL));
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          return origin;
+        }
+
+        return '';
+      },
+    }),
+  );
 
   app.get('/health', (c) =>
     c.json({ status: 'ok', planets: PLANET_IDS, moons: MOON_IDS }),

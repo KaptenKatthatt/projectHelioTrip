@@ -1,4 +1,4 @@
-import { Component, createRef, type ErrorInfo, type ReactNode } from "react";
+import React, { Component, createRef, type ReactNode } from "react";
 
 type SceneErrorBoundaryProps = {
   children: ReactNode;
@@ -49,7 +49,7 @@ export class SceneErrorBoundary extends Component<
     this.restoreFocus();
   }
 
-  override componentDidCatch(error: Error, info: ErrorInfo): void {
+  override componentDidCatch(error: Error, info: React.ErrorInfo): void {
     console.error("Scene crashed during render", {
       feature: "scene_error_boundary",
       message: error.message,
