@@ -27,6 +27,7 @@ export const sv: Translation = {
   },
   satellites: {
     iss: 'ISS',
+    sputnik: 'Sputnik 1',
   },
   ui: {
     travelTo: 'Res till',
@@ -189,6 +190,11 @@ export const sv: Translation = {
         title: 'Rymd-Paparazzi',
         description: 'Ta fram kameran! Kan du ta foton av två kända planeter i solsystemet?',
       },
+      sputnik_hunt: {
+        title: 'Den första signalen',
+        description:
+          'Långt innan människan gick på månen skickades en liten metallboll upp för att pipa från rymden. Kan du hitta den?',
+      },
     },
     steps: {
       'solar_system_start.visit_earth': 'Hitta den blå hemplaneten',
@@ -210,6 +216,8 @@ export const sv: Translation = {
       'gravity_sling.gravity_sling_complete': 'Klart! Dags för test',
       'photo_safari.photo_earth': 'Ta ett foto av Jorden',
       'photo_safari.photo_jupiter': 'Ta ett foto av Jupiter',
+      'sputnik_hunt.find_sputnik': 'Hitta mänsklighetens första satellit',
+      'sputnik_hunt.answer_quiz': 'Svara på frågan om Sputnik 1',
     },
   },
   learn: {
@@ -326,7 +334,7 @@ export const sv: Translation = {
       },
       {
         title: '"Ett litet steg…"',
-        body: "\"That's one small step for man, one giant leap for mankind\" — citatet sändes live till uppskattningsvis 600 miljoner TV-tittare.",
+        body: '"That\'s one small step for man, one giant leap for mankind" — citatet sändes live till uppskattningsvis 600 miljoner TV-tittare.',
       },
       {
         title: 'Tranquility Base',
