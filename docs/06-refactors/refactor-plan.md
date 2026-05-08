@@ -42,4 +42,22 @@ This document outlines the laziest-but-highest-impact refactors identified durin
 
 ### Phase 3: UI Modernization
 
-- [ ] Refactor components to use React 19 `ref` patterns (remove `forwardRef`).
+- [x] Refactor components to use React 19 `ref` patterns (remove `forwardRef`).
+
+---
+
+## Errors Found During Review & Fixes Applied
+
+### Build Errors Fixed
+
+1. **`Store` not exported from `useStore.ts`** — Tests were importing `Store` from `useStore.ts`, but it was moved to `types.ts`. **Fix:** Added `export type { Store, PersistedState } from './types';` in `useStore.ts` for backward compatibility.
+2. **Unused imports in `useStore.ts`** — Many imports (`ConstellationId`, `Locale`, `dateKeyFromLocalDate`, `GameMode`, `getMissionDefinition`, `evaluateMissionStep`, `AchievementId`, `FactCardLevel`, `SimulationSlice`, `GameSlice`) became unused after the refactor. **Fix:** Removed all unused imports.
+3. **Circular dependency in `missionLogic.ts`** — It was importing from `../store/useStore` which caused a module resolution error. **Fix:** Changed import path to `../../store/types` to use the dedicated types file.
+4. **Unused imports in `missionLogic.ts`** — `MissionProgress` and `AchievementId` were declared but never used. **Fix:** Removed unused imports.
+5. **Parameter mismatch in `unlockAchievements`** — Removed the `awardXp` parameter from `unlockAchievements` (it no longer awards XP directly), but the call site was still passing 5 arguments. **Fix:** Updated call site in `useStore.ts` to pass only 4 arguments.
+
+### Verification Results
+
+- `npm run build` — **PASSED** (tsc + vite build, no errors)
+- `npm run lint` — **PASSED** (no lint errors)
+- `npm run test:unit` — **PASSED** (77 tests, 16 test files)

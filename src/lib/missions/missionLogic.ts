@@ -1,11 +1,11 @@
 import { analytics } from '../analytics';
-import { type MissionDomainEvent, type MissionProgress } from './types';
+import { type MissionDomainEvent } from './types';
 import { getMissionDefinition } from './missionDefinitions';
 import { evaluateMissionStep } from './missionEvaluator';
-import { type AchievementId, type AchievementTrigger, evaluateAchievements } from './achievements';
+import { type AchievementTrigger, evaluateAchievements } from './achievements';
 import { XP_AWARDS } from '../learning/xp';
 import type { BodyId } from '../bodies';
-import type { Store } from '../store/useStore';
+import type { Store } from '../../store/types';
 
 export const applyMissionEventProgress = (
   state: Store,
@@ -50,16 +50,23 @@ export const applyMissionEventProgress = (
 };
 
 export const resolveAchievementTrigger = (event: MissionDomainEvent): AchievementTrigger | null => {
-  if (event.kind === 'body_focused') {
-    return { kind: 'body_visited', bodyId: event.bodyId };
+  switch (event.kind) {
+    case 'body_focused':
+      return { kind: 'body_visited', bodyId: event.bodyId };
+    case 'navigation_mode_changed':
+      return event.mode === 'free' ? { kind: 'free_flight_activated' } : null;
+    case 'constellation_focused':
+      return { kind: 'constellation_focused' };
+    case 'time_scale_changed':
+    case 'quiz_completed':
+    case 'photo_taken':
+      return null;
+    default: {
+      // Exhaustive check
+      const _exhaustiveCheck: never = event;
+      return _exhaustiveCheck;
+    }
   }
-  if (event.kind === 'navigation_mode_changed' && event.mode === 'free') {
-    return { kind: 'free_flight_activated' };
-  }
-  if (event.kind === 'constellation_focused') {
-    return { kind: 'constellation_focused' };
-  }
-  return null;
 };
 
 export const unlockAchievements = (
@@ -67,7 +74,6 @@ export const unlockAchievements = (
   nowMs: number,
   state: Store,
   setState: (update: Partial<Store>) => void,
-  awardXp: (amount: number) => void,
 ): void => {
   const newly = evaluateAchievements(trigger, state.unlockedAchievements);
   if (newly.length === 0) return;

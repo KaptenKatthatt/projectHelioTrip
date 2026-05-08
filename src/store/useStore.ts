@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { BodyId } from '../lib/bodies';
-import type { ConstellationId } from '../lib/constellations';
 import { isLocale } from '../i18n/translations';
-import type { Locale } from '../i18n/translations';
 import { analytics } from '../lib/analytics';
-import { dateKeyFromLocalDate, daysBetweenDateKeys, todayDateKey } from '../lib/dateUtils';
+import { daysBetweenDateKeys, todayDateKey } from '../lib/dateUtils';
 import {
   sanitizeAchievements,
   sanitizeDiscoveredConstellations,
@@ -20,26 +18,20 @@ import {
 } from '../lib/missions/missionLogic';
 import type { Store, PersistedState } from './types';
 import {
-  type GameMode,
   type MissionDomainEvent,
   type MissionProgress,
   createInitialProgress,
   isGameMode,
 } from '../lib/missions/types';
-import { getMissionDefinition, isMissionId } from '../lib/missions/missionDefinitions';
-import { evaluateMissionStep } from '../lib/missions/missionEvaluator';
-import {
-  type AchievementId,
-  type AchievementTrigger,
-  evaluateAchievements,
-  isAchievementId,
-} from '../lib/missions/achievements';
+import { isMissionId } from '../lib/missions/missionDefinitions';
 import { inferShareLinkContextType, type ShareLinkState } from '../lib/shareLink';
 import { TIME_SPEED_PRESETS } from '../lib/timePlayback';
-import type { FactCardLevel } from '../lib/learning/bodyContent';
 import { XP_AWARDS, resolveTitle } from '../lib/learning/xp';
-import { createSimulationSlice, type SimulationSlice } from './slices/createSimulationSlice';
-import { createGameSlice, type GameSlice } from './slices/createGameSlice';
+import { createSimulationSlice } from './slices/createSimulationSlice';
+import { createGameSlice } from './slices/createGameSlice';
+
+// Re-export for backward compatibility (tests, etc.)
+export type { Store, PersistedState } from './types';
 
 const completedMissionIdsList = (
   missionProgress: Readonly<Record<string, MissionProgress>>,
@@ -64,13 +56,7 @@ const dispatchDomainEvent = (event: MissionDomainEvent): void => {
   const achievementTrigger = resolveAchievementTrigger(event);
   if (!achievementTrigger) return;
 
-  unlockAchievements(
-    achievementTrigger,
-    nowMs,
-    state,
-    useStore.setState,
-    useStore.getState().awardXp,
-  );
+  unlockAchievements(achievementTrigger, nowMs, state, useStore.setState);
 };
 
 const buildShareLinkPartialState = (snapshot: ShareLinkState, state: Store): Partial<Store> => {
