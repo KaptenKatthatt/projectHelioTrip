@@ -27,6 +27,7 @@ export const en: Translation = {
   },
   satellites: {
     iss: 'ISS',
+    sputnik: 'Sputnik 1',
   },
   ui: {
     travelTo: 'Travel to',
@@ -160,7 +161,8 @@ export const en: Translation = {
       },
       jupiter_moons: {
         title: "The Giant's Companions",
-        description: 'The largest planet in the solar system has many moons. Can you find three of the famous ones?',
+        description:
+          'The largest planet in the solar system has many moons. Can you find three of the famous ones?',
       },
       time_travel_short: {
         title: 'The Time Machine',
@@ -168,7 +170,8 @@ export const en: Translation = {
       },
       iss_hunt: {
         title: 'Humans in Space',
-        description: 'Something orbits the Earth with humans on board. Can you find the large machine?',
+        description:
+          'Something orbits the Earth with humans on board. Can you find the large machine?',
       },
       free_flight_loop: {
         title: 'Let Go of the Wheel!',
@@ -176,15 +179,23 @@ export const en: Translation = {
       },
       water_hunt: {
         title: 'The Hidden Ice Ocean',
-        description: 'Dr. Astra is looking for water. Follow the trail outward into the solar system to a frozen world.',
+        description:
+          'Dr. Astra is looking for water. Follow the trail outward into the solar system to a frozen world.',
       },
       gravity_sling: {
         title: 'The Space Catapult',
-        description: 'How do you travel faster in space? Learn how to use massive planets as a slingshot.',
+        description:
+          'How do you travel faster in space? Learn how to use massive planets as a slingshot.',
       },
       photo_safari: {
         title: 'Space Paparazzi',
-        description: 'Get your camera out! Can you take photos of two famous planets in the solar system?',
+        description:
+          'Get your camera out! Can you take photos of two famous planets in the solar system?',
+      },
+      sputnik_hunt: {
+        title: 'The First Signal',
+        description:
+          'Before humans walked on the moon, a small metal ball was sent up to beep from space. Can you find it?',
       },
     },
     steps: {
@@ -207,6 +218,8 @@ export const en: Translation = {
       'gravity_sling.gravity_sling_complete': 'Done! Time for a test',
       'photo_safari.photo_earth': 'Take a photo of Earth',
       'photo_safari.photo_jupiter': 'Take a photo of Jupiter',
+      'sputnik_hunt.find_sputnik': "Find humanity's first satellite",
+      'sputnik_hunt.answer_quiz': 'Answer the question about Sputnik 1',
     },
   },
   learn: {
@@ -253,7 +266,8 @@ export const en: Translation = {
       resultImpactSpeed: 'Impact speed',
       resultGravity: 'Gravity strength',
       resultMass: 'Mass',
-      factAllFallSame: 'All objects fall at the same speed in a vacuum — regardless of mass! Galileo demonstrated this back in the 1500s.',
+      factAllFallSame:
+        'All objects fall at the same speed in a vacuum — regardless of mass! Galileo demonstrated this back in the 1500s.',
       object_apple: 'Apple',
       object_car: 'Car',
       object_elephant: 'Elephant',
@@ -262,7 +276,7 @@ export const en: Translation = {
         mercury: { name: 'Mercury' },
         venus: {
           name: 'Venus',
-          fact: "Venus has nearly the same gravity as Earth, but the surface temperature is 460°C!",
+          fact: 'Venus has nearly the same gravity as Earth, but the surface temperature is 460°C!',
         },
         earth: { name: 'Earth' },
         moon: {
