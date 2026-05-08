@@ -1,7 +1,6 @@
 import {
   useCallback,
   useRef,
-  type PointerEvent,
   type ReactNode,
 } from "react";
 import { RotateCcw, RotateCw } from "lucide-react";
@@ -66,7 +65,7 @@ const ConstellationRotateHoldButton = ({
   }, [adjustConstellationSpin]);
 
   const onPointerDown = useCallback(
-    (e: PointerEvent<HTMLButtonElement>) => {
+    (e: React.PointerEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
       appliedRef.current = 0;
@@ -81,7 +80,7 @@ const ConstellationRotateHoldButton = ({
   );
 
   const onPointerEnd = useCallback(
-    (e: PointerEvent<HTMLButtonElement>) => {
+    (e: React.PointerEvent<HTMLButtonElement>) => {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
