@@ -361,33 +361,48 @@ export const readAnalyticsSummary =
   async (): Promise<AnalyticsSummaryResponse> => {
     const supabase = getSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase
-        .from(SUPABASE_TABLE)
-        .select("date,name,value,count,updated_at")
-        .order("date", { ascending: false })
-        .limit(ANALYTICS_QUERY_LIMIT);
-      if (error) throw error;
+      try {
+        const { data, error } = await supabase
+          .from(SUPABASE_TABLE)
+          .select("date,name,value,count,updated_at")
+          .order("date", { ascending: false })
+          .limit(ANALYTICS_QUERY_LIMIT)
+          .abortSignal(AbortSignal.timeout(8_000));
+        if (error) throw error;
 
-      const filteredOut = (data ?? []).filter(
-        (entry) => !isAnalyticsAggregate(entry),
-      );
-      if (filteredOut.length > 0) {
-        console.error("Filtered invalid analytics summary rows", {
-          table: SUPABASE_TABLE,
-          filteredCount: filteredOut.length,
-          sample: filteredOut.slice(0, 3),
-        });
+        const filteredOut = (data ?? []).filter(
+          (entry) => !isAnalyticsAggregate(entry),
+        );
+        if (filteredOut.length > 0) {
+          console.error("Filtered invalid analytics summary rows", {
+            table: SUPABASE_TABLE,
+            filteredCount: filteredOut.length,
+            sample: filteredOut.slice(0, 3),
+          });
+        }
+        const rows = (data ?? []).filter((entry) =>
+          isAnalyticsAggregate(entry),
+        ) as AnalyticsSummaryRow[];
+        const { updatedAtFromRows, byEvent, byDay } =
+          buildAnalyticsSummary(rows);
+        return {
+          updatedAt: updatedAtFromRows,
+          storage: "supabase",
+          byEvent,
+          byDay,
+        };
+      } catch (err) {
+        console.error(
+          "Analytics Supabase query failed — returning empty summary",
+          err,
+        );
+        return {
+          updatedAt: new Date(0).toISOString(),
+          storage: "supabase",
+          byEvent: [],
+          byDay: [],
+        };
       }
-      const rows = (data ?? []).filter((entry) =>
-        isAnalyticsAggregate(entry),
-      ) as AnalyticsSummaryRow[];
-      const { updatedAtFromRows, byEvent, byDay } = buildAnalyticsSummary(rows);
-      return {
-        updatedAt: updatedAtFromRows,
-        storage: "supabase",
-        byEvent,
-        byDay,
-      };
     }
 
     const store = await safeReadStore();
