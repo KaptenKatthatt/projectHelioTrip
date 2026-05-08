@@ -1,4 +1,4 @@
-import { get, set, keys, del } from 'idb-keyval';
+import { set, keys, del, getMany } from 'idb-keyval';
 
 export type Photo = {
   id: string;
@@ -19,13 +19,8 @@ export const loadAllPhotos = async (): Promise<Photo[]> => {
     (key) => typeof key === 'string' && key.startsWith(PHOTO_PREFIX)
   );
 
-  const photos: Photo[] = [];
-  for (const key of photoKeys) {
-    const photo = await get<Photo>(key as string);
-    if (photo) {
-      photos.push(photo);
-    }
-  }
+  const loadedPhotos = await getMany<Photo>(photoKeys);
+  const photos = loadedPhotos.filter((photo): photo is Photo => photo !== undefined);
 
   // Sortera nyast först
   return photos.sort((a, b) => b.timestampMs - a.timestampMs);
