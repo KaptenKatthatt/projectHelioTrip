@@ -8,7 +8,7 @@ type HudPanelToggleButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "aria-label">;
 
 const baseClassName =
-  "inline-flex h-8 w-8 items-center justify-center text-lg font-semibold leading-none text-white/85 transition select-none hover:text-white";
+  "inline-flex h-8 w-8 items-center justify-center text-lg font-semibold leading-none text-white/85 transition select-none hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40";
 
 export const HudPanelToggleButton = ({
   expanded,
