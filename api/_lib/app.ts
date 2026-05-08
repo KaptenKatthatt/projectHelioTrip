@@ -194,11 +194,11 @@ export const buildApp = (): Hono => {
 
 
   app.get('/analytics/summary', async (c) => {
-    const analyticsStore = await import('./analyticsStore.js');
     if (!(await canAccessAnalyticsSummary(c))) {
       return c.json({ error: 'forbidden' }, 403);
     }
     try {
+      const analyticsStore = await import('./analyticsStore.js');
       const summary = await analyticsStore.readAnalyticsSummary();
       c.header('Cache-Control', 'no-store');
       return c.json(summary);
