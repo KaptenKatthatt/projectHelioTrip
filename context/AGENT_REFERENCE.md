@@ -77,4 +77,36 @@ A feature is considered complete when:
 
 ---
 
-Last updated: 2026-04-24
+## 9) Analytics guardrails for agents
+
+### Architecture
+
+Analytics has two layers that must stay in sync:
+
+| Layer | File | Role |
+|-------|------|------|
+| Frontend client | `src/lib/analytics.ts` | Defines `AnonymousEventName` type + sends events |
+| Backend validator | `api/_lib/analyticsStore.ts` | Defines `AnalyticsEventName` type + `VALID_EVENT_NAMES` Set |
+
+Both files contain independent copies of the event name list. They **must always contain identical sets of names**. If they diverge, the backend silently discards events with a 400 error and no data is recorded.
+
+### Rule: always update both files together
+
+When adding a new analytics event:
+1. Add the event name to `AnonymousEventName` in `src/lib/analytics.ts`
+2. Add the same event name to `AnalyticsEventName` **and** `VALID_EVENT_NAMES` in `api/_lib/analyticsStore.ts`
+3. Run the sync test to confirm: `npx vitest run api/_lib/analyticsSyncCheck.test.ts`
+
+**Never add to one file without updating the other.**
+
+### Sync test
+
+`api/_lib/analyticsSyncCheck.test.ts` automatically catches drift. If this test is failing, it means `VALID_EVENT_NAMES` in `analyticsStore.ts` is missing one or more event names that the frontend sends. The test error message tells you exactly which names are missing.
+
+### Analytics summary endpoint resilience
+
+`GET /api/analytics/summary` must not return HTTP 500. The implementation wraps the Supabase query with an 8-second timeout and catches all errors, returning an empty-but-valid summary on failure. Do not remove this error boundary or the `AbortSignal.timeout` call.
+
+---
+
+Last updated: 2026-05-08
