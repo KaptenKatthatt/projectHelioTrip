@@ -19,6 +19,11 @@ import {
 } from "../../lib/positionsBus";
 import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
 import { getWikipediaUrl } from "../../lib/wikipedia";
+
+const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
+  iss: 92 / 60,
+  sputnik: 96.2 / 60,
+};
 import { FactCardDeck } from "../molecules/FactCardDeck";
 import { HudSegmentedTabs } from "../molecules/HudSegmentedTabs";
 import { ScaleComparison } from "../molecules/ScaleComparison";
@@ -168,16 +173,12 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
     body.kind === "planet"
       ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
       : PLANET_ORBITAL_ELEMENTS[body.def.parent]?.periodDays;
-  const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
-    iss: 92 / 60,
-    sputnik: 96.2 / 60,
-  };
-  const issOrbitalPeriodHours =
+  const satelliteOrbitalPeriodHours =
     body.kind === "satellite"
       ? SATELLITE_PERIOD_HOURS[body.def.id as SatelliteId]
       : undefined;
   const hasLongOrbitPeriod =
-    issOrbitalPeriodHours === undefined &&
+    satelliteOrbitalPeriodHours === undefined &&
     orbitalPeriodDays !== undefined &&
     orbitalPeriodDays > 365;
 
@@ -194,12 +195,12 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
   });
   rows.push({
     label:
-      issOrbitalPeriodHours !== undefined
+      satelliteOrbitalPeriodHours !== undefined
         ? t.ui.orbitPeriodAroundEarth
         : t.ui.orbitPeriodAroundSun,
     value:
-      issOrbitalPeriodHours !== undefined
-        ? `${orbitHoursFormatter.format(issOrbitalPeriodHours)} ${getHoursUnit(issOrbitalPeriodHours)}`
+      satelliteOrbitalPeriodHours !== undefined
+        ? `${orbitHoursFormatter.format(satelliteOrbitalPeriodHours)} ${getHoursUnit(satelliteOrbitalPeriodHours)}`
         : orbitalPeriodDays !== undefined
           ? formatOrbitPeriod(
               orbitalPeriodDays,
