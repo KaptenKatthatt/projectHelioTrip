@@ -392,10 +392,10 @@ export const readAnalyticsSummary =
           byDay,
         };
       } catch (err) {
-        console.error(
-          "Analytics Supabase query failed — returning empty summary",
-          err,
-        );
+        console.error("Analytics Supabase query failed — returning empty summary", {
+          table: SUPABASE_TABLE,
+          error: err,
+        });
         return {
           updatedAt: new Date(0).toISOString(),
           storage: "supabase",
