@@ -56,16 +56,16 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
   {
     id: 'sputnik',
     parent: 'earth',
-    radius: 0.03, // Smaller standard radius than ISS (good for UI)
-    color: '#a0a0a0', // Gray/silver color
-    orbitRadius: 1.5, // Make the radius a bit tighter since we lift it up
-    periodDays: 1, // Exact same speed as ISS
-    inclination: 0, // 0 = Completely horizontal orbit
-    yOffset: 1.2, // Lifts the orbit over the northern hemisphere (height with Russia)
-    ascendingNode: Math.PI / 2, // Offset so it doesn't overlap
-    phase: Math.PI, // Offset starting position in the orbit
+    radius: 0.03,
+    color: '#a0a0a0',
+    orbitRadius: 1.5,
+    periodDays: 1,
+    inclination: 0,
+    yOffset: 1.2,
+    ascendingNode: Math.PI / 2,
+    phase: Math.PI,
     glbPath: '/sputnik_cleaned.glb',
-    glbScale: 0.02, // You may need to adjust this when you see the model in 3D
+    glbScale: 0.02,
   },
 ];
 

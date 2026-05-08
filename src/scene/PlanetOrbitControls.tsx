@@ -7,6 +7,7 @@ import { useCloseCinematicBodyEnabled } from '../hooks/useCloseCinematicBodyEnab
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
 import { getBodyRadius, getBodyWorldPosition } from '../lib/bodies';
+import { computeViewDistance } from './cameraTravel';
 import { applyMobilePlanetScreenLift } from './mobilePlanetFraming';
 
 const MIN_DISTANCE_MULTIPLIER = 1.2;
@@ -43,7 +44,10 @@ export const PlanetOrbitControls = () => {
     if (!controls || !activeBody) return;
     const radius = getBodyRadius(activeBody) ?? 1;
     controls.minDistance = Math.max(radius * MIN_DISTANCE_MULTIPLIER, 0.1);
-    controls.maxDistance = radius * MAX_DISTANCE_MULTIPLIER;
+    controls.maxDistance = Math.max(
+      radius * MAX_DISTANCE_MULTIPLIER,
+      computeViewDistance(activeBody, radius),
+    );
   }, [activeBody]);
 
   /**

@@ -19,11 +19,6 @@ import {
 } from "../../lib/positionsBus";
 import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
 import { getWikipediaUrl } from "../../lib/wikipedia";
-
-const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
-  iss: 92 / 60,
-  sputnik: 96.2 / 60,
-};
 import { FactCardDeck } from "../molecules/FactCardDeck";
 import { HudSegmentedTabs } from "../molecules/HudSegmentedTabs";
 import { ScaleComparison } from "../molecules/ScaleComparison";
@@ -38,6 +33,11 @@ import {
 } from "./PlanetPanel/utils";
 import type { Row, DistancePair } from "./PlanetPanel/utils";
 import { InfoTab } from "./PlanetPanel/InfoTab";
+
+const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
+  iss: 92 / 60,
+  sputnik: 96.2 / 60,
+};
 
 export type PanelTab = "info" | "facts" | "compare";
 
