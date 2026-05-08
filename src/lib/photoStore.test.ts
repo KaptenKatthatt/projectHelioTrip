@@ -8,6 +8,7 @@ vi.mock('idb-keyval', () => ({
   set: vi.fn(),
   keys: vi.fn(),
   del: vi.fn(),
+  getMany: vi.fn(),
 }));
 
 describe('photoStore', () => {
@@ -45,19 +46,13 @@ describe('photoStore', () => {
         'other_key',
         123, // Invalid key type to test filtering
       ]);
-
-      vi.mocked(idb.get).mockImplementation(async (key) => {
-        if (key === 'heliotrip_photo_1') return mockPhoto1;
-        if (key === 'heliotrip_photo_2') return mockPhoto2;
-        return undefined;
-      });
+      vi.mocked(idb.getMany).mockResolvedValue([mockPhoto1, mockPhoto2]);
 
       const photos = await loadAllPhotos();
 
       expect(idb.keys).toHaveBeenCalledTimes(1);
-      expect(idb.get).toHaveBeenCalledTimes(2);
-      expect(idb.get).toHaveBeenCalledWith('heliotrip_photo_1');
-      expect(idb.get).toHaveBeenCalledWith('heliotrip_photo_2');
+      expect(idb.getMany).toHaveBeenCalledTimes(1);
+      expect(idb.getMany).toHaveBeenCalledWith(['heliotrip_photo_1', 'heliotrip_photo_2']);
 
       // Should be sorted by timestamp descending (newest first)
       expect(photos).toEqual([mockPhoto2, mockPhoto1]);
@@ -65,17 +60,18 @@ describe('photoStore', () => {
 
     it('returns an empty array if no photos are found', async () => {
       vi.mocked(idb.keys).mockResolvedValue(['other_key']);
+      vi.mocked(idb.getMany).mockResolvedValue([]);
 
       const photos = await loadAllPhotos();
 
       expect(idb.keys).toHaveBeenCalledTimes(1);
-      expect(idb.get).not.toHaveBeenCalled();
+      expect(idb.getMany).toHaveBeenCalledWith([]);
       expect(photos).toEqual([]);
     });
 
     it('handles undefined results from idb.get', async () => {
       vi.mocked(idb.keys).mockResolvedValue(['heliotrip_photo_1']);
-      vi.mocked(idb.get).mockResolvedValue(undefined);
+      vi.mocked(idb.getMany).mockResolvedValue([undefined]);
 
       const photos = await loadAllPhotos();
 

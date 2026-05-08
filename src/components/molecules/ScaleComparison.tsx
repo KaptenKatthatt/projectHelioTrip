@@ -24,6 +24,7 @@ const REAL_RADIUS: Partial<Record<BodyId, number>> = {
   titan: 0.404,
   triton: 0.212,
   iss: 0.00006,
+  sputnik: 0.000000046,
 };
 
 const COMPARE_OPTIONS: PlanetId[] = ["sun", "earth", "jupiter", "mars"];

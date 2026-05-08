@@ -145,6 +145,7 @@ export type Translation = {
       water_hunt: { title: string; description: string };
       gravity_sling: { title: string; description: string };
       photo_safari: { title: string; description: string };
+      sputnik_hunt: { title: string; description: string };
     };
     steps: Record<string, string>;
   };

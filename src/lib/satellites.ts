@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import type { PlanetId } from './planets';
 
-export type SatelliteId = 'iss';
+export type SatelliteId = 'iss' | 'sputnik';
 
 export type SatelliteDefinition = {
   id: SatelliteId;
@@ -31,6 +31,10 @@ export type SatelliteDefinition = {
   glbPath?: string;
   /** Scale override for the GLB model. Falls back to radius if omitted. */
   glbScale?: number;
+  /** Optional manual rotation offset [x, y, z] in radians for the 3D model. */
+  glbRotation?: readonly [number, number, number];
+  /** Optional vertical offset in scene units to fake non-Keplerian halo orbits. */
+  yOffset?: number;
 };
 
 const DEG = Math.PI / 180;
@@ -49,15 +53,28 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
     glbPath: '/International_Space_Station_(ISS)_(A).glb',
     glbScale: 0.005,
   },
+  {
+    id: 'sputnik',
+    parent: 'earth',
+    radius: 0.03, // Smaller standard radius than ISS (good for UI)
+    color: '#a0a0a0', // Gray/silver color
+    orbitRadius: 1.5, // Make the radius a bit tighter since we lift it up
+    periodDays: 1, // Exact same speed as ISS
+    inclination: 0, // 0 = Completely horizontal orbit
+    yOffset: 1.2, // Lifts the orbit over the northern hemisphere (height with Russia)
+    ascendingNode: Math.PI / 2, // Offset so it doesn't overlap
+    phase: Math.PI, // Offset starting position in the orbit
+    glbPath: '/sputnik_cleaned.glb',
+    glbScale: 0.02, // You may need to adjust this when you see the model in 3D
+  },
 ];
 
 const SATELLITE_MAP: ReadonlyMap<SatelliteId, SatelliteDefinition> = new Map(
   SATELLITES.map((s) => [s.id, s]),
 );
 
-export const getSatellite = (
-  id: SatelliteId,
-): SatelliteDefinition | undefined => SATELLITE_MAP.get(id);
+export const getSatellite = (id: SatelliteId): SatelliteDefinition | undefined =>
+  SATELLITE_MAP.get(id);
 
 const MS_PER_DAY = 86_400_000;
 
@@ -91,6 +108,6 @@ export const computeSatelliteOffset = (
 
   const cosA = Math.cos(sat.ascendingNode);
   const sinA = Math.sin(sat.ascendingNode);
-  out.set(x1 * cosA + z1 * sinA, y1, -x1 * sinA + z1 * cosA);
+  out.set(x1 * cosA + z1 * sinA, y1 + (sat.yOffset ?? 0), -x1 * sinA + z1 * cosA);
   return out;
 };

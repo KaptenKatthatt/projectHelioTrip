@@ -60,9 +60,11 @@ const MOON_SLUGS: Record<Locale, Record<MoonId, string>> = {
 const SATELLITE_SLUGS: Record<Locale, Record<SatelliteId, string>> = {
   en: {
     iss: 'International_Space_Station',
+    sputnik: 'Sputnik_1',
   },
   sv: {
     iss: 'Internationella_rymdstationen',
+    sputnik: 'Sputnik_1',
   },
 };
 
