@@ -194,16 +194,16 @@ export const buildApp = (): Hono => {
 
 
   app.get('/analytics/summary', async (c) => {
-    if (!(await canAccessAnalyticsSummary(c))) {
-      return c.json({ error: 'forbidden' }, 403);
-    }
     try {
+      if (!(await canAccessAnalyticsSummary(c))) {
+        return c.json({ error: 'forbidden' }, 403);
+      }
       const analyticsStore = await import('./analyticsStore.js');
       const summary = await analyticsStore.readAnalyticsSummary();
       c.header('Cache-Control', 'no-store');
       return c.json(summary);
     } catch (error) {
-      console.error('Failed to read analytics summary', error);
+      console.error('Failed to read analytics summary', { error });
       return c.json({ error: 'internal' }, 500);
     }
   });
