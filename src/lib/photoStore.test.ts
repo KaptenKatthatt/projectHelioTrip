@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { savePhoto, loadAllPhotos, deletePhoto, Photo } from './photoStore';
+import { savePhoto, loadAllPhotos, deletePhoto } from './photoStore';
+import type { Photo } from './photoStore';
 import * as idb from 'idb-keyval';
 
 vi.mock('idb-keyval', () => ({
