@@ -170,6 +170,26 @@ export const MISSION_DEFINITIONS: ReadonlyArray<MissionDefinition> = [
       },
     ],
   },
+  {
+    id: "sputnik_hunt",
+    availableModes: ["challenge"],
+    titleKey: "sputnik_hunt.title",
+    descriptionKey: "sputnik_hunt.description",
+    ordered: true,
+    steps: [
+      {
+        id: "find_sputnik",
+        trigger: { kind: "visit_body", bodyId: "sputnik" },
+        copyKey: "sputnik_hunt.find_sputnik",
+        triggersQuizId: "quiz_sputnik_year",
+      },
+      {
+        id: "answer_quiz",
+        trigger: { kind: "quiz_completed", quizId: "quiz_sputnik_year" },
+        copyKey: "sputnik_hunt.answer_quiz",
+      },
+    ],
+  },
 ];
 
 export const getMissionDefinition = (
