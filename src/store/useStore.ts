@@ -41,11 +41,10 @@ const completedMissionIdsList = (
     .map(([id]) => id);
 
 const dispatchDomainEvent = (event: MissionDomainEvent): void => {
-  const state = useStore.getState();
   const nowMs = Date.now();
 
-  applyMissionEventProgress(
-    state,
+  const missionJustCompleted = applyMissionEventProgress(
+    useStore.getState(),
     event,
     nowMs,
     useStore.setState,
@@ -53,10 +52,18 @@ const dispatchDomainEvent = (event: MissionDomainEvent): void => {
     useStore.getState().triggerQuiz,
   );
 
-  const achievementTrigger = resolveAchievementTrigger(event);
-  if (!achievementTrigger) return;
+  const tryUnlock = (trigger: NonNullable<ReturnType<typeof resolveAchievementTrigger>>): void => {
+    unlockAchievements(trigger, nowMs, useStore.getState(), useStore.setState);
+  };
 
-  unlockAchievements(achievementTrigger, nowMs, state, useStore.setState);
+  const achievementTrigger = resolveAchievementTrigger(event);
+  if (achievementTrigger) {
+    tryUnlock(achievementTrigger);
+  }
+
+  if (missionJustCompleted) {
+    tryUnlock({ kind: 'mission_completed' });
+  }
 };
 
 const buildShareLinkPartialState = (snapshot: ShareLinkState, state: Store): Partial<Store> => {

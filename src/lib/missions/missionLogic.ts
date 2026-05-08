@@ -14,11 +14,11 @@ export const applyMissionEventProgress = (
   setState: (update: Partial<Store>) => void,
   awardXp: (amount: number) => void,
   triggerQuiz: (quizId: string) => void,
-): void => {
-  if (state.activeMissionId === null) return;
+): boolean => {
+  if (state.activeMissionId === null) return false;
   const mission = getMissionDefinition(state.activeMissionId);
   const progress = state.missionProgress[state.activeMissionId];
-  if (!mission || !progress || progress.completed) return;
+  if (!mission || !progress || progress.completed) return false;
 
   const result = evaluateMissionStep({
     mission,
@@ -26,7 +26,7 @@ export const applyMissionEventProgress = (
     event,
     nowMs,
   });
-  if (result.newlyCompletedStepIds.length === 0) return;
+  if (result.newlyCompletedStepIds.length === 0) return false;
 
   setState({
     missionProgress: {
@@ -42,11 +42,12 @@ export const applyMissionEventProgress = (
       triggerQuiz(stepDef.triggersQuizId);
     }
   }
-  if (!result.missionJustCompleted) return;
+  if (!result.missionJustCompleted) return false;
   analytics.missionCompleted(mission.id);
   const isAdventure = mission.id === 'water_hunt' || mission.id === 'gravity_sling';
   awardXp(isAdventure ? XP_AWARDS.adventureMissionCompleted : XP_AWARDS.missionCompleted);
   // Note: unlockAchievements is handled by the coordinator (dispatchDomainEvent)
+  return true;
 };
 
 export const resolveAchievementTrigger = (event: MissionDomainEvent): AchievementTrigger | null => {

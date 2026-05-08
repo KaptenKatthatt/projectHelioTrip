@@ -17,6 +17,14 @@ export const parseDateKeyToUtcMs = (dateKey: string): number | null => {
     return null;
   }
   if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const candidate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    candidate.getUTCFullYear() !== year ||
+    candidate.getUTCMonth() + 1 !== month ||
+    candidate.getUTCDate() !== day
+  ) {
+    return null;
+  }
   return Date.UTC(year, month - 1, day);
 };
 

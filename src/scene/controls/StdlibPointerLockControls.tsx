@@ -5,7 +5,7 @@ import {
   type RootState,
   type ThreeElement,
 } from '@react-three/fiber';
-import { useEffect, useMemo, type Ref } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import { PointerLockControls as PointerLockControlsImpl } from 'three-stdlib';
 
 type ExtractCallback<T, E extends string> = T extends {
@@ -35,18 +35,23 @@ type StdlibPointerLockControlsProps = Omit<ThreeElement<typeof PointerLockContro
  * Same behavior as `@react-three/drei`'s PointerLockControls (wrapper around
  * `three-stdlib`), without importing `drei` at runtime.
  */
-export const StdlibPointerLockControls = ({
+export const StdlibPointerLockControls = forwardRef<
+  PointerLockControlsImpl,
+  StdlibPointerLockControlsProps
+>(function StdlibPointerLockControls(
+  {
+    domElement,
+    selector,
+    onChange,
+    onLock,
+    onUnlock,
+    enabled = true,
+    makeDefault,
+    camera,
+    ...props
+  },
   ref,
-  domElement,
-  selector,
-  onChange,
-  onLock,
-  onUnlock,
-  enabled = true,
-  makeDefault,
-  camera,
-  ...props
-}: StdlibPointerLockControlsProps & { ref?: Ref<PointerLockControlsImpl> }) => {
+) {
   const setEvents = useThree((state) => state.setEvents);
   const gl = useThree((state) => state.gl);
   const defaultCamera = useThree((state) => state.camera);
@@ -143,6 +148,6 @@ export const StdlibPointerLockControls = ({
   }, [makeDefault, controls, get, set]);
 
   return <primitive ref={ref} object={controls} {...props} />;
-};
+});
 
 StdlibPointerLockControls.displayName = 'StdlibPointerLockControls';
