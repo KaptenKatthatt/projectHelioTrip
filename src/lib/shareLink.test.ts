@@ -87,5 +87,33 @@ describe("shareLink", () => {
         missionId: "solar_system_start",
       }),
     ).toBe("mission");
+
+    // Precedence: missionId > bodyId > gameMode > default
+    expect(
+      inferShareLinkContextType({
+        ...base,
+        bodyId: "mars", // should be ignored since missionId is set
+        gameMode: "explore",
+        missionId: "jupiter_moons",
+      }),
+    ).toBe("mission");
+
+    expect(
+      inferShareLinkContextType({
+        ...base,
+        bodyId: "mars", // should be ignored since missionId is set
+        gameMode: "learn", // should be ignored since missionId is set
+        missionId: "jupiter_moons",
+      }),
+    ).toBe("mission");
+
+    expect(
+      inferShareLinkContextType({
+        ...base,
+        bodyId: "mars",
+        gameMode: "learn", // should be ignored since bodyId is set
+        missionId: null,
+      }),
+    ).toBe("body");
   });
 });
