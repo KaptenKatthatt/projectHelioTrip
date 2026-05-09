@@ -148,7 +148,7 @@ export const GravityDropLab = () => {
   const funFact = getFunFact(selectedPlanet, grav);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-testid="gravity-drop-lab" className="flex flex-col gap-4">
       {/* Title */}
       <h3 className="text-sm font-semibold tracking-tight text-white/90">
         🍎 {grav.title}
@@ -222,6 +222,7 @@ export const GravityDropLab = () => {
 
       {/* Drop canvas */}
       <div
+        data-testid="drop-canvas"
         className={styles.dropCanvas}
         style={{
           background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 70%, ${planet.color}30 85%, ${planet.color}50 100%)`,
@@ -252,6 +253,7 @@ export const GravityDropLab = () => {
 
         {/* Falling object */}
         <div
+          data-testid="falling-object"
           className={`${styles.fallingObject} ${impactClass}`}
           style={{
             top: `${topPercent}%`,
@@ -289,6 +291,7 @@ export const GravityDropLab = () => {
       <div className="flex gap-2">
         {canDrop && (
           <button
+            data-testid="drop-button"
             type="button"
             onClick={handleDrop}
             className={`pointer-events-auto flex-1 rounded-xl border border-indigo-400/30 bg-indigo-400/10 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-indigo-300 transition hover:bg-indigo-400/20 active:scale-95 ${styles.dropButtonReady}`}
@@ -298,6 +301,7 @@ export const GravityDropLab = () => {
         )}
         {(phase === "falling" || phase === "impact") && (
           <button
+            data-testid="reset-button"
             type="button"
             onClick={handleReset}
             className="pointer-events-auto flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 active:scale-95"
@@ -309,7 +313,7 @@ export const GravityDropLab = () => {
 
       {/* Live velocity readout during fall */}
       {phase === "falling" && (
-        <div className="flex justify-between text-[11px] font-mono text-white/40">
+        <div data-testid="velocity-readout" className="flex justify-between text-[11px] font-mono text-white/40">
           <span>t = {numFmt.format(frame.elapsed)}s</span>
           <span>v = {numFmt.format(frame.velocity)} m/s</span>
         </div>
@@ -317,7 +321,7 @@ export const GravityDropLab = () => {
 
       {/* Result card */}
       {showResult && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+        <div data-testid="result-card" className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
           <div className="space-y-1.5">
             <div className={`flex justify-between text-xs ${styles.resultRow}`}
               style={{ "--result-row-index": 0 } as CSSProperties}>
