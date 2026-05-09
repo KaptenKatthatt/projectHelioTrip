@@ -12,7 +12,7 @@ import { MissionCard } from "../../organisms/MissionCard";
 import { PlanetPanel, type PanelTab } from "../../organisms/PlanetPanel";
 import { PlanetSelector } from "../../organisms/PlanetSelector";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
-import { LabAccordion } from "../../molecules/LabAccordion";
+import { LabOverlayContent } from "../../organisms/LabOverlay";
 import { useStore } from "../../../store/useStore";
 
 type HudDetailRegionProps = {
@@ -148,9 +148,10 @@ export const HudDetailRegion = ({
         open={openNavSheet === "lab"}
         onClose={closeNavSheets}
         title={t.phase3.gameMode.lab}
+        panelClassName="max-h-[90dvh]"
       >
-        <div className="p-3">
-          <LabAccordion />
+        <div className="h-full overflow-y-auto p-3">
+          <LabOverlayContent />
         </div>
       </BottomSheet>
 

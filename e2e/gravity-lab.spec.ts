@@ -7,7 +7,7 @@ import {
 
 // Full Gravity-Lab functional test surface. Runs only on the `chromium`
 // project (no `testMatch` override). The three viewport-critical tests
-// (smoke, headline drop, accordion default) live in
+// (smoke, headline drop, default drop tab) live in
 // `gravity-lab.viewport.spec.ts` and run on every viewport project.
 //
 // App boot has a ~5 s minimum LoadingScreen gate; drops can take up to
@@ -260,34 +260,59 @@ test.describe("Gravitationslabbet – återställning", () => {
   });
 });
 
-// ── Accordion toggle ─────────────────────────────────────────────────────────
+// ── Tab switcher ──────────────────────────────────────────────────────────────
 
-test.describe("Gravitationslabbet – ackordeon", () => {
-  test("toggling to Orbit section collapses Drop and shows slider", async ({
+test.describe("Gravitationslabbet – fliknavigation", () => {
+  test("Drop tab is selected by default and GravityDropLab is visible", async ({
     page,
   }) => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
-    const orbitToggle = scope.getByRole("button", { name: /Banmekanik/ });
-    await orbitToggle.click();
-    await expect(orbitToggle).toHaveAttribute("aria-expanded", "true");
-
-    await expect(scope.getByRole("slider")).toBeVisible({ timeout: 5000 });
-    await expect(scope.getByText(/Solens Massa/)).toBeVisible();
+    await expect(scope.getByTestId("lab-tab-drop")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(scope.getByTestId("lab-tab-orbit")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
+    await expect(scope.getByTestId("gravity-drop-lab")).toBeVisible();
   });
 
-  test("toggling back to Drop re-expands GravityDropLab", async ({ page }) => {
+  test("switching to Orbit tab shows the sun mass slider", async ({ page }) => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
-    await scope.getByRole("button", { name: /Banmekanik/ }).click();
-    await expect(scope.getByRole("slider")).toBeVisible({ timeout: 5000 });
+    await scope.getByTestId("lab-tab-orbit").click();
 
-    await scope.getByRole("button", { name: /Gravitationslabbet/ }).click();
+    await expect(scope.getByTestId("lab-tab-orbit")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(scope.getByTestId("lab-tab-drop")).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
+    await expect(scope.getByRole("slider")).toBeVisible({ timeout: 2000 });
+    await expect(scope.getByText(/Solens Massa/)).toBeVisible();
+    await expect(scope.getByTestId("gravity-drop-lab")).toHaveCount(0);
+  });
+
+  test("switching back to Drop tab re-shows GravityDropLab", async ({
+    page,
+  }) => {
+    await bootstrapSv(page);
+    const scope = await openLabMode(page);
+
+    await scope.getByTestId("lab-tab-orbit").click();
+    await expect(scope.getByRole("slider")).toBeVisible({ timeout: 2000 });
+
+    await scope.getByTestId("lab-tab-drop").click();
     await expect(scope.getByTestId("gravity-drop-lab")).toBeVisible({
-      timeout: 5000,
+      timeout: 2000,
     });
+    await expect(scope.getByRole("slider")).toHaveCount(0);
   });
 });
 
@@ -300,7 +325,7 @@ test.describe("Gravitationslabbet – omloppskontroller", () => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
-    await scope.getByRole("button", { name: /Banmekanik/ }).click();
+    await scope.getByTestId("lab-tab-orbit").click();
     await expect(scope.getByRole("slider")).toBeVisible({ timeout: 5000 });
 
     await expect(scope.getByText("Solens Massa: 1.0x")).toBeVisible();
@@ -311,7 +336,7 @@ test.describe("Gravitationslabbet – omloppskontroller", () => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
-    await scope.getByRole("button", { name: /Banmekanik/ }).click();
+    await scope.getByTestId("lab-tab-orbit").click();
     const slider = scope.getByRole("slider");
     await expect(slider).toBeVisible({ timeout: 5000 });
 
@@ -323,7 +348,7 @@ test.describe("Gravitationslabbet – omloppskontroller", () => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
-    await scope.getByRole("button", { name: /Banmekanik/ }).click();
+    await scope.getByTestId("lab-tab-orbit").click();
     const slider = scope.getByRole("slider");
     await expect(slider).toBeVisible({ timeout: 5000 });
 
@@ -334,5 +359,21 @@ test.describe("Gravitationslabbet – omloppskontroller", () => {
     await expect(scope.getByText("Solens Massa: 1.0x")).toBeVisible({
       timeout: 5000,
     });
+  });
+});
+
+test.describe("Labbläge – gränssnittsfokus (desktop)", () => {
+  test("NavigationAccordion and ProgressPanel are absent in lab mode", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await bootstrapSv(page);
+    await openLabMode(page);
+
+    await expect(
+      page.getByRole("navigation").filter({ hasText: /Planeter|Planets/ }),
+    ).toHaveCount(0, { timeout: 3000 });
+
+    await expect(page.getByRole("radio", { name: "Labb" })).toBeVisible();
   });
 });

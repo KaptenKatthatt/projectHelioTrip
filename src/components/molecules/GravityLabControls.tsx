@@ -1,7 +1,7 @@
 import { useStore } from "../../store/useStore";
 
 type GravityLabControlsProps = {
-  /** When true, renders without the outer panel container (for use inside LabAccordion). */
+  /** When true, renders without the outer panel container (for use inside LabOverlay). */
   readonly embedded?: boolean;
 };
 

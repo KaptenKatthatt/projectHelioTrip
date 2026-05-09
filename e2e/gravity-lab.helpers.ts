@@ -52,13 +52,11 @@ export async function setRangeValue(
 /**
  * Scope all subsequent queries to the *active* Lab UI container.
  *
- * On mobile (<640 px) two copies of `LabAccordion` are mounted in the DOM:
- * the always-rendered desktop side panel and the BottomSheet that opens
- * when the user taps "Labb" in the bottom nav. We must scope the test to
- * the dialog the user is interacting with.
+ * On mobile (<640 px) lab UI lives only in the BottomSheet opened from the
+ * bottom nav, so we scope queries to that dialog when it is open.
  *
- * On tablet/desktop (≥640 px) no dialog exists — there is a single
- * `LabAccordion` mounted as a fixed side panel, so we scope to the page.
+ * On tablet/desktop (≥640 px) there is no lab dialog — `LabOverlay` is a
+ * fixed panel, so we scope to the page body.
  */
 export async function getLabScope(page: Page): Promise<Locator> {
   const dialog = page.getByRole("dialog", { name: "Labb" });

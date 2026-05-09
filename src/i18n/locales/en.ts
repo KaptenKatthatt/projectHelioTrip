@@ -309,6 +309,8 @@ export const en: Translation = {
     labAccordion: {
       orbitTitle: 'Orbital Mechanics — Sun Mass',
       dropTitle: 'Gravity Lab — Drop & Compare',
+      orbitTabLabel: 'Orbital Mechanics',
+      dropTabLabel: 'Gravity Lab',
     },
     xpTitles: {
       rookie: 'Rookie',

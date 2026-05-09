@@ -43,6 +43,7 @@ export interface GameState {
   gravityLabActive: boolean;
   sunMassMultiplier: number;
   gravityLabResetTrigger: number;
+  activeLabGame: "drop" | "orbit";
 }
 
 export interface GameActions {
@@ -60,6 +61,7 @@ export interface GameActions {
   setGravityLabActive: (active: boolean) => void;
   setSunMassMultiplier: (multiplier: number) => void;
   triggerGravityLabReset: () => void;
+  setActiveLabGame: (game: "drop" | "orbit") => void;
 }
 
 export type GameSlice = GameState & GameActions;
@@ -84,8 +86,14 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set)
   gravityLabActive: false,
   sunMassMultiplier: 1.0,
   gravityLabResetTrigger: 0,
+  activeLabGame: "drop",
 
-  setGameMode: (mode) => set((state) => ({ gameMode: mode, activeMissionId: mode === 'explore' ? null : state.activeMissionId })),
+  setGameMode: (mode) =>
+    set((state) => ({
+      gameMode: mode,
+      activeMissionId: mode === "explore" ? null : state.activeMissionId,
+      activeLabGame: mode !== "lab" ? "drop" : state.activeLabGame,
+    })),
   startMission: () => {}, // Placeholder, will be implemented in store.ts
   abandonMission: () => set({ activeMissionId: null }),
   acknowledgeAchievement: () => set({ recentAchievement: null }),
@@ -99,4 +107,5 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set)
   setGravityLabActive: (active) => set({ gravityLabActive: active }),
   setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
   triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
+  setActiveLabGame: (game) => set({ activeLabGame: game }),
 });

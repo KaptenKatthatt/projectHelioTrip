@@ -209,6 +209,8 @@ export type Translation = {
     labAccordion: {
       orbitTitle: string;
       dropTitle: string;
+      orbitTabLabel: string;
+      dropTabLabel: string;
     };
     xpTitles: {
       rookie: string;

@@ -4,7 +4,7 @@ import { bootstrapSv, openLabMode } from "./gravity-lab.helpers";
 // Viewport-critical Gravity-Lab tests: the small set that *must* run on every
 // `playwright.config.ts` viewport project (chromium, lab-mobile, lab-tablet)
 // because it asserts the layout-specific entry path, the headline drop
-// regression and the layout-specific accordion mount. The bulk of the
+// regression and the layout-specific lab tab mount. The bulk of the
 // functional surface lives in `gravity-lab.spec.ts` (chromium-only).
 
 test.describe.configure({ timeout: 90_000, mode: "parallel" });
@@ -52,15 +52,15 @@ test.describe("Gravitationslabbet (viewport) – fall mot marken (kritisk)", () 
   });
 });
 
-test.describe("Gravitationslabbet (viewport) – ackordeon", () => {
-  test("Drop section is open by default", async ({ page }) => {
+test.describe("Gravitationslabbet (viewport) – flikar", () => {
+  test("Drop tab is selected by default", async ({ page }) => {
     await bootstrapSv(page);
     const scope = await openLabMode(page);
 
     await expect(scope.getByTestId("gravity-drop-lab")).toBeVisible();
-    const dropToggle = scope.getByRole("button", {
-      name: /Gravitationslabbet/,
-    });
-    await expect(dropToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(scope.getByTestId("lab-tab-drop")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
   });
 });
