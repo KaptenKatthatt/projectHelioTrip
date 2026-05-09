@@ -12,19 +12,21 @@ import { useStore } from "../../../store/useStore";
 const LazyScene = lazy(async () => {
   const { Scene } = await import("../../../scene/Scene");
   return {
-    default: (props: { readonly onSceneReady?: () => void }) => (
-      <Scene {...props} />
-    ),
+    default: (props: {
+      readonly onSceneReady?: () => void;
+      readonly onSceneMounted?: () => void;
+    }) => <Scene {...props} />,
   };
 });
 
 interface SceneRouterProps {
   sceneMountKey: number;
   handleSceneReady: () => void;
+  handleSceneMounted: () => void;
   handleRetryScene: () => void;
 }
 
-export const SceneRouter = memo(({ sceneMountKey, handleSceneReady, handleRetryScene }: SceneRouterProps) => {
+export const SceneRouter = memo(({ sceneMountKey, handleSceneReady, handleSceneMounted, handleRetryScene }: SceneRouterProps) => {
   const isLanded = useStore((s) => s.isLanded);
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const moonTransitionState = useStore((s) => s.moonTransitionState);
@@ -44,7 +46,11 @@ export const SceneRouter = memo(({ sceneMountKey, handleSceneReady, handleRetryS
     >
       <SceneErrorBoundary onRetry={handleRetryScene}>
         <Suspense fallback={null}>
-          <LazyScene key={sceneMountKey} onSceneReady={handleSceneReady} />
+          <LazyScene
+            key={sceneMountKey}
+            onSceneReady={handleSceneReady}
+            onSceneMounted={handleSceneMounted}
+          />
         </Suspense>
       </SceneErrorBoundary>
     </div>

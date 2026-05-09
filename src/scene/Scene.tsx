@@ -59,15 +59,34 @@ const LazyPlanetOrbitControls = lazy(async () => {
 type SceneProps = {
   /** Fires once after the WebGL renderer is created (first interactive shell). */
   readonly onSceneReady?: () => void;
+  /**
+   * Fires once when this React component first mounts — i.e. when the
+   * lazy chunk has finished downloading and React has rendered the tree.
+   * This is *before* `onSceneReady`, which only fires after R3F's
+   * `<Canvas>` has bootstrapped its WebGL renderer.
+   *
+   * Splitting the two signals lets `App.tsx` distinguish
+   * "the JS chunk is still downloading" (expected on a cold dev server,
+   * or on a slow client network) from "the WebGL renderer is stuck"
+   * (a real bug worth logging).
+   */
+  readonly onSceneMounted?: () => void;
 };
 
-export const Scene = ({ onSceneReady }: SceneProps) => {
+export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
   const sceneReadyFiredRef = useRef(false);
+  const sceneMountedFiredRef = useRef(false);
   const handleCanvasCreated = useCallback(() => {
     if (sceneReadyFiredRef.current) return;
     sceneReadyFiredRef.current = true;
     onSceneReady?.();
   }, [onSceneReady]);
+
+  useEffect(() => {
+    if (sceneMountedFiredRef.current) return;
+    sceneMountedFiredRef.current = true;
+    onSceneMounted?.();
+  }, [onSceneMounted]);
 
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
