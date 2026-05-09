@@ -60,7 +60,11 @@ export const GravityDropLab = () => {
   const [frame, setFrame] = useState<DropFrame>(() => ({ ...INITIAL_DROP_FRAME }));
 
   const rafRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(0);
+  // `null` means "not yet anchored" — the next rAF tick supplies the start
+  // timestamp. Anchoring on `performance.now()` from `handleDrop` produces a
+  // negative `elapsed` on the first frame because the rAF callback receives
+  // the *frame's* start time, which can predate `performance.now()`.
+  const startTimeRef = useRef<number | null>(null);
   const gravityRef = useRef(planet.surfaceGravity);
   const tickRef = useRef<(timestamp: number) => void>(() => {});
 
@@ -70,7 +74,10 @@ export const GravityDropLab = () => {
 
   useLayoutEffect(() => {
     tickRef.current = (timestamp: number) => {
-      const elapsed = (timestamp - startTimeRef.current) / 1000;
+      if (startTimeRef.current === null) {
+        startTimeRef.current = timestamp;
+      }
+      const elapsed = Math.max(0, (timestamp - startTimeRef.current) / 1000);
       const nextFrame = computeDropFrame(
         gravityRef.current,
         DROP_HEIGHT_METERS,
@@ -125,7 +132,7 @@ export const GravityDropLab = () => {
   const handleDrop = useCallback(() => {
     setPhase("falling");
     setFrame({ ...INITIAL_DROP_FRAME });
-    startTimeRef.current = performance.now();
+    startTimeRef.current = null;
     rafRef.current = requestAnimationFrame((t) => tickRef.current(t));
   }, []);
 
