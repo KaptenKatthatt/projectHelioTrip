@@ -23,5 +23,15 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "lab-mobile",
+      use: { viewport: { width: 390, height: 844 } },
+      testMatch: "**/gravity-lab.spec.ts",
+    },
+    {
+      name: "lab-tablet",
+      use: { viewport: { width: 768, height: 1024 } },
+      testMatch: "**/gravity-lab.spec.ts",
+    },
   ],
 });
