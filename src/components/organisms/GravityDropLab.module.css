@@ -23,7 +23,7 @@
 .dropCanvasDesktop {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 180px;
   border-radius: 16px;
   overflow: hidden;
   background: linear-gradient(180deg, transparent 0%, transparent 85%, var(--surface-color, #333) 85%);

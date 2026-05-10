@@ -382,14 +382,16 @@ export const GravityDropLab = () => {
             </div>
           )}
 
-          {/* Pedagogical message — always visible */}
-          <div className={`rounded-lg border border-amber-400/20 bg-amber-400/5 ${isNotCompact ? "mt-2 px-2 py-1" : "mt-3 px-3 py-2"}`}>
-            <p className="text-[11px] leading-relaxed text-amber-200/80">
-              💡 {grav.factAllFallSame}
-            </p>
-          </div>
+          {/* Pedagogical message — only on mobile */}
+          {isCompact && (
+            <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
+              <p className="text-[11px] leading-relaxed text-amber-200/80">
+                💡 {grav.factAllFallSame}
+              </p>
+            </div>
+          )}
 
-          {/* Planet fun fact */}
+          {/* Planet fun fact — only on mobile */}
           {funFact && isCompact && (
             <p className="mt-2 text-[10px] italic leading-relaxed text-white/35">
               {funFact}
