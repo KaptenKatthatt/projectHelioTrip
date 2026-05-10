@@ -1,9 +1,9 @@
 /**
  * Game and Progression State Slice
- * 
- * Handles game modes, mission progress, achievements, XP, and learning 
+ *
+ * Handles game modes, mission progress, achievements, XP, and learning
  * features like quizzes and streaks.
- * 
+ *
  * Key Variables:
  * - gameMode: 'explore', 'learn', or 'challenge'.
  * - xp: Total experience points earned.
@@ -43,6 +43,7 @@ export interface GameState {
   gravityLabActive: boolean;
   sunMassMultiplier: number;
   gravityLabResetTrigger: number;
+  activeLabGame: 'drop' | 'orbit';
 }
 
 export interface GameActions {
@@ -60,6 +61,8 @@ export interface GameActions {
   setGravityLabActive: (active: boolean) => void;
   setSunMassMultiplier: (multiplier: number) => void;
   triggerGravityLabReset: () => void;
+  setActiveLabGame: (game: 'drop' | 'orbit') => void;
+  closeLab: () => void;
 }
 
 export type GameSlice = GameState & GameActions;
@@ -84,8 +87,18 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set)
   gravityLabActive: false,
   sunMassMultiplier: 1.0,
   gravityLabResetTrigger: 0,
+  activeLabGame: 'drop',
 
-  setGameMode: (mode) => set((state) => ({ gameMode: mode, activeMissionId: mode === 'explore' ? null : state.activeMissionId })),
+  setGameMode: (mode) =>
+    set((state) => {
+      // When leaving lab mode, reset lab game state
+      const shouldResetLabGame = state.gameMode === 'lab' && mode !== 'lab';
+      return {
+        gameMode: mode,
+        activeMissionId: mode === 'explore' ? null : state.activeMissionId,
+        activeLabGame: shouldResetLabGame ? 'drop' : state.activeLabGame,
+      };
+    }),
   startMission: () => {}, // Placeholder, will be implemented in store.ts
   abandonMission: () => set({ activeMissionId: null }),
   acknowledgeAchievement: () => set({ recentAchievement: null }),
@@ -98,5 +111,15 @@ export const createGameSlice: StateCreator<GameSlice, [], [], GameSlice> = (set)
   claimPatienceReward: () => false, // Placeholder
   setGravityLabActive: (active) => set({ gravityLabActive: active }),
   setSunMassMultiplier: (multiplier) => set({ sunMassMultiplier: multiplier }),
-  triggerGravityLabReset: () => set((state) => ({ gravityLabResetTrigger: state.gravityLabResetTrigger + 1, sunMassMultiplier: 1.0 })),
+  triggerGravityLabReset: () =>
+    set((state) => ({
+      gravityLabResetTrigger: state.gravityLabResetTrigger + 1,
+      sunMassMultiplier: 1.0,
+    })),
+  setActiveLabGame: (game) => set({ activeLabGame: game }),
+  closeLab: () =>
+    set(() => ({
+      gameMode: 'explore',
+      activeLabGame: 'drop',
+    })),
 });

@@ -10,7 +10,7 @@ import { NavigationAccordion } from "../../organisms/NavigationAccordion";
 import { PlanetPanel } from "../../organisms/PlanetPanel";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
 
-import { useActiveBodyViewGameMode } from "../../../hooks/useActiveBodyViewGameMode";
+import { useStore } from "../../../store/useStore";
 
 type HudPrimaryNavRegionProps = {
   readonly mobileLayout: boolean;
@@ -31,7 +31,8 @@ export const HudPrimaryNavRegion = ({
   expandPanelLabel,
   progressTitle,
 }: HudPrimaryNavRegionProps) => {
-  const { gameMode } = useActiveBodyViewGameMode();
+  const gameMode = useStore((s) => s.gameMode);
+  if (gameMode === "lab") return null;
 
   return (
     <>
@@ -89,12 +90,12 @@ export const HudPrimaryNavRegion = ({
             ) : null}
             <FreeFlightHelp />
           </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl bg-linear-to-t from-black/30 to-transparent"
-        />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl bg-linear-to-t from-black/30 to-transparent"
+          />
+        </div>
       </div>
-    </div>
-  </>
-    );
+    </>
+  );
 };

@@ -6,9 +6,10 @@ import {
   useRef,
   useState,
   type CSSProperties,
-} from "react";
-import { useTranslation } from "../../hooks/useTranslation";
-import type { Translation } from "../../i18n/translations";
+} from 'react';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { Translation } from '../../i18n/translations';
 import {
   DROPPABLE_OBJECTS,
   DROP_HEIGHT_METERS,
@@ -18,17 +19,17 @@ import {
   type DroppableObjectId,
   type GravityPlanetId,
   type ImpactType,
-} from "../../lib/learning/gravityData";
+} from '../../lib/learning/gravityData';
 import {
   computeDropFrame,
   computeImpactResult,
   type DropFrame,
-} from "../../lib/learning/gravityDropEngine";
-import styles from "./GravityDropLab.module.css";
+} from '../../lib/learning/gravityDropEngine';
+import styles from './GravityDropLab.module.css';
 
 // -- State machine types --
 
-type Phase = "ready" | "falling" | "impact";
+type Phase = 'ready' | 'falling' | 'impact';
 
 const INITIAL_DROP_FRAME: DropFrame = {
   y: 0,
@@ -43,24 +44,29 @@ const INITIAL_DROP_FRAME: DropFrame = {
 export const GravityDropLab = () => {
   const { t, locale } = useTranslation();
   const grav = t.learn.gravityLab;
+  const layoutTier = useResponsiveLayout();
+  const isCompact = layoutTier === 'compact';
+  const isNotCompact = layoutTier !== 'compact';
 
   // Selections
-  const [selectedObject, setSelectedObject] =
-    useState<DroppableObjectId>("apple");
-  const [selectedPlanet, setSelectedPlanet] =
-    useState<GravityPlanetId>("earth");
+  const [selectedObject, setSelectedObject] = useState<DroppableObjectId>('apple');
+  const [selectedPlanet, setSelectedPlanet] = useState<GravityPlanetId>('earth');
 
   const planet = getGravityPlanet(selectedPlanet)!;
   const obj = getDroppableObject(selectedObject)!;
 
   // State machine
-  const [phase, setPhase] = useState<Phase>("ready");
+  const [phase, setPhase] = useState<Phase>('ready');
 
   // Animation state
   const [frame, setFrame] = useState<DropFrame>(() => ({ ...INITIAL_DROP_FRAME }));
 
   const rafRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(0);
+  // `null` means "not yet anchored" — the next rAF tick supplies the start
+  // timestamp. Anchoring on `performance.now()` from `handleDrop` produces a
+  // negative `elapsed` on the first frame because the rAF callback receives
+  // the *frame's* start time, which can predate `performance.now()`.
+  const startTimeRef = useRef<number | null>(null);
   const gravityRef = useRef(planet.surfaceGravity);
   const tickRef = useRef<(timestamp: number) => void>(() => {});
 
@@ -70,16 +76,15 @@ export const GravityDropLab = () => {
 
   useLayoutEffect(() => {
     tickRef.current = (timestamp: number) => {
-      const elapsed = (timestamp - startTimeRef.current) / 1000;
-      const nextFrame = computeDropFrame(
-        gravityRef.current,
-        DROP_HEIGHT_METERS,
-        elapsed,
-      );
+      if (startTimeRef.current === null) {
+        startTimeRef.current = timestamp;
+      }
+      const elapsed = Math.max(0, (timestamp - startTimeRef.current) / 1000);
+      const nextFrame = computeDropFrame(gravityRef.current, DROP_HEIGHT_METERS, elapsed);
       setFrame(nextFrame);
 
       if (nextFrame.hasLanded) {
-        setPhase("impact");
+        setPhase('impact');
       } else {
         rafRef.current = requestAnimationFrame((t) => tickRef.current(t));
       }
@@ -102,7 +107,7 @@ export const GravityDropLab = () => {
 
   const handleReset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
-    setPhase("ready");
+    setPhase('ready');
     setFrame({ ...INITIAL_DROP_FRAME });
   }, []);
 
@@ -123,9 +128,9 @@ export const GravityDropLab = () => {
   );
 
   const handleDrop = useCallback(() => {
-    setPhase("falling");
+    setPhase('falling');
     setFrame({ ...INITIAL_DROP_FRAME });
-    startTimeRef.current = performance.now();
+    startTimeRef.current = null;
     rafRef.current = requestAnimationFrame((t) => tickRef.current(t));
   }, []);
 
@@ -135,28 +140,26 @@ export const GravityDropLab = () => {
   }, []);
 
   const impact = computeImpactResult(planet.surfaceGravity, DROP_HEIGHT_METERS);
-  const canDrop = phase === "ready";
-  const showResult = phase === "impact";
+  const canDrop = phase === 'ready';
+  const showResult = phase === 'impact';
 
   // Visual position of falling object: map [0, DROP_HEIGHT_METERS] to [5%, 83%] of canvas height
   const topPercent = 5 + frame.progress * 78;
 
   // Impact animation class
-  const impactClass = showResult ? getImpactClass(obj.impactType) : "";
+  const impactClass = showResult ? getImpactClass(obj.impactType) : '';
 
   // Fun fact about the planet
   const funFact = getFunFact(selectedPlanet, grav);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-testid="gravity-drop-lab" className="flex flex-1 flex-col gap-2">
       {/* Title */}
-      <h3 className="text-sm font-semibold tracking-tight text-white/90">
-        🍎 {grav.title}
-      </h3>
+      <h3 className="text-sm font-semibold tracking-tight text-white/90">🍎 {grav.title}</h3>
 
       {/* Object picker */}
-      <div className="flex flex-col gap-1.5">
-        <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
+      <div className="flex flex-col gap-1">
+        <span className="ds-eyebrow text-[10px] tracking-widest text-white/50 uppercase">
           {grav.pickObject}
         </span>
         <div className="flex gap-1.5">
@@ -166,47 +169,41 @@ export const GravityDropLab = () => {
               type="button"
               onClick={() => selectObject(o.id)}
               className={[
-                "pointer-events-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+                'pointer-events-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
                 selectedObject === o.id
-                  ? "bg-white/20 text-white ring-1 ring-white/30 scale-105"
-                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80",
-              ].join(" ")}
+                  ? 'scale-105 bg-white/20 text-white ring-1 ring-white/30'
+                  : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80',
+              ].join(' ')}
               aria-pressed={selectedObject === o.id}
             >
               <span className="text-base">{o.emoji}</span>
-              {grav[
-                `object_${o.id}` as Extract<
-                  keyof GravityLabCopy,
-                  `object_${string}`
-                >
-              ]}
+              {grav[`object_${o.id}` as Extract<keyof GravityLabCopy, `object_${string}`>]}
             </button>
           ))}
         </div>
       </div>
 
       {/* Planet picker */}
-      <div className="flex flex-col gap-1.5">
-        <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
+      <div className="flex flex-col gap-1">
+        <span className="ds-eyebrow text-[10px] tracking-widest text-white/50 uppercase">
           {grav.pickPlanet}
         </span>
-        <div className="flex flex-wrap gap-1.5">
+        <div
+          className={`flex flex-nowrap gap-1.5 ${isCompact ? 'overflow-x-auto pb-1' : 'flex-wrap'}`}
+        >
           {GRAVITY_PLANETS.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => selectPlanet(p.id)}
               className={[
-                "pointer-events-auto flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all",
+                'pointer-events-auto flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all',
                 selectedPlanet === p.id
-                  ? "ring-1 ring-white/40 scale-105 text-white"
-                  : "text-white/50 hover:text-white/80",
-              ].join(" ")}
+                  ? 'scale-105 text-white ring-1 ring-white/40'
+                  : 'text-white/50 hover:text-white/80',
+              ].join(' ')}
               style={{
-                backgroundColor:
-                  selectedPlanet === p.id
-                    ? `${p.color}40`
-                    : `${p.color}15`,
+                backgroundColor: selectedPlanet === p.id ? `${p.color}40` : `${p.color}15`,
               }}
               aria-pressed={selectedPlanet === p.id}
             >
@@ -222,24 +219,25 @@ export const GravityDropLab = () => {
 
       {/* Drop canvas */}
       <div
-        className={styles.dropCanvas}
+        data-testid="drop-canvas"
+        className={isCompact ? styles.dropCanvasCompact : styles.dropCanvas}
         style={{
           background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 70%, ${planet.color}30 85%, ${planet.color}50 100%)`,
         }}
       >
         {/* Height markers */}
-        <span className={styles.heightMarker} style={{ top: "5%" }}>
-          {grav.heightLabel.replace("{height}", intFmt.format(DROP_HEIGHT_METERS))}
+        <span className={styles.heightMarker} style={{ top: '5%' }}>
+          {grav.heightLabel.replace('{height}', intFmt.format(DROP_HEIGHT_METERS))}
         </span>
-        <span className={styles.heightMarker} style={{ top: "44%" }}>
+        <span className={styles.heightMarker} style={{ top: '44%' }}>
           {DROP_HEIGHT_METERS / 2}m
         </span>
-        <span className={styles.heightMarker} style={{ bottom: "16%" }}>
+        <span className={styles.heightMarker} style={{ bottom: '16%' }}>
           0m
         </span>
 
         {/* Speed trail */}
-        {phase === "falling" && frame.progress > 0.05 && (
+        {phase === 'falling' && frame.progress > 0.05 && (
           <div
             className={styles.speedTrail}
             style={{
@@ -252,10 +250,11 @@ export const GravityDropLab = () => {
 
         {/* Falling object */}
         <div
+          data-testid="falling-object"
           className={`${styles.fallingObject} ${impactClass}`}
           style={{
             top: `${topPercent}%`,
-            transform: `translateX(-50%) rotate(${phase === "falling" ? frame.progress * 360 : 0}deg)`,
+            transform: `translateX(-50%) rotate(${phase === 'falling' ? frame.progress * 360 : 0}deg)`,
           }}
         >
           {obj.emoji}
@@ -264,13 +263,16 @@ export const GravityDropLab = () => {
         {/* Dust particles on impact */}
         {showResult && (
           <>
-            <div className={styles.dustParticle} style={{ marginLeft: "-30px" }} />
-            <div className={styles.dustParticle} style={{ marginLeft: "10px", animationDelay: "0.05s" }} />
+            <div className={styles.dustParticle} style={{ marginLeft: '-30px' }} />
+            <div
+              className={styles.dustParticle}
+              style={{ marginLeft: '10px', animationDelay: '0.05s' }}
+            />
           </>
         )}
 
         {/* Ground */}
-        <div className={`${styles.ground} ${showResult ? styles.groundShake : ""}`}>
+        <div className={`${styles.ground} ${showResult ? styles.groundShake : ''}`}>
           <div
             className={styles.groundGradient}
             style={{
@@ -280,7 +282,7 @@ export const GravityDropLab = () => {
         </div>
 
         {/* Gravity label overlay */}
-        <div className="absolute left-2 bottom-[16%] mb-1 rounded bg-black/40 px-1.5 py-0.5 text-[9px] text-white/40 font-mono backdrop-blur-sm">
+        <div className="absolute bottom-[16%] left-2 mb-1 rounded bg-black/40 px-1.5 py-0.5 font-mono text-[9px] text-white/40 backdrop-blur-sm">
           g = {numFmt.format(planet.surfaceGravity)} m/s²
         </div>
       </div>
@@ -289,18 +291,20 @@ export const GravityDropLab = () => {
       <div className="flex gap-2">
         {canDrop && (
           <button
+            data-testid="drop-button"
             type="button"
             onClick={handleDrop}
-            className={`pointer-events-auto flex-1 rounded-xl border border-indigo-400/30 bg-indigo-400/10 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-indigo-300 transition hover:bg-indigo-400/20 active:scale-95 ${styles.dropButtonReady}`}
+            className={`pointer-events-auto flex-1 rounded-xl border border-indigo-400/30 bg-indigo-400/10 ${isCompact ? 'px-3 py-2' : 'px-4 py-2.5'} text-sm font-bold tracking-wider text-indigo-300 uppercase transition hover:bg-indigo-400/20 active:scale-95 ${styles.dropButtonReady}`}
           >
             {grav.dropButton}
           </button>
         )}
-        {(phase === "falling" || phase === "impact") && (
+        {(phase === 'falling' || phase === 'impact') && (
           <button
+            data-testid="reset-button"
             type="button"
             onClick={handleReset}
-            className="pointer-events-auto flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 active:scale-95"
+            className={`pointer-events-auto flex-1 rounded-xl border border-white/10 bg-white/5 ${isCompact ? 'px-3 py-2' : 'px-4 py-2.5'} text-sm font-medium text-white/70 transition hover:bg-white/10 active:scale-95`}
           >
             {grav.resetButton}
           </button>
@@ -308,8 +312,11 @@ export const GravityDropLab = () => {
       </div>
 
       {/* Live velocity readout during fall */}
-      {phase === "falling" && (
-        <div className="flex justify-between text-[11px] font-mono text-white/40">
+      {phase === 'falling' && (
+        <div
+          data-testid="velocity-readout"
+          className="flex justify-between font-mono text-[11px] text-white/40"
+        >
           <span>t = {numFmt.format(frame.elapsed)}s</span>
           <span>v = {numFmt.format(frame.velocity)} m/s</span>
         </div>
@@ -317,43 +324,79 @@ export const GravityDropLab = () => {
 
       {/* Result card */}
       {showResult && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
-          <div className="space-y-1.5">
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 0 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultFallTime}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(impact.fallDuration)}s
+        <div
+          data-testid="result-card"
+          className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm ${isCompact ? 'p-2' : 'p-3'}`}
+        >
+          {isCompact ? (
+            <div className="flex items-center justify-between text-[11px] text-white/70">
+              <span>
+                t ={' '}
+                <strong className="font-mono text-white">
+                  {numFmt.format(impact.fallDuration)}s
+                </strong>
+              </span>
+              <span className="mx-1 text-white/20">|</span>
+              <span>
+                v ={' '}
+                <strong className="font-mono text-white">
+                  {numFmt.format(impact.impactVelocity)} m/s
+                </strong>
+              </span>
+              <span className="mx-1 text-white/20">|</span>
+              <span>
+                g ={' '}
+                <strong className="font-mono text-white">
+                  {numFmt.format(planet.surfaceGravity)} m/s²
+                </strong>
               </span>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 1 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultImpactSpeed}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(impact.impactVelocity)} m/s
-                <span className="text-white/30 ml-1">
-                  ({numFmt.format(impact.impactVelocity * 3.6)} km/h)
+          ) : (
+            <div className={`${isNotCompact ? 'space-y-1' : 'space-y-1.5'}`}>
+              {/* Existing result rows — kept unchanged */}
+              <div
+                className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ '--result-row-index': 0 } as CSSProperties}
+              >
+                <span className="text-white/55">{grav.resultFallTime}</span>
+                <span className="font-mono text-white">{numFmt.format(impact.fallDuration)}s</span>
+              </div>
+              <div
+                className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ '--result-row-index': 1 } as CSSProperties}
+              >
+                <span className="text-white/55">{grav.resultImpactSpeed}</span>
+                <span className="font-mono text-white">
+                  {numFmt.format(impact.impactVelocity)} m/s
+                  <span className="ml-1 text-white/30">
+                    ({numFmt.format(impact.impactVelocity * 3.6)} km/h)
+                  </span>
                 </span>
-              </span>
-            </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 2 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultGravity}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(planet.surfaceGravity)} m/s²
-                <span className="text-white/30 ml-1">
-                  ({numFmt.format(planet.surfaceGravity / 9.81)}× {getPlanetDisplayName("earth", grav)})
+              </div>
+              <div
+                className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ '--result-row-index': 2 } as CSSProperties}
+              >
+                <span className="text-white/55">{grav.resultGravity}</span>
+                <span className="font-mono text-white">
+                  {numFmt.format(planet.surfaceGravity)} m/s²
+                  <span className="ml-1 text-white/30">
+                    ({numFmt.format(planet.surfaceGravity / 9.81)}×{' '}
+                    {getPlanetDisplayName('earth', grav)})
+                  </span>
                 </span>
-              </span>
+              </div>
+              <div
+                className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ '--result-row-index': 3 } as CSSProperties}
+              >
+                <span className="text-white/55">{grav.resultMass}</span>
+                <span className="font-mono text-white">
+                  {obj.mass >= 1 ? intFmt.format(obj.mass) : obj.mass} kg
+                </span>
+              </div>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 3 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultMass}</span>
-              <span className="font-mono text-white">
-                {obj.mass >= 1 ? intFmt.format(obj.mass) : obj.mass} kg
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Pedagogical message */}
           <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
@@ -362,11 +405,9 @@ export const GravityDropLab = () => {
             </p>
           </div>
 
-          {/* Planet fun fact */}
-          {funFact && (
-            <p className="mt-2 text-[10px] italic leading-relaxed text-white/35">
-              {funFact}
-            </p>
+          {/* Planet fun fact — only on mobile */}
+          {funFact && isCompact && (
+            <p className="mt-2 text-[10px] leading-relaxed text-white/35 italic">{funFact}</p>
           )}
         </div>
       )}
@@ -376,16 +417,16 @@ export const GravityDropLab = () => {
 
 // -- Helpers --
 
-type GravityLabCopy = Translation["learn"]["gravityLab"];
+type GravityLabCopy = Translation['learn']['gravityLab'];
 
 function getImpactClass(impactType: ImpactType): string {
   switch (impactType) {
-    case "splat":
-      return styles.impactSplat ?? "";
-    case "crash":
-      return styles.impactCrash ?? "";
-    case "thud":
-      return styles.impactThud ?? "";
+    case 'splat':
+      return styles.impactSplat ?? '';
+    case 'crash':
+      return styles.impactCrash ?? '';
+    case 'thud':
+      return styles.impactThud ?? '';
   }
 }
 

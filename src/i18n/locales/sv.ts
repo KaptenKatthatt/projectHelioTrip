@@ -307,6 +307,8 @@ export const sv: Translation = {
     labAccordion: {
       orbitTitle: 'Banmekanik — Solens massa',
       dropTitle: 'Gravitationslabbet — Släpp & jämför',
+      orbitTabLabel: 'Banmekanik',
+      dropTabLabel: 'Gravitationsfall',
     },
     xpTitles: {
       rookie: 'Nybörjare',
