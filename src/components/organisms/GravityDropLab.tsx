@@ -47,6 +47,7 @@ export const GravityDropLab = () => {
   const layoutTier = useResponsiveLayout();
   const isCompact = layoutTier === "compact";
   const isExpanded = layoutTier === "expanded";
+  const isNotCompact = layoutTier !== "compact";
 
   // Selections
   const [selectedObject, setSelectedObject] =
@@ -159,14 +160,14 @@ export const GravityDropLab = () => {
   const funFact = getFunFact(selectedPlanet, grav);
 
   return (
-    <div data-testid="gravity-drop-lab" className={`flex flex-col ${isCompact || isExpanded ? "gap-2" : "gap-4"}`}>
+    <div data-testid="gravity-drop-lab" className="flex flex-col gap-2">
       {/* Title */}
       <h3 className="text-sm font-semibold tracking-tight text-white/90">
         🍎 {grav.title}
       </h3>
 
       {/* Object picker */}
-      <div className={`flex flex-col ${isCompact ? "gap-1" : "gap-1.5"}`}>
+      <div className="flex flex-col gap-1">
         <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
           {grav.pickObject}
         </span>
@@ -197,7 +198,7 @@ export const GravityDropLab = () => {
       </div>
 
       {/* Planet picker */}
-      <div className={`flex flex-col ${isCompact ? "gap-1" : "gap-1.5"}`}>
+      <div className="flex flex-col gap-1">
         <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
           {grav.pickPlanet}
         </span>
@@ -332,7 +333,7 @@ export const GravityDropLab = () => {
 
       {/* Result card */}
       {showResult && (
-        <div data-testid="result-card" className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm ${isExpanded ? "p-2" : "p-3"}`}>
+        <div data-testid="result-card" className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm ${isNotCompact ? "p-2" : "p-3"}`}>
           {isCompact ? (
             <div className="flex justify-between items-center text-[11px] text-white/70">
               <span>t = <strong className="text-white font-mono">{numFmt.format(impact.fallDuration)}s</strong></span>
@@ -342,7 +343,7 @@ export const GravityDropLab = () => {
               <span>g = <strong className="text-white font-mono">{numFmt.format(planet.surfaceGravity)} m/s²</strong></span>
             </div>
           ) : (
-            <div className={`${isExpanded ? "space-y-1" : "space-y-1.5"}`}>
+            <div className={`${isNotCompact ? "space-y-1" : "space-y-1.5"}`}>
               {/* Existing result rows — kept unchanged */}
               <div className={`flex justify-between text-xs ${styles.resultRow}`}
                 style={{ "--result-row-index": 0 } as CSSProperties}>
@@ -382,15 +383,15 @@ export const GravityDropLab = () => {
           )}
 
           {/* Pedagogical message — always visible */}
-          <div className={`rounded-lg border border-amber-400/20 bg-amber-400/5 ${isExpanded ? "mt-2 px-2 py-1" : "mt-3 px-3 py-2"}`}>
+          <div className={`rounded-lg border border-amber-400/20 bg-amber-400/5 ${isNotCompact ? "mt-2 px-2 py-1" : "mt-3 px-3 py-2"}`}>
             <p className="text-[11px] leading-relaxed text-amber-200/80">
               💡 {grav.factAllFallSame}
             </p>
           </div>
 
           {/* Planet fun fact */}
-          {funFact && (
-            <p className={`text-[10px] italic leading-relaxed text-white/35 ${isExpanded ? "mt-1" : "mt-2"}`}>
+          {funFact && isCompact && (
+            <p className="mt-2 text-[10px] italic leading-relaxed text-white/35">
               {funFact}
             </p>
           )}
