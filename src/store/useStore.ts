@@ -392,7 +392,7 @@ export const useStore = create<Store>()(
         return {
           ...current,
           locale: isLocale(p?.locale) ? p.locale : current.locale,
-          gameMode: p?.gameMode ?? current.gameMode,
+          gameMode: 'explore', // Always start in explore mode, regardless of persisted state
           missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),
