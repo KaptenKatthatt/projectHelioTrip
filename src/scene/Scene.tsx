@@ -73,21 +73,8 @@ type SceneProps = {
   readonly onSceneMounted?: () => void;
 };
 
-export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
-  const sceneReadyFiredRef = useRef(false);
-  const sceneMountedFiredRef = useRef(false);
-  const handleCanvasCreated = useCallback(() => {
-    if (sceneReadyFiredRef.current) return;
-    sceneReadyFiredRef.current = true;
-    onSceneReady?.();
-  }, [onSceneReady]);
 
-  useEffect(() => {
-    if (sceneMountedFiredRef.current) return;
-    sceneMountedFiredRef.current = true;
-    onSceneMounted?.();
-  }, [onSceneMounted]);
-
+const SceneContent = () => {
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
@@ -95,38 +82,10 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
     (s) => s.activeBody !== null && s.viewMode === "close",
   );
 
-  const graphicsTier = getGraphicsTier();
   const graphicsPreset = getGraphicsPreset();
-  const dprCap = getCanvasDprCap(graphicsTier);
-
-  useEffect(() => {
-    scheduleDeferredTexturePreloads();
-  }, []);
 
   return (
-    <div className="h-full w-full min-h-0">
-      <Canvas
-        className="block h-full w-full touch-none"
-        camera={{
-          position: [
-            INITIAL_OVERVIEW_CAMERA_POSITION.x,
-            INITIAL_OVERVIEW_CAMERA_POSITION.y,
-            INITIAL_OVERVIEW_CAMERA_POSITION.z,
-          ],
-          fov: INITIAL_OVERVIEW_FOV,
-          near: 0.1,
-          far: 8000,
-        }}
-        gl={{
-          antialias: graphicsPreset.antialias,
-          powerPreference: "high-performance",
-          stencil: false,
-          depth: true,
-          preserveDrawingBuffer: true,
-        }}
-        dpr={dprCap}
-        onCreated={handleCanvasCreated}
-      >
+    <>
       <ViewportResizeSync />
       <MobilePlanetInfoCanvasDismiss />
       <MobileViewOffset />
@@ -196,7 +155,60 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
       <Suspense fallback={null}>
         <LazyEffects />
       </Suspense>
-    </Canvas>
+    </>
+  );
+};
+
+export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
+
+  const sceneReadyFiredRef = useRef(false);
+  const sceneMountedFiredRef = useRef(false);
+  const handleCanvasCreated = useCallback(() => {
+    if (sceneReadyFiredRef.current) return;
+    sceneReadyFiredRef.current = true;
+    onSceneReady?.();
+  }, [onSceneReady]);
+
+  useEffect(() => {
+    if (sceneMountedFiredRef.current) return;
+    sceneMountedFiredRef.current = true;
+    onSceneMounted?.();
+  }, [onSceneMounted]);
+
+  const graphicsTier = getGraphicsTier();
+  const graphicsPreset = getGraphicsPreset();
+  const dprCap = getCanvasDprCap(graphicsTier);
+
+  useEffect(() => {
+    scheduleDeferredTexturePreloads();
+  }, []);
+
+  return (
+    <div className="h-full w-full min-h-0">
+      <Canvas
+        className="block h-full w-full touch-none"
+        camera={{
+          position: [
+            INITIAL_OVERVIEW_CAMERA_POSITION.x,
+            INITIAL_OVERVIEW_CAMERA_POSITION.y,
+            INITIAL_OVERVIEW_CAMERA_POSITION.z,
+          ],
+          fov: INITIAL_OVERVIEW_FOV,
+          near: 0.1,
+          far: 8000,
+        }}
+        gl={{
+          antialias: graphicsPreset.antialias,
+          powerPreference: "high-performance",
+          stencil: false,
+          depth: true,
+          preserveDrawingBuffer: true,
+        }}
+        dpr={dprCap}
+        onCreated={handleCanvasCreated}
+      >
+        <SceneContent />
+      </Canvas>
     </div>
   );
 };
