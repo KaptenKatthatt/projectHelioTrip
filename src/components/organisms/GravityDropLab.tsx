@@ -158,14 +158,14 @@ export const GravityDropLab = () => {
   const funFact = getFunFact(selectedPlanet, grav);
 
   return (
-    <div data-testid="gravity-drop-lab" className="flex flex-col gap-4">
+    <div data-testid="gravity-drop-lab" className={`flex flex-col ${isCompact ? "gap-2" : "gap-4"}`}>
       {/* Title */}
       <h3 className="text-sm font-semibold tracking-tight text-white/90">
         🍎 {grav.title}
       </h3>
 
       {/* Object picker */}
-      <div className="flex flex-col gap-1.5">
+      <div className={`flex flex-col ${isCompact ? "gap-1" : "gap-1.5"}`}>
         <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
           {grav.pickObject}
         </span>
@@ -196,7 +196,7 @@ export const GravityDropLab = () => {
       </div>
 
       {/* Planet picker */}
-      <div className="flex flex-col gap-1.5">
+      <div className={`flex flex-col ${isCompact ? "gap-1" : "gap-1.5"}`}>
         <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
           {grav.pickPlanet}
         </span>
@@ -304,7 +304,7 @@ export const GravityDropLab = () => {
             data-testid="drop-button"
             type="button"
             onClick={handleDrop}
-            className={`pointer-events-auto flex-1 rounded-xl border border-indigo-400/30 bg-indigo-400/10 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-indigo-300 transition hover:bg-indigo-400/20 active:scale-95 ${styles.dropButtonReady}`}
+            className={`pointer-events-auto flex-1 rounded-xl border border-indigo-400/30 bg-indigo-400/10 ${isCompact ? "px-3 py-2" : "px-4 py-2.5"} text-sm font-bold uppercase tracking-wider text-indigo-300 transition hover:bg-indigo-400/20 active:scale-95 ${styles.dropButtonReady}`}
           >
             {grav.dropButton}
           </button>
@@ -314,7 +314,7 @@ export const GravityDropLab = () => {
             data-testid="reset-button"
             type="button"
             onClick={handleReset}
-            className="pointer-events-auto flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 active:scale-95"
+            className={`pointer-events-auto flex-1 rounded-xl border border-white/10 bg-white/5 ${isCompact ? "px-3 py-2" : "px-4 py-2.5"} text-sm font-medium text-white/70 transition hover:bg-white/10 active:scale-95`}
           >
             {grav.resetButton}
           </button>
