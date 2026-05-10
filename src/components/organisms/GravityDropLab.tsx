@@ -233,7 +233,7 @@ export const GravityDropLab = () => {
       {/* Drop canvas */}
       <div
         data-testid="drop-canvas"
-        className={styles.dropCanvas}
+        className={isCompact ? styles.dropCanvasCompact : styles.dropCanvas}
         style={{
           background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 70%, ${planet.color}30 85%, ${planet.color}50 100%)`,
         }}

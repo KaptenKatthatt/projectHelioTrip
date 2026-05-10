@@ -71,7 +71,7 @@ export const LabOverlay = () => {
   if (layoutTier === "compact") {
     return (
       <div className="pointer-events-none fixed inset-x-0 top-8 bottom-0 z-20">
-        <div className="pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+        <div className="pointer-events-auto h-full rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
           <LabOverlayContent />
         </div>
       </div>
