@@ -64,3 +64,17 @@ test.describe("Gravitationslabbet (viewport) – flikar", () => {
     );
   });
 });
+
+test.describe("Gravitationslabbet (viewport) – mobil layout", () => {
+  test("drop canvas is visible without scroll", async ({ page }) => {
+    test.skip(
+      test.info().project.name !== "lab-mobile",
+      "mobile-only layout assertion",
+    );
+    await bootstrapSv(page);
+    const scope = await openLabMode(page);
+    const canvas = scope.getByTestId("drop-canvas");
+    await expect(canvas).toBeVisible();
+    await expect(canvas).toBeInViewport();
+  });
+});
