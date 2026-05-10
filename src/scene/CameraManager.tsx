@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useSpring } from "@react-spring/three";
+import { SpringValue, useSpring } from "@react-spring/three";
 import { Vector3 } from "three";
 import { useStore } from "../store/useStore";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
@@ -25,29 +25,17 @@ import {
 import { cameraTravelSpringProgressRef } from "./cameraTravelSpringProgress";
 import { applyMobilePlanetScreenLift } from "./mobilePlanetFraming";
 
-
-export const CameraManager = () => {
+const useCameraTravelAnimation = (
+  travelRef: React.MutableRefObject<Travel | null>,
+  arrivedRef: React.MutableRefObject<Arrived | null>,
+) => {
   const camera = useThree((s) => s.camera);
-  const size = useThree((s) => s.size);
-  const isMobileLayout = useIsMobileLayout();
-
   const travelId = useStore((s) => s.travelId);
-  const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const navigationMode = useStore((s) => s.navigationMode);
   const setCameraPosition = useStore((s) => s.setCameraPosition);
   const arrive = useStore((s) => s.arrive);
 
-  const travelRef = useRef<Travel | null>(null);
-  const arrivedRef = useRef<Arrived | null>(null);
-  const previousNavigationModeRef = useRef(navigationMode);
-
   const tmpEndPosRef = useRef(new Vector3());
-  const tmpTargetPosRef = useRef(new Vector3());
   const tmpScratchRef = useRef(new Vector3());
-  const tmpDirRef = useRef(new Vector3());
-  const tmpInterpDirRef = useRef(new Vector3());
-  const tmpLookAtRef = useRef(new Vector3());
-  const arcPosRef = useRef(new Vector3());
 
   const [{ t }, api] = useSpring(() => ({
     t: 0,
@@ -94,7 +82,16 @@ export const CameraManager = () => {
         cameraTravelSpringProgressRef.current = null;
       },
     });
-  }, [travelId, camera, api, setCameraPosition, arrive]);
+  }, [travelId, camera, api, setCameraPosition, arrive, travelRef, arrivedRef]);
+
+  return { t };
+};
+
+const useNavigationModeEffects = (
+  arrivedRef: React.MutableRefObject<Arrived | null>,
+) => {
+  const navigationMode = useStore((s) => s.navigationMode);
+  const previousNavigationModeRef = useRef(navigationMode);
 
   useEffect(() => {
     const previous = previousNavigationModeRef.current;
@@ -107,7 +104,26 @@ export const CameraManager = () => {
      * otherwise snap back to OVERVIEW_POSITION on the next frame.
      */
     arrivedRef.current = null;
-  }, [navigationMode]);
+  }, [navigationMode, arrivedRef]);
+};
+
+const useCameraFrameUpdate = (
+  t: SpringValue<number>,
+  travelRef: React.MutableRefObject<Travel | null>,
+  arrivedRef: React.MutableRefObject<Arrived | null>,
+) => {
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  const isMobileLayout = useIsMobileLayout();
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+
+  const tmpEndPosRef = useRef(new Vector3());
+  const tmpTargetPosRef = useRef(new Vector3());
+  const tmpScratchRef = useRef(new Vector3());
+  const tmpDirRef = useRef(new Vector3());
+  const tmpInterpDirRef = useRef(new Vector3());
+  const tmpLookAtRef = useRef(new Vector3());
+  const arcPosRef = useRef(new Vector3());
 
   useFrame(() => {
     const tmpTargetPos = tmpTargetPosRef.current;
@@ -185,6 +201,15 @@ export const CameraManager = () => {
     camera.up.copy(WORLD_UP);
     camera.lookAt(tmpTargetPos);
   });
+};
+
+export const CameraManager = () => {
+  const travelRef = useRef<Travel | null>(null);
+  const arrivedRef = useRef<Arrived | null>(null);
+
+  const { t } = useCameraTravelAnimation(travelRef, arrivedRef);
+  useNavigationModeEffects(arrivedRef);
+  useCameraFrameUpdate(t, travelRef, arrivedRef);
 
   return null;
 };
