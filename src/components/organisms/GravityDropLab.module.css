@@ -20,6 +20,15 @@
   background: linear-gradient(180deg, transparent 0%, transparent 85%, var(--surface-color, #333) 85%);
 }
 
+.dropCanvasDesktop {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, transparent 0%, transparent 85%, var(--surface-color, #333) 85%);
+}
+
 .fallingObject {
   position: absolute;
   left: 50%;
