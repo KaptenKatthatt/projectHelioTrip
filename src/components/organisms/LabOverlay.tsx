@@ -68,7 +68,15 @@ export const LabOverlay = () => {
   const layoutTier = useResponsiveLayout();
   const activeLabGame = useStore((s) => s.activeLabGame);
 
-  if (layoutTier === "compact") return null;
+  if (layoutTier === "compact") {
+    return (
+      <div className="pointer-events-none fixed inset-x-0 top-8 bottom-0 z-20">
+        <div className="pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+          <LabOverlayContent />
+        </div>
+      </div>
+    );
+  }
 
   if (activeLabGame === "orbit") {
     return (
@@ -80,8 +88,18 @@ export const LabOverlay = () => {
     );
   }
 
+  if (layoutTier === "medium") {
+    return (
+      <div className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20">
+        <div className="custom-scrollbar pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+          <LabOverlayContent />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20">
+    <div className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20 max-w-md mx-auto">
       <div className="custom-scrollbar pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
         <LabOverlayContent />
       </div>
