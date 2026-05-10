@@ -332,44 +332,55 @@ export const GravityDropLab = () => {
       {/* Result card */}
       {showResult && (
         <div data-testid="result-card" className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
-          <div className="space-y-1.5">
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 0 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultFallTime}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(impact.fallDuration)}s
-              </span>
+          {isCompact ? (
+            <div className="flex justify-between items-center text-[11px] text-white/70">
+              <span>Falltid: <strong className="text-white font-mono">{numFmt.format(impact.fallDuration)}s</strong></span>
+              <span className="mx-1 text-white/20">|</span>
+              <span>v: <strong className="text-white font-mono">{numFmt.format(impact.impactVelocity)} m/s</strong></span>
+              <span className="mx-1 text-white/20">|</span>
+              <span>g: <strong className="text-white font-mono">{numFmt.format(planet.surfaceGravity)} m/s²</strong></span>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 1 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultImpactSpeed}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(impact.impactVelocity)} m/s
-                <span className="text-white/30 ml-1">
-                  ({numFmt.format(impact.impactVelocity * 3.6)} km/h)
+          ) : (
+            <div className="space-y-1.5">
+              {/* Existing result rows — kept unchanged */}
+              <div className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ "--result-row-index": 0 } as CSSProperties}>
+                <span className="text-white/55">{grav.resultFallTime}</span>
+                <span className="font-mono text-white">
+                  {numFmt.format(impact.fallDuration)}s
                 </span>
-              </span>
-            </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 2 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultGravity}</span>
-              <span className="font-mono text-white">
-                {numFmt.format(planet.surfaceGravity)} m/s²
-                <span className="text-white/30 ml-1">
-                  ({numFmt.format(planet.surfaceGravity / 9.81)}× {getPlanetDisplayName("earth", grav)})
+              </div>
+              <div className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ "--result-row-index": 1 } as CSSProperties}>
+                <span className="text-white/55">{grav.resultImpactSpeed}</span>
+                <span className="font-mono text-white">
+                  {numFmt.format(impact.impactVelocity)} m/s
+                  <span className="text-white/30 ml-1">
+                    ({numFmt.format(impact.impactVelocity * 3.6)} km/h)
+                  </span>
                 </span>
-              </span>
+              </div>
+              <div className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ "--result-row-index": 2 } as CSSProperties}>
+                <span className="text-white/55">{grav.resultGravity}</span>
+                <span className="font-mono text-white">
+                  {numFmt.format(planet.surfaceGravity)} m/s²
+                  <span className="text-white/30 ml-1">
+                    ({numFmt.format(planet.surfaceGravity / 9.81)}× {getPlanetDisplayName("earth", grav)})
+                  </span>
+                </span>
+              </div>
+              <div className={`flex justify-between text-xs ${styles.resultRow}`}
+                style={{ "--result-row-index": 3 } as CSSProperties}>
+                <span className="text-white/55">{grav.resultMass}</span>
+                <span className="font-mono text-white">
+                  {obj.mass >= 1 ? intFmt.format(obj.mass) : obj.mass} kg
+                </span>
+              </div>
             </div>
-            <div className={`flex justify-between text-xs ${styles.resultRow}`}
-              style={{ "--result-row-index": 3 } as CSSProperties}>
-              <span className="text-white/55">{grav.resultMass}</span>
-              <span className="font-mono text-white">
-                {obj.mass >= 1 ? intFmt.format(obj.mass) : obj.mass} kg
-              </span>
-            </div>
-          </div>
+          )}
 
-          {/* Pedagogical message */}
+          {/* Pedagogical message — always visible */}
           <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
             <p className="text-[11px] leading-relaxed text-amber-200/80">
               💡 {grav.factAllFallSame}
