@@ -7,6 +7,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { Translation } from "../../i18n/translations";
 import {
@@ -43,6 +44,8 @@ const INITIAL_DROP_FRAME: DropFrame = {
 export const GravityDropLab = () => {
   const { t, locale } = useTranslation();
   const grav = t.learn.gravityLab;
+  const layoutTier = useResponsiveLayout();
+  const isCompact = layoutTier === "compact";
 
   // Selections
   const [selectedObject, setSelectedObject] =
@@ -197,7 +200,7 @@ export const GravityDropLab = () => {
         <span className="ds-eyebrow text-[10px] uppercase tracking-widest text-white/50">
           {grav.pickPlanet}
         </span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className={`flex gap-1.5 ${isCompact ? "overflow-x-auto pb-1" : "flex-wrap"}`}>
           {GRAVITY_PLANETS.map((p) => (
             <button
               key={p.id}
