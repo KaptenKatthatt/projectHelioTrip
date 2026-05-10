@@ -100,7 +100,7 @@ export const LabOverlay = () => {
 
   return (
     <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20 max-w-md mx-auto">
-      <div className="custom-scrollbar pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+      <div className="pointer-events-auto h-full rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
         <LabOverlayContent />
       </div>
     </div>
