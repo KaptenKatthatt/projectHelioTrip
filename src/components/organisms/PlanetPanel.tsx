@@ -1,66 +1,22 @@
-import {
-  type Dispatch,
-  type SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
 import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getBody } from "../../lib/bodies";
-import { AU_SCALE } from "../../lib/constants";
-import type { SatelliteId } from "../../lib/satellites";
-import {
-  getLiveMoonOffset,
-  getLivePosition,
-  getLiveSatelliteOffset,
-} from "../../lib/positionsBus";
-import { PLANET_ORBITAL_ELEMENTS } from "../../lib/orbitalElements";
 import { getWikipediaUrl } from "../../lib/wikipedia";
 import { FactCardDeck } from "../molecules/FactCardDeck";
 import { HudSegmentedTabs } from "../molecules/HudSegmentedTabs";
 import { ScaleComparison } from "../molecules/ScaleComparison";
-import {
-  AU_TO_KM,
-  KM_TO_MILES,
-  DISTANCE_SAMPLE_MS,
-  DISTANCE_EPSILON_AU,
-  worldDistanceToEarthAu,
-  resolveOrbitingDistancePair,
-  formatOrbitPeriod,
-} from "./PlanetPanel/utils";
-import type { Row, DistancePair } from "./PlanetPanel/utils";
+import { buildPlanetInfoRows } from "./PlanetPanel/utils";
 import { InfoTab } from "./PlanetPanel/InfoTab";
-
-const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
-  iss: 92 / 60,
-  sputnik: 96.2 / 60,
-};
+import { useBodyDistances } from "./PlanetPanel/useBodyDistances";
+import { useFormatters } from "./PlanetPanel/useFormatters";
 
 export type PanelTab = "info" | "facts" | "compare";
 
 type PlanetPanelProps = {
   readonly omitHeading?: boolean;
   readonly defaultTab?: PanelTab;
-};
-
-const updateDistanceIfChanged = (
-  setDistanceFromSunAu: Dispatch<SetStateAction<number>>,
-  setDistanceToEarthAu: Dispatch<SetStateAction<number>>,
-  nextDistances: DistancePair,
-): void => {
-  setDistanceFromSunAu((prev) =>
-    Math.abs(prev - nextDistances.fromSunAu) > DISTANCE_EPSILON_AU
-      ? nextDistances.fromSunAu
-      : prev,
-  );
-  setDistanceToEarthAu((prev) =>
-    Math.abs(prev - nextDistances.toEarthAu) > DISTANCE_EPSILON_AU
-      ? nextDistances.toEarthAu
-      : prev,
-  );
 };
 
 export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
@@ -78,45 +34,8 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
     return () => cancelAnimationFrame(id);
   }, [gameMode]);
 
-  const [distanceFromSunAu, setDistanceFromSunAu] = useState(0);
-  const [distanceToEarthAu, setDistanceToEarthAu] = useState(0);
-
-  useEffect(() => {
-    if (!activeBody) return;
-    const body = getBody(activeBody);
-    if (!body) return;
-
-    const tick = () => {
-      const distances =
-        body.kind === "planet"
-          ? (() => {
-              const position = getLivePosition(body.def.id);
-              const fromSunAu = position.length() / AU_SCALE;
-              if (body.def.id === "earth") {
-                return { fromSunAu, toEarthAu: 0 };
-              }
-              return {
-                fromSunAu,
-                toEarthAu: worldDistanceToEarthAu(position.x, position.y, position.z),
-              };
-            })()
-          : resolveOrbitingDistancePair(
-              body.def.parent,
-              body.kind === "moon"
-                ? getLiveMoonOffset(body.def.id)
-                : getLiveSatelliteOffset(body.def.id),
-            );
-      updateDistanceIfChanged(
-        setDistanceFromSunAu,
-        setDistanceToEarthAu,
-        distances,
-      );
-    };
-
-    tick();
-    const interval = window.setInterval(tick, DISTANCE_SAMPLE_MS);
-    return () => window.clearInterval(interval);
-  }, [activeBody]);
+  const { distanceFromSunAu, distanceToEarthAu } = useBodyDistances(activeBody);
+  const formatters = useFormatters(locale);
 
   const openWikipedia = useCallback(() => {
     if (!activeBody) return;
@@ -124,96 +43,23 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
     window.open(url, "_blank", "noopener,noreferrer");
   }, [activeBody, locale]);
 
-  const {
-    distanceFormatter,
-    ratioFormatter,
-    orbitPeriodFormatter,
-    orbitHoursFormatter,
-  } = useMemo(
-    () => ({
-      distanceFormatter: new Intl.NumberFormat(locale, {
-        maximumFractionDigits: 0,
-      }),
-      ratioFormatter: new Intl.NumberFormat(locale, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 1,
-      }),
-      orbitPeriodFormatter: new Intl.NumberFormat(locale, {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      }),
-      orbitHoursFormatter: new Intl.NumberFormat(locale, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 1,
-      }),
-    }),
-    [locale],
-  );
-
   if (!activeBody || viewMode === "overview") return null;
   const body = getBody(activeBody);
   if (!body) return null;
 
-  const usesMiles = locale === "en";
-  const distanceUnit = usesMiles ? "miles" : "km";
-  const orbitPeriodUnit = t.ui.unitDays;
-  const getHoursUnit = (hours: number): string => {
-    return hours === 1 ? t.ui.unitHour : t.ui.unitHours;
-  };
-  const distanceFromSunKm = distanceFromSunAu * AU_TO_KM;
-  const distanceToEarthKm = distanceToEarthAu * AU_TO_KM;
-  const displayDistanceFromSun = usesMiles
-    ? distanceFromSunKm * KM_TO_MILES
-    : distanceFromSunKm;
-  const displayDistanceToEarth = usesMiles
-    ? distanceToEarthKm * KM_TO_MILES
-    : distanceToEarthKm;
+  const infoRowsResult = buildPlanetInfoRows(
+    activeBody,
+    t,
+    planetName,
+    locale,
+    distanceFromSunAu,
+    distanceToEarthAu,
+    formatters,
+  );
 
-  const orbitalPeriodDays =
-    body.kind === "planet"
-      ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
-      : PLANET_ORBITAL_ELEMENTS[body.def.parent]?.periodDays;
-  const satelliteOrbitalPeriodHours =
-    body.kind === "satellite"
-      ? SATELLITE_PERIOD_HOURS[body.def.id as SatelliteId]
-      : undefined;
-  const hasLongOrbitPeriod =
-    satelliteOrbitalPeriodHours === undefined &&
-    orbitalPeriodDays !== undefined &&
-    orbitalPeriodDays > 365;
+  if (!infoRowsResult) return null;
 
-  const radiusScale = body.def.radius;
-
-  const rows: Row[] = [];
-  rows.push({
-    label: t.ui.distanceFromSun,
-    value: `${distanceFormatter.format(displayDistanceFromSun)} ${distanceUnit}`,
-  });
-  rows.push({
-    label: t.ui.distanceFromEarth,
-    value: `${distanceFormatter.format(displayDistanceToEarth)} ${distanceUnit}`,
-  });
-  rows.push({
-    label:
-      satelliteOrbitalPeriodHours !== undefined
-        ? t.ui.orbitPeriodAroundEarth
-        : t.ui.orbitPeriodAroundSun,
-    value:
-      satelliteOrbitalPeriodHours !== undefined
-        ? `${orbitHoursFormatter.format(satelliteOrbitalPeriodHours)} ${getHoursUnit(satelliteOrbitalPeriodHours)}`
-        : orbitalPeriodDays !== undefined
-          ? formatOrbitPeriod(
-              orbitalPeriodDays,
-              locale,
-              orbitPeriodFormatter,
-              orbitPeriodUnit,
-            )
-          : "—",
-  });
-  rows.push({
-    label: t.ui.circumferenceRelativeToEarth,
-    value: `${planetName("earth")} x ${ratioFormatter.format(radiusScale)}`,
-  });
+  const { rows, hasLongOrbitPeriod } = infoRowsResult;
   const name = bodyName(activeBody);
 
   const tabs: Array<{ id: PanelTab; label: string }> = [
