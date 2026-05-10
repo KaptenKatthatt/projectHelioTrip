@@ -392,7 +392,7 @@ export const useStore = create<Store>()(
         return {
           ...current,
           locale: isLocale(p?.locale) ? p.locale : current.locale,
-          gameMode: 'explore',
+          gameMode: p?.gameMode ?? current.gameMode,
           missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),

@@ -70,11 +70,11 @@ export const LabOverlayContent = () => {
 };
 
 const CloseButton = () => {
-  const setGameMode = useStore((s) => s.setGameMode);
+  const closeLab = useStore((s) => s.closeLab);
   return (
     <button
       type="button"
-      onClick={() => setGameMode('explore')}
+      onClick={closeLab}
       className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
       aria-label="Close lab"
       data-testid="lab-overlay-close"
@@ -87,19 +87,24 @@ const CloseButton = () => {
 export const LabOverlay = () => {
   const layoutTier = useResponsiveLayout();
   const isCompact = layoutTier === 'compact';
+  const isMedium = layoutTier === 'medium';
 
   return (
     <div
       data-testid="lab-overlay"
       className={[
         'pointer-events-none fixed z-20',
-        isCompact ? 'inset-x-4 bottom-4' : 'right-4 bottom-20 w-72',
+        isCompact
+          ? 'inset-x-4 bottom-4'
+          : isMedium
+            ? 'inset-x-0 bottom-0'
+            : 'right-4 bottom-20 w-72',
       ].join(' ')}
     >
       <div
         className={[
           'pointer-events-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl',
-          isCompact ? 'relative' : 'relative',
+          isCompact ? 'relative' : isMedium ? 'relative rounded-t-none border-b-0' : 'relative',
         ].join(' ')}
       >
         <CloseButton />
