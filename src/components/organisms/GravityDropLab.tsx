@@ -334,11 +334,11 @@ export const GravityDropLab = () => {
         <div data-testid="result-card" className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
           {isCompact ? (
             <div className="flex justify-between items-center text-[11px] text-white/70">
-              <span>Falltid: <strong className="text-white font-mono">{numFmt.format(impact.fallDuration)}s</strong></span>
+              <span>t = <strong className="text-white font-mono">{numFmt.format(impact.fallDuration)}s</strong></span>
               <span className="mx-1 text-white/20">|</span>
-              <span>v: <strong className="text-white font-mono">{numFmt.format(impact.impactVelocity)} m/s</strong></span>
+              <span>v = <strong className="text-white font-mono">{numFmt.format(impact.impactVelocity)} m/s</strong></span>
               <span className="mx-1 text-white/20">|</span>
-              <span>g: <strong className="text-white font-mono">{numFmt.format(planet.surfaceGravity)} m/s²</strong></span>
+              <span>g = <strong className="text-white font-mono">{numFmt.format(planet.surfaceGravity)} m/s²</strong></span>
             </div>
           ) : (
             <div className="space-y-1.5">
