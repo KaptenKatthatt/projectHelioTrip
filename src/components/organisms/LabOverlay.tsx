@@ -1,16 +1,18 @@
-import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
-import { useTranslation } from "../../hooks/useTranslation";
-import { useStore } from "../../store/useStore";
-import { GravityLabControls } from "../molecules/GravityLabControls";
-import { GravityDropLab } from "./GravityDropLab";
+import { X } from 'lucide-react';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useStore } from '../../store/useStore';
+import { GravityLabControls } from '../molecules/GravityLabControls';
+import { GravityDropLab } from './GravityDropLab';
+import { TimePlaybackControls } from './TimePlaybackControls';
 
 const labTabButtonClass = (selected: boolean): string =>
   [
-    "pointer-events-auto flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all",
+    'pointer-events-auto flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all',
     selected
-      ? "bg-white/15 text-white shadow-sm"
-      : "text-white/50 hover:text-white/80 hover:bg-white/8",
-  ].join(" ");
+      ? 'bg-white/15 text-white shadow-sm'
+      : 'text-white/50 hover:text-white/80 hover:bg-white/8',
+  ].join(' ');
 
 export const LabOverlayContent = () => {
   const activeLabGame = useStore((s) => s.activeLabGame);
@@ -19,7 +21,7 @@ export const LabOverlayContent = () => {
   const lab = t.learn.labAccordion;
 
   return (
-    <div className="flex flex-col flex-1 gap-3">
+    <div className="flex flex-1 flex-col gap-3">
       <div
         role="tablist"
         data-testid="lab-game-switcher"
@@ -30,9 +32,9 @@ export const LabOverlayContent = () => {
           type="button"
           role="tab"
           data-testid="lab-tab-drop"
-          aria-selected={activeLabGame === "drop"}
-          onClick={() => setActiveLabGame("drop")}
-          className={labTabButtonClass(activeLabGame === "drop")}
+          aria-selected={activeLabGame === 'drop'}
+          onClick={() => setActiveLabGame('drop')}
+          className={labTabButtonClass(activeLabGame === 'drop')}
         >
           <span className="shrink-0 text-base leading-none" aria-hidden>
             🍎
@@ -43,9 +45,9 @@ export const LabOverlayContent = () => {
           type="button"
           role="tab"
           data-testid="lab-tab-orbit"
-          aria-selected={activeLabGame === "orbit"}
-          onClick={() => setActiveLabGame("orbit")}
-          className={labTabButtonClass(activeLabGame === "orbit")}
+          aria-selected={activeLabGame === 'orbit'}
+          onClick={() => setActiveLabGame('orbit')}
+          className={labTabButtonClass(activeLabGame === 'orbit')}
         >
           <span className="shrink-0 text-base leading-none" aria-hidden>
             ☀️
@@ -54,9 +56,12 @@ export const LabOverlayContent = () => {
         </button>
       </div>
 
-      {activeLabGame === "drop" ? <GravityDropLab /> : null}
-      {activeLabGame === "orbit" ? (
+      {activeLabGame === 'drop' ? <GravityDropLab /> : null}
+      {activeLabGame === 'orbit' ? (
         <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-2">
+            <TimePlaybackControls />
+          </div>
           <GravityLabControls embedded />
         </div>
       ) : null}
@@ -64,33 +69,40 @@ export const LabOverlayContent = () => {
   );
 };
 
+const CloseButton = () => {
+  const setGameMode = useStore((s) => s.setGameMode);
+  return (
+    <button
+      type="button"
+      onClick={() => setGameMode('explore')}
+      className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      aria-label="Close lab"
+      data-testid="lab-overlay-close"
+    >
+      <X className="h-4 w-4" />
+    </button>
+  );
+};
+
 export const LabOverlay = () => {
   const layoutTier = useResponsiveLayout();
-  const activeLabGame = useStore((s) => s.activeLabGame);
-
-  if (layoutTier === "compact") {
-    return (
-      <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-0 top-8 bottom-0 z-20 overflow-hidden">
-        <div className="pointer-events-auto h-full flex flex-col rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl overflow-hidden">
-          <LabOverlayContent />
-        </div>
-      </div>
-    );
-  }
-
-  if (activeLabGame === "orbit") {
-    return (
-      <div data-testid="lab-overlay" className="pointer-events-none fixed right-4 bottom-20 z-20 w-72">
-        <div className="pointer-events-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
-          <LabOverlayContent />
-        </div>
-      </div>
-    );
-  }
+  const isCompact = layoutTier === 'compact';
 
   return (
-    <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20 max-w-md mx-auto overflow-hidden">
-      <div className="pointer-events-auto h-full flex flex-col rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl overflow-hidden">
+    <div
+      data-testid="lab-overlay"
+      className={[
+        'pointer-events-none fixed z-20',
+        isCompact ? 'inset-x-4 bottom-4' : 'right-4 bottom-20 w-72',
+      ].join(' ')}
+    >
+      <div
+        className={[
+          'pointer-events-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl',
+          isCompact ? 'relative' : 'relative',
+        ].join(' ')}
+      >
+        <CloseButton />
         <LabOverlayContent />
       </div>
     </div>
