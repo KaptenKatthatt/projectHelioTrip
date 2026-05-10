@@ -1,61 +1,57 @@
-import { useEffect, useState } from "react";
-import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
-import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
-import { useTranslation } from "../../hooks/useTranslation";
-import { getBodyColor } from "../../lib/bodies";
-import type { MobileHudSheetId } from "../../lib/mobileHudSheetIds";
-import { useStore } from "../../store/useStore";
-import { HudControlRailRegion } from "./hud/HudControlRailRegion";
-import { HudDetailRegion } from "./hud/HudDetailRegion";
-import { HudMobileNavRegion } from "./hud/HudMobileNavRegion";
-import { HudOverlayRegion } from "./hud/HudOverlayRegion";
-import { HudPrimaryNavRegion } from "./hud/HudPrimaryNavRegion";
-import { HudTopBarRegion } from "./hud/HudTopBarRegion";
-import { MobileContextStrip } from "../molecules/MobileContextStrip";
-import { CameraTool } from "../molecules/CameraTool";
-import { LabOverlay } from "../organisms/LabOverlay";
-import { MarsSurface } from "../organisms/MarsSurface";
-import { MoonSurface } from "../organisms/MoonSurface";
+import { useEffect, useState } from 'react';
+import { useActiveBodyViewGameMode } from '../../hooks/useActiveBodyViewGameMode';
+import { useResponsiveLayout } from '../../hooks/useResponsiveLayout';
+import { useTranslation } from '../../hooks/useTranslation';
+import { getBodyColor } from '../../lib/bodies';
+import type { MobileHudSheetId } from '../../lib/mobileHudSheetIds';
+import { useStore } from '../../store/useStore';
+import { HudControlRailRegion } from './hud/HudControlRailRegion';
+import { HudDetailRegion } from './hud/HudDetailRegion';
+import { HudMobileNavRegion } from './hud/HudMobileNavRegion';
+import { HudOverlayRegion } from './hud/HudOverlayRegion';
+import { HudPrimaryNavRegion } from './hud/HudPrimaryNavRegion';
+import { HudTopBarRegion } from './hud/HudTopBarRegion';
+import { MobileContextStrip } from '../molecules/MobileContextStrip';
+import { CameraTool } from '../molecules/CameraTool';
+import { LabOverlay } from '../organisms/LabOverlay';
+import { MarsSurface } from '../organisms/MarsSurface';
+import { MoonSurface } from '../organisms/MoonSurface';
 
-const SHEET_GAME_MODE: Partial<Record<MobileHudSheetId, "explore" | "learn" | "challenge" | "lab">> = {
-  explore: "explore",
-  stars: "explore",
-  learn: "learn",
-  challenge: "challenge",
-  lab: "lab",
+const SHEET_GAME_MODE: Partial<
+  Record<MobileHudSheetId, 'explore' | 'learn' | 'challenge' | 'lab'>
+> = {
+  explore: 'explore',
+  stars: 'explore',
+  learn: 'learn',
+  challenge: 'challenge',
+  lab: 'lab',
 };
 
-type HudFrame = "viewport" | "stage";
+type HudFrame = 'viewport' | 'stage';
 
 type HUDProps = {
   /** `stage`: position relative to the letterboxed portrait stage; `viewport`: fixed to the window. */
   readonly hudFrame?: HudFrame;
 };
 
-export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
+export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
   const { t, bodyName } = useTranslation();
   const layoutTier = useResponsiveLayout();
-  const mobileLayout = layoutTier === "compact";
+  const mobileLayout = layoutTier === 'compact';
   const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
   const setGameMode = useStore((s) => s.setGameMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
   const isTravelAnimating = useStore((s) => s.isTravelAnimating);
-  const showPlanetPanel = activeBody !== null && viewMode !== "overview";
-  const showPlanetInfoUi =
-    showPlanetPanel && !isTraveling && !isTravelAnimating;
-  const showMissionUi = gameMode !== "explore" && gameMode !== "lab";
-  const mobileBodyTitle =
-    activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
+  const showPlanetPanel = activeBody !== null && viewMode !== 'overview';
+  const showPlanetInfoUi = showPlanetPanel && !isTraveling && !isTravelAnimating;
+  const showMissionUi = gameMode !== 'explore' && gameMode !== 'lab';
+  const mobileBodyTitle = activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
   const mobileBodyColor = activeBody !== null ? getBodyColor(activeBody) : null;
 
-  const [openNavSheet, setOpenNavSheet] = useState<MobileHudSheetId | null>(
-    null,
-  );
+  const [openNavSheet, setOpenNavSheet] = useState<MobileHudSheetId | null>(null);
   const planetSheetOpen = useStore((s) => s.mobilePlanetInfoSheetOpen);
-  const setMobilePlanetInfoSheetOpen = useStore(
-    (s) => s.setMobilePlanetInfoSheetOpen,
-  );
+  const setMobilePlanetInfoSheetOpen = useStore((s) => s.setMobilePlanetInfoSheetOpen);
   const resetSolarSystemStart = useStore((s) => s.resetSolarSystemStart);
   const setSelectedConstellation = useStore((s) => s.setSelectedConstellation);
 
@@ -73,13 +69,7 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
       }
     });
     return () => window.cancelAnimationFrame(id);
-  }, [
-    mobileLayout,
-    showPlanetInfoUi,
-    activeBody,
-    viewMode,
-    setMobilePlanetInfoSheetOpen,
-  ]);
+  }, [mobileLayout, showPlanetInfoUi, activeBody, viewMode, setMobilePlanetInfoSheetOpen]);
 
   const handleToggleNavSheet = (id: MobileHudSheetId): void => {
     const next = openNavSheet === id ? null : id;
@@ -107,26 +97,26 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
   const handleBackToConstellationsMenu = (): void => {
     setSelectedConstellation(null);
     setMobilePlanetInfoSheetOpen(false);
-    setOpenNavSheet("stars");
-    setGameMode("explore");
+    setOpenNavSheet('stars');
+    setGameMode('explore');
   };
 
   return (
     <div
       className={
-        "pointer-events-none z-10 flex flex-col justify-between font-sans text-white " +
-        (hudFrame === "stage" ? "absolute inset-0 " : "fixed inset-0 ") +
+        'pointer-events-none z-10 flex flex-col justify-between font-sans text-white ' +
+        (hudFrame === 'stage' ? 'absolute inset-0 ' : 'fixed inset-0 ') +
         (mobileLayout
-          ? "p-3 pt-10 pb-[calc(7rem+env(safe-area-inset-bottom))]"
-          : layoutTier === "expanded"
-            ? "p-5"
-            : "p-3 sm:p-5")
+          ? 'p-3 pt-10 pb-[calc(7rem+env(safe-area-inset-bottom))]'
+          : layoutTier === 'expanded'
+            ? 'p-5'
+            : 'p-3 sm:p-5')
       }
     >
       {mobileLayout && (
         <MobileContextStrip
-          onOpenChallengeSheet={() => handleToggleNavSheet("challenge")}
-          onOpenConstellationsSheet={() => handleToggleNavSheet("stars")}
+          onOpenChallengeSheet={() => handleToggleNavSheet('challenge')}
+          onOpenConstellationsSheet={() => handleToggleNavSheet('stars')}
           onBackFromPlanet={handleResetToStart}
           onResetToStart={handleResetToStart}
         />
@@ -168,17 +158,13 @@ export const HUD = ({ hudFrame = "viewport" }: HUDProps) => {
             openNavSheet={openNavSheet}
             onToggleSheet={handleToggleNavSheet}
             gameMode={gameMode}
-            starsContextActive={
-              gameMode === "explore" && selectedConstellation !== null
-            }
+            starsContextActive={gameMode === 'explore' && selectedConstellation !== null}
           />
         }
       />
       <HudOverlayRegion />
-      {mobileLayout && gameMode !== "lab" && (
-        <CameraTool className="fixed left-4 bottom-32 z-10" />
-      )}
-      {gameMode === "lab" ? <LabOverlay /> : null}
+      {mobileLayout && gameMode !== 'lab' && <CameraTool className="fixed bottom-32 left-4 z-10" />}
+      {gameMode === 'lab' ? <LabOverlay /> : null}
       <MarsSurface />
       <MoonSurface />
     </div>

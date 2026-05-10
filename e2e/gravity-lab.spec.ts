@@ -376,4 +376,16 @@ test.describe("Labbläge – gränssnittsfokus (desktop)", () => {
 
     await expect(page.getByRole("radio", { name: "Labb" })).toBeVisible();
   });
+
+  test("lab panel width is at most 448px", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await bootstrapSv(page);
+    await openLabMode(page);
+
+    const panel = page.getByTestId("lab-overlay");
+    await expect(panel).toBeVisible();
+    const box = await panel.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeLessThanOrEqual(448);
+  });
 });

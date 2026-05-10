@@ -21,7 +21,6 @@ import {
   type MissionDomainEvent,
   type MissionProgress,
   createInitialProgress,
-  isGameMode,
 } from '../lib/missions/types';
 import { isMissionId } from '../lib/missions/missionDefinitions';
 import { inferShareLinkContextType, type ShareLinkState } from '../lib/shareLink';
@@ -393,7 +392,7 @@ export const useStore = create<Store>()(
         return {
           ...current,
           locale: isLocale(p?.locale) ? p.locale : current.locale,
-          gameMode: isGameMode(p?.gameMode) ? p.gameMode : current.gameMode,
+          gameMode: p?.gameMode ?? current.gameMode,
           missionProgress: sanitizedCompletedMissions,
           visitedBodies: sanitizeVisitedBodies(p?.visitedBodies),
           unlockedAchievements: sanitizeAchievements(p?.unlockedAchievements),
