@@ -43,6 +43,23 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
     setSelectedIndex((selectedIndex - 1 + photos.length) % photos.length);
   };
 
+  useEffect(() => {
+    if (!open || selectedIndex === null) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        prevPhoto();
+      } else if (e.key === "ArrowRight") {
+        nextPhoto();
+      } else if (e.key === "Escape") {
+        setSelectedIndex(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, selectedIndex, photos.length]); // Added photos.length as prevPhoto and nextPhoto uses it
+
   if (!open) return null;
 
   const selectedPhoto =
@@ -107,6 +124,7 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
               onClick={() => handleDelete(selectedPhoto.id)}
               className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white"
               title="Ta bort foto"
+              aria-label="Ta bort foto"
             >
               <Trash2 className="h-5 w-5" />
             </button>
@@ -114,6 +132,7 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
               type="button"
               onClick={() => setSelectedIndex(null)}
               className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+              aria-label="Stäng"
             >
               <X className="h-6 w-6" />
             </button>
@@ -124,6 +143,7 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
               type="button"
               onClick={prevPhoto}
               className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
+              aria-label="Föregående foto"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
@@ -146,6 +166,7 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
               type="button"
               onClick={nextPhoto}
               className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
+              aria-label="Nästa foto"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </button>
