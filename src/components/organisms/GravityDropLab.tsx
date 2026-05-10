@@ -46,7 +46,6 @@ export const GravityDropLab = () => {
   const grav = t.learn.gravityLab;
   const layoutTier = useResponsiveLayout();
   const isCompact = layoutTier === "compact";
-  const isExpanded = layoutTier === "expanded";
   const isNotCompact = layoutTier !== "compact";
 
   // Selections
@@ -160,7 +159,7 @@ export const GravityDropLab = () => {
   const funFact = getFunFact(selectedPlanet, grav);
 
   return (
-    <div data-testid="gravity-drop-lab" className="flex flex-col gap-2">
+    <div data-testid="gravity-drop-lab" className="flex flex-col flex-1 gap-2">
       {/* Title */}
       <h3 className="text-sm font-semibold tracking-tight text-white/90">
         🍎 {grav.title}
@@ -235,7 +234,7 @@ export const GravityDropLab = () => {
       {/* Drop canvas */}
       <div
         data-testid="drop-canvas"
-        className={isCompact ? styles.dropCanvasCompact : isExpanded ? styles.dropCanvasDesktop : styles.dropCanvas}
+        className={isCompact ? styles.dropCanvasCompact : styles.dropCanvas}
         style={{
           background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 70%, ${planet.color}30 85%, ${planet.color}50 100%)`,
         }}

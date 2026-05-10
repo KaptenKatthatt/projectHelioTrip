@@ -19,7 +19,7 @@ export const LabOverlayContent = () => {
   const lab = t.learn.labAccordion;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col flex-1 gap-3">
       <div
         role="tablist"
         data-testid="lab-game-switcher"
@@ -70,8 +70,8 @@ export const LabOverlay = () => {
 
   if (layoutTier === "compact") {
     return (
-      <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-0 top-8 bottom-0 z-20">
-        <div className="pointer-events-auto h-full rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+      <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-0 top-8 bottom-0 z-20 overflow-hidden">
+        <div className="pointer-events-auto h-full flex flex-col rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl overflow-hidden">
           <LabOverlayContent />
         </div>
       </div>
@@ -88,19 +88,9 @@ export const LabOverlay = () => {
     );
   }
 
-  if (layoutTier === "medium") {
-    return (
-      <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20">
-        <div className="custom-scrollbar pointer-events-auto h-full overflow-y-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
-          <LabOverlayContent />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div data-testid="lab-overlay" className="pointer-events-none fixed inset-x-4 top-16 bottom-20 z-20 max-w-md mx-auto overflow-hidden">
-      <div className="pointer-events-auto rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl">
+      <div className="pointer-events-auto h-full flex flex-col rounded-2xl border border-white/10 bg-black/60 p-4 backdrop-blur-xl overflow-hidden">
         <LabOverlayContent />
       </div>
     </div>
