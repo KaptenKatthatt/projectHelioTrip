@@ -130,6 +130,7 @@ const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number =
   );
 };
 
+const tmpLookEuler = new Euler();
 const applyMobileLook = (camera: Camera, delta: number): void => {
   const { x: lx, y: ly } = freeFlightTouchBus.look;
   const length = Math.hypot(lx, ly);
@@ -140,11 +141,11 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   const mag = Math.min(1, (length - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE));
   // Exponential curve for smoother fine control at small stick deflections
   const smoothMag = mag * mag;
-  const lookEuler = new Euler().setFromQuaternion(camera.quaternion, "YXZ");
-  lookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;
-  lookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
-  lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
-  camera.quaternion.setFromEuler(lookEuler);
+  tmpLookEuler.setFromQuaternion(camera.quaternion, "YXZ");
+  tmpLookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;
+  tmpLookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
+  tmpLookEuler.x = Math.max(-PI_2, Math.min(PI_2, tmpLookEuler.x));
+  camera.quaternion.setFromEuler(tmpLookEuler);
 };
 
 const applyCollisionConstraints = (
