@@ -3,6 +3,8 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { getBody } from "../../lib/bodies";
 import type { BodyId } from "../../lib/bodies";
 import type { PlanetId } from "../../lib/planets";
+import { ComparisonGraphic } from "./ComparisonGraphic";
+import { ComparisonSelector } from "./ComparisonSelector";
 
 // Real equatorial radii relative to Earth (Earth = 1.0), sourced from NASA planetary fact sheets
 const REAL_RADIUS: Partial<Record<BodyId, number>> = {
@@ -31,11 +33,6 @@ const COMPARE_OPTIONS: PlanetId[] = ["sun", "earth", "jupiter", "mars"];
 
 const MAX_VISUAL_R = 75;
 const MIN_VISUAL_R = 3;
-// SVG layout constants
-const CX_A = 120;
-const CX_B = 300;
-const CY = 90;
-const SVG_H = 200;
 
 const getDefaultCompare = (bodyId: BodyId): PlanetId =>
   bodyId === "earth" ? "sun" : "earth";
@@ -85,81 +82,29 @@ export const ScaleComparison = ({ bodyId }: Props) => {
       : `${biggerName} is about ${roundedRatio}× larger than ${smallerName}`;
   };
 
-  const labelYA = Math.min(CY + visualA + 16, SVG_H - 6);
-  const labelYB = Math.min(CY + visualB + 16, SVG_H - 6);
-
   const options = COMPARE_OPTIONS.filter((id) => id !== bodyId);
 
   return (
     <div className="space-y-3">
-      <svg
-        viewBox={`0 0 400 ${SVG_H}`}
-        className="w-full max-h-48"
-        aria-hidden
-      >
-        <circle
-          cx={CX_A}
-          cy={CY}
-          r={visualA}
-          fill={colorA}
-          fillOpacity={0.2}
-          stroke={colorA}
-          strokeOpacity={0.65}
-          strokeWidth={1.5}
-        />
-        <circle
-          cx={CX_B}
-          cy={CY}
-          r={visualB}
-          fill={colorB}
-          fillOpacity={0.2}
-          stroke={colorB}
-          strokeOpacity={0.65}
-          strokeWidth={1.5}
-        />
-        <text
-          x={CX_A}
-          y={labelYA}
-          textAnchor="middle"
-          fill="white"
-          fillOpacity={0.65}
-          fontSize={11}
-        >
-          {nameA}
-        </text>
-        <text
-          x={CX_B}
-          y={labelYB}
-          textAnchor="middle"
-          fill="white"
-          fillOpacity={0.65}
-          fontSize={11}
-        >
-          {nameB}
-        </text>
-      </svg>
+      <ComparisonGraphic
+        visualA={visualA}
+        visualB={visualB}
+        colorA={colorA}
+        colorB={colorB}
+        nameA={nameA}
+        nameB={nameB}
+      />
 
       <p className="text-center text-xs text-white/60 leading-relaxed">
         {comparisonLabel()}
       </p>
 
-      <div className="flex flex-wrap gap-1.5 justify-center">
-        {options.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setCompareWith(id)}
-            className={[
-              "pointer-events-auto rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
-              compareWith === id
-                ? "bg-white/20 text-white"
-                : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80",
-            ].join(" ")}
-          >
-            {bodyName(id)}
-          </button>
-        ))}
-      </div>
+      <ComparisonSelector
+        options={options}
+        compareWith={compareWith}
+        setCompareWith={setCompareWith}
+        bodyName={bodyName}
+      />
     </div>
   );
 };
