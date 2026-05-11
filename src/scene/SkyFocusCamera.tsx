@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { MOONS } from "../lib/moons";
@@ -64,6 +64,55 @@ const segmentIntersectsSphere = (
 ): boolean =>
   closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
 
+const getBodySpheres = (): BodySphere[] => {
+  const bodies: BodySphere[] = [];
+  for (const planet of PLANETS) {
+    bodies.push({
+      center: getLivePosition(planet.id).clone(),
+      radius: planet.radius + BODY_PADDING,
+    });
+  }
+  for (const moon of MOONS) {
+    bodies.push({
+      center: getLivePosition(moon.parent)
+        .clone()
+        .add(getLiveMoonOffset(moon.id)),
+      radius: moon.radius + BODY_PADDING,
+    });
+  }
+  return bodies;
+};
+
+const tmpClosest = new Vector3();
+
+const findSafeEndPosition = (startPos: Vector3, direction: Vector3): Vector3 => {
+  const bodies = getBodySpheres();
+  let distance = INTRO_FORWARD_CAP;
+  const end = new Vector3();
+
+  while (distance >= MIN_SAFE_MOVE_DISTANCE) {
+    end.copy(startPos).addScaledVector(direction, distance);
+    let hit = false;
+    for (const body of bodies) {
+      if (
+        segmentIntersectsSphere(
+          startPos,
+          end,
+          body.center,
+          body.radius,
+          tmpClosest,
+        )
+      ) {
+        hit = true;
+        break;
+      }
+    }
+    if (!hit) return end;
+    distance *= 0.5;
+  }
+  return startPos.clone();
+};
+
 export const SkyFocusCamera = () => {
   const camera = useThree((s) => s.camera);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
@@ -74,7 +123,6 @@ export const SkyFocusCamera = () => {
 
   const currentDirRef = useRef(new Vector3());
   const tmpDirRef = useRef(new Vector3());
-  const tmpClosestRef = useRef(new Vector3());
   const introRef = useRef<IntroTransition>({
     active: false,
     startedAtMs: 0,
@@ -86,56 +134,6 @@ export const SkyFocusCamera = () => {
   });
   const lookAtRef = useMemo(() => new Vector3(), []);
   const lastSkyFocusIdRef = useRef(-1);
-
-  const getBodySpheres = useCallback((): BodySphere[] => {
-    const bodies: BodySphere[] = [];
-    for (const planet of PLANETS) {
-      bodies.push({
-        center: getLivePosition(planet.id).clone(),
-        radius: planet.radius + BODY_PADDING,
-      });
-    }
-    for (const moon of MOONS) {
-      bodies.push({
-        center: getLivePosition(moon.parent)
-          .clone()
-          .add(getLiveMoonOffset(moon.id)),
-        radius: moon.radius + BODY_PADDING,
-      });
-    }
-    return bodies;
-  }, []);
-
-  const findSafeEndPosition = useCallback(
-    (startPos: Vector3, direction: Vector3): Vector3 => {
-      const bodies = getBodySpheres();
-      let distance = INTRO_FORWARD_CAP;
-      const end = new Vector3();
-
-      while (distance >= MIN_SAFE_MOVE_DISTANCE) {
-        end.copy(startPos).addScaledVector(direction, distance);
-        let hit = false;
-        for (const body of bodies) {
-          if (
-            segmentIntersectsSphere(
-              startPos,
-              end,
-              body.center,
-              body.radius,
-              tmpClosestRef.current,
-            )
-          ) {
-            hit = true;
-            break;
-          }
-        }
-        if (!hit) return end;
-        distance *= 0.5;
-      }
-      return startPos.clone();
-    },
-    [getBodySpheres],
-  );
 
   useEffect(() => {
     if (!selectedConstellation) {
@@ -179,7 +177,6 @@ export const SkyFocusCamera = () => {
     selectedConstellation,
     skyFocusId,
     setIsTraveling,
-    findSafeEndPosition,
   ]);
 
   useFrame(() => {
