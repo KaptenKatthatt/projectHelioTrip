@@ -47,28 +47,10 @@ type PickableEntry = {
   radius: number;
 };
 
-export const BodyPickers = () => {
-  const navigationMode = useStore((s) => s.navigationMode);
-  const viewMode = useStore((s) => s.viewMode);
-  const isTraveling = useStore((s) => s.isTraveling);
-  const travelTo = useStore((s) => s.travelTo);
-  const mobileLayout = useIsMobileLayout();
 
+function useHoverLabelState() {
   const [hoveredId, setHoveredId] = useState<BodyId | null>(null);
   useCursor(hoveredId !== null);
-
-  const enabled = !isTraveling && navigationMode !== 'free';
-
-  const pickables = useMemo<readonly PickableEntry[]>(() => {
-    const list: PickableEntry[] = PLANETS.map((p) => ({
-      id: p.id,
-      radius: p.radius,
-    }));
-    if (viewMode === 'close') {
-      for (const m of MOONS) list.push({ id: m.id, radius: m.radius });
-    }
-    return list;
-  }, [viewMode]);
 
   const onHoverEnter = useCallback((id: BodyId) => {
     setHoveredId(id);
@@ -78,12 +60,38 @@ export const BodyPickers = () => {
     setHoveredId((current) => (current === id ? null : current));
   }, []);
 
+  const [displayedId, setDisplayedId] = useState<BodyId | null>(null);
+
+  /**
+   * Keep the label mounted for a short grace window after hover ends
+   * so the fade-out transition can play, then unmount to free the Html portal.
+   */
+  useEffect(() => {
+    if (hoveredId !== null) {
+      const timeout = setTimeout(() => setDisplayedId(hoveredId), 0);
+      return () => clearTimeout(timeout);
+    }
+
+    if (displayedId === null) {
+      return;
+    }
+
+    const timeout = setTimeout(() => setDisplayedId(null), LABEL_UNMOUNT_MS);
+    return () => clearTimeout(timeout);
+  }, [hoveredId, displayedId]);
+
+  return { hoveredId, displayedId, onHoverEnter, onHoverLeave };
+}
+
+function useBodySelection(mobileLayout: boolean) {
+  const travelTo = useStore((s) => s.travelTo);
+
   const onSelect = useCallback(
     (id: BodyId) => {
       const s = useStore.getState();
-      // Keep in sync with `enabled` in MobilePlanetInfoCanvasDismiss: only that
-      // path calls consumePlanetInfoCanvasDismissSuppress on pointerup.
       const showPlanetInfoUi =
+        // Keep in sync with `enabled` in MobilePlanetInfoCanvasDismiss: only that
+        // path calls consumePlanetInfoCanvasDismissSuppress on pointerup.
         s.activeBody !== null &&
         s.viewMode !== 'overview' &&
         !s.isTraveling;
@@ -107,25 +115,33 @@ export const BodyPickers = () => {
     [mobileLayout, travelTo],
   );
 
-  /**
-   * Keep the label mounted for a short grace window after hover ends
-   * so the fade-out transition can play, then unmount to free the
-   * Html portal.
-   */
-  const [displayedId, setDisplayedId] = useState<BodyId | null>(null);
-  useEffect(() => {
-    if (hoveredId !== null) {
-      const timeout = setTimeout(() => setDisplayedId(hoveredId), 0);
-      return () => clearTimeout(timeout);
-    }
+  return onSelect;
+}
 
-    if (displayedId === null) {
-      return;
+function usePickables(viewMode: 'close' | 'overview' | 'free') {
+  return useMemo<readonly PickableEntry[]>(() => {
+    const list: PickableEntry[] = PLANETS.map((p) => ({
+      id: p.id,
+      radius: p.radius,
+    }));
+    if (viewMode === 'close') {
+      for (const m of MOONS) list.push({ id: m.id, radius: m.radius });
     }
+    return list;
+  }, [viewMode]);
+}
 
-    const timeout = setTimeout(() => setDisplayedId(null), LABEL_UNMOUNT_MS);
-    return () => clearTimeout(timeout);
-  }, [hoveredId, displayedId]);
+export const BodyPickers = () => {
+  const navigationMode = useStore((s) => s.navigationMode);
+  const viewMode = useStore((s) => s.viewMode);
+  const isTraveling = useStore((s) => s.isTraveling);
+  const mobileLayout = useIsMobileLayout();
+
+  const { hoveredId, displayedId, onHoverEnter, onHoverLeave } = useHoverLabelState();
+  const onSelect = useBodySelection(mobileLayout);
+  const pickables = usePickables(viewMode);
+
+  const enabled = !isTraveling && navigationMode !== 'free';
 
   if (!enabled) return null;
 
