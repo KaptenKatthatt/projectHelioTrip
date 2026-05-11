@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
+import type { ConstellationId } from '../lib/constellationViewSettings';
 import { useFrame, useThree } from '@react-three/fiber';
-import { PerspectiveCamera } from 'three';
+import { PerspectiveCamera, Camera, WebGLRenderer } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useOverviewCinematicEnabled } from '../hooks/useOverviewCinematicEnabled';
 import { getConstellationMinFovDegrees } from '../lib/constellationOrientation';
@@ -43,8 +44,7 @@ const CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT = 1.1;
 /** ~28 px change in pinch span ≈ one mouse-wheel notch (see {@link FOV_WHEEL_STEP}). */
 const PINCH_FOV_DEG_PER_PX = FOV_WHEEL_STEP / 28;
 
-const clampFov = (fov: number): number =>
-  Math.min(MAX_FOV, Math.max(MIN_FOV, fov));
+const clampFov = (fov: number): number => Math.min(MAX_FOV, Math.max(MIN_FOV, fov));
 
 const touchDistance = (touches: TouchList): number => {
   const a = touches.item(0);
@@ -55,43 +55,27 @@ const touchDistance = (touches: TouchList): number => {
 
 const resolveFovLerpAlpha = (
   delta: number,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   viewMode: string,
   navigationMode: string,
 ): number => {
   const constellationFraming =
-    selectedConstellation !== null &&
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic';
+    selectedConstellation !== null && viewMode === 'overview' && navigationMode === 'cinematic';
   if (constellationFraming) {
     return Math.min(1, delta * FOV_CONSTELLATION_SETTLE_PER_SEC);
   }
   return 1 - Math.pow(FOV_SMOOTHING, delta);
 };
 
-export const GlobalZoom = () => {
-  const camera = useThree((s) => s.camera);
-  const size = useThree((s) => s.size);
-  const gl = useThree((s) => s.gl);
-  const viewMode = useStore((s) => s.viewMode);
-  const navigationMode = useStore((s) => s.navigationMode);
-  const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
-  const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const isMobileLayout = useIsMobileLayout();
-  const enabled = useOverviewCinematicEnabled();
-
-  const targetFovRef = useRef(DEFAULT_FOV);
-  const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
-
-  useEffect(() => {
-    perspectiveCameraRef.current =
-      camera instanceof PerspectiveCamera ? camera : null;
-  }, [camera]);
-
-  useEffect(() => {
-    targetFovRef.current = DEFAULT_FOV;
-  }, [overviewCameraResetId]);
-
+const useConstellationFovSettings = (
+  targetFovRef: MutableRefObject<number>,
+  enabled: boolean,
+  selectedConstellation: ConstellationId | null,
+  camera: Camera,
+  isMobileLayout: boolean,
+  sizeWidth: number,
+  sizeHeight: number,
+) => {
   /**
    * Apply constellation view settings once travel has completed (enabled = true).
    *
@@ -134,8 +118,14 @@ export const GlobalZoom = () => {
       minF *= CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT;
     }
     targetFovRef.current = clampFov(Math.max(targetFovRef.current, minF));
-  }, [enabled, selectedConstellation, camera, isMobileLayout, size.width, size.height]);
+  }, [enabled, selectedConstellation, camera, isMobileLayout, sizeWidth, sizeHeight, targetFovRef]);
+};
 
+const useZoomGestures = (
+  targetFovRef: MutableRefObject<number>,
+  enabled: boolean,
+  gl: WebGLRenderer,
+) => {
   useEffect(() => {
     if (!enabled) {
       targetFovRef.current = DEFAULT_FOV;
@@ -196,8 +186,16 @@ export const GlobalZoom = () => {
       canvas.removeEventListener('touchend', onTouchEnd);
       canvas.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, [enabled, gl]);
+  }, [enabled, gl, targetFovRef]);
+};
 
+const useFovLerp = (
+  perspectiveCameraRef: MutableRefObject<PerspectiveCamera | null>,
+  targetFovRef: MutableRefObject<number>,
+  selectedConstellation: ConstellationId | null,
+  viewMode: string,
+  navigationMode: string,
+) => {
   useFrame((_, delta) => {
     const perspectiveCamera = perspectiveCameraRef.current;
     if (!perspectiveCamera) return;
@@ -206,15 +204,47 @@ export const GlobalZoom = () => {
     const current = perspectiveCamera.fov;
     if (Math.abs(target - current) < 0.01) return;
 
-    const alpha = resolveFovLerpAlpha(
-      delta,
-      selectedConstellation,
-      viewMode,
-      navigationMode,
-    );
+    const alpha = resolveFovLerpAlpha(delta, selectedConstellation, viewMode, navigationMode);
     perspectiveCamera.fov = current + (target - current) * alpha;
     perspectiveCamera.updateProjectionMatrix();
   });
+};
+
+export const GlobalZoom = () => {
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  const gl = useThree((s) => s.gl);
+  const viewMode = useStore((s) => s.viewMode);
+  const navigationMode = useStore((s) => s.navigationMode);
+  const overviewCameraResetId = useStore((s) => s.overviewCameraResetId);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const isMobileLayout = useIsMobileLayout();
+  const enabled = useOverviewCinematicEnabled();
+
+  const targetFovRef = useRef(DEFAULT_FOV);
+  const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
+
+  useEffect(() => {
+    perspectiveCameraRef.current = camera instanceof PerspectiveCamera ? camera : null;
+  }, [camera]);
+
+  useEffect(() => {
+    targetFovRef.current = DEFAULT_FOV;
+  }, [overviewCameraResetId]);
+
+  useConstellationFovSettings(
+    targetFovRef,
+    enabled,
+    selectedConstellation,
+    camera,
+    isMobileLayout,
+    size.width,
+    size.height,
+  );
+
+  useZoomGestures(targetFovRef, enabled, gl);
+
+  useFovLerp(perspectiveCameraRef, targetFovRef, selectedConstellation, viewMode, navigationMode);
 
   return null;
 };

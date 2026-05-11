@@ -1,4 +1,5 @@
 import type { ConstellationId } from './constellations';
+export type { ConstellationId };
 
 /**
  * PER-CONSTELLATION VIEW SETTINGS
