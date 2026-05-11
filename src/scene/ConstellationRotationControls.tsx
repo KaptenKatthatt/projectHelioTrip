@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import type { WebGLRenderer } from "three";
 import { useThree } from "@react-three/fiber";
 import { useStore } from "../store/useStore";
 import { useOverviewCinematicEnabled } from "../hooks/useOverviewCinematicEnabled";
@@ -24,7 +25,7 @@ const getAngleBetweenPointers = (
 };
 
 const usePinchRotation = (
-  gl: THREE.WebGLRenderer,
+  gl: WebGLRenderer,
   enabled: boolean,
   adjustConstellationSpin: (rad: number) => void,
 ) => {
