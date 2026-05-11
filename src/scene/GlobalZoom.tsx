@@ -225,7 +225,8 @@ export const GlobalZoom = () => {
   const perspectiveCameraRef = useRef<PerspectiveCamera | null>(null);
 
   useEffect(() => {
-    perspectiveCameraRef.current = camera instanceof PerspectiveCamera ? camera : null;
+    perspectiveCameraRef.current =
+      camera instanceof PerspectiveCamera ? camera : null;
   }, [camera]);
 
   useEffect(() => {
@@ -244,7 +245,13 @@ export const GlobalZoom = () => {
 
   useZoomGestures(targetFovRef, enabled, gl);
 
-  useFovLerp(perspectiveCameraRef, targetFovRef, selectedConstellation, viewMode, navigationMode);
+  useFovLerp(
+    perspectiveCameraRef,
+    targetFovRef,
+    selectedConstellation,
+    viewMode,
+    navigationMode,
+  );
 
   return null;
 };

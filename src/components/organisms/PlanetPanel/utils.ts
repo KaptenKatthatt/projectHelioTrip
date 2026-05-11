@@ -8,6 +8,11 @@
 import type { PlanetId } from "../../../lib/planets";
 import { AU_SCALE } from "../../../lib/constants";
 import { getLivePosition } from "../../../lib/positionsBus";
+import type { BodyId } from "../../../lib/bodies";
+import type { SatelliteId } from "../../../lib/satellites";
+import { getBody } from "../../../lib/bodies";
+import { PLANET_ORBITAL_ELEMENTS } from "../../../lib/orbitalElements";
+import type { Translation } from "../../../i18n/translations";
 
 export type Row = {
   label: string;
@@ -79,4 +84,101 @@ export const formatOrbitPeriod = (
     parts.push(`${remainingDays} ${dayLabel}`);
   }
   return parts.join(" ");
+};
+
+const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
+  iss: 92 / 60,
+  sputnik: 96.2 / 60,
+};
+
+type Formatters = {
+  distanceFormatter: Intl.NumberFormat;
+  ratioFormatter: Intl.NumberFormat;
+  orbitPeriodFormatter: Intl.NumberFormat;
+  orbitHoursFormatter: Intl.NumberFormat;
+};
+
+export const buildPlanetInfoRows = (
+  activeBody: BodyId,
+  t: Translation,
+  planetName: (id: PlanetId) => string,
+  locale: string,
+  distanceFromSunAu: number,
+  distanceToEarthAu: number,
+  formatters: Formatters,
+): { rows: Row[]; hasLongOrbitPeriod: boolean } | null => {
+  const body = getBody(activeBody);
+  if (!body) return null;
+
+  const {
+    distanceFormatter,
+    ratioFormatter,
+    orbitPeriodFormatter,
+    orbitHoursFormatter,
+  } = formatters;
+
+  const usesMiles = locale === "en";
+  const distanceUnit = usesMiles ? "miles" : "km";
+  const orbitPeriodUnit = t.ui.unitDays;
+  const getHoursUnit = (hours: number): string => {
+    return hours === 1 ? t.ui.unitHour : t.ui.unitHours;
+  };
+
+  const distanceFromSunKm = distanceFromSunAu * AU_TO_KM;
+  const distanceToEarthKm = distanceToEarthAu * AU_TO_KM;
+  const displayDistanceFromSun = usesMiles
+    ? distanceFromSunKm * KM_TO_MILES
+    : distanceFromSunKm;
+  const displayDistanceToEarth = usesMiles
+    ? distanceToEarthKm * KM_TO_MILES
+    : distanceToEarthKm;
+
+  const orbitalPeriodDays =
+    body.kind === "planet"
+      ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
+      : PLANET_ORBITAL_ELEMENTS[body.def.parent]?.periodDays;
+  const satelliteOrbitalPeriodHours =
+    body.kind === "satellite"
+      ? SATELLITE_PERIOD_HOURS[body.def.id as SatelliteId]
+      : undefined;
+
+  const hasLongOrbitPeriod =
+    satelliteOrbitalPeriodHours === undefined &&
+    orbitalPeriodDays !== undefined &&
+    orbitalPeriodDays > 365;
+
+  const radiusScale = body.def.radius;
+
+  const rows: Row[] = [];
+  rows.push({
+    label: t.ui.distanceFromSun,
+    value: `${distanceFormatter.format(displayDistanceFromSun)} ${distanceUnit}`,
+  });
+  rows.push({
+    label: t.ui.distanceFromEarth,
+    value: `${distanceFormatter.format(displayDistanceToEarth)} ${distanceUnit}`,
+  });
+  rows.push({
+    label:
+      satelliteOrbitalPeriodHours !== undefined
+        ? t.ui.orbitPeriodAroundEarth
+        : t.ui.orbitPeriodAroundSun,
+    value:
+      satelliteOrbitalPeriodHours !== undefined
+        ? `${orbitHoursFormatter.format(satelliteOrbitalPeriodHours)} ${getHoursUnit(satelliteOrbitalPeriodHours)}`
+        : orbitalPeriodDays !== undefined
+          ? formatOrbitPeriod(
+              orbitalPeriodDays,
+              locale,
+              orbitPeriodFormatter,
+              orbitPeriodUnit,
+            )
+          : "—",
+  });
+  rows.push({
+    label: t.ui.circumferenceRelativeToEarth,
+    value: `${planetName("earth")} x ${ratioFormatter.format(radiusScale)}`,
+  });
+
+  return { rows, hasLongOrbitPeriod };
 };

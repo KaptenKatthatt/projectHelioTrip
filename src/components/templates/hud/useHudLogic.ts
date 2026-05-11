@@ -25,9 +25,11 @@ export const useHudLogic = () => {
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const isTraveling = useStore((s) => s.isTraveling);
   const isTravelAnimating = useStore((s) => s.isTravelAnimating);
+
   const showPlanetPanel = activeBody !== null && viewMode !== 'overview';
   const showPlanetInfoUi = showPlanetPanel && !isTraveling && !isTravelAnimating;
   const showMissionUi = gameMode !== 'explore' && gameMode !== 'lab';
+
   const mobileBodyTitle = activeBody !== null ? bodyName(activeBody) : t.ui.bodyInfo;
   const mobileBodyColor = activeBody !== null ? getBodyColor(activeBody) : null;
 
