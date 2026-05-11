@@ -9,7 +9,7 @@ import { CameraTool } from '../molecules/CameraTool';
 import { LabOverlay } from '../organisms/LabOverlay';
 import { MarsSurface } from '../organisms/MarsSurface';
 import { MoonSurface } from '../organisms/MoonSurface';
-import { useHUDLogic } from './hud/useHUDLogic';
+import { useHudLogic } from './hud/useHudLogic';
 
 type HudFrame = 'viewport' | 'stage';
 
@@ -36,7 +36,7 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
     closeNavSheets,
     handleResetToStart,
     handleBackToConstellationsMenu,
-  } = useHUDLogic();
+  } = useHudLogic();
 
   return (
     <div

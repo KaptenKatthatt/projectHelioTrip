@@ -3,7 +3,8 @@
  * Pointer events on the canvas; updates constellationUserSpinRad via the store.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import type { WebGLRenderer } from "three";
 import { useThree } from "@react-three/fiber";
 import { useStore } from "../store/useStore";
 import { useOverviewCinematicEnabled } from "../hooks/useOverviewCinematicEnabled";
@@ -12,6 +13,7 @@ import {
   isPointerEventOnCanvas,
   subscribeWindowPointerListeners,
 } from "../lib/windowPointerListeners";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const getAngleBetweenPointers = (
   pointer1: { x: number; y: number },
@@ -22,30 +24,11 @@ const getAngleBetweenPointers = (
   return Math.atan2(dy, dx);
 };
 
-export const ConstellationRotationControls = () => {
-  const gl = useThree((s) => s.gl);
-  const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const adjustConstellationSpin = useStore((s) => s.adjustConstellationSpin);
-  const overviewCinematic = useOverviewCinematicEnabled();
-
-  const [pinchRotateEligible, setPinchRotateEligible] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia(CONSTELLATION_PINCH_ROTATE_MQ).matches
-      : false,
-  );
-
-  useEffect(() => {
-    const mql = window.matchMedia(CONSTELLATION_PINCH_ROTATE_MQ);
-    const onChange = (): void => {
-      setPinchRotateEligible(mql.matches);
-    };
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => {
-      mql.removeEventListener("change", onChange);
-    };
-  }, []);
-
+const usePinchRotation = (
+  gl: WebGLRenderer,
+  enabled: boolean,
+  adjustConstellationSpin: (rad: number) => void,
+) => {
   const canvasPointerIdsRef = useRef(new Set<number>());
   const pointerPositionsRef = useRef(
     new Map<number, { x: number; y: number }>(),
@@ -54,9 +37,7 @@ export const ConstellationRotationControls = () => {
   const rotationActiveRef = useRef(false);
 
   useEffect(() => {
-    if (!selectedConstellation || !overviewCinematic || !pinchRotateEligible) {
-      return;
-    }
+    if (!enabled) return;
 
     const canvas = gl.domElement;
     const canvasPointerIds = canvasPointerIdsRef.current;
@@ -134,13 +115,21 @@ export const ConstellationRotationControls = () => {
       lastAngleRef.current = null;
       rotationActiveRef.current = false;
     };
-  }, [
-    selectedConstellation,
-    overviewCinematic,
-    pinchRotateEligible,
-    adjustConstellationSpin,
-    gl,
-  ]);
+  }, [enabled, adjustConstellationSpin, gl]);
+};
+
+export const ConstellationRotationControls = () => {
+  const gl = useThree((s) => s.gl);
+  const selectedConstellation = useStore((s) => s.selectedConstellation);
+  const adjustConstellationSpin = useStore((s) => s.adjustConstellationSpin);
+  const overviewCinematic = useOverviewCinematicEnabled();
+  const pinchRotateEligible = useMediaQuery(CONSTELLATION_PINCH_ROTATE_MQ);
+
+  const enabled = Boolean(
+    selectedConstellation && overviewCinematic && pinchRotateEligible,
+  );
+
+  usePinchRotation(gl, enabled, adjustConstellationSpin);
 
   return null;
 };

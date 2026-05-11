@@ -101,7 +101,7 @@ type Formatters = {
 export const buildPlanetInfoRows = (
   activeBody: BodyId,
   t: Translation,
-  planetName: (id: string) => string,
+  planetName: (id: PlanetId) => string,
   locale: string,
   distanceFromSunAu: number,
   distanceToEarthAu: number,

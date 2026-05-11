@@ -1,4 +1,5 @@
-import { useEffect, useRef, MutableRefObject } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
+import type { ConstellationId } from '../lib/constellationViewSettings';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Camera, WebGLRenderer } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
@@ -43,8 +44,7 @@ const CONSTELLATION_MIN_FOV_MOBILE_PORTRAIT = 1.1;
 /** ~28 px change in pinch span ≈ one mouse-wheel notch (see {@link FOV_WHEEL_STEP}). */
 const PINCH_FOV_DEG_PER_PX = FOV_WHEEL_STEP / 28;
 
-const clampFov = (fov: number): number =>
-  Math.min(MAX_FOV, Math.max(MIN_FOV, fov));
+const clampFov = (fov: number): number => Math.min(MAX_FOV, Math.max(MIN_FOV, fov));
 
 const touchDistance = (touches: TouchList): number => {
   const a = touches.item(0);
@@ -55,14 +55,12 @@ const touchDistance = (touches: TouchList): number => {
 
 const resolveFovLerpAlpha = (
   delta: number,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   viewMode: string,
   navigationMode: string,
 ): number => {
   const constellationFraming =
-    selectedConstellation !== null &&
-    viewMode === 'overview' &&
-    navigationMode === 'cinematic';
+    selectedConstellation !== null && viewMode === 'overview' && navigationMode === 'cinematic';
   if (constellationFraming) {
     return Math.min(1, delta * FOV_CONSTELLATION_SETTLE_PER_SEC);
   }
@@ -72,7 +70,7 @@ const resolveFovLerpAlpha = (
 const useConstellationFovSettings = (
   targetFovRef: MutableRefObject<number>,
   enabled: boolean,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   camera: Camera,
   isMobileLayout: boolean,
   sizeWidth: number,
@@ -194,7 +192,7 @@ const useZoomGestures = (
 const useFovLerp = (
   perspectiveCameraRef: MutableRefObject<PerspectiveCamera | null>,
   targetFovRef: MutableRefObject<number>,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   viewMode: string,
   navigationMode: string,
 ) => {
@@ -206,12 +204,7 @@ const useFovLerp = (
     const current = perspectiveCamera.fov;
     if (Math.abs(target - current) < 0.01) return;
 
-    const alpha = resolveFovLerpAlpha(
-      delta,
-      selectedConstellation,
-      viewMode,
-      navigationMode,
-    );
+    const alpha = resolveFovLerpAlpha(delta, selectedConstellation, viewMode, navigationMode);
     perspectiveCamera.fov = current + (target - current) * alpha;
     perspectiveCamera.updateProjectionMatrix();
   });

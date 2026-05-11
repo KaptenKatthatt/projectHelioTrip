@@ -16,7 +16,7 @@ const SHEET_GAME_MODE: Partial<
   lab: 'lab',
 };
 
-export const useHUDLogic = () => {
+export const useHudLogic = () => {
   const { t, bodyName } = useTranslation();
   const layoutTier = useResponsiveLayout();
   const mobileLayout = layoutTier === 'compact';

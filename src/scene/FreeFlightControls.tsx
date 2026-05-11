@@ -211,25 +211,12 @@ const applyCollisionConstraints = (
   }
 };
 
-export const FreeFlightControls = () => {
-  const camera = useThree((s) => s.camera);
+const usePointerLockNavigation = () => {
   const activeBody = useStore((s) => s.activeBody);
   const travelTo = useStore((s) => s.travelTo);
   const setNavigationMode = useStore((s) => s.setNavigationMode);
-  const isMobile = useIsMobileLayout();
 
-  const input = useKeyboardMovement(true);
   const wasLockedRef = useRef(false);
-
-  const velocity = useMemo(() => new Vector3(), []);
-  const desired = useMemo(() => new Vector3(), []);
-  const forward = useMemo(() => new Vector3(), []);
-  const right = useMemo(() => new Vector3(), []);
-  const nextPosition = useMemo(() => new Vector3(), []);
-  const moveDelta = useMemo(() => new Vector3(), []);
-  const center = useMemo(() => new Vector3(), []);
-  const normal = useMemo(() => new Vector3(), []);
-  const radial = useMemo(() => new Vector3(), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -270,6 +257,31 @@ export const FreeFlightControls = () => {
     undefined,
     true,
   );
+};
+
+const useFreeFlightMovement = (
+  isMobile: boolean,
+  input: React.MutableRefObject<{
+    forward: boolean;
+    back: boolean;
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+    boost: boolean;
+  }>,
+) => {
+  const camera = useThree((s) => s.camera);
+
+  const velocity = useMemo(() => new Vector3(), []);
+  const desired = useMemo(() => new Vector3(), []);
+  const forward = useMemo(() => new Vector3(), []);
+  const right = useMemo(() => new Vector3(), []);
+  const nextPosition = useMemo(() => new Vector3(), []);
+  const moveDelta = useMemo(() => new Vector3(), []);
+  const center = useMemo(() => new Vector3(), []);
+  const normal = useMemo(() => new Vector3(), []);
+  const radial = useMemo(() => new Vector3(), []);
 
   useFrame((_, delta) => {
     if (delta <= 0) return;
@@ -317,6 +329,14 @@ export const FreeFlightControls = () => {
 
     if (isMobile) applyMobileLook(camera, delta);
   });
+};
+
+export const FreeFlightControls = () => {
+  const isMobile = useIsMobileLayout();
+  const input = useKeyboardMovement(true);
+
+  usePointerLockNavigation();
+  useFreeFlightMovement(isMobile, input);
 
   /**
    * Scope the auto-lock click listener to the canvas only. Without this,
