@@ -1,4 +1,4 @@
-import { useEffect, useRef, MutableRefObject } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Camera, WebGLRenderer } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
@@ -55,7 +55,7 @@ const touchDistance = (touches: TouchList): number => {
 
 const resolveFovLerpAlpha = (
   delta: number,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   viewMode: string,
   navigationMode: string,
 ): number => {
@@ -72,7 +72,7 @@ const resolveFovLerpAlpha = (
 const useConstellationFovSettings = (
   targetFovRef: MutableRefObject<number>,
   enabled: boolean,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   camera: Camera,
   isMobileLayout: boolean,
   sizeWidth: number,
@@ -194,7 +194,7 @@ const useZoomGestures = (
 const useFovLerp = (
   perspectiveCameraRef: MutableRefObject<PerspectiveCamera | null>,
   targetFovRef: MutableRefObject<number>,
-  selectedConstellation: string | null,
+  selectedConstellation: ConstellationId | null,
   viewMode: string,
   navigationMode: string,
 ) => {
