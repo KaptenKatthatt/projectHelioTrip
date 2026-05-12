@@ -38,6 +38,17 @@ type BodySphere = {
   radius: number;
 };
 
+const BODY_SPHERES: BodySphere[] = [
+  ...PLANETS.map(() => ({
+    center: new Vector3(),
+    radius: 0,
+  })),
+  ...MOONS.map(() => ({
+    center: new Vector3(),
+    radius: 0,
+  })),
+];
+
 /** Gentler than cubic — reads as a slower pan for the same duration. */
 const easeInOutSine = (x: number): number =>
   -(Math.cos(Math.PI * x) - 1) / 2;
@@ -64,36 +75,33 @@ const segmentIntersectsSphere = (
 ): boolean =>
   closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
 
-const getBodySpheres = (): BodySphere[] => {
-  const bodies: BodySphere[] = [];
+const updateBodySpheres = (): void => {
+  let i = 0;
   for (const planet of PLANETS) {
-    bodies.push({
-      center: getLivePosition(planet.id).clone(),
-      radius: planet.radius + BODY_PADDING,
-    });
+    const sphere = BODY_SPHERES[i++];
+    sphere.center.copy(getLivePosition(planet.id));
+    sphere.radius = planet.radius + BODY_PADDING;
   }
   for (const moon of MOONS) {
-    bodies.push({
-      center: getLivePosition(moon.parent)
-        .clone()
-        .add(getLiveMoonOffset(moon.id)),
-      radius: moon.radius + BODY_PADDING,
-    });
+    const sphere = BODY_SPHERES[i++];
+    sphere.center
+      .copy(getLivePosition(moon.parent))
+      .add(getLiveMoonOffset(moon.id));
+    sphere.radius = moon.radius + BODY_PADDING;
   }
-  return bodies;
 };
 
 const tmpClosest = new Vector3();
 
 const findSafeEndPosition = (startPos: Vector3, direction: Vector3): Vector3 => {
-  const bodies = getBodySpheres();
+  updateBodySpheres();
   let distance = INTRO_FORWARD_CAP;
   const end = new Vector3();
 
   while (distance >= MIN_SAFE_MOVE_DISTANCE) {
     end.copy(startPos).addScaledVector(direction, distance);
     let hit = false;
-    for (const body of bodies) {
+    for (const body of BODY_SPHERES) {
       if (
         segmentIntersectsSphere(
           startPos,
