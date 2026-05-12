@@ -25,7 +25,7 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={() => onDelete(selectedPhoto.id)}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
         title="Ta bort foto"
         aria-label="Ta bort foto"
       >
@@ -34,7 +34,7 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={onClose}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label="Stäng"
       >
         <X className="h-6 w-6" />
@@ -45,7 +45,7 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={onPrev}
-        className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
+        className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label="Föregående foto"
       >
         <svg
@@ -86,7 +86,7 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={onNext}
-        className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
+        className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label="Nästa foto"
       >
         <svg
