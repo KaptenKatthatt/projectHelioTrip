@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   matchesMobileLayout,
@@ -14,24 +15,11 @@ describe('matchesMobileLayout', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns false when window is undefined', () => {
-    const original = global.window;
-    // @ts-expect-error simulating undefined window
-    global.window = undefined;
-    expect(matchesMobileLayout()).toBe(false);
-    global.window = original;
-  });
-
   function setupMatchMediaMock(
     mobileSize: boolean,
     coarsePrimary: boolean,
     landscapeFine: boolean
   ) {
-    if (typeof window === 'undefined') {
-      // Create a mock window object if it's undefined (e.g., in node environment without jsdom)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      global.window = {} as any;
-    }
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query) => ({
@@ -41,14 +29,20 @@ describe('matchesMobileLayout', () => {
           (query === FINE_POINTER_PHONE_LANDSCAPE_MQ && landscapeFine),
         media: query,
         onchange: null,
-        addListener: vi.fn(), // deprecated
-        removeListener: vi.fn(), // deprecated
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
         dispatchEvent: vi.fn(),
       })),
     });
   }
+
+  it('returns false when window is undefined', () => {
+    // @ts-expect-error simulating undefined window
+    global.window = undefined;
+    expect(matchesMobileLayout()).toBe(false);
+  });
 
   it('returns true when MOBILE_LAYOUT_MEDIA_QUERY matches', () => {
     setupMatchMediaMock(true, false, false);
