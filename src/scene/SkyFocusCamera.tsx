@@ -78,12 +78,12 @@ const segmentIntersectsSphere = (
 const updateBodySpheres = (): void => {
   let i = 0;
   for (const planet of PLANETS) {
-    const sphere = BODY_SPHERES[i++];
+    const sphere = BODY_SPHERES[i++]!;
     sphere.center.copy(getLivePosition(planet.id));
     sphere.radius = planet.radius + BODY_PADDING;
   }
   for (const moon of MOONS) {
-    const sphere = BODY_SPHERES[i++];
+    const sphere = BODY_SPHERES[i++]!;
     sphere.center
       .copy(getLivePosition(moon.parent))
       .add(getLiveMoonOffset(moon.id));

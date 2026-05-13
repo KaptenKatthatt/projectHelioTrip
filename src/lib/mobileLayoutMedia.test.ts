@@ -1,17 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import {
-  matchesMobileLayout,
-  MOBILE_LAYOUT_MEDIA_QUERY,
-  COARSE_TOUCH_PRIMARY_MQ,
-  FINE_POINTER_PHONE_LANDSCAPE_MQ,
-} from './mobileLayoutMedia';
+import { matchesMobileLayout, MOBILE_LAYOUT_MATCH_MEDIA_QUERY } from './mobileLayoutMedia';
 
 describe('matchesMobileLayout', () => {
-  const originalWindow = global.window;
+  const originalWindow = globalThis.window;
 
   afterEach(() => {
-    global.window = originalWindow;
+    globalThis.window = originalWindow;
     vi.restoreAllMocks();
   });
 
@@ -24,9 +19,8 @@ describe('matchesMobileLayout', () => {
       writable: true,
       value: vi.fn().mockImplementation((query) => ({
         matches:
-          (query === MOBILE_LAYOUT_MEDIA_QUERY && mobileSize) ||
-          (query === COARSE_TOUCH_PRIMARY_MQ && coarsePrimary) ||
-          (query === FINE_POINTER_PHONE_LANDSCAPE_MQ && landscapeFine),
+          query === MOBILE_LAYOUT_MATCH_MEDIA_QUERY &&
+          (mobileSize || coarsePrimary || landscapeFine),
         media: query,
         onchange: null,
         addListener: vi.fn(),
@@ -40,7 +34,7 @@ describe('matchesMobileLayout', () => {
 
   it('returns false when window is undefined', () => {
     // @ts-expect-error simulating undefined window
-    global.window = undefined;
+    globalThis.window = undefined;
     expect(matchesMobileLayout()).toBe(false);
   });
 
