@@ -12,7 +12,7 @@ export const ScrapbookGrid = ({ photos, onSelect }: ScrapbookGridProps) => (
         key={photo.id}
         type="button"
         onClick={() => onSelect(index)}
-        className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-white/5 transition hover:border-white/30"
+        className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-white/5 transition hover:border-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         <img
           src={photo.dataUrl}
