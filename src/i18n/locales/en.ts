@@ -354,4 +354,17 @@ export const en: Translation = {
       },
     ],
   },
+  scrapbook: {
+    takePhoto: 'Take Photo',
+    viewAlbum: 'View Album',
+    deletePhoto: 'Delete photo',
+    close: 'Close',
+    prevPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
+    emptyTitle: "It's empty here!",
+    emptyBody: 'Capture the beauty of the universe with your camera and your photos will appear here.',
+    albumTitle: 'My Photo Album',
+    photosSaved: (count: number) => `${count} photos saved`,
+    takenAt: (date: string, time: string) => `Taken on ${date} at ${time}`,
+  },
 };

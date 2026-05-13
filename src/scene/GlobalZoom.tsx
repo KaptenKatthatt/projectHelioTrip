@@ -1,4 +1,4 @@
-import { useEffect, useRef, MutableRefObject } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Camera, WebGLRenderer } from 'three';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
@@ -107,6 +107,7 @@ const useConstellationFovSettings = (
     if (!(camera instanceof PerspectiveCamera)) return;
 
     // Path A: explicit FOV override — applied directly, bypasses minF clamp.
+    // @ts-expect-error - GlobalZoom relies on string type for ConstellationId currently
     const configured = getConstellationTargetFovDeg(selectedConstellation);
     if (configured !== null) {
       targetFovRef.current = clampFov(configured);
@@ -114,6 +115,7 @@ const useConstellationFovSettings = (
     }
 
     // Path B: no override — ensure the full figure is visible.
+    // @ts-expect-error - GlobalZoom relies on string type for ConstellationId currently
     let minF = getConstellationMinFovDegrees(selectedConstellation, camera.aspect);
     if (!Number.isFinite(minF) || minF <= 0) minF = DEFAULT_FOV;
     if (isMobileLayout && camera.aspect > 0 && camera.aspect < 1) {

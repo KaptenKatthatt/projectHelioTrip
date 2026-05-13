@@ -4,3 +4,6 @@
 ## 2023-10-27 - Custom Modal and Carousel Keyboard Navigation
 **Learning:** Custom modals/carousels (like the Scrapbook component viewer) often lack basic keyboard accessibility (Escape to close, ArrowLeft/ArrowRight to navigate) as they heavily rely on pointer events and icon buttons.
 **Action:** Always ensure that custom modals handle 'Escape' to dismiss, full-screen carousels handle arrow keys for next/prev operations, and icon-only buttons include 'aria-label's to be screen-reader accessible.
+## 2026-05-13 - Extracted Swedish translations from Scrapbook
+**Learning:** Avoid hardcoding single language strings in components, especially in accessible labels like `aria-label` or `title` where it is an unexpected a11y bug for a non-Swedish user to see Swedish tooltips.
+**Action:** Extract all hardcoded strings directly to the translation system `translations.ts` early in the development of a feature.

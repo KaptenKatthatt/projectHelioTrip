@@ -71,9 +71,9 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
     <div className="pointer-events-auto fixed inset-0 z-[100] flex flex-col bg-black/95 p-4 pt-10 text-white backdrop-blur-xl sm:p-8">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex flex-col">
-          <h2 className="text-2xl font-bold tracking-tight">Mitt Fotoalbum</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t.scrapbook.albumTitle}</h2>
           <p className="text-xs tracking-widest text-white/40 uppercase">
-            {photos.length} foton sparade
+            {t.scrapbook.photosSaved(photos.length)}
           </p>
         </div>
         <button

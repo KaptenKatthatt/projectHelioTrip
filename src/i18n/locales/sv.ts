@@ -352,4 +352,17 @@ export const sv: Translation = {
       },
     ],
   },
+  scrapbook: {
+    takePhoto: 'Ta Foto',
+    viewAlbum: 'Visa Album',
+    deletePhoto: 'Ta bort foto',
+    close: 'Stäng',
+    prevPhoto: 'Föregående foto',
+    nextPhoto: 'Nästa foto',
+    emptyTitle: 'Här var det tomt!',
+    emptyBody: 'Fånga universums skönhet med kameran så dyker dina foton upp här.',
+    albumTitle: 'Mitt Fotoalbum',
+    photosSaved: (count: number) => `${count} foton sparade`,
+    takenAt: (date: string, time: string) => `Taget den ${date} kl ${time}`,
+  },
 };
