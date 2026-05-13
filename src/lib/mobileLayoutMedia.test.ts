@@ -29,6 +29,7 @@ describe('matchesMobileLayout', () => {
   ) {
     if (typeof window === 'undefined') {
       // Create a mock window object if it's undefined (e.g., in node environment without jsdom)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       global.window = {} as any;
     }
     Object.defineProperty(window, 'matchMedia', {
