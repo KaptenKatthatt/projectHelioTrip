@@ -19,10 +19,17 @@ export const FINE_POINTER_PHONE_LANDSCAPE_MQ =
   '(hover: none) and (pointer: fine) and (orientation: landscape) and (max-height: 520px) and (max-width: 960px)';
 
 export function matchesMobileLayout(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches
-  );
+  if (typeof window === 'undefined') return false;
+  const isMobileSize = window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches;
+  const isCoarsePrimary = window.matchMedia(COARSE_TOUCH_PRIMARY_MQ).matches;
+  const isLandscapeFine = window.matchMedia(FINE_POINTER_PHONE_LANDSCAPE_MQ).matches;
+
+  // Treat narrow screens as mobile.
+  if (isMobileSize) return true;
+  if (isCoarsePrimary) return true;
+  if (isLandscapeFine) return true;
+
+  return false;
 }
 
 /**
