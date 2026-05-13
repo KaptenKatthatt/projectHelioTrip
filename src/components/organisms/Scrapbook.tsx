@@ -80,7 +80,7 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
           type="button"
           onClick={onClose}
           className="rounded-full bg-white/10 p-2 transition hover:bg-white/20"
-          aria-label={t.ui.aboutClose}
+          aria-label={t.scrapbook.close}
         >
           <X className="h-6 w-6" />
         </button>

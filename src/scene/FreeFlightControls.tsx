@@ -130,6 +130,7 @@ const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number =
   );
 };
 
+const tmpLookEuler = new Euler();
 const applyMobileLook = (camera: Camera, delta: number): void => {
   const { x: lx, y: ly } = freeFlightTouchBus.look;
   const length = Math.hypot(lx, ly);
@@ -140,11 +141,11 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   const mag = Math.min(1, (length - LOOK_TOUCH_DEADZONE) / (1 - LOOK_TOUCH_DEADZONE));
   // Exponential curve for smoother fine control at small stick deflections
   const smoothMag = mag * mag;
-  const lookEuler = new Euler().setFromQuaternion(camera.quaternion, "YXZ");
-  lookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;
-  lookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
-  lookEuler.x = Math.max(-PI_2, Math.min(PI_2, lookEuler.x));
-  camera.quaternion.setFromEuler(lookEuler);
+  tmpLookEuler.setFromQuaternion(camera.quaternion, "YXZ");
+  tmpLookEuler.y -= nx * smoothMag * LOOK_YAW_SPEED * delta;
+  tmpLookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
+  tmpLookEuler.x = Math.max(-PI_2, Math.min(PI_2, tmpLookEuler.x));
+  camera.quaternion.setFromEuler(tmpLookEuler);
 };
 
 const applyCollisionConstraints = (
@@ -211,25 +212,12 @@ const applyCollisionConstraints = (
   }
 };
 
-export const FreeFlightControls = () => {
-  const camera = useThree((s) => s.camera);
+const usePointerLockNavigation = () => {
   const activeBody = useStore((s) => s.activeBody);
   const travelTo = useStore((s) => s.travelTo);
   const setNavigationMode = useStore((s) => s.setNavigationMode);
-  const isMobile = useIsMobileLayout();
 
-  const input = useKeyboardMovement(true);
   const wasLockedRef = useRef(false);
-
-  const velocity = useMemo(() => new Vector3(), []);
-  const desired = useMemo(() => new Vector3(), []);
-  const forward = useMemo(() => new Vector3(), []);
-  const right = useMemo(() => new Vector3(), []);
-  const nextPosition = useMemo(() => new Vector3(), []);
-  const moveDelta = useMemo(() => new Vector3(), []);
-  const center = useMemo(() => new Vector3(), []);
-  const normal = useMemo(() => new Vector3(), []);
-  const radial = useMemo(() => new Vector3(), []);
 
   /**
    * Safety net: if we unmount while the pointer is locked (e.g. user
@@ -270,6 +258,31 @@ export const FreeFlightControls = () => {
     undefined,
     true,
   );
+};
+
+const useFreeFlightMovement = (
+  isMobile: boolean,
+  input: React.MutableRefObject<{
+    forward: boolean;
+    back: boolean;
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+    boost: boolean;
+  }>,
+) => {
+  const camera = useThree((s) => s.camera);
+
+  const velocity = useMemo(() => new Vector3(), []);
+  const desired = useMemo(() => new Vector3(), []);
+  const forward = useMemo(() => new Vector3(), []);
+  const right = useMemo(() => new Vector3(), []);
+  const nextPosition = useMemo(() => new Vector3(), []);
+  const moveDelta = useMemo(() => new Vector3(), []);
+  const center = useMemo(() => new Vector3(), []);
+  const normal = useMemo(() => new Vector3(), []);
+  const radial = useMemo(() => new Vector3(), []);
 
   useFrame((_, delta) => {
     if (delta <= 0) return;
@@ -317,6 +330,14 @@ export const FreeFlightControls = () => {
 
     if (isMobile) applyMobileLook(camera, delta);
   });
+};
+
+export const FreeFlightControls = () => {
+  const isMobile = useIsMobileLayout();
+  const input = useKeyboardMovement(true);
+
+  usePointerLockNavigation();
+  useFreeFlightMovement(isMobile, input);
 
   /**
    * Scope the auto-lock click listener to the canvas only. Without this,
