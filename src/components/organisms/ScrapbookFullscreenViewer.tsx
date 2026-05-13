@@ -1,5 +1,6 @@
 import { X, Trash2 } from 'lucide-react';
 import type { Photo } from '../../lib/photoStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type ScrapbookFullscreenViewerProps = {
   readonly selectedPhoto: Photo;
@@ -19,23 +20,25 @@ export const ScrapbookFullscreenViewer = ({
   onClose,
   onPrev,
   onNext,
-}: ScrapbookFullscreenViewerProps) => (
+}: ScrapbookFullscreenViewerProps) => {
+  const { t } = useTranslation();
+  return (
   <div className="animate-in fade-in zoom-in fixed inset-0 z-[110] flex flex-col bg-black/98 backdrop-blur-2xl duration-300">
     <div className="absolute top-6 right-6 z-20 flex gap-2">
       <button
         type="button"
         onClick={() => onDelete(selectedPhoto.id)}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white"
-        title="Ta bort foto"
-        aria-label="Ta bort foto"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+        title={t.scrapbook.deletePhoto}
+        aria-label={t.scrapbook.deletePhoto}
       >
         <Trash2 className="h-5 w-5" />
       </button>
       <button
         type="button"
         onClick={onClose}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-        aria-label="Stäng"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        aria-label={t.scrapbook.close}
       >
         <X className="h-6 w-6" />
       </button>
@@ -45,8 +48,8 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={onPrev}
-        className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
-        aria-label="Föregående foto"
+        className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        aria-label={t.scrapbook.prevPhoto}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -74,11 +77,13 @@ export const ScrapbookFullscreenViewer = ({
             {selectedPhoto.locationLabel}
           </h3>
           <p className="text-sm font-medium text-white/50">
-            Taget den {new Date(selectedPhoto.timestampMs).toLocaleDateString()} kl{' '}
-            {new Date(selectedPhoto.timestampMs).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {t.scrapbook.takenAt(
+              new Date(selectedPhoto.timestampMs).toLocaleDateString(),
+              new Date(selectedPhoto.timestampMs).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            )}
           </p>
         </div>
       </div>
@@ -86,8 +91,8 @@ export const ScrapbookFullscreenViewer = ({
       <button
         type="button"
         onClick={onNext}
-        className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90"
-        aria-label="Nästa foto"
+        className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        aria-label={t.scrapbook.nextPhoto}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -109,4 +114,5 @@ export const ScrapbookFullscreenViewer = ({
       {selectedIndex !== null ? selectedIndex + 1 : 0} / {totalPhotos}
     </div>
   </div>
-);
+  );
+};

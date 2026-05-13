@@ -1,6 +1,6 @@
 /**
- * Viewports that should use the mobile HUD / controls even when width ≥ Tailwind `sm` (640px),
- * e.g. phones in landscape (wide but short). Matches must stay in sync with `useIsMobileLayout`.
+ * Size- and posture-based mobile layout (narrow width, coarse + short height, or bounded
+ * landscape). Used as one branch of {@link MOBILE_LAYOUT_MATCH_MEDIA_QUERY}.
  *
  * Some Android devices (e.g. Pixel) report `pointer: fine`; the landscape + short + not-too-wide
  * clause keeps them on the mobile layout without relying on coarse pointer alone.
@@ -18,11 +18,16 @@ export const COARSE_TOUCH_PRIMARY_MQ = '(hover: none) and (pointer: coarse)';
 export const FINE_POINTER_PHONE_LANDSCAPE_MQ =
   '(hover: none) and (pointer: fine) and (orientation: landscape) and (max-height: 520px) and (max-width: 960px)';
 
+/**
+ * Single media query list (comma = OR) used by {@link useIsMobileLayout} and
+ * {@link matchesMobileLayout}. Keeps imperative checks and hook subscriptions aligned.
+ */
+export const MOBILE_LAYOUT_MATCH_MEDIA_QUERY =
+  `${MOBILE_LAYOUT_MEDIA_QUERY}, ${COARSE_TOUCH_PRIMARY_MQ}, ${FINE_POINTER_PHONE_LANDSCAPE_MQ}`;
+
 export function matchesMobileLayout(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches
-  );
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(MOBILE_LAYOUT_MATCH_MEDIA_QUERY).matches;
 }
 
 /**

@@ -233,6 +233,19 @@ export type Translation = {
     facts: Array<{ title: string; body: string }>;
     mouseHint: string;
   };
+  scrapbook: {
+    takePhoto: string;
+    viewAlbum: string;
+    deletePhoto: string;
+    close: string;
+    prevPhoto: string;
+    nextPhoto: string;
+    emptyTitle: string;
+    emptyBody: string;
+    albumTitle: string;
+    photosSaved: (count: number) => string;
+    takenAt: (date: string, time: string) => string;
+  };
 };
 
 export const translations: Record<Locale, Translation> = { en, sv };
