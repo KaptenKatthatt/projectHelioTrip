@@ -10,3 +10,7 @@
 ## 2026-05-13 - Extracted Swedish translations from Scrapbook
 **Learning:** Avoid hardcoding single language strings in components, especially in accessible labels like `aria-label` or `title` where it is an unexpected a11y bug for a non-Swedish user to see Swedish tooltips.
 **Action:** Extract all hardcoded strings directly to the translation system `translations.ts` early in the development of a feature.
+
+## 2024-05-15 - [Added keyboard focus states to HUD floating buttons]
+**Learning:** Icon-only floating action buttons (FABs) built with standard circular utility classes often lack visible focus indicators by default.
+**Action:** Always include `focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40` on these buttons to ensure keyboard users have a clear visual path without degrading mouse click UX.
