@@ -8,76 +8,21 @@ import {
   freeFlightTouchBus,
   resetFreeFlightTouch,
 } from "../lib/freeFlightTouchBus";
-import { PLANETS } from "../lib/planets";
-import { MOONS } from "../lib/moons";
-import { getLiveMoonOffset, getLivePosition } from "../lib/positionsBus";
+import {
+  applyCollisionConstraints,
+  resolveDesiredSpeed,
+} from "../lib/freeFlightCollision";
 import { useStore } from "../store/useStore";
 import { StdlibPointerLockControls } from "./controls/StdlibPointerLockControls";
 
-/**
- * WASD speed scales with distance to the nearest body's surface so the
- * camera feels responsive both near a planet and out in deep space.
- *
- *   speed = clamp(BASE_SPEED * (d / REFERENCE_DISTANCE) ^ SPEED_EXPONENT,
- *                 MIN_SPEED, MAX_SPEED)
- *
- * Tuned so that ~1u from a surface → ~0.8 u/s, 10u → BASE_SPEED, and
- * far from any body → MAX_SPEED. Raise SPEED_EXPONENT for a more
- * aggressive exponential feel.
- */
-const BASE_SPEED = 8;
 const BOOST_MULTIPLIER = 5;
-const REFERENCE_DISTANCE = 10;
-const SPEED_EXPONENT = 1.0;
-const MIN_SPEED = 0.5;
-const MAX_SPEED = 500;
-const MIN_SURFACE_DISTANCE = 0.1;
 const WORLD_UP = new Vector3(0, 1, 0);
-const CAMERA_COLLISION_MARGIN = 0.3;
-/**
- * Soft-push zone thickness as a multiple of the body's collision
- * radius. Inside this zone the inward component of motion is damped
- * smoothly so approaching a surface feels like a gentle cushion
- * rather than hitting an invisible wall.
- */
-const SOFT_ZONE_RADIUS_FACTOR = 0.6;
-const SOFT_ZONE_RADIUS_MIN = 1.5;
 
 const MOVE_TOUCH_DEADZONE = 0.12;
 const LOOK_TOUCH_DEADZONE = 0.14;
 const LOOK_YAW_SPEED = 0.4;
 const LOOK_PITCH_SPEED = 0.4;
 const PI_2 = Math.PI / 2;
-
-type CollisionBody =
-  | { kind: "planet"; id: (typeof PLANETS)[number]["id"]; radius: number }
-  | {
-      kind: "moon";
-      id: (typeof MOONS)[number]["id"];
-      parent: (typeof PLANETS)[number]["id"];
-      radius: number;
-    };
-
-const COLLISION_BODIES: readonly CollisionBody[] = [
-  ...PLANETS.map((planet) => ({
-    kind: "planet" as const,
-    id: planet.id,
-    radius: planet.radius,
-  })),
-  ...MOONS.map((moon) => ({
-    kind: "moon" as const,
-    id: moon.id,
-    parent: moon.parent,
-    radius: moon.radius,
-  })),
-];
-
-const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => {
-  if (body.kind === "planet") {
-    return target.copy(getLivePosition(body.id));
-  }
-  return target.copy(getLivePosition(body.parent)).add(getLiveMoonOffset(body.id));
-};
 
 const addMobileMoveInput = (
   desired: Vector3,
@@ -112,24 +57,6 @@ const addKeyboardMoveInput = (
   if (keyboard.down) desired.addScaledVector(WORLD_UP, -1);
 };
 
-const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number => {
-  let nearestSurface = Infinity;
-  for (const body of COLLISION_BODIES) {
-    setBodyCenter(body, center);
-    const surfaceDist = center.distanceTo(cameraPosition) - body.radius;
-    if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
-  }
-  if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
-  nearestSurface = Math.max(nearestSurface, MIN_SURFACE_DISTANCE);
-  return Math.min(
-    MAX_SPEED,
-    Math.max(
-      MIN_SPEED,
-      BASE_SPEED * Math.pow(nearestSurface / REFERENCE_DISTANCE, SPEED_EXPONENT),
-    ),
-  );
-};
-
 const tmpLookEuler = new Euler();
 const applyMobileLook = (camera: Camera, delta: number): void => {
   const { x: lx, y: ly } = freeFlightTouchBus.look;
@@ -146,70 +73,6 @@ const applyMobileLook = (camera: Camera, delta: number): void => {
   tmpLookEuler.x -= ny * smoothMag * LOOK_PITCH_SPEED * delta;
   tmpLookEuler.x = Math.max(-PI_2, Math.min(PI_2, tmpLookEuler.x));
   camera.quaternion.setFromEuler(tmpLookEuler);
-};
-
-const applyCollisionConstraints = (
-  cameraPosition: Vector3,
-  moveDelta: Vector3,
-  nextPosition: Vector3,
-  center: Vector3,
-  normal: Vector3,
-  radial: Vector3,
-): void => {
-  nextPosition.copy(cameraPosition).add(moveDelta);
-
-  for (const body of COLLISION_BODIES) {
-    const limit = body.radius + CAMERA_COLLISION_MARGIN;
-    const limitSq = limit * limit;
-    const softZone = Math.max(
-      SOFT_ZONE_RADIUS_MIN,
-      body.radius * SOFT_ZONE_RADIUS_FACTOR,
-    );
-    const softLimit = limit + softZone;
-
-    setBodyCenter(body, center);
-    normal.copy(cameraPosition).sub(center);
-    const currentDist = normal.length();
-
-    if (currentDist <= 1e-4) {
-      normal.set(1, 0, 0);
-    } else {
-      normal.multiplyScalar(1 / currentDist);
-    }
-
-    if (currentDist < softLimit) {
-      const inward = moveDelta.dot(normal);
-      if (inward < 0) {
-        const depth =
-          softZone > 1e-6
-            ? Math.min(1, Math.max(0, (softLimit - currentDist) / softZone))
-            : 1;
-        const damping = depth * depth * (3 - 2 * depth);
-        moveDelta.addScaledVector(normal, -inward * damping);
-        nextPosition.copy(cameraPosition).add(moveDelta);
-      }
-    }
-
-    radial.copy(nextPosition).sub(center);
-    const nextDistSq = radial.lengthSq();
-    const inwardSpeed = moveDelta.dot(normal);
-
-    if (inwardSpeed < 0 && nextDistSq < limitSq) {
-      moveDelta.addScaledVector(normal, -inwardSpeed);
-      nextPosition.copy(cameraPosition).add(moveDelta);
-      radial.copy(nextPosition).sub(center);
-    }
-
-    const correctedDistSq = radial.lengthSq();
-    if (correctedDistSq < limitSq) {
-      if (correctedDistSq <= 1e-8) {
-        radial.set(1, 0, 0);
-      } else {
-        radial.multiplyScalar(1 / Math.sqrt(correctedDistSq));
-      }
-      nextPosition.copy(center).addScaledVector(radial, limit);
-    }
-  }
 };
 
 const usePointerLockNavigation = () => {
