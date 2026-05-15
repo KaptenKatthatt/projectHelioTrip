@@ -15,17 +15,6 @@ import {
 import { useStore } from "../store/useStore";
 import { StdlibPointerLockControls } from "./controls/StdlibPointerLockControls";
 
-/**
- * WASD speed scales with distance to the nearest body's surface so the
- * camera feels responsive both near a planet and out in deep space.
- *
- *   speed = clamp(BASE_SPEED * (d / REFERENCE_DISTANCE) ^ SPEED_EXPONENT,
- *                 MIN_SPEED, MAX_SPEED)
- *
- * Tuned so that ~1u from a surface → ~0.8 u/s, 10u → BASE_SPEED, and
- * far from any body → MAX_SPEED. Raise SPEED_EXPONENT for a more
- * aggressive exponential feel.
- */
 const BOOST_MULTIPLIER = 5;
 const WORLD_UP = new Vector3(0, 1, 0);
 

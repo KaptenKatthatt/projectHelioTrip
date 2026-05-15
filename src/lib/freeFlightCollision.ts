@@ -49,6 +49,17 @@ export const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => 
   return target.copy(getLivePosition(body.parent)).add(getLiveMoonOffset(body.id));
 };
 
+/**
+ * WASD speed scales with distance to the nearest body's surface so the
+ * camera feels responsive both near a planet and out in deep space.
+ *
+ *   speed = clamp(BASE_SPEED * (d / REFERENCE_DISTANCE) ^ SPEED_EXPONENT,
+ *                 MIN_SPEED, MAX_SPEED)
+ *
+ * Tuned so that ~1u from a surface → ~0.8 u/s, 10u → BASE_SPEED, and
+ * far from any body → MAX_SPEED. Raise SPEED_EXPONENT for a more
+ * aggressive exponential feel.
+ */
 export const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): number => {
   let nearestSurface = Infinity;
   for (const body of COLLISION_BODIES) {
