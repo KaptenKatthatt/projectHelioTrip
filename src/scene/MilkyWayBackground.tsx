@@ -556,6 +556,7 @@ const PointCloudOverlay = ({
         depthTest={false}
         toneMapped={false}
         blending={AdditiveBlending}
+        extensions={{ derivatives: true }}
         uniforms={{
           uPixelRatio: { value: pixelRatio },
           uOpacity: { value: opacity },
