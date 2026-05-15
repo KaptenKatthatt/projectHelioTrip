@@ -15,6 +15,8 @@ export type PhysicsState = {
  * @param sunMassMultiplier Multiplier for the Sun's mass.
  * @param dtDays Time step in days.
  */
+const scratchAcc = new Vector3();
+
 export const stepPhysics = (
   state: PhysicsState,
   sunMassMultiplier: number,
@@ -23,15 +25,16 @@ export const stepPhysics = (
   const mu = MU_SUN * sunMassMultiplier;
   
   // 1. Half-step velocity
+  // ⚡ Bolt: Using pre-allocated scratchAcc instead of .clone() to prevent GC pauses
   const r = state.pos.length();
-  const acc = state.pos.clone().multiplyScalar(-mu / (r * r * r));
-  state.vel.addScaledVector(acc, 0.5 * dtDays);
+  scratchAcc.copy(state.pos).multiplyScalar(-mu / (r * r * r));
+  state.vel.addScaledVector(scratchAcc, 0.5 * dtDays);
   
   // 2. Full-step position
   state.pos.addScaledVector(state.vel, dtDays);
   
   // 3. Half-step velocity again with new position
   const rNext = state.pos.length();
-  const accNext = state.pos.clone().multiplyScalar(-mu / (rNext * rNext * rNext));
-  state.vel.addScaledVector(accNext, 0.5 * dtDays);
+  scratchAcc.copy(state.pos).multiplyScalar(-mu / (rNext * rNext * rNext));
+  state.vel.addScaledVector(scratchAcc, 0.5 * dtDays);
 };
