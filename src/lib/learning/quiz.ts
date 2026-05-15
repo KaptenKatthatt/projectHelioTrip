@@ -1,25 +1,25 @@
 import type { BodyId } from '../bodies';
 import type { FactCardLevel } from './bodyContent';
 import { SUN_QUESTIONS } from './quizData/sun';
-import { GRAVITY_SLING } from './quizData/gravitySling';
-import { SPUTNIK } from './quizData/sputnik';
-import { ISS } from './quizData/iss';
-import { TRITON } from './quizData/triton';
-import { TITAN } from './quizData/titan';
-import { CALLISTO } from './quizData/callisto';
-import { GANYMEDE } from './quizData/ganymede';
-import { EUROPA } from './quizData/europa';
-import { IO } from './quizData/io';
-import { MOON } from './quizData/moon';
-import { PLUTO } from './quizData/pluto';
-import { NEPTUNE } from './quizData/neptune';
-import { URANUS } from './quizData/uranus';
-import { SATURN } from './quizData/saturn';
-import { JUPITER } from './quizData/jupiter';
-import { MARS } from './quizData/mars';
-import { EARTH } from './quizData/earth';
-import { VENUS } from './quizData/venus';
-import { MERCURY } from './quizData/mercury';
+import { GRAVITY_SLING_QUESTIONS } from './quizData/gravitySling';
+import { SPUTNIK_QUESTIONS } from './quizData/sputnik';
+import { ISS_QUESTIONS } from './quizData/iss';
+import { TRITON_QUESTIONS } from './quizData/triton';
+import { TITAN_QUESTIONS } from './quizData/titan';
+import { CALLISTO_QUESTIONS } from './quizData/callisto';
+import { GANYMEDE_QUESTIONS } from './quizData/ganymede';
+import { EUROPA_QUESTIONS } from './quizData/europa';
+import { IO_QUESTIONS } from './quizData/io';
+import { MOON_QUESTIONS } from './quizData/moon';
+import { PLUTO_QUESTIONS } from './quizData/pluto';
+import { NEPTUNE_QUESTIONS } from './quizData/neptune';
+import { URANUS_QUESTIONS } from './quizData/uranus';
+import { SATURN_QUESTIONS } from './quizData/saturn';
+import { JUPITER_QUESTIONS } from './quizData/jupiter';
+import { MARS_QUESTIONS } from './quizData/mars';
+import { EARTH_QUESTIONS } from './quizData/earth';
+import { VENUS_QUESTIONS } from './quizData/venus';
+import { MERCURY_QUESTIONS } from './quizData/mercury';
 
 type MultipleChoiceQuestion = {
   readonly type: 'multiple-choice';
@@ -64,25 +64,25 @@ export type QuizQuestion = MultipleChoiceQuestion | TrueFalseQuestion | FillInQu
 export const QUIZ_QUESTIONS: ReadonlyArray<QuizQuestion> = [
   ...SUN_QUESTIONS,
 
-  ...MERCURY,
-  ...VENUS,
-  ...EARTH,
-  ...MARS,
-  ...JUPITER,
-  ...SATURN,
-  ...URANUS,
-  ...NEPTUNE,
-  ...PLUTO,
-  ...MOON,
-  ...IO,
-  ...EUROPA,
-  ...GANYMEDE,
-  ...CALLISTO,
-  ...TITAN,
-  ...TRITON,
-  ...ISS,
-  ...SPUTNIK,
-  ...GRAVITY_SLING,
+  ...MERCURY_QUESTIONS,
+  ...VENUS_QUESTIONS,
+  ...EARTH_QUESTIONS,
+  ...MARS_QUESTIONS,
+  ...JUPITER_QUESTIONS,
+  ...SATURN_QUESTIONS,
+  ...URANUS_QUESTIONS,
+  ...NEPTUNE_QUESTIONS,
+  ...PLUTO_QUESTIONS,
+  ...MOON_QUESTIONS,
+  ...IO_QUESTIONS,
+  ...EUROPA_QUESTIONS,
+  ...GANYMEDE_QUESTIONS,
+  ...CALLISTO_QUESTIONS,
+  ...TITAN_QUESTIONS,
+  ...TRITON_QUESTIONS,
+  ...ISS_QUESTIONS,
+  ...SPUTNIK_QUESTIONS,
+  ...GRAVITY_SLING_QUESTIONS,
 ];
 
 export const getQuizQuestionsForBody = (
