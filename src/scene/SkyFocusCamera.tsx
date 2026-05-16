@@ -53,6 +53,10 @@ const BODY_SPHERES: BodySphere[] = [
 const easeInOutSine = (x: number): number =>
   -(Math.cos(Math.PI * x) - 1) / 2;
 
+// ⚡ Bolt: Pre-allocated scratch vector to avoid 'new Vector3()' allocations
+// inside the while-loop of findSafeEndPosition, reducing garbage collection overhead.
+const tmpPointSubStart = new Vector3();
+
 const closestPointOnSegment = (
   start: Vector3,
   end: Vector3,
@@ -62,7 +66,10 @@ const closestPointOnSegment = (
   out.subVectors(end, start);
   const lenSq = out.lengthSq();
   if (lenSq <= 1e-8) return out.copy(start);
-  const t = Math.max(0, Math.min(1, point.clone().sub(start).dot(out) / lenSq));
+
+  tmpPointSubStart.subVectors(point, start);
+  const t = Math.max(0, Math.min(1, tmpPointSubStart.dot(out) / lenSq));
+
   return out.copy(start).addScaledVector(out, t);
 };
 
