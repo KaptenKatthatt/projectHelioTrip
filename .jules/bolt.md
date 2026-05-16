@@ -5,3 +5,7 @@
 ## 2025-01-22 - Prevent Object and Array Instantiation in Frequent Loops
 **Learning:** Instantiating new arrays and objects (like `new Vector3()` or `.clone()`) inside functions that are called frequently or during continuous tick callbacks triggers the Garbage Collector repeatedly. This degrades rendering performance and causes micro-stutters, particularly in Three.js applications.
 **Action:** Create module-level reusable arrays and objects (e.g., `BODY_SPHERES` array populated once, and `const end = new Vector3()` allocated once inside the function scope prior to loops) and mutate them in place (e.g., using `copy()` and `addScaledVector()`) to avoid repeated allocations.
+
+## 2026-05-16 - Optimize math operation inside SkyFocusCamera
+**Learning:** Found `.clone()` method usage inside `closestPointOnSegment` which creates a new `Vector3` object instance on each calculation. `closestPointOnSegment` is executed continuously during segment intersection calculations via `findSafeEndPosition` while iterating over `BODY_SPHERES`. Generating object allocations across tight math operations leads to GC pauses.
+**Action:** Always refactor math calculations and pre-allocate vectors using `new Vector3()` when performing operations within frequent pathing algorithms or calculations. Reused scratch variables such as `tmpPointSubStart` successfully mitigate garbage collection overhead.
