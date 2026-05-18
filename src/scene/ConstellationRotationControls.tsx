@@ -70,10 +70,22 @@ const usePinchRotation = (
         return;
       }
 
-      const ids = Array.from(canvasPointerIds).sort((a, b) => a - b);
-      const id0 = ids[0];
-      const id1 = ids[1];
+      let id0: number | undefined;
+      let id1: number | undefined;
+      for (const id of canvasPointerIds) {
+        if (id0 === undefined) {
+          id0 = id;
+        } else if (id1 === undefined) {
+          id1 = id;
+        }
+      }
+
       if (id0 === undefined || id1 === undefined) return;
+      if (id0 > id1) {
+        const temp = id0;
+        id0 = id1;
+        id1 = temp;
+      }
       const p0 = pointerPositions.get(id0);
       const p1 = pointerPositions.get(id1);
       if (!p0 || !p1) return;
