@@ -9,3 +9,6 @@
 ## 2026-05-16 - Optimize math operation inside SkyFocusCamera
 **Learning:** Found `.clone()` method usage inside `closestPointOnSegment` which creates a new `Vector3` object instance on each calculation. `closestPointOnSegment` is executed continuously during segment intersection calculations via `findSafeEndPosition` while iterating over `BODY_SPHERES`. Generating object allocations across tight math operations leads to GC pauses.
 **Action:** Always refactor math calculations and pre-allocate vectors using `new Vector3()` when performing operations within frequent pathing algorithms or calculations. Reused scratch variables such as `tmpPointSubStart` successfully mitigate garbage collection overhead.
+## 2025-02-12 - Prevent Array.from within pointer move callbacks
+**Learning:** Instantiating new arrays with `Array.from` inside high-frequency callback functions such as `onPointerMove` causes excessive garbage collection and degrades performance. In `ConstellationRotationControls`, converting `canvasPointerIds` to an array each frame on mobile was unnecessary and created micro-stutters during touch pinch rotations.
+**Action:** Instead of `Array.from(set).sort(...)`, iterate the set manually with a `for...of` loop and assign values to simple local variables to avoid creating array instances.
