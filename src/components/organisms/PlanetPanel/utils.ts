@@ -24,8 +24,8 @@ export type DistancePair = {
   toEarthAu: number;
 };
 
-export const AU_TO_KM = 149_597_870.7;
-export const KM_TO_MILES = 0.621371192;
+const AU_TO_KM = 149_597_870.7;
+const KM_TO_MILES = 0.621371192;
 export const DISTANCE_SAMPLE_MS = 250;
 export const DISTANCE_EPSILON_AU = 0.00001;
 
@@ -48,7 +48,7 @@ export const resolveOrbitingDistancePair = (
   };
 };
 
-export const formatOrbitPeriod = (
+const formatOrbitPeriod = (
   days: number,
   locale: string,
   orbitPeriodFormatter: Intl.NumberFormat,

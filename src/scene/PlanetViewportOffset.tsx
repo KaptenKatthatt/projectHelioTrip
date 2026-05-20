@@ -27,8 +27,8 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { type MutableRefObject, useEffect, useRef } from 'react';
 import { PerspectiveCamera } from 'three';
-import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useStore } from '../store/useStore';
+import { useResponsiveLayout } from '../hooks/useResponsiveLayout';
 import { cameraTravelSpringProgressRef } from './cameraTravelSpringProgress';
 
 /** Fraction of canvas height to shift the planet upward in the 2D viewport. */
@@ -85,35 +85,29 @@ const updatePreSheetCanvas = (
 
 /**
  * In mobile portrait, the bottom HUD leaves the planet feeling too low.
+ * In tablet/desktop landscape, the side HUD panel covers the right side.
  * Applies a projection {@link PerspectiveCamera.setViewOffset} so the planet
- * sits higher while keeping the orbit pivot on the body (unlike moving
- * `OrbitControls.target`).
+ * sits higher on mobile portrait and shifts to the left on tablet/desktop,
+ * while keeping the orbit pivot on the body (unlike moving `OrbitControls.target`).
  *
  * The offset ramps with the same spring progress as {@link CameraManager}
- * so framing stays aligned when travel finishes (wall-clock ramps caused a
- * visible jump when `isTraveling` flipped before/after the spring).
- * Planet→planet travel keeps full offset (no ramp) so the view does not dip.
- *
- * Runs after {@link GlobalZoom} (priority 0) so FOV and offset stay in sync.
+ * so framing stays aligned when travel finishes.
+ * Planet→planet travel keeps full offset (no ramp) so the view does not dip or jump.
  */
 export const PlanetViewportOffset = (): null => {
   const get = useThree((s) => s.get);
   const size = useThree((s) => s.size);
-  const isMobileLayout = useIsMobileLayout();
+  const layoutTier = useResponsiveLayout();
   const activeBody = useStore((s) => s.activeBody);
   const isTraveling = useStore((s) => s.isTraveling);
   const travelId = useStore((s) => s.travelId);
   const viewMode = useStore((s) => s.viewMode);
   const navigationMode = useStore((s) => s.navigationMode);
 
-  /** View offset targets portrait HUD; in landscape it skews projection on wide phones. */
+  /** View offset targets portrait HUD on mobile; in landscape it skews projection on wide phones. */
   const portraitCanvas = size.width <= size.height;
 
   const enabled =
-    isMobileLayout &&
-    portraitCanvas &&
-    // Keep offset active during cinematic travel so spring progress can ramp
-    // continuously; gating on !isTraveling causes a visible jump at arrival.
     activeBody !== null &&
     viewMode === 'close' &&
     navigationMode === 'cinematic';
@@ -166,35 +160,47 @@ export const PlanetViewportOffset = (): null => {
     );
     prevFrameArrivedCloseRef.current = arrivedClose;
 
-    const sheetOpen = useStore.getState().mobilePlanetInfoSheetOpen;
-    const canShowPlanetInfo =
-      activeBody !== null &&
-      viewMode === 'close' &&
-      navigationMode === 'cinematic' &&
-      !isTraveling;
-    updatePreSheetCanvas(
-      canShowPlanetInfo,
-      sheetOpen,
-      width,
-      height,
-      preSheetCanvasRef,
-    );
+    let offsetX = 0;
+    let offsetY = 0;
 
-    const offsetBaseH =
-      sheetOpen && preSheetCanvasRef.current !== null
-        ? preSheetCanvasRef.current.h
-        : height;
-    const offsetY = PLANET_VIEWPORT_UPSHIFT_FRACTION * offsetBaseH * factor;
+    if (layoutTier === 'compact') {
+      if (portraitCanvas) {
+        const sheetOpen = useStore.getState().mobilePlanetInfoSheetOpen;
+        const canShowPlanetInfo =
+          activeBody !== null &&
+          viewMode === 'close' &&
+          navigationMode === 'cinematic' &&
+          !isTraveling;
+        updatePreSheetCanvas(
+          canShowPlanetInfo,
+          sheetOpen,
+          width,
+          height,
+          preSheetCanvasRef,
+        );
 
-    if (offsetY < 1e-4) {
+        const offsetBaseH =
+          sheetOpen && preSheetCanvasRef.current !== null
+            ? preSheetCanvasRef.current.h
+            : height;
+        offsetY = PLANET_VIEWPORT_UPSHIFT_FRACTION * offsetBaseH * factor;
+      }
+    } else if (layoutTier === 'medium') {
+      // Horizontal shift on tablet: 20% left shift -> offsetX = 2 * 0.20 * width = 0.40 * width
+      offsetX = 0.40 * width * factor;
+    } else {
+      // Horizontal shift on desktop: 12% left shift -> offsetX = 2 * 0.12 * width = 0.24 * width
+      offsetX = 0.24 * width * factor;
+    }
+
+    if (offsetX < 1e-4 && offsetY < 1e-4) {
       clearCameraViewOffset(camera, width, height);
       return;
     }
 
-    // Intentional: include offset in fullHeight to preserve the approved
-    // mobile close-view framing where the planet sits at the expected HUD-safe height.
+    const fullWidth = width + offsetX;
     const fullHeight = height + offsetY;
-    camera.setViewOffset(width, fullHeight, 0, offsetY, width, height);
+    camera.setViewOffset(fullWidth, fullHeight, offsetX, offsetY, width, height);
   }, 1);
 
   return null;

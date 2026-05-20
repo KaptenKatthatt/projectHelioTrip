@@ -10,6 +10,7 @@ import { NavigationAccordion } from "../../organisms/NavigationAccordion";
 import { PlanetPanel } from "../../organisms/PlanetPanel";
 import { ProgressPanel } from "../../organisms/ProgressPanel";
 
+import { useResponsiveLayout } from "../../../hooks/useResponsiveLayout";
 import { useStore } from "../../../store/useStore";
 
 type HudPrimaryNavRegionProps = {
@@ -32,6 +33,7 @@ export const HudPrimaryNavRegion = ({
   progressTitle,
 }: HudPrimaryNavRegionProps) => {
   const gameMode = useStore((s) => s.gameMode);
+  const layoutTier = useResponsiveLayout();
   if (gameMode === "lab") return null;
 
   return (
@@ -46,7 +48,7 @@ export const HudPrimaryNavRegion = ({
         }
       >
         <FreeFlightMobileControls />
-        {!mobileLayout ? <NavigationAccordion /> : null}
+        {!mobileLayout ? <NavigationAccordion defaultOpenTablet={layoutTier === "expanded"} /> : null}
         <div className={mobileLayout ? "hidden" : "relative sm:w-auto"}>
           <div
             className={

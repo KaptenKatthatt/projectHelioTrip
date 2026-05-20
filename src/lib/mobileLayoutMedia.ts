@@ -5,7 +5,7 @@
  * Some Android devices (e.g. Pixel) report `pointer: fine`; the landscape + short + not-too-wide
  * clause keeps them on the mobile layout without relying on coarse pointer alone.
  */
-export const MOBILE_LAYOUT_MEDIA_QUERY =
+const MOBILE_LAYOUT_MEDIA_QUERY =
   '(max-width: 639px), ((hover: none) and (pointer: coarse) and (max-height: 560px)), ((orientation: landscape) and (max-height: 520px) and (max-width: 960px))';
 
 /** Touch-primary UIs (typical phones). Mouse desktops in a narrow window usually report `hover: hover`. */
