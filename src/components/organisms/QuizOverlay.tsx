@@ -76,7 +76,7 @@ const QuizOverlayInner = ({ quizId }: { quizId: string }) => {
       className="pointer-events-auto fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#08090f] p-5 shadow-2xl">
+      <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-space-dark-800/95 p-5 shadow-2xl backdrop-blur-md">
         <button
           type="button"
           onClick={handleClose}

@@ -28,7 +28,7 @@ export type CollisionBody =
       radius: number;
     };
 
-export const COLLISION_BODIES: readonly CollisionBody[] = [
+const COLLISION_BODIES: readonly CollisionBody[] = [
   ...PLANETS.map((planet) => ({
     kind: "planet" as const,
     id: planet.id,
@@ -42,7 +42,7 @@ export const COLLISION_BODIES: readonly CollisionBody[] = [
   })),
 ];
 
-export const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => {
+const setBodyCenter = (body: CollisionBody, target: Vector3): Vector3 => {
   if (body.kind === "planet") {
     return target.copy(getLivePosition(body.id));
   }

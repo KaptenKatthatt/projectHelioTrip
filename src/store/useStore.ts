@@ -30,7 +30,7 @@ import { createSimulationSlice } from './slices/createSimulationSlice';
 import { createGameSlice } from './slices/createGameSlice';
 
 // Re-export for backward compatibility (tests, etc.)
-export type { Store, PersistedState } from './types';
+export type { Store } from './types';
 
 const completedMissionIdsList = (
   missionProgress: Readonly<Record<string, MissionProgress>>,

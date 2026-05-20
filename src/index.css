@@ -3,17 +3,137 @@
 @theme {
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'JetBrains Mono', Consolas, monospace;
+
+  /* Colors */
+  --color-space-dark-50: hsl(220 30% 96%);
+  --color-space-dark-100: hsl(223 25% 91%);
+  --color-space-dark-200: hsl(224 20% 82%);
+  --color-space-dark-300: hsl(225 16% 68%);
+  --color-space-dark-400: hsl(226 14% 52%);
+  --color-space-dark-500: hsl(227 16% 38%);
+  --color-space-dark-600: hsl(229 22% 23%);
+  --color-space-dark-700: hsl(230 30% 15%);
+  --color-space-dark-800: hsl(231 38% 10%);
+  --color-space-dark-900: hsl(232 44% 6%);
+
+  --color-nebula-primary-50: hsl(214 100% 96%);
+  --color-nebula-primary-100: hsl(217 100% 92%);
+  --color-nebula-primary-200: hsl(221 96% 84%);
+  --color-nebula-primary-300: hsl(226 92% 74%);
+  --color-nebula-primary-400: hsl(232 89% 66%);
+  --color-nebula-primary-500: hsl(238 84% 60%);
+  --color-nebula-primary-600: hsl(243 75% 52%);
+  --color-nebula-primary-700: hsl(247 68% 45%);
+  --color-nebula-primary-800: hsl(249 61% 36%);
+  --color-nebula-primary-900: hsl(252 58% 28%);
+
+  --color-star-accent-100: hsl(197 100% 92%);
+  --color-star-accent-200: hsl(194 97% 84%);
+  --color-star-accent-300: hsl(191 93% 75%);
+  --color-star-accent-400: hsl(188 90% 66%);
+  --color-star-accent-500: hsl(186 88% 56%);
+  --color-star-accent-600: hsl(184 82% 47%);
+  --color-star-accent-700: hsl(183 75% 39%);
+  --color-star-accent-800: hsl(182 68% 31%);
+
+  --color-success-100: hsl(153 79% 90%);
+  --color-success-200: hsl(153 72% 80%);
+  --color-success-300: hsl(154 66% 68%);
+  --color-success-400: hsl(155 63% 56%);
+  --color-success-500: hsl(156 64% 45%);
+  --color-success-600: hsl(157 67% 36%);
+  --color-success-700: hsl(159 70% 28%);
+  --color-success-800: hsl(161 73% 21%);
+
+  --color-warning-100: hsl(42 100% 90%);
+  --color-warning-200: hsl(41 98% 80%);
+  --color-warning-300: hsl(40 95% 69%);
+  --color-warning-400: hsl(39 93% 58%);
+  --color-warning-500: hsl(38 91% 50%);
+  --color-warning-600: hsl(35 89% 42%);
+  --color-warning-700: hsl(32 84% 34%);
+  --color-warning-800: hsl(30 79% 27%);
+
+  --color-danger-100: hsl(350 100% 93%);
+  --color-danger-200: hsl(350 93% 85%);
+  --color-danger-300: hsl(350 86% 75%);
+  --color-danger-400: hsl(350 80% 64%);
+  --color-danger-500: hsl(350 76% 54%);
+  --color-danger-600: hsl(350 72% 45%);
+  --color-danger-700: hsl(350 68% 36%);
+  --color-danger-800: hsl(350 64% 29%);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
 }
 
 :root {
   color-scheme: dark;
   color: #e6e6f0;
   background: #05060a;
+
+  --color-space-dark-50: hsl(220 30% 96%);
   --color-space-dark-100: hsl(223 25% 91%);
+  --color-space-dark-200: hsl(224 20% 82%);
+  --color-space-dark-300: hsl(225 16% 68%);
+  --color-space-dark-400: hsl(226 14% 52%);
+  --color-space-dark-500: hsl(227 16% 38%);
+  --color-space-dark-600: hsl(229 22% 23%);
   --color-space-dark-700: hsl(230 30% 15%);
   --color-space-dark-800: hsl(231 38% 10%);
+  --color-space-dark-900: hsl(232 44% 6%);
+
+  --color-nebula-primary-50: hsl(214 100% 96%);
+  --color-nebula-primary-100: hsl(217 100% 92%);
+  --color-nebula-primary-200: hsl(221 96% 84%);
+  --color-nebula-primary-300: hsl(226 92% 74%);
+  --color-nebula-primary-400: hsl(232 89% 66%);
   --color-nebula-primary-500: hsl(238 84% 60%);
+  --color-nebula-primary-600: hsl(243 75% 52%);
+  --color-nebula-primary-700: hsl(247 68% 45%);
+  --color-nebula-primary-800: hsl(249 61% 36%);
+  --color-nebula-primary-900: hsl(252 58% 28%);
+
+  --color-star-accent-100: hsl(197 100% 92%);
+  --color-star-accent-200: hsl(194 97% 84%);
+  --color-star-accent-300: hsl(191 93% 75%);
+  --color-star-accent-400: hsl(188 90% 66%);
   --color-star-accent-500: hsl(186 88% 56%);
+  --color-star-accent-600: hsl(184 82% 47%);
+  --color-star-accent-700: hsl(183 75% 39%);
+  --color-star-accent-800: hsl(182 68% 31%);
+
+  --color-success-100: hsl(153 79% 90%);
+  --color-success-200: hsl(153 72% 80%);
+  --color-success-300: hsl(154 66% 68%);
+  --color-success-400: hsl(155 63% 56%);
+  --color-success-500: hsl(156 64% 45%);
+  --color-success-600: hsl(157 67% 36%);
+  --color-success-700: hsl(159 70% 28%);
+  --color-success-800: hsl(161 73% 21%);
+
+  --color-warning-100: hsl(42 100% 90%);
+  --color-warning-200: hsl(41 98% 80%);
+  --color-warning-300: hsl(40 95% 69%);
+  --color-warning-400: hsl(39 93% 58%);
+  --color-warning-500: hsl(38 91% 50%);
+  --color-warning-600: hsl(35 89% 42%);
+  --color-warning-700: hsl(32 84% 34%);
+  --color-warning-800: hsl(30 79% 27%);
+
+  --color-danger-100: hsl(350 100% 93%);
+  --color-danger-200: hsl(350 93% 85%);
+  --color-danger-300: hsl(350 86% 75%);
+  --color-danger-400: hsl(350 80% 64%);
+  --color-danger-500: hsl(350 76% 54%);
+  --color-danger-600: hsl(350 72% 45%);
+  --color-danger-700: hsl(350 68% 36%);
+  --color-danger-800: hsl(350 64% 29%);
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -22,6 +142,13 @@
   --space-8: 32px;
   --space-12: 48px;
   --space-16: 64px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
