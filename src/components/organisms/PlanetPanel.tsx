@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useActiveBodyViewGameMode } from "../../hooks/useActiveBodyViewGameMode";
 import { useIsMobileLayout } from "../../hooks/useIsMobileLayout";
+import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getBody } from "../../lib/bodies";
 import { getWikipediaUrl } from "../../lib/wikipedia";
@@ -22,6 +23,7 @@ type PlanetPanelProps = {
 export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProps) => {
   const { t, planetName, bodyName, locale } = useTranslation();
   const mobileLayout = useIsMobileLayout();
+  const layoutTier = useResponsiveLayout();
   const { activeBody, viewMode, gameMode } = useActiveBodyViewGameMode();
 
   const [activeTab, setActiveTab] = useState<PanelTab>(defaultTab ?? "info");
@@ -71,7 +73,7 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
   return (
     <aside
       className={
-        `pointer-events-auto w-full ${hasLongOrbitPeriod ? "max-w-lg" : "max-w-md"} rounded-2xl border border-white/10 bg-[#05060a] backdrop-blur-none ` +
+        `pointer-events-auto w-full ${layoutTier === "medium" ? "max-w-xl animate-slide-up" : hasLongOrbitPeriod ? "max-w-lg" : "max-w-md"} rounded-2xl border border-white/10 bg-space-dark-900/95 backdrop-blur-md ` +
         (mobileLayout ? "p-4" : "p-4 sm:p-5") +
         (omitHeading ? " border-0 p-0 backdrop-blur-none sm:p-0" : "")
       }
@@ -102,6 +104,7 @@ export const PlanetPanel = ({ omitHeading = false, defaultTab }: PlanetPanelProp
           mobileLayout={mobileLayout}
           omitHeading={omitHeading}
           t={t}
+          layoutTier={layoutTier}
         />
       )}
 

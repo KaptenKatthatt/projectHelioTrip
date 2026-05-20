@@ -98,7 +98,7 @@ export const BottomSheet = ({
   const headerStyle =
     titleAccentColor !== undefined && titleAccentColor !== null
       ? {
-          background: `linear-gradient(to bottom, ${titleAccentColor}55, rgba(5, 6, 10, ${blurPanel ? 0.35 : 0.94}))`,
+          background: `linear-gradient(to bottom, ${titleAccentColor}55, hsla(232, 44%, 6%, ${blurPanel ? 0.35 : 0.94}))`,
         }
       : undefined;
 
@@ -124,7 +124,7 @@ export const BottomSheet = ({
         style={panelSlideStyle}
         className={
           'pointer-events-auto relative z-10 max-h-[min(85dvh,32rem)] w-full overflow-hidden rounded-t-3xl border-t border-white/10 shadow-xl motion-reduce:!transform-none motion-reduce:!transition-none sm:mx-auto sm:max-w-2xl ' +
-          (blurPanel ? 'bg-black/60 backdrop-blur-xl ' : 'bg-[#05060a] backdrop-blur-none ') +
+          (blurPanel ? 'bg-space-dark-900/60 backdrop-blur-xl ' : 'bg-space-dark-900 backdrop-blur-none ') +
           (panelClassName ?? '')
         }
       >

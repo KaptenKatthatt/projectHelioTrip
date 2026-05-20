@@ -14,7 +14,7 @@ const labTabButtonClass = (selected: boolean): string =>
       : 'text-white/50 hover:text-white/80 hover:bg-white/8',
   ].join(' ');
 
-export const LabOverlayContent = () => {
+const LabOverlayContent = () => {
   const activeLabGame = useStore((s) => s.activeLabGame);
   const setActiveLabGame = useStore((s) => s.setActiveLabGame);
   const { t } = useTranslation();
