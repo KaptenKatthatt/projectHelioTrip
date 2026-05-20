@@ -1,20 +1,24 @@
 /**
  * WHAT THIS FILE DOES
  * ===================
- * Shifts the planet upward in the 2D viewport on narrow mobile screens.
+ * Adjusts the planet's 2D position in the viewport to prevent overlap with HUD panels.
+ * Uses a different strategy per layout tier:
+ *
+ *  - compact (mobile portrait): shifts the planet upward so it clears the bottom sheet.
+ *  - medium  (tablet):          shifts the planet leftward so it clears the side panel.
+ *  - expanded (desktop):        shifts the planet leftward (smaller amount) for the side panel.
  *
  * HOW
  * ---
  * Uses camera.setViewOffset() — a projection-matrix trick that does NOT move
- * the camera in 3D space. It makes Three.js render as if the canvas were
- * PLANET_VIEWPORT_UPSHIFT_FRACTION * canvasHeight pixels below the real canvas,
- * which pushes the planet up without disturbing OrbitControls.
+ * the camera in 3D space. Three.js renders as if the canvas were offset by the
+ * given amount, which repositions the planet without disturbing OrbitControls.
  *
  * WHEN TO CHANGE THIS
  * -------------------
- * - Planet feels too low on mobile portrait:  increase PLANET_VIEWPORT_UPSHIFT_FRACTION.
- * - Planet feels too high:                    decrease it (min 0 = no shift).
- * - Has no effect on desktop or landscape:    see the `enabled` guard below.
+ * - Planet too low on mobile portrait:  increase PLANET_VIEWPORT_UPSHIFT_FRACTION.
+ * - Planet too far right on tablet:     increase the 0.40 multiplier in the medium branch.
+ * - Planet too far right on desktop:    increase the 0.24 multiplier in the expanded branch.
  *
  * RELATED
  * -------
@@ -186,10 +190,10 @@ export const PlanetViewportOffset = (): null => {
         offsetY = PLANET_VIEWPORT_UPSHIFT_FRACTION * offsetBaseH * factor;
       }
     } else if (layoutTier === 'medium') {
-      // Horizontal shift on tablet: 20% left shift -> offsetX = 2 * 0.20 * width = 0.40 * width
+      // Tablet: shift planet 20% to the left of center (setViewOffset needs 2× the visual fraction).
       offsetX = 0.40 * width * factor;
     } else {
-      // Horizontal shift on desktop: 12% left shift -> offsetX = 2 * 0.12 * width = 0.24 * width
+      // Desktop: shift planet 12% to the left of center (smaller amount; narrower side panel).
       offsetX = 0.24 * width * factor;
     }
 

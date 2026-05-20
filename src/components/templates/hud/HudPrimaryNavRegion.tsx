@@ -48,6 +48,7 @@ export const HudPrimaryNavRegion = ({
         }
       >
         <FreeFlightMobileControls />
+        {/* Desktop (expanded) starts open; tablet (medium) starts collapsed to maximise canvas space. */}
         {!mobileLayout ? <NavigationAccordion defaultOpenTablet={layoutTier === "expanded"} /> : null}
         <div className={mobileLayout ? "hidden" : "relative sm:w-auto"}>
           <div

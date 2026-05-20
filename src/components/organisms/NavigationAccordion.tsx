@@ -29,7 +29,9 @@ export const NavigationAccordion = ({ defaultOpenTablet = true }: NavigationAcco
   const [prevDefaultOpenTablet, setPrevDefaultOpenTablet] = useState(defaultOpenTablet);
   const [isOpenTablet, setIsOpenTablet] = useState(defaultOpenTablet);
 
-  // Sync state if defaultOpenTablet changes (e.g. resizing viewport) during render phase
+  // Reset isOpenTablet when the prop changes (e.g. viewport resize crossing the tablet breakpoint).
+  // Performed in the render phase rather than useEffect as recommended by the React docs for
+  // prop-derived state resets; a useEffect would cause a double-render flagged by the linter.
   if (defaultOpenTablet !== prevDefaultOpenTablet) {
     setPrevDefaultOpenTablet(defaultOpenTablet);
     setIsOpenTablet(defaultOpenTablet);
