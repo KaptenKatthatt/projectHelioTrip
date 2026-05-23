@@ -27,7 +27,11 @@ export const ScrapbookFullscreenViewer = ({
     <div className="absolute top-6 right-6 z-20 flex gap-2">
       <button
         type="button"
-        onClick={() => onDelete(selectedPhoto.id)}
+        onClick={() => {
+          if (window.confirm(t.scrapbook.confirmDelete)) {
+            onDelete(selectedPhoto.id);
+          }
+        }}
         className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
         title={t.scrapbook.deletePhoto}
         aria-label={t.scrapbook.deletePhoto}

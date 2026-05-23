@@ -358,6 +358,7 @@ export const en: Translation = {
     takePhoto: 'Take Photo',
     viewAlbum: 'View Album',
     deletePhoto: 'Delete photo',
+    confirmDelete: 'Are you sure you want to delete this photo?',
     close: 'Close',
     prevPhoto: 'Previous photo',
     nextPhoto: 'Next photo',

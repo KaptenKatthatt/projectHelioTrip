@@ -356,6 +356,7 @@ export const sv: Translation = {
     takePhoto: 'Ta Foto',
     viewAlbum: 'Visa Album',
     deletePhoto: 'Ta bort foto',
+    confirmDelete: 'Är du säker på att du vill ta bort detta foto?',
     close: 'Stäng',
     prevPhoto: 'Föregående foto',
     nextPhoto: 'Nästa foto',

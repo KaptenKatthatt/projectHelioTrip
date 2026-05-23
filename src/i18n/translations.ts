@@ -237,6 +237,7 @@ export type Translation = {
     takePhoto: string;
     viewAlbum: string;
     deletePhoto: string;
+    confirmDelete: string;
     close: string;
     prevPhoto: string;
     nextPhoto: string;
