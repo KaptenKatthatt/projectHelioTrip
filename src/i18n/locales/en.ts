@@ -80,6 +80,8 @@ export const en: Translation = {
     timeControls: 'Time',
     start: 'Start',
     aboutOpen: 'About this app',
+    landOnMars: 'LAND ON MARS',
+    landOnMoon: 'LAND ON THE MOON',
     aboutTitle: 'About HelioTrip',
     aboutClose: 'Close',
     aboutP1:

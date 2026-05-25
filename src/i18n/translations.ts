@@ -66,6 +66,8 @@ export type Translation = {
     timeControls: string;
     start: string;
     aboutOpen: string;
+    landOnMars: string;
+    landOnMoon: string;
     aboutTitle: string;
     aboutClose: string;
     aboutP1: string;

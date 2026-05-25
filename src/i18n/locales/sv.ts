@@ -80,6 +80,8 @@ export const sv: Translation = {
     timeControls: 'Tid',
     start: 'Start',
     aboutOpen: 'Om appen',
+    landOnMars: 'LANDA PÅ MARS',
+    landOnMoon: 'LANDA PÅ MÅNEN',
     aboutTitle: 'Om HelioTrip',
     aboutClose: 'Stäng',
     aboutP1: 'HelioTrip är underhållning för hela familjen: utforska rymden i din egen takt.',
