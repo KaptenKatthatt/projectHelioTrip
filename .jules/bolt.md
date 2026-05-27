@@ -12,3 +12,7 @@
 ## 2025-02-12 - Prevent Array.from within pointer move callbacks
 **Learning:** Instantiating new arrays with `Array.from` inside high-frequency callback functions such as `onPointerMove` causes excessive garbage collection and degrades performance. In `ConstellationRotationControls`, converting `canvasPointerIds` to an array each frame on mobile was unnecessary and created micro-stutters during touch pinch rotations.
 **Action:** Instead of `Array.from(set).sort(...)`, iterate the set manually with a `for...of` loop and assign values to simple local variables to avoid creating array instances.
+
+## 2025-02-23 - Prevent Vector3 cloning in pathing algorithms
+**Learning:** `findSafeEndPosition` inside `SkyFocusCamera.tsx` previously returned `startPos.clone()` and instantiated `new Vector3()`, causing garbage collection pauses during critical path-finding loops.
+**Action:** Modify mathematical utility functions to accept an `out` parameter (`out: Vector3`), update it via `.copy()` and mutate it in-place, removing the need for object allocations or returning `.clone()`.
