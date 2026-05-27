@@ -43,7 +43,7 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
           aria-expanded={open}
           aria-controls={open ? titleId : undefined}
           aria-label={t.ui.aboutOpen}
-          className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10"
+          className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-white/90 backdrop-blur-md transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           <Info className="h-4 w-4" aria-hidden />
         </button>
@@ -57,6 +57,7 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
             >
               <button
                 type="button"
+                tabIndex={-1}
                 aria-label={t.ui.aboutClose}
                 className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
                 onClick={handleClose}
@@ -95,7 +96,7 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="mt-6 w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
+                    className="mt-6 w-full rounded-xl border border-white/15 bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                   >
                     {t.ui.aboutClose}
                   </button>
