@@ -14,6 +14,6 @@
 ## 2024-05-15 - [Added keyboard focus states to HUD floating buttons]
 **Learning:** Icon-only floating action buttons (FABs) built with standard circular utility classes often lack visible focus indicators by default.
 **Action:** Always include `focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40` on these buttons to ensure keyboard users have a clear visual path without degrading mouse click UX.
-## 2026-05-25 - Extracted Swedish translations from InfoTab
+## 2026-05-27 - Extracted Swedish translations from InfoTab
 **Learning:** Hardcoded strings in components, like 'LANDA PÅ MARS' in the PlanetPanel, cause UX issues for non-Swedish users who expect a fully localized experience. This can be jarring and breaks immersion.
 **Action:** Always extract static text to the translation system (`translations.ts` and locales) to ensure parity across supported languages.
