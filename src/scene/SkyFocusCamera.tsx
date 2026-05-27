@@ -100,19 +100,20 @@ const updateBodySpheres = (): void => {
 
 const tmpClosest = new Vector3();
 
-const findSafeEndPosition = (startPos: Vector3, direction: Vector3): Vector3 => {
+// ⚡ Bolt: Pass an 'out' vector parameter instead of allocating new Vector3 instances
+// or calling .clone(). This eliminates garbage collection pauses when finding safe paths.
+const findSafeEndPosition = (startPos: Vector3, direction: Vector3, out: Vector3): Vector3 => {
   updateBodySpheres();
   let distance = INTRO_FORWARD_CAP;
-  const end = new Vector3();
 
   while (distance >= MIN_SAFE_MOVE_DISTANCE) {
-    end.copy(startPos).addScaledVector(direction, distance);
+    out.copy(startPos).addScaledVector(direction, distance);
     let hit = false;
     for (const body of BODY_SPHERES) {
       if (
         segmentIntersectsSphere(
           startPos,
-          end,
+          out,
           body.center,
           body.radius,
           tmpClosest,
@@ -122,10 +123,10 @@ const findSafeEndPosition = (startPos: Vector3, direction: Vector3): Vector3 => 
         break;
       }
     }
-    if (!hit) return end;
+    if (!hit) return out;
     distance *= 0.5;
   }
-  return startPos.clone();
+  return out.copy(startPos);
 };
 
 export const SkyFocusCamera = () => {
@@ -172,9 +173,7 @@ export const SkyFocusCamera = () => {
     transition.endDir
       .copy(SKY_TARGET_DIRECTIONS[selectedConstellation])
       .normalize();
-    transition.endPos.copy(
-      findSafeEndPosition(transition.startPos, transition.endDir),
-    );
+    findSafeEndPosition(transition.startPos, transition.endDir, transition.endPos);
 
     const pathLength = transition.startPos.distanceTo(transition.endPos);
     const scaled =

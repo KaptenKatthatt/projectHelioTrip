@@ -14,6 +14,6 @@
 ## 2024-05-15 - [Added keyboard focus states to HUD floating buttons]
 **Learning:** Icon-only floating action buttons (FABs) built with standard circular utility classes often lack visible focus indicators by default.
 **Action:** Always include `focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40` on these buttons to ensure keyboard users have a clear visual path without degrading mouse click UX.
-## 2024-05-23 - Confirmation Dialogs for Destructive Actions
-**Learning:** Destructive actions like deleting a photo in the scrapbook require a confirmation dialog to prevent accidental data loss. This is a crucial UX pattern to implement.
-**Action:** Always add a confirmation step (e.g., using `window.confirm` for a simple native approach, or a custom modal for complex ones) when an action permanently deletes user data.
+## 2024-05-26 - Prevent Redundant SVG Screen Reader Announcements
+**Learning:** Even when a parent `<button>` has a proper `aria-label`, screen readers might still announce nested, unlabelled `<svg>` elements as generic graphics, causing a redundant and confusing user experience.
+**Action:** Always add `aria-hidden="true"` to decorative `<svg>` elements inside icon-only buttons that are already described by an `aria-label`.
