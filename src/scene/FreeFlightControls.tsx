@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Euler, Vector3, type Camera } from "three";
 import { useIsMobileLayout } from "../hooks/useIsMobileLayout";
@@ -123,6 +123,15 @@ const usePointerLockNavigation = () => {
   );
 };
 
+const tmpDesired = new Vector3();
+const tmpForward = new Vector3();
+const tmpRight = new Vector3();
+const tmpNextPosition = new Vector3();
+const tmpMoveDelta = new Vector3();
+const tmpCenter = new Vector3();
+const tmpNormal = new Vector3();
+const tmpRadial = new Vector3();
+
 const useFreeFlightMovement = (
   isMobile: boolean,
   input: React.MutableRefObject<{
@@ -136,39 +145,31 @@ const useFreeFlightMovement = (
   }>,
 ) => {
   const camera = useThree((s) => s.camera);
-
-  const velocity = useMemo(() => new Vector3(), []);
-  const desired = useMemo(() => new Vector3(), []);
-  const forward = useMemo(() => new Vector3(), []);
-  const right = useMemo(() => new Vector3(), []);
-  const nextPosition = useMemo(() => new Vector3(), []);
-  const moveDelta = useMemo(() => new Vector3(), []);
-  const center = useMemo(() => new Vector3(), []);
-  const normal = useMemo(() => new Vector3(), []);
-  const radial = useMemo(() => new Vector3(), []);
+  const velocityRef = useRef(new Vector3());
 
   useFrame((_, delta) => {
     if (delta <= 0) return;
+    const velocity = velocityRef.current;
 
     const locked = document.pointerLockElement !== null;
     const pointerDrivingDesktop = locked && !isMobile;
     const allowKeyboardMove = pointerDrivingDesktop || isMobile;
 
-    camera.getWorldDirection(forward);
-    right.crossVectors(forward, WORLD_UP).normalize();
+    camera.getWorldDirection(tmpForward);
+    tmpRight.crossVectors(tmpForward, WORLD_UP).normalize();
 
-    desired.set(0, 0, 0);
+    tmpDesired.set(0, 0, 0);
     if (allowKeyboardMove) {
-      addKeyboardMoveInput(desired, forward, right, input.current);
+      addKeyboardMoveInput(tmpDesired, tmpForward, tmpRight, input.current);
     }
 
-    if (isMobile) addMobileMoveInput(desired, forward);
+    if (isMobile) addMobileMoveInput(tmpDesired, tmpForward);
 
-    if (desired.lengthSq() > 0) {
+    if (tmpDesired.lengthSq() > 0) {
       const { boost } = input.current;
-      const dynamicSpeed = resolveDesiredSpeed(camera.position, center);
+      const dynamicSpeed = resolveDesiredSpeed(camera.position, tmpCenter);
       const speed = dynamicSpeed * (boost ? BOOST_MULTIPLIER : 1);
-      desired.normalize().multiplyScalar(speed);
+      tmpDesired.normalize().multiplyScalar(speed);
     }
 
     /**
@@ -177,19 +178,19 @@ const useFreeFlightMovement = (
      * acceleration/deceleration feel without a spring dependency.
      */
     const smoothing = 1 - Math.pow(0.001, delta);
-    velocity.lerp(desired, smoothing);
+    velocity.lerp(tmpDesired, smoothing);
 
-    moveDelta.copy(velocity).multiplyScalar(delta);
+    tmpMoveDelta.copy(velocity).multiplyScalar(delta);
     applyCollisionConstraints(
       camera.position,
-      moveDelta,
-      nextPosition,
-      center,
-      normal,
-      radial,
+      tmpMoveDelta,
+      tmpNextPosition,
+      tmpCenter,
+      tmpNormal,
+      tmpRadial,
     );
 
-    camera.position.copy(nextPosition);
+    camera.position.copy(tmpNextPosition);
 
     if (isMobile) applyMobileLook(camera, delta);
   });
