@@ -17,3 +17,6 @@
 ## 2024-05-26 - Prevent Redundant SVG Screen Reader Announcements
 **Learning:** Even when a parent `<button>` has a proper `aria-label`, screen readers might still announce nested, unlabelled `<svg>` elements as generic graphics, causing a redundant and confusing user experience.
 **Action:** Always add `aria-hidden="true"` to decorative `<svg>` elements inside icon-only buttons that are already described by an `aria-label`.
+## 2026-05-13 - [Prevent Redundant Screen Reader Output in Icon Buttons]
+**Learning:** Even when a parent `<button>` has an `aria-label`, screen readers might still announce inner `<svg>` elements or generic icon components, causing a redundant and confusing auditory experience.
+**Action:** Always add `aria-hidden="true"` to inner decorative `<svg>` elements and Lucide icons (e.g. `<X>`, `<Trash2>`) within icon-only buttons to ensure a clean accessible output.

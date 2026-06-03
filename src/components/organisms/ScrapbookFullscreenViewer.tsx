@@ -32,7 +32,7 @@ export const ScrapbookFullscreenViewer = ({
         title={t.scrapbook.deletePhoto}
         aria-label={t.scrapbook.deletePhoto}
       >
-        <Trash2 className="h-5 w-5" />
+        <Trash2 className="h-5 w-5" aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -40,7 +40,7 @@ export const ScrapbookFullscreenViewer = ({
         className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label={t.scrapbook.close}
       >
-        <X className="h-6 w-6" />
+        <X className="h-6 w-6" aria-hidden="true" />
       </button>
     </div>
 
@@ -61,6 +61,7 @@ export const ScrapbookFullscreenViewer = ({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          aria-hidden="true"
         >
           <path d="m15 18-6-6 6-6" />
         </svg>
@@ -104,6 +105,7 @@ export const ScrapbookFullscreenViewer = ({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          aria-hidden="true"
         >
           <path d="m9 18 6-6-6-6" />
         </svg>
