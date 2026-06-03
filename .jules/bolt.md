@@ -19,3 +19,11 @@
 ## 2024-05-30 - Prevent shared-state pollution when migrating to module-level vectors
 **Learning:** Moving variables instantiated via `useMemo` to the module scope inside React Three Fiber components is an excellent way to reduce React hook overhead and eliminate garbage collection pauses in the `useFrame` loop. However, some objects implicitly hold state across frames (e.g., `velocity.lerp(desired, smoothing)` where `velocity` is carried over from the previous frame). If these stateful objects are moved to the global module scope, their state is shared globally, causing chaotic behavior or regressions if the component re-mounts or multiple instances are rendered.
 **Action:** Always verify if a `Vector3` or mathematical object holds state across frames (e.g. for momentum or lerping) before moving it out of the component. Use `useRef(new Vector3())` for instance-specific state persistence, and reserve module-level variables (like `tmpForward` or `tmpDesired`) strictly for single-frame scratch calculations.
+
+## 2025-02-23 - Prevent Math.sqrt in hot loops via squared distance comparisons
+**Learning:** When performing intersection or distance checks in high-frequency mathematical or pathfinding loops (such as  inside ), using  invokes , which is an expensive operation that can cause performance regressions when run continuously.
+**Action:** Always replace  with  to skip the square root calculation while maintaining mathematical identicality.
+
+## 2025-02-23 - Prevent Math.sqrt in hot loops via squared distance comparisons
+**Learning:** When performing intersection or distance checks in high-frequency mathematical or pathfinding loops (such as `segmentIntersectsSphere` inside `SkyFocusCamera.tsx`), using `.distanceTo()` invokes `Math.sqrt()`, which is an expensive operation that can cause performance regressions when run continuously.
+**Action:** Always replace `.distanceTo(center) <= radius` with `.distanceToSquared(center) <= radius * radius` to skip the square root calculation while maintaining mathematical correctness.

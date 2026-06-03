@@ -80,7 +80,8 @@ const segmentIntersectsSphere = (
   radius: number,
   tmp: Vector3,
 ): boolean =>
-  closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
+  // ⚡ Bolt: Use distanceToSquared to avoid Math.sqrt in hot loop
+  closestPointOnSegment(start, end, center, tmp).distanceToSquared(center) <= radius * radius;
 
 const updateBodySpheres = (): void => {
   let i = 0;
