@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { Euler } from "three";
 import { useOverviewCinematicEnabled } from "../hooks/useOverviewCinematicEnabled";
@@ -20,6 +20,10 @@ const MAX_PITCH = Math.PI / 2 - 0.05;
 const DRAG_THRESHOLD_PX = 10;
 const DRAG_THRESHOLD_SQ = DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX;
 
+// ⚡ Bolt: Module-level scratch variable avoids useMemo overhead
+// and repeated allocations during frequent pointer move events.
+const tmpLookEuler = new Euler(0, 0, 0, "YXZ");
+
 export const OverviewLookControls = () => {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
@@ -30,7 +34,6 @@ export const OverviewLookControls = () => {
   const lastPointerRef = useRef({ x: 0, y: 0 });
   /** Pointers currently down on the canvas (for pinch vs orbit). */
   const canvasPointerIdsRef = useRef(new Set<number>());
-  const euler = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -84,11 +87,11 @@ export const OverviewLookControls = () => {
       const dy = event.clientY - lastPointerRef.current.y;
       lastPointerRef.current = { x: event.clientX, y: event.clientY };
 
-      euler.setFromQuaternion(camera.quaternion);
-      euler.y -= dx * LOOK_SENSITIVITY;
-      euler.x -= dy * LOOK_SENSITIVITY;
-      euler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, euler.x));
-      camera.quaternion.setFromEuler(euler);
+      tmpLookEuler.setFromQuaternion(camera.quaternion);
+      tmpLookEuler.y -= dx * LOOK_SENSITIVITY;
+      tmpLookEuler.x -= dy * LOOK_SENSITIVITY;
+      tmpLookEuler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, tmpLookEuler.x));
+      camera.quaternion.setFromEuler(tmpLookEuler);
     };
 
     const endDrag = (): void => {
@@ -114,7 +117,7 @@ export const OverviewLookControls = () => {
       canvasPointerIds.clear();
       canvas.style.cursor = "";
     };
-  }, [camera, enabled, euler, gl]);
+  }, [camera, enabled, gl]);
 
   return null;
 };
