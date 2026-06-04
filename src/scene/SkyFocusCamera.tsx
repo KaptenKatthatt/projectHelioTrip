@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { MOONS } from "../lib/moons";
@@ -100,6 +100,8 @@ const updateBodySpheres = (): void => {
 
 const tmpClosest = new Vector3();
 
+const tmpLookAt = new Vector3();
+
 // ⚡ Bolt: Pass an 'out' vector parameter instead of allocating new Vector3 instances
 // or calling .clone(). This eliminates garbage collection pauses when finding safe paths.
 const findSafeEndPosition = (startPos: Vector3, direction: Vector3, out: Vector3): Vector3 => {
@@ -148,7 +150,6 @@ export const SkyFocusCamera = () => {
     startDir: new Vector3(),
     endDir: new Vector3(),
   });
-  const lookAtRef = useMemo(() => new Vector3(), []);
   const lastSkyFocusIdRef = useRef(-1);
 
   useEffect(() => {
@@ -216,11 +217,11 @@ export const SkyFocusCamera = () => {
       .lerp(transition.endDir, eased)
       .normalize();
     camera.position.lerpVectors(transition.startPos, transition.endPos, eased);
-    lookAtRef
+    tmpLookAt
       .copy(camera.position)
       .addScaledVector(tmpDirRef.current, LOOK_AT_DISTANCE);
     camera.up.copy(WORLD_UP);
-    camera.lookAt(lookAtRef);
+    camera.lookAt(tmpLookAt);
 
     if (progress >= 1) {
       transition.active = false;

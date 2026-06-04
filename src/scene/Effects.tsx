@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
   Bloom,
@@ -54,8 +54,11 @@ export const Effects = () => {
   return <EffectsFullClose />;
 };
 
+// ⚡ Bolt: Module-level scratch vector avoids useMemo overhead
+// and keeps memory usage stable across frames.
+const tmpFocusTarget = new Vector3();
+
 const EffectsFullClose = () => {
-  const focusTarget = useMemo(() => new Vector3(), []);
   const dofRef = useRef<DepthOfFieldEffect>(null);
   const { effectComposerMsaa } = getGraphicsPreset();
 
@@ -69,12 +72,12 @@ const EffectsFullClose = () => {
   useFrame(() => {
     const { activeBody, viewMode } = useStore.getState();
     if (viewMode === 'close' && activeBody) {
-      getBodyWorldPosition(activeBody, focusTarget);
+      getBodyWorldPosition(activeBody, tmpFocusTarget);
     } else {
-      focusTarget.set(0, 0, 0);
+      tmpFocusTarget.set(0, 0, 0);
     }
     const dof = dofRef.current;
-    if (dof?.target) dof.target.copy(focusTarget);
+    if (dof?.target) dof.target.copy(tmpFocusTarget);
   });
 
   const focusRange = useFocusRange();
@@ -84,7 +87,7 @@ const EffectsFullClose = () => {
       <Bloom {...BLOOM_PROPS} />
       <DepthOfField
         ref={dofRef}
-        target={focusTarget}
+        target={tmpFocusTarget}
         focusRange={focusRange}
         bokehScale={1.2}
       />

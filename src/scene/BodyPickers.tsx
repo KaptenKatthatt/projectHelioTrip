@@ -19,6 +19,10 @@ import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
+// ⚡ Bolt: Using a single module-level scratch vector prevents
+// useMemo overhead across multiple PickableBody/HoverLabel instances.
+const tmpBodyPos = new Vector3();
+
 /**
  * Picking radius is `max(bodyRadius * 1.2, screenPxToWorld(20))` — so
  * the pickable volume never shrinks below ~20 screen pixels regardless
@@ -147,7 +151,7 @@ export const BodyPickers = () => {
 
   return (
     <>
-      {pickables.map((entry) => (
+      {pickables.map((entry: PickableEntry) => (
         <PickableBody
           key={entry.id}
           id={entry.id}
@@ -187,16 +191,15 @@ const PickableBody = ({
   const downPosRef = useRef<{ x: number; y: number } | null>(null);
   const camera = useThree((s) => s.camera);
   const screenHeight = useThree((s) => s.size.height);
-  const scratch = useMemo(() => new Vector3(), []);
 
   useFrame(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    getBodyWorldPosition(id, scratch);
-    mesh.position.copy(scratch);
+    getBodyWorldPosition(id, tmpBodyPos);
+    mesh.position.copy(tmpBodyPos);
 
     if (camera instanceof PerspectiveCamera) {
-      const distance = camera.position.distanceTo(scratch);
+      const distance = camera.position.distanceTo(tmpBodyPos);
       const fovRad = (camera.fov * Math.PI) / 180;
       const pxWorld =
         (distance * Math.tan(fovRad / 2) * PICK_SCREEN_PX) / screenHeight;
@@ -278,7 +281,6 @@ const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
   const groupRef = useRef<Group>(null);
   const camera = useThree((s) => s.camera);
   const screenHeight = useThree((s) => s.size.height);
-  const scratch = useMemo(() => new Vector3(), []);
   const { bodyName } = useTranslation();
 
   /**
@@ -297,19 +299,19 @@ const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
     const group = groupRef.current;
     if (!group) return;
 
-    getBodyWorldPosition(bodyId, scratch);
+    getBodyWorldPosition(bodyId, tmpBodyPos);
 
     let offset = getBodyRadius(bodyId) ?? 1;
     offset *= LABEL_MIN_WORLD_OFFSET_FACTOR;
     if (camera instanceof PerspectiveCamera) {
-      const distance = camera.position.distanceTo(scratch);
+      const distance = camera.position.distanceTo(tmpBodyPos);
       const fovRad = (camera.fov * Math.PI) / 180;
       const pxWorld =
         (distance * Math.tan(fovRad / 2) * LABEL_OFFSET_PX) / screenHeight;
       offset = Math.max(offset, pxWorld);
     }
 
-    group.position.set(scratch.x, scratch.y + offset, scratch.z);
+    group.position.set(tmpBodyPos.x, tmpBodyPos.y + offset, tmpBodyPos.z);
   });
 
   return (
