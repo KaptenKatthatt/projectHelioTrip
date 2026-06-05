@@ -1,3 +1,4 @@
+import { useTranslation } from '../../hooks/useTranslation';
 import { useEffect, useLayoutEffect, useState, type CSSProperties, type ReactNode } from 'react';
 
 type BottomSheetProps = {
@@ -30,6 +31,7 @@ const SLIDE_UP_ENTER_DELAY_MS = 32;
 const SLIDE_UP_DURATION_MS = 300;
 
 export const BottomSheet = ({
+
   open,
   onClose,
   children,
@@ -45,6 +47,7 @@ export const BottomSheet = ({
   slideFromBottom = false,
   scrimBlocksPointerEvents = true,
 }: BottomSheetProps) => {
+  const { t } = useTranslation();
   const [panelEntered, setPanelEntered] = useState(false);
 
   useLayoutEffect(() => {
@@ -113,7 +116,7 @@ export const BottomSheet = ({
       }
     >
       {scrimBlocksPointerEvents ? (
-        <button type="button" aria-label="Close panel" className={scrimClass} onClick={onClose} />
+        <button type="button" aria-label={t.ui.aboutClose} className={scrimClass} onClick={onClose} />
       ) : (
         <div className={scrimClass + ' pointer-events-none'} aria-hidden />
       )}

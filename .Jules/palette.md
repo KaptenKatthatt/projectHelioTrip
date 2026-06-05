@@ -17,3 +17,7 @@
 ## 2024-05-26 - Prevent Redundant SVG Screen Reader Announcements
 **Learning:** Even when a parent `<button>` has a proper `aria-label`, screen readers might still announce nested, unlabelled `<svg>` elements as generic graphics, causing a redundant and confusing user experience.
 **Action:** Always add `aria-hidden="true"` to decorative `<svg>` elements inside icon-only buttons that are already described by an `aria-label`.
+
+## 2024-06-05 - Translation Strings and E2E Tests
+**Learning:** When using the `useTranslation` hook to provide localized text for ARIA labels or standard UI buttons (like fixing hardcoded English ARIA strings), Playwright E2E tests may query those elements by text role (`getByRole('button', { name: 'Close' })`). If the test suite runs in a localized environment (like Swedish), modifying the string may cause tests to fail unless the assertion string is also updated to match the translation for the test locale.
+**Action:** Always run the E2E test suite (`npm run test:e2e`) after updating translation strings or accessibility text. If a test fails due to a missing locator, explicitly update the test assertions to check for the correct localized string (e.g., "Stäng" for Swedish test environments).

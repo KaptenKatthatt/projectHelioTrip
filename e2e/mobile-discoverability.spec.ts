@@ -22,7 +22,7 @@ test("mobile context strip and XP pill behavior", async ({ page }) => {
   await expect(page.getByText("HelioTrip").first()).toBeVisible();
   await page.getByRole("button", { name: "XP" }).click();
   await expect(page.getByRole("heading", { name: "Uppdrag" })).toBeVisible();
-  await page.getByRole("button", { name: "Close panel" }).click();
+  await page.getByRole("button", { name: "Stäng" }).click();
 
   await page.getByRole("button", { name: "Utforska" }).click();
   await page.getByRole("button", { name: "Jorden" }).click();
