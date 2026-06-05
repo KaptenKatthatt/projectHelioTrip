@@ -22,3 +22,6 @@
 ## 2025-06-04 - Prevent useMemo allocations in R3F render loops
 **Learning:** Instantiating objects using `useMemo` inside R3F components adds hook evaluation overhead during React's render phase. When variables are only used as scratchpads for calculations within `useFrame` and don't require React tracking across renders, moving them to the module scope reduces CPU usage and garbage collection pauses during frequent updates.
 **Action:** Extract `useMemo` scratch variables to the module scope and reuse them across instances when they don't hold instance-specific state persistence.
+## 2025-06-05 - Prefer distanceToSquared for Collision Checks
+**Learning:** Using `distanceTo()` inside high-frequency execution paths (such as `segmentIntersectsSphere` inside a ray marching or path-finding algorithm like `findSafeEndPosition`) triggers computationally expensive `Math.sqrt()` operations. Since we're executing this check against every celestial body multiple times to find an intersection, the cumulative overhead of `Math.sqrt` becomes a measurable bottleneck and can affect rendering frame rate.
+**Action:** When performing distance checks against thresholds (e.g., radius checks or collision bounds) in hot paths, always use `.distanceToSquared()` and compare against the squared threshold (`radius * radius`). This completely avoids `Math.sqrt()`.

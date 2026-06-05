@@ -80,7 +80,7 @@ const segmentIntersectsSphere = (
   radius: number,
   tmp: Vector3,
 ): boolean =>
-  closestPointOnSegment(start, end, center, tmp).distanceTo(center) <= radius;
+  closestPointOnSegment(start, end, center, tmp).distanceToSquared(center) <= radius * radius;
 
 const updateBodySpheres = (): void => {
   let i = 0;
