@@ -64,7 +64,18 @@ export const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): n
   let nearestSurface = Infinity;
   for (const body of COLLISION_BODIES) {
     setBodyCenter(body, center);
-    const surfaceDist = center.distanceTo(cameraPosition) - body.radius;
+
+    // ⚡ Bolt: Fast rejection using squared distances avoids expensive Math.sqrt()
+    // calls for bodies that are farther away than the current nearest surface.
+    const distSq = center.distanceToSquared(cameraPosition);
+    if (nearestSurface !== Infinity) {
+      const threshold = nearestSurface + body.radius;
+      if (threshold < 0 || distSq >= threshold * threshold) {
+        continue;
+      }
+    }
+
+    const surfaceDist = Math.sqrt(distSq) - body.radius;
     if (surfaceDist < nearestSurface) nearestSurface = surfaceDist;
   }
   if (!Number.isFinite(nearestSurface)) nearestSurface = REFERENCE_DISTANCE;
