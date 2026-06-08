@@ -68,10 +68,15 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
   const selectedPhoto = selectedIndex !== null ? photos.at(selectedIndex) : undefined;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-[100] flex flex-col bg-black/95 p-4 pt-10 text-white backdrop-blur-xl sm:p-8">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scrapbook-title"
+      className="pointer-events-auto fixed inset-0 z-[100] flex flex-col bg-black/95 p-4 pt-10 text-white backdrop-blur-xl sm:p-8"
+    >
       <header className="mb-6 flex items-center justify-between">
         <div className="flex flex-col">
-          <h2 className="text-2xl font-bold tracking-tight">{t.scrapbook.albumTitle}</h2>
+          <h2 id="scrapbook-title" className="text-2xl font-bold tracking-tight">{t.scrapbook.albumTitle}</h2>
           <p className="text-xs tracking-widest text-white/40 uppercase">
             {t.scrapbook.photosSaved(photos.length)}
           </p>

@@ -23,7 +23,12 @@ export const ScrapbookFullscreenViewer = ({
 }: ScrapbookFullscreenViewerProps) => {
   const { t } = useTranslation();
   return (
-  <div className="animate-in fade-in zoom-in fixed inset-0 z-[110] flex flex-col bg-black/98 backdrop-blur-2xl duration-300">
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-label={selectedPhoto.locationLabel}
+    className="animate-in fade-in zoom-in fixed inset-0 z-[110] flex flex-col bg-black/98 backdrop-blur-2xl duration-300"
+  >
     <div className="absolute top-6 right-6 z-20 flex gap-2">
       <button
         type="button"
