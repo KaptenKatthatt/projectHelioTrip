@@ -20,8 +20,6 @@ const MAX_PITCH = Math.PI / 2 - 0.05;
 const DRAG_THRESHOLD_PX = 10;
 const DRAG_THRESHOLD_SQ = DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX;
 
-// ⚡ Bolt: Module-level scratch variable avoids useMemo overhead
-// and repeated allocations during frequent pointer move events.
 const tmpLookEuler = new Euler(0, 0, 0, "YXZ");
 
 export const OverviewLookControls = () => {

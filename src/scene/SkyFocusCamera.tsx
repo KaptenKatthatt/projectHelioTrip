@@ -53,8 +53,6 @@ const BODY_SPHERES: BodySphere[] = [
 const easeInOutSine = (x: number): number =>
   -(Math.cos(Math.PI * x) - 1) / 2;
 
-// ⚡ Bolt: Pre-allocated scratch vector to avoid 'new Vector3()' allocations
-// inside the while-loop of findSafeEndPosition, reducing garbage collection overhead.
 const tmpPointSubStart = new Vector3();
 
 const closestPointOnSegment = (
@@ -102,8 +100,7 @@ const tmpClosest = new Vector3();
 
 const tmpLookAt = new Vector3();
 
-// ⚡ Bolt: Pass an 'out' vector parameter instead of allocating new Vector3 instances
-// or calling .clone(). This eliminates garbage collection pauses when finding safe paths.
+/** Writes the safe end position into `out` to avoid per-iteration allocations. */
 const findSafeEndPosition = (startPos: Vector3, direction: Vector3, out: Vector3): Vector3 => {
   updateBodySpheres();
   let distance = INTRO_FORWARD_CAP;

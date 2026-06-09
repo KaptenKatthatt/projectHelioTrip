@@ -54,8 +54,6 @@ export const Effects = () => {
   return <EffectsFullClose />;
 };
 
-// ⚡ Bolt: Module-level scratch vector avoids useMemo overhead
-// and keeps memory usage stable across frames.
 const tmpFocusTarget = new Vector3();
 
 const EffectsFullClose = () => {

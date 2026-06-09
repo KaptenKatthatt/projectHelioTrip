@@ -65,8 +65,7 @@ export const resolveDesiredSpeed = (cameraPosition: Vector3, center: Vector3): n
   for (const body of COLLISION_BODIES) {
     setBodyCenter(body, center);
 
-    // ⚡ Bolt: Fast rejection using squared distances avoids expensive Math.sqrt()
-    // calls for bodies that are farther away than the current nearest surface.
+    // Skip sqrt when dist(center) >= nearestSurface + radius (cannot beat current nearest).
     const distSq = center.distanceToSquared(cameraPosition);
     if (nearestSurface !== Infinity) {
       const threshold = nearestSurface + body.radius;

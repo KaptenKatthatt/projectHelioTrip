@@ -22,6 +22,14 @@ To support different agent ecosystems, these files remain at standard paths and 
 
 If instructions are updated, update the `context/*` files first, then keep entrypoints in sync.
 
+## PR scope
+
+Keep pull requests focused on a single concern. Do not bundle unrelated changes (for example performance, accessibility, and agent documentation) in one PR.
+
+- One logical change per PR makes review faster and rollback safer.
+- Check for an existing open PR on the same issue before opening a new one.
+- Update an existing PR instead of creating duplicates for the same fix.
+
 ## Mandatory verification after changes
 
 After any code change, agents must verify that no type or lint errors were introduced before reporting completion.

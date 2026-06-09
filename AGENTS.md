@@ -1,26 +1,23 @@
-# AGENTS.md - Project Instructions for AI Agents
+# ProjectHelioTrip Agent Instructions
 
-## Rules for Jules and other AI agents
+This repository uses `context/` as the canonical source for shared agent guidance.
 
-### PR Creation Rules
-- **Max 1 PR per issue/fix.** If a previous PR addressing the same problem exists, update it instead of creating a new one. Do NOT create duplicate PRs for the same fix.
-- **Always check for existing open PRs** before creating a new one. If a similar PR exists, close it and create a single consolidated PR.
-- **Keep PRs focused.** One concern per PR. Do not bundle unrelated changes.
+Read in this order:
 
-### Performance Rules
-- **Pre-allocate Three.js objects** (Vector3, Euler, Quaternion) outside render loops. Never instantiate them inside useFrame or hot paths.
-- **Use target parameters** in math functions to avoid allocations.
-- **Hoist static arrays and objects** out of frequently called functions.
+1. `context/AGENTS_CONTEXT.md`
+2. `context/AGENT_REFERENCE.md`
+3. `context/DESIGN_SYSTEM.md`
+4. `.cursor/rules/*.mdc` for Cursor-specific rule enforcement
+5. `.github/copilot-instructions.md` for Copilot-specific compatibility
 
-### Code Quality
-- **Do NOT modify .jules/ files in PRs.** Learnings should be documented separately.
-- **Keep changes minimal.** Small, focused diffs are easier to review and merge.
-- **Never remove error handling** to "optimize" code.
+Jules-specific rules: `.jules/AGENTS.md`
 
-### PR Titles and Descriptions
-- Use clear, descriptive titles. Avoid emoji spam.
-- Describe what the change does and WHY.
+Mandatory verification before completion for any code changes:
 
-### Review Process
-- All PRs will be reviewed before merging.
-- If a PR is closed without merging, do NOT recreate it without addressing the feedback.
+- `npx tsc --noEmit`
+- `npm run lint`
+
+Mandatory language:
+
+- All code comments must be in English.
+- All instruction/policy documents must be in English.

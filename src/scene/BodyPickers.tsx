@@ -19,10 +19,6 @@ import { useStore } from '../store/useStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
-// ⚡ Bolt: Using a single module-level scratch vector prevents
-// useMemo overhead across multiple PickableBody/HoverLabel instances.
-const tmpBodyPos = new Vector3();
-
 /**
  * Picking radius is `max(bodyRadius * 1.2, screenPxToWorld(20))` — so
  * the pickable volume never shrinks below ~20 screen pixels regardless
@@ -151,7 +147,7 @@ export const BodyPickers = () => {
 
   return (
     <>
-      {pickables.map((entry: PickableEntry) => (
+      {pickables.map((entry) => (
         <PickableBody
           key={entry.id}
           id={entry.id}
@@ -188,6 +184,7 @@ const PickableBody = ({
   onSelect,
 }: PickableBodyProps) => {
   const meshRef = useRef<Mesh>(null);
+  const bodyPosRef = useRef(new Vector3());
   const downPosRef = useRef<{ x: number; y: number } | null>(null);
   const camera = useThree((s) => s.camera);
   const screenHeight = useThree((s) => s.size.height);
@@ -195,11 +192,12 @@ const PickableBody = ({
   useFrame(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    getBodyWorldPosition(id, tmpBodyPos);
-    mesh.position.copy(tmpBodyPos);
+    const bodyPos = bodyPosRef.current;
+    getBodyWorldPosition(id, bodyPos);
+    mesh.position.copy(bodyPos);
 
     if (camera instanceof PerspectiveCamera) {
-      const distance = camera.position.distanceTo(tmpBodyPos);
+      const distance = camera.position.distanceTo(bodyPos);
       const fovRad = (camera.fov * Math.PI) / 180;
       const pxWorld =
         (distance * Math.tan(fovRad / 2) * PICK_SCREEN_PX) / screenHeight;
@@ -279,6 +277,7 @@ type HoverLabelProps = {
 
 const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
   const groupRef = useRef<Group>(null);
+  const bodyPosRef = useRef(new Vector3());
   const camera = useThree((s) => s.camera);
   const screenHeight = useThree((s) => s.size.height);
   const { bodyName } = useTranslation();
@@ -299,19 +298,20 @@ const HoverLabel = ({ bodyId, visible }: HoverLabelProps) => {
     const group = groupRef.current;
     if (!group) return;
 
-    getBodyWorldPosition(bodyId, tmpBodyPos);
+    const bodyPos = bodyPosRef.current;
+    getBodyWorldPosition(bodyId, bodyPos);
 
     let offset = getBodyRadius(bodyId) ?? 1;
     offset *= LABEL_MIN_WORLD_OFFSET_FACTOR;
     if (camera instanceof PerspectiveCamera) {
-      const distance = camera.position.distanceTo(tmpBodyPos);
+      const distance = camera.position.distanceTo(bodyPos);
       const fovRad = (camera.fov * Math.PI) / 180;
       const pxWorld =
         (distance * Math.tan(fovRad / 2) * LABEL_OFFSET_PX) / screenHeight;
       offset = Math.max(offset, pxWorld);
     }
 
-    group.position.set(tmpBodyPos.x, tmpBodyPos.y + offset, tmpBodyPos.z);
+    group.position.set(bodyPos.x, bodyPos.y + offset, bodyPos.z);
   });
 
   return (
