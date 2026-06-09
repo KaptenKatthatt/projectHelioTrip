@@ -25,7 +25,6 @@ export const stepPhysics = (
   const mu = MU_SUN * sunMassMultiplier;
   
   // 1. Half-step velocity
-  // ⚡ Bolt: Using pre-allocated scratchAcc instead of .clone() to prevent GC pauses
   const r = state.pos.length();
   scratchAcc.copy(state.pos).multiplyScalar(-mu / (r * r * r));
   state.vel.addScaledVector(scratchAcc, 0.5 * dtDays);

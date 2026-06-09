@@ -19,6 +19,8 @@ alwaysApply: false
 
 ## R3F
 - No allocation in `useFrame` – reuse `Vector3`/`Quaternion` instances outside the loop.
+- **Scratch ownership:** singleton scene hooks (one mount per canvas) may use module-level scratch vectors. Multi-instance components (`map` over bodies, labels, etc.) must use `useRef(new Vector3())` per instance so parallel `useFrame` callbacks do not clobber shared state.
+- Prefer `out` parameters in math helpers when the caller already owns the buffer.
 - `useGLTF` / `useTexture` for assets; call `.preload()` where appropriate.
 - Use `<Instances>` for many identical meshes.
 - Prefer `<Suspense>` + drei loaders over manual loading.

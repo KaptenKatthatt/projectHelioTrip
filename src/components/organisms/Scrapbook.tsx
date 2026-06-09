@@ -66,12 +66,14 @@ export const Scrapbook = ({ open, onClose }: ScrapbookProps) => {
   if (!open) return null;
 
   const selectedPhoto = selectedIndex !== null ? photos.at(selectedIndex) : undefined;
+  const viewerOpen = selectedPhoto !== undefined;
 
   return (
     <div
       role="dialog"
-      aria-modal="true"
-      aria-labelledby="scrapbook-title"
+      aria-modal={viewerOpen ? undefined : true}
+      aria-hidden={viewerOpen ? true : undefined}
+      aria-labelledby={viewerOpen ? undefined : 'scrapbook-title'}
       className="pointer-events-auto fixed inset-0 z-[100] flex flex-col bg-black/95 p-4 pt-10 text-white backdrop-blur-xl sm:p-8"
     >
       <header className="mb-6 flex items-center justify-between">
