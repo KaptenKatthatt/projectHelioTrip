@@ -99,6 +99,9 @@ export const applyCollisionConstraints = (
 ): void => {
   nextPosition.copy(cameraPosition).add(moveDelta);
 
+  // ⚡ Bolt: Compute movement length once to use for fast bounding-sphere rejection
+  const moveLength = moveDelta.length();
+
   for (const body of COLLISION_BODIES) {
     const limit = body.radius + CAMERA_COLLISION_MARGIN;
     const limitSq = limit * limit;
@@ -109,6 +112,17 @@ export const applyCollisionConstraints = (
     const softLimit = limit + softZone;
 
     setBodyCenter(body, center);
+
+    // ⚡ Bolt: Fast rejection - If the camera is farther than the soft limit plus
+    // the frame's movement distance, it cannot possibly collide this frame.
+    // This avoids expensive Math.sqrt(), vector normalizations, and dot products
+    // for the vast majority of bodies in the high-frequency collision loop.
+    const distSq = center.distanceToSquared(cameraPosition);
+    const rejectionThreshold = softLimit + moveLength;
+    if (distSq > rejectionThreshold * rejectionThreshold) {
+      continue;
+    }
+
     normal.copy(cameraPosition).sub(center);
     const currentDist = normal.length();
 
