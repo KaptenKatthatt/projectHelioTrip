@@ -97,6 +97,7 @@ export const applyCollisionConstraints = (
   radial: Vector3,
 ): void => {
   nextPosition.copy(cameraPosition).add(moveDelta);
+  const maxMovement = moveDelta.length();
 
   for (const body of COLLISION_BODIES) {
     const limit = body.radius + CAMERA_COLLISION_MARGIN;
@@ -108,6 +109,12 @@ export const applyCollisionConstraints = (
     const softLimit = limit + softZone;
 
     setBodyCenter(body, center);
+
+    const fastRejectThreshold = softLimit + maxMovement;
+    if (center.distanceToSquared(cameraPosition) > fastRejectThreshold * fastRejectThreshold) {
+      continue;
+    }
+
     normal.copy(cameraPosition).sub(center);
     const currentDist = normal.length();
 
