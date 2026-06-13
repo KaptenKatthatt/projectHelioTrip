@@ -1,4 +1,4 @@
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Photo } from '../../lib/photoStore';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -37,7 +37,7 @@ export const ScrapbookFullscreenViewer = ({
         title={t.scrapbook.deletePhoto}
         aria-label={t.scrapbook.deletePhoto}
       >
-        <Trash2 className="h-5 w-5" />
+        <Trash2 className="h-5 w-5" aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -45,7 +45,7 @@ export const ScrapbookFullscreenViewer = ({
         className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label={t.scrapbook.close}
       >
-        <X className="h-6 w-6" />
+        <X className="h-6 w-6" aria-hidden="true" />
       </button>
     </div>
 
@@ -56,19 +56,7 @@ export const ScrapbookFullscreenViewer = ({
         className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label={t.scrapbook.prevPhoto}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m15 18-6-6 6-6" />
-        </svg>
+        <ChevronLeft className="h-8 w-8" aria-hidden="true" />
       </button>
 
       <div className="relative max-h-full max-w-5xl overflow-hidden rounded-2xl shadow-2xl ring-1 shadow-black/50 ring-white/10">
@@ -99,19 +87,7 @@ export const ScrapbookFullscreenViewer = ({
         className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-white backdrop-blur-md transition hover:bg-white/20 active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         aria-label={t.scrapbook.nextPhoto}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
+        <ChevronRight className="h-8 w-8" aria-hidden="true" />
       </button>
     </div>
 
