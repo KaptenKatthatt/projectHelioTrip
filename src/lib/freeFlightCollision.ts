@@ -98,6 +98,9 @@ export const applyCollisionConstraints = (
 ): void => {
   nextPosition.copy(cameraPosition).add(moveDelta);
 
+  // Bolt optimization: Pre-calculate max movement distance to establish a fast-rejection radius
+  const moveDist = moveDelta.length();
+
   for (const body of COLLISION_BODIES) {
     const limit = body.radius + CAMERA_COLLISION_MARGIN;
     const limitSq = limit * limit;
@@ -108,8 +111,18 @@ export const applyCollisionConstraints = (
     const softLimit = limit + softZone;
 
     setBodyCenter(body, center);
+
+    // Bolt optimization: Fast rejection check using squared distance to avoid per-body math/sqrt when far away
+    const distSq = cameraPosition.distanceToSquared(center);
+    const rejectLimit = softLimit + moveDist;
+    if (distSq >= rejectLimit * rejectLimit) {
+      continue;
+    }
+
+    // We already have distSq, use it instead of normal.length()
+    const currentDist = Math.sqrt(distSq);
+
     normal.copy(cameraPosition).sub(center);
-    const currentDist = normal.length();
 
     if (currentDist <= 1e-4) {
       normal.set(1, 0, 0);
