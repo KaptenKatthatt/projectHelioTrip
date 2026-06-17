@@ -45,7 +45,7 @@ export const FactCardDeck = ({ bodyId }: Props) => {
           <button
             type="button"
             onClick={handleTestYourself}
-            className="pointer-events-auto w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-3 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20"
+            className="pointer-events-auto w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-3 text-sm font-medium text-cyan-300 transition hover:bg-cyan-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
           >
             {t.learn.ui.testYourself}
             <ChevronRight className="h-4 w-4" aria-hidden />
