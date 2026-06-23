@@ -152,7 +152,7 @@ export const ConstellationViewControls = ({
             : t.ui.showConstellationLines
         }
         className={
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white transition " +
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
           (constellationLinesVisible
             ? "bg-cyan-300/20 text-cyan-100 ring-1 ring-cyan-200/50 hover:bg-cyan-300/30"
             : "hover:bg-white/10 text-white/80 hover:text-white")

@@ -43,7 +43,7 @@ export const LanguageToggle = () => {
           aria-label={FLAG_LABELS[l]}
           title={FLAG_LABELS[l]}
           className={
-            "flex items-center justify-center rounded-lg px-2 py-1 transition " +
+            "flex items-center justify-center rounded-lg px-2 py-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
             (locale === l
               ? "bg-white/90 ring-1 ring-white"
               : "opacity-70 hover:opacity-100")

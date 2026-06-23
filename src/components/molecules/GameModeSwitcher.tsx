@@ -77,7 +77,7 @@ export const GameModeSwitcher = ({
               title={disabled ? undefined : descriptions[mode]}
               onClick={() => handleModeClick(mode)}
               className={
-                "group relative flex flex-1 flex-col items-center justify-center rounded-xl transition-all duration-300 " +
+                "group relative flex flex-1 flex-col items-center justify-center rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 " +
                 (compact
                   ? "px-2 py-1.5 text-[10px] font-bold "
                   : "px-3 py-2 text-xs font-bold ") +
