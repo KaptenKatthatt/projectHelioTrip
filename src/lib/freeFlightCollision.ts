@@ -97,6 +97,7 @@ export const applyCollisionConstraints = (
   radial: Vector3,
 ): void => {
   nextPosition.copy(cameraPosition).add(moveDelta);
+  const maxMoveDist = moveDelta.length();
 
   for (const body of COLLISION_BODIES) {
     const limit = body.radius + CAMERA_COLLISION_MARGIN;
@@ -108,6 +109,13 @@ export const applyCollisionConstraints = (
     const softLimit = limit + softZone;
 
     setBodyCenter(body, center);
+
+    // Bolt optimization: fast rejection using squared distances to avoid expensive vector math in useFrame
+    const rejectRadius = softLimit + maxMoveDist;
+    if (center.distanceToSquared(cameraPosition) >= rejectRadius * rejectRadius) {
+      continue;
+    }
+
     normal.copy(cameraPosition).sub(center);
     const currentDist = normal.length();
 
