@@ -17,6 +17,11 @@ const CAMERA_QUALITY_SCALE = 1.12;
 const CAMERA_ULTRA_QUALITY_DISTANCE_ENTER = 260;
 const CAMERA_ULTRA_QUALITY_DISTANCE_EXIT = 220;
 
+const CAMERA_QUALITY_DISTANCE_ENTER_SQ = CAMERA_QUALITY_DISTANCE_ENTER ** 2;
+const CAMERA_QUALITY_DISTANCE_EXIT_SQ = CAMERA_QUALITY_DISTANCE_EXIT ** 2;
+const CAMERA_ULTRA_QUALITY_DISTANCE_ENTER_SQ = CAMERA_ULTRA_QUALITY_DISTANCE_ENTER ** 2;
+const CAMERA_ULTRA_QUALITY_DISTANCE_EXIT_SQ = CAMERA_ULTRA_QUALITY_DISTANCE_EXIT ** 2;
+
 const ORBIT_MIN_RADIUS = Math.min(
   ...ORBIT_PLANETS.map((planet) => planet.position.length()),
 );
@@ -82,11 +87,12 @@ export const OrbitLines = () => {
       return;
     }
 
-    const distance = camera.position.length();
+    // Bolt optimization: using lengthSq instead of length to avoid expensive Math.sqrt() in useFrame
+    const distanceSq = camera.position.lengthSq();
     let nextQualityBoost = qualityBoostRef.current;
-    if (!nextQualityBoost && distance >= CAMERA_QUALITY_DISTANCE_ENTER) {
+    if (!nextQualityBoost && distanceSq >= CAMERA_QUALITY_DISTANCE_ENTER_SQ) {
       nextQualityBoost = true;
-    } else if (nextQualityBoost && distance <= CAMERA_QUALITY_DISTANCE_EXIT) {
+    } else if (nextQualityBoost && distanceSq <= CAMERA_QUALITY_DISTANCE_EXIT_SQ) {
       nextQualityBoost = false;
     }
 
@@ -96,11 +102,11 @@ export const OrbitLines = () => {
     }
 
     let nextUltraBoost = ultraBoostRef.current;
-    if (!nextUltraBoost && distance >= CAMERA_ULTRA_QUALITY_DISTANCE_ENTER) {
+    if (!nextUltraBoost && distanceSq >= CAMERA_ULTRA_QUALITY_DISTANCE_ENTER_SQ) {
       nextUltraBoost = true;
     } else if (
       nextUltraBoost &&
-      distance <= CAMERA_ULTRA_QUALITY_DISTANCE_EXIT
+      distanceSq <= CAMERA_ULTRA_QUALITY_DISTANCE_EXIT_SQ
     ) {
       nextUltraBoost = false;
     }
