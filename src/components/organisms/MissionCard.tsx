@@ -114,7 +114,7 @@ export const MissionCard = ({
                 <button
                   type="button"
                   onClick={() => startMission(mission.id)}
-                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-white/80 transition hover:bg-white/10 hover:text-white"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-white/80 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                 >
                   <span className="min-w-0 flex-1 truncate">
                     {localized.title}
@@ -155,7 +155,7 @@ export const MissionCard = ({
             <button
               type="button"
               onClick={() => setPendingBackToExplore(false)}
-              className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               {t.phase3.missionCard.abandonCancel}
             </button>
@@ -167,7 +167,7 @@ export const MissionCard = ({
                 setPendingBackToExplore(false);
                 setPendingAbandon(false);
               }}
-              className="rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[11px] font-medium text-amber-200 transition hover:bg-amber-400/20"
+              className="rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[11px] font-medium text-amber-200 transition hover:bg-amber-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               {t.phase3.missionCard.backToExploreConfirm}
             </button>
@@ -179,7 +179,7 @@ export const MissionCard = ({
               setPendingBackToExplore(true);
               setPendingAbandon(false);
             }}
-            className="shrink-0 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/15 hover:text-white"
+            className="shrink-0 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-medium text-white/70 transition hover:bg-white/15 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {t.phase3.missionCard.backToExplore}
           </button>
@@ -247,14 +247,14 @@ export const MissionCard = ({
             onClick={() => {
               setPendingAbandon(false);
             }}
-            className="flex-1 rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            className="flex-1 rounded-md border border-white/15 bg-white/5 px-2 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {t.phase3.missionCard.abandonCancel}
           </button>
           <button
             type="button"
             onClick={abandonMission}
-            className="flex-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-400/20"
+            className="flex-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
           >
             {t.phase3.missionCard.abandonConfirm}
           </button>
@@ -266,7 +266,7 @@ export const MissionCard = ({
             setPendingAbandon(true);
             setPendingBackToExplore(false);
           }}
-          className="mt-3 w-full rounded-md border border-white/8 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/35 transition hover:border-white/15 hover:text-white/55"
+          className="mt-3 w-full rounded-md border border-white/8 bg-transparent px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-white/35 transition hover:border-white/15 hover:text-white/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           {t.phase3.missionCard.abandon}
         </button>

@@ -50,7 +50,7 @@ export const TimePlaybackControls = ({
           type="button"
           onClick={resetSolarSystemStart}
           aria-label={t.ui.start}
-          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 text-sm font-medium text-white transition hover:bg-white/15"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 text-sm font-medium text-white transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           <SolarSystemStartIcon className="h-4 w-4 shrink-0" />
           {t.ui.start}
@@ -61,7 +61,7 @@ export const TimePlaybackControls = ({
             onClick={togglePlay}
             disabled={timePlaybackDisabled}
             aria-label={isPlaying ? t.ui.pause : t.ui.play}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white/5"
           >
             {isPlaying ? (
               <Pause className="h-4 w-4" />
@@ -84,7 +84,7 @@ export const TimePlaybackControls = ({
                 disabled={timePlaybackDisabled}
                 aria-pressed={timeScale === s}
                 className={
-                  "rounded-lg px-2 py-1 font-mono text-xs transition disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent " +
+                  "rounded-lg px-2 py-1 font-mono text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent " +
                   (timeScale === s
                     ? "bg-white text-black disabled:hover:text-black"
                     : "text-white/60 hover:text-white disabled:hover:text-white/60")

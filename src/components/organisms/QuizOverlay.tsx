@@ -178,7 +178,7 @@ const QuizQuestion = ({
                 onSubmit(opt.key);
               }}
               className={[
-                "w-full rounded-xl border px-3 py-2.5 text-left text-sm transition",
+                "w-full rounded-xl border px-3 py-2.5 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
                 selectedKey === opt.key
                   ? "border-cyan-400/60 bg-cyan-400/15 text-cyan-100"
                   : "border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10",
@@ -204,7 +204,7 @@ const QuizQuestion = ({
                 setSelectedKey(opt.value);
                 onSubmit(opt.value);
               }}
-              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/10"
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               {opt.label}
             </button>
@@ -284,7 +284,7 @@ const QuizResult = ({
       <button
         type="button"
         onClick={onClose}
-        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10"
+        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
       >
         {t.ui.aboutClose}
       </button>
