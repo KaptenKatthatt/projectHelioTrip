@@ -109,7 +109,17 @@ export const applyCollisionConstraints = (
 
     setBodyCenter(body, center);
     normal.copy(cameraPosition).sub(center);
-    const currentDist = normal.length();
+    const currentDistSq = normal.lengthSq();
+    radial.copy(nextPosition).sub(center);
+    let nextDistSq = radial.lengthSq();
+    const softLimitSq = softLimit * softLimit;
+
+    // Bolt optimization: using lengthSq for threshold rejection to avoid expensive Math.sqrt() in useFrame
+    if (currentDistSq >= softLimitSq && nextDistSq >= limitSq) {
+      continue;
+    }
+
+    const currentDist = Math.sqrt(currentDistSq);
 
     if (currentDist <= 1e-4) {
       normal.set(1, 0, 0);
@@ -117,7 +127,7 @@ export const applyCollisionConstraints = (
       normal.multiplyScalar(1 / currentDist);
     }
 
-    if (currentDist < softLimit) {
+    if (currentDistSq < softLimitSq) {
       const inward = moveDelta.dot(normal);
       if (inward < 0) {
         const depth =
@@ -127,25 +137,26 @@ export const applyCollisionConstraints = (
         const damping = depth * depth * (3 - 2 * depth);
         moveDelta.addScaledVector(normal, -inward * damping);
         nextPosition.copy(cameraPosition).add(moveDelta);
+        // update radial and nextDistSq after changing nextPosition
+        radial.copy(nextPosition).sub(center);
+        nextDistSq = radial.lengthSq();
       }
     }
 
-    radial.copy(nextPosition).sub(center);
-    const nextDistSq = radial.lengthSq();
     const inwardSpeed = moveDelta.dot(normal);
 
     if (inwardSpeed < 0 && nextDistSq < limitSq) {
       moveDelta.addScaledVector(normal, -inwardSpeed);
       nextPosition.copy(cameraPosition).add(moveDelta);
       radial.copy(nextPosition).sub(center);
+      nextDistSq = radial.lengthSq();
     }
 
-    const correctedDistSq = radial.lengthSq();
-    if (correctedDistSq < limitSq) {
-      if (correctedDistSq <= 1e-8) {
+    if (nextDistSq < limitSq) {
+      if (nextDistSq <= 1e-8) {
         radial.set(1, 0, 0);
       } else {
-        radial.multiplyScalar(1 / Math.sqrt(correctedDistSq));
+        radial.multiplyScalar(1 / Math.sqrt(nextDistSq));
       }
       nextPosition.copy(center).addScaledVector(radial, limit);
     }
