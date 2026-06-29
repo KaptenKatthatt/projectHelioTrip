@@ -32,7 +32,7 @@ export const MobileContextStrip = ({
         <button
           type="button"
           onClick={onOpenConstellationsSheet}
-          className="flex items-center gap-0.5 text-xs text-white/65 transition hover:text-white/90"
+          className="flex items-center gap-0.5 text-xs text-white/65 transition hover:text-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {t.ui.constellations}
@@ -44,7 +44,7 @@ export const MobileContextStrip = ({
         <button
           type="button"
           onClick={onBackFromPlanet}
-          className="flex items-center gap-0.5 text-xs text-white/65 transition hover:text-white/90"
+          className="flex items-center gap-0.5 text-xs text-white/65 transition hover:text-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" aria-hidden />
           {t.ui.universeSolarSystem}
@@ -55,7 +55,7 @@ export const MobileContextStrip = ({
       <button
         type="button"
         onClick={onResetToStart}
-        className="text-sm font-semibold tracking-tight text-white/90 transition hover:text-white"
+        className="text-sm font-semibold tracking-tight text-white/90 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
       >
         {t.appTitle}
       </button>
@@ -88,7 +88,7 @@ export const MobileContextStrip = ({
         type="button"
         onClick={onOpenChallengeSheet}
         aria-label={t.learn.ui.xpPoints}
-        className="pointer-events-auto relative z-10"
+        className="pointer-events-auto relative z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded"
       >
         <XpBadge />
       </button>
