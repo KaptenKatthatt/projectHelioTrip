@@ -98,6 +98,11 @@ export const applyCollisionConstraints = (
 ): void => {
   nextPosition.copy(cameraPosition).add(moveDelta);
 
+  // Bolt optimization: compute dynamic bounding threshold once outside the loop
+  // to establish a fast-rejection radius using squared distances, avoiding
+  // expensive per-body vector math in useFrame.
+  const maxMove = moveDelta.length();
+
   for (const body of COLLISION_BODIES) {
     const limit = body.radius + CAMERA_COLLISION_MARGIN;
     const limitSq = limit * limit;
@@ -108,6 +113,12 @@ export const applyCollisionConstraints = (
     const softLimit = limit + softZone;
 
     setBodyCenter(body, center);
+
+    const rejectThreshold = softLimit + maxMove;
+    if (center.distanceToSquared(cameraPosition) >= rejectThreshold * rejectThreshold) {
+      continue;
+    }
+
     normal.copy(cameraPosition).sub(center);
     const currentDist = normal.length();
 
