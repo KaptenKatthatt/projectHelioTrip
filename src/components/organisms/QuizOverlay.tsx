@@ -76,11 +76,11 @@ const QuizOverlayInner = ({ quizId }: { quizId: string }) => {
       className="pointer-events-auto fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
-      <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-space-dark-800/95 p-5 shadow-2xl backdrop-blur-md">
+      <div role="dialog" aria-modal="true" aria-label="Quiz" className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-space-dark-800/95 p-5 shadow-2xl backdrop-blur-md">
         <button
           type="button"
           onClick={handleClose}
-          aria-label="Close"
+          aria-label={t.ui.aboutClose}
           className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition"
         >
           <X className="h-4 w-4" aria-hidden />
