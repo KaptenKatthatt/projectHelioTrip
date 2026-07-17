@@ -10,7 +10,6 @@ Read in this order:
 4. `.cursor/rules/*.mdc` for Cursor-specific rule enforcement
 5. `.github/copilot-instructions.md` for Copilot-specific compatibility
 
-
 Mandatory verification before completion for any code changes:
 
 - `npx tsc --noEmit`
