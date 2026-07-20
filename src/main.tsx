@@ -1,10 +1,8 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ClerkProvider } from '@clerk/clerk-react';
 import { registerSW } from 'virtual:pwa-register';
 import './index.css';
 import { App } from './App';
-import { AdminAnalyticsPage } from './admin/AdminAnalyticsPage';
 
 registerSW({ immediate: true });
 
@@ -13,29 +11,20 @@ if (!rootElement) {
   throw new Error('Root element with id="root" not found in index.html');
 }
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// Lazy so Clerk + recharts load only on the admin route.
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-reloaded
+const AdminRoot = lazy(() =>
+  import('./admin/AdminRoot').then((m) => ({ default: m.AdminRoot })),
+);
 
 createRoot(rootElement).render(
   <StrictMode>
     {window.location.pathname.startsWith('/admin/analytics') ? (
-      window.location.search.includes('mock_auth=true') ? (
-        <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
-          <AdminAnalyticsPage />
-        </div>
-      ) : PUBLISHABLE_KEY ? (
-        <ClerkProvider
-          publishableKey={PUBLISHABLE_KEY}
-          afterSignOutUrl="/admin/analytics"
-          signInFallbackRedirectUrl="/admin/analytics"
-          signUpFallbackRedirectUrl="/admin/analytics"
-        >
-          <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
-            <AdminAnalyticsPage />
-          </div>
-        </ClerkProvider>
-      ) : (
-        <div className="p-8 text-white">Missing VITE_CLERK_PUBLISHABLE_KEY</div>
-      )
+      <Suspense
+        fallback={<div className="fixed inset-0 bg-[hsl(232_44%_6%)]" />}
+      >
+        <AdminRoot />
+      </Suspense>
     ) : (
       <App />
     )}

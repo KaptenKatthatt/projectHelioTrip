@@ -102,8 +102,29 @@ export const resolveDreiChunk = (id: string): string => {
   return 'vendor-drei-misc';
 };
 
+/**
+ * Libraries reachable only from the lazy /admin/analytics chunk. Left out of
+ * every named group (including the vendor-misc catch-all) so Rolldown places
+ * them in the async admin chunk instead of the eager entry graph. Forcing
+ * them into a named group makes Rolldown hoist shared CJS wrappers (e.g.
+ * react/jsx-runtime) into that group, dragging it back into the eager graph.
+ */
+const isAdminOnlyDep = (id: string): boolean =>
+  id.includes('@clerk') ||
+  id.includes('/recharts/') ||
+  id.includes('victory-vendor') ||
+  id.includes('/d3-') ||
+  id.includes('@reduxjs') ||
+  id.includes('/react-redux/') ||
+  id.includes('/immer/') ||
+  id.includes('/reselect/') ||
+  id.includes('/es-toolkit/') ||
+  id.includes('decimal.js-light');
+
 export const resolveManualChunk = (id: string): string | undefined => {
   if (!id.includes(NODE_MODULES_SEGMENT)) return undefined;
+
+  if (isAdminOnlyDep(id)) return undefined;
 
   if (id.includes('@react-three/drei')) return resolveDreiChunk(id);
 

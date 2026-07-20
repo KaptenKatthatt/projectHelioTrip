@@ -1,3 +1,4 @@
+import { Suspense, lazy, useEffect } from 'react';
 import { HudControlRailRegion } from './hud/HudControlRailRegion';
 import { HudDetailRegion } from './hud/HudDetailRegion';
 import { HudMobileNavRegion } from './hud/HudMobileNavRegion';
@@ -7,9 +8,17 @@ import { HudTopBarRegion } from './hud/HudTopBarRegion';
 import { MobileContextStrip } from '../molecules/MobileContextStrip';
 import { CameraTool } from '../molecules/CameraTool';
 import { LabOverlay } from '../organisms/LabOverlay';
-import { MarsSurface } from '../organisms/MarsSurface';
-import { MoonSurface } from '../organisms/MoonSurface';
 import { useHudLogic } from './hud/useHudLogic';
+import { useStore } from '../../store/useStore';
+
+// Lazy so the landing scenes (three.js terrain, GLB models) stay out of the
+// eager bundle; they are only reachable after landing on Mars or the Moon.
+const MarsSurface = lazy(() =>
+  import('../organisms/MarsSurface').then((m) => ({ default: m.MarsSurface })),
+);
+const MoonSurface = lazy(() =>
+  import('../organisms/MoonSurface').then((m) => ({ default: m.MoonSurface })),
+);
 
 type HudFrame = 'viewport' | 'stage';
 
@@ -37,6 +46,24 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
     handleResetToStart,
     handleBackToConstellationsMenu,
   } = useHudLogic();
+
+  const isLanded = useStore((s) => s.isLanded);
+  const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const marsTransitionState = useStore((s) => s.marsTransitionState);
+  const moonTransitionState = useStore((s) => s.moonTransitionState);
+
+  // Warm each surface chunk during the landing transition so it is ready
+  // by touchdown.
+  useEffect(() => {
+    if (marsTransitionState === 'landing') {
+      void import('../organisms/MarsSurface');
+    }
+  }, [marsTransitionState]);
+  useEffect(() => {
+    if (moonTransitionState === 'landing') {
+      void import('../organisms/MoonSurface');
+    }
+  }, [moonTransitionState]);
 
   return (
     <div
@@ -102,8 +129,24 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
       <HudOverlayRegion />
       {mobileLayout && gameMode !== 'lab' && <CameraTool className="fixed bottom-32 left-4 z-10" />}
       {gameMode === 'lab' ? <LabOverlay /> : null}
-      <MarsSurface />
-      <MoonSurface />
+      {isLanded && (
+        <Suspense
+          fallback={
+            <div className="pointer-events-auto fixed inset-0 z-200 bg-[#1a0a05]" />
+          }
+        >
+          <MarsSurface />
+        </Suspense>
+      )}
+      {isLandedOnMoon && (
+        <Suspense
+          fallback={
+            <div className="pointer-events-auto fixed inset-0 z-200 bg-[#000310]" />
+          }
+        >
+          <MoonSurface />
+        </Suspense>
+      )}
     </div>
   );
 };
