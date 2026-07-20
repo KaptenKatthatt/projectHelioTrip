@@ -1,9 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
+import { registerSW } from 'virtual:pwa-register';
 import './index.css';
 import { App } from './App';
 import { AdminAnalyticsPage } from './admin/AdminAnalyticsPage';
+
+registerSW({ immediate: true });
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

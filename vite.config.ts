@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 const API_PORT = process.env.API_PORT ?? '3001';
 const NODE_MODULES_SEGMENT = 'node_modules';
@@ -165,6 +166,80 @@ export default defineConfig(({ mode }) => {
             .replace('__FB_APP_ID_META__', facebookAppIdMeta);
         },
       },
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'HelioTrip',
+          short_name: 'HelioTrip',
+          description:
+            'Fly through the solar system in first-person 3D. Edutainment for all ages: planets, moons, orbits, and constellations — UI in English and Swedish. Works on desktop and mobile.',
+          id: '/',
+          start_url: '/',
+          display: 'standalone',
+          orientation: 'any',
+          theme_color: '#0b1020',
+          background_color: '#0b1020',
+          lang: 'en',
+          categories: ['education'],
+          icons: [
+            { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+            {
+              src: '/pwa-maskable-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+          ],
+        },
+        workbox: {
+          // Precache the app shell only; the heavy media (textures, GLB
+          // models) is runtime-cached on first use instead.
+          globPatterns: [
+            '**/*.{js,css,html}',
+            '*.svg',
+            'pwa-*.png',
+            'apple-touch-icon.png',
+          ],
+          globIgnores: ['**/node_modules/**', 'International*/**'],
+          // vendor-three exceeds Workbox's 2MB precache default.
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+          navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin &&
+                (url.pathname.startsWith('/textures/') ||
+                  /\.(webp|png|jpg)$/.test(url.pathname)),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'heliotrip-textures',
+                expiration: {
+                  maxEntries: 150,
+                  maxAgeSeconds: 30 * 24 * 3600,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && url.pathname.endsWith('.glb'),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'heliotrip-models',
+                expiration: {
+                  maxEntries: 12,
+                  maxAgeSeconds: 30 * 24 * 3600,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            // No /api/ route on purpose: analytics stays network-only and
+            // already degrades gracefully offline.
+          ],
+        },
+      }),
     ],
     build: {
       rolldownOptions: {
