@@ -48,7 +48,7 @@ export const SummaryCards = ({ summary, total14d, total30d }: SummaryCardsProps)
           <Database className="h-4 w-4" /> Storage
         </h2>
         <p className="mt-3 text-2xl font-semibold leading-9 text-white">
-          {summary.storage === "supabase" ? "Supabase" : "Local file"}
+          {summary.storage === "neon" ? "Neon" : "Local file"}
         </p>
         <p className="mt-2 text-xs text-[hsl(225_16%_68%)]">Source for aggregates</p>
       </article>

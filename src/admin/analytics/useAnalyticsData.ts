@@ -8,7 +8,7 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const isAnalyticsSummary = (value: unknown): value is AnalyticsSummary =>
   isObject(value) &&
   typeof value.updatedAt === "string" &&
-  (value.storage === "supabase" || value.storage === "local-file") &&
+  (value.storage === "neon" || value.storage === "local-file") &&
   Array.isArray(value.byEvent) &&
   Array.isArray(value.byDay);
 
