@@ -45,9 +45,8 @@ const loadApp = async ({
   process.env.ANALYTICS_FILE = analyticsFilePath;
   process.env.ANALYTICS_ADMIN_TOKEN = analyticsAdminToken ?? "";
   process.env.CLERK_SECRET_KEY = "sk_test_mock";
-  process.env.SUPABASE_URL = "";
-  process.env.SUPABASE_SECRET_KEY = "";
-  process.env.SUPABASE_SERVICE_ROLE_KEY = "";
+  process.env.DATABASE_URL = "";
+  process.env.POSTGRES_URL = "";
   process.env.VERCEL = "";
   return import("./app");
 };

@@ -105,7 +105,7 @@ When adding a new analytics event:
 
 ### Analytics summary endpoint resilience
 
-`GET /api/analytics/summary` must not return HTTP 500. The implementation wraps the Supabase query with an 8-second timeout and catches all errors, returning an empty-but-valid summary on failure. Do not remove this error boundary or the `AbortSignal.timeout` call.
+`GET /api/analytics/summary` must not return HTTP 500. The implementation bounds the database (Neon) query with an 8-second timeout — passed as an `AbortSignal.timeout(8_000)` via the Neon driver's per-query `fetchOptions` — and catches all errors, returning an empty-but-valid summary on failure. Do not remove this error boundary or the `AbortSignal.timeout` call.
 
 ---
 

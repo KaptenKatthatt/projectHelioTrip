@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { neon } from "@neondatabase/serverless";
+
+type NeonClient = ReturnType<typeof neon>;
 
 export type AnalyticsEventName =
   | "planet_selected"
@@ -53,21 +55,35 @@ const STORE_FILE = process.env.ANALYTICS_FILE
 let writeQueue: Promise<void> = Promise.resolve();
 let cache: AnalyticsStore | null = null;
 let cacheLoadedAtMs = 0;
-let supabaseClient: SupabaseClient | null = null;
+let dbClient: NeonClient | null = null;
 
-const SUPABASE_URL = process.env.SUPABASE_URL?.trim() ?? "";
-const SUPABASE_SECRET_KEY = (
-  process.env.SUPABASE_SECRET_KEY ??
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+// Neon (or any Postgres) connection string. `POSTGRES_URL` is accepted as an
+// alias because the Vercel Postgres/Neon integration provisions that variable.
+const DATABASE_URL = (
+  process.env.DATABASE_URL ??
+  process.env.POSTGRES_URL ??
   ""
 ).trim();
-// Used only for best-effort fallback paths. Prefer RPC increments for correctness across instances.
-const SUPABASE_TABLE =
-  process.env.ANALYTICS_SUPABASE_TABLE?.trim() || "analytics_events_daily";
-const HAS_SUPABASE = SUPABASE_URL.length > 0 && SUPABASE_SECRET_KEY.length > 0;
-const SUPABASE_INCREMENT_RPC =
-  process.env.ANALYTICS_SUPABASE_INCREMENT_RPC?.trim() ||
-  "increment_analytics_event";
+// Only bare identifiers are allowed; the table name is interpolated into SQL
+// (it cannot be a bound parameter), so an unexpected value must never reach it.
+const DEFAULT_ANALYTICS_TABLE = "analytics_events_daily";
+const ANALYTICS_TABLE = (() => {
+  const raw = (
+    process.env.ANALYTICS_DB_TABLE ??
+    process.env.ANALYTICS_SUPABASE_TABLE ??
+    ""
+  ).trim();
+  if (raw.length === 0) return DEFAULT_ANALYTICS_TABLE;
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(raw)) {
+    console.error(
+      "Ignoring invalid analytics table name; falling back to default",
+      { provided: raw, fallback: DEFAULT_ANALYTICS_TABLE },
+    );
+    return DEFAULT_ANALYTICS_TABLE;
+  }
+  return raw;
+})();
+const HAS_DB = DATABASE_URL.length > 0;
 const ANALYTICS_QUERY_LIMIT = (() => {
   const raw = process.env.ANALYTICS_QUERY_LIMIT?.trim();
   const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
@@ -86,20 +102,6 @@ const setCacheValue = (store: AnalyticsStore): AnalyticsStore => {
   cacheLoadedAtMs = Date.now();
   return store;
 };
-const isRpcNotDeployedError = (error: unknown): boolean => {
-  if (!error || typeof error !== "object") return false;
-  const maybeCode =
-    "code" in error ? (error.code as string | undefined) : undefined;
-  const maybeMessage =
-    "message" in error ? (error.message as string | undefined) : undefined;
-  return (
-    maybeCode === "PGRST202" ||
-    maybeCode === "42883" ||
-    (typeof maybeMessage === "string" &&
-      maybeMessage.toLowerCase().includes("increment_analytics_event"))
-  );
-};
-
 const safeReadStore = async (): Promise<AnalyticsStore> => {
   if (cache && Date.now() - cacheLoadedAtMs < ANALYTICS_CACHE_TTL_MS) {
     return cache;
@@ -127,16 +129,13 @@ const safeReadStore = async (): Promise<AnalyticsStore> => {
   }
 };
 
-const getSupabaseClient = (): SupabaseClient | null => {
-  if (!HAS_SUPABASE) return null;
-  if (supabaseClient) return supabaseClient;
-  supabaseClient = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-  return supabaseClient;
+const getDbClient = (): NeonClient | null => {
+  if (!HAS_DB) return null;
+  if (dbClient) return dbClient;
+  // Neon's HTTP driver issues one stateless fetch per query, which fits the
+  // serverless model (no long-lived connection to keep warm or leak).
+  dbClient = neon(DATABASE_URL);
+  return dbClient;
 };
 
 const persistStore = async (store: AnalyticsStore): Promise<void> => {
@@ -233,42 +232,20 @@ export const recordAnalyticsEvent = async (
 ): Promise<void> => {
   writeQueue = writeQueue.then(async () => {
     try {
-      const supabase = getSupabaseClient();
-      if (supabase) {
+      const sql = getDbClient();
+      if (sql) {
         const date = utcDay();
-        const { error } = await supabase.rpc(SUPABASE_INCREMENT_RPC, {
-          p_date: date,
-          p_name: name,
-          p_value: value,
-        });
-        if (!error) return;
-        if (!isRpcNotDeployedError(error)) throw error;
-
-        // Best-effort fallback for environments where RPC has not been deployed yet.
-        // This path has a cross-instance TOCTOU race and should not be relied on for strict accuracy.
-        const { data: existing, error: existingError } = await supabase
-          .from(SUPABASE_TABLE)
-          .select("count")
-          .eq("date", date)
-          .eq("name", name)
-          .eq("value", value)
-          .maybeSingle<{ count: number }>();
-        if (existingError) throw existingError;
-
-        const nextCount = (existing?.count ?? 0) + 1;
-        const { error: upsertError } = await supabase
-          .from(SUPABASE_TABLE)
-          .upsert(
-            {
-              date,
-              name,
-              value,
-              count: nextCount,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "date,name,value" },
-          );
-        if (upsertError) throw upsertError;
+        // Atomic upsert: the increment happens inside a single statement, so it
+        // is correct across concurrent serverless instances without any RPC.
+        await sql.query(
+          `insert into ${ANALYTICS_TABLE} (date, name, value, count, updated_at)
+           values ($1, $2, $3, 1, now())
+           on conflict (date, name, value)
+           do update set
+             count = ${ANALYTICS_TABLE}.count + 1,
+             updated_at = now()`,
+          [date, name, value],
+        );
         return;
       }
 
@@ -310,7 +287,7 @@ type AnalyticsSummaryRow = AnalyticsAggregate & {
 
 type AnalyticsSummaryResponse = {
   updatedAt: string;
-  storage: "supabase" | "local-file";
+  storage: "neon" | "local-file";
   byEvent: EventSummary[];
   byDay: DailySummary[];
 };
@@ -359,46 +336,64 @@ const buildAnalyticsSummary = (
 
 export const readAnalyticsSummary =
   async (): Promise<AnalyticsSummaryResponse> => {
-    const supabase = getSupabaseClient();
-    if (supabase) {
+    const sql = getDbClient();
+    if (sql) {
       try {
-        const { data, error } = await supabase
-          .from(SUPABASE_TABLE)
-          .select("date,name,value,count,updated_at")
-          .order("date", { ascending: false })
-          .limit(ANALYTICS_QUERY_LIMIT)
-          .abortSignal(AbortSignal.timeout(8_000));
-        if (error) throw error;
+        // `to_char(date, ...)` guarantees a string key regardless of the
+        // driver's date parsing, matching the local-file aggregate shape.
+        // The 8-second AbortSignal keeps a slow database from exhausting
+        // Vercel's serverless budget — GET /api/analytics/summary must never 500.
+        const rawRows = (await sql.query(
+          `select to_char(date, 'YYYY-MM-DD') as date, name, value, count, updated_at
+           from ${ANALYTICS_TABLE}
+           order by date desc
+           limit $1`,
+          [ANALYTICS_QUERY_LIMIT],
+          { fetchOptions: { signal: AbortSignal.timeout(8_000) } },
+        )) as Array<Record<string, unknown>>;
 
-        const filteredOut = (data ?? []).filter(
-          (entry) => !isAnalyticsAggregate(entry),
-        );
-        if (filteredOut.length > 0) {
+        const normalized: AnalyticsSummaryRow[] = [];
+        let filteredCount = 0;
+        for (const raw of rawRows) {
+          const candidate = {
+            date: raw.date,
+            name: raw.name,
+            value: raw.value,
+            count:
+              typeof raw.count === "number" ? raw.count : Number(raw.count),
+            updated_at:
+              raw.updated_at == null
+                ? null
+                : new Date(raw.updated_at as string | Date).toISOString(),
+          };
+          if (isAnalyticsAggregate(candidate)) {
+            normalized.push(candidate as AnalyticsSummaryRow);
+          } else {
+            filteredCount += 1;
+          }
+        }
+        if (filteredCount > 0) {
           console.error("Filtered invalid analytics summary rows", {
-            table: SUPABASE_TABLE,
-            filteredCount: filteredOut.length,
-            sample: filteredOut.slice(0, 3),
+            table: ANALYTICS_TABLE,
+            filteredCount,
           });
         }
-        const rows = (data ?? []).filter((entry) =>
-          isAnalyticsAggregate(entry),
-        ) as AnalyticsSummaryRow[];
         const { updatedAtFromRows, byEvent, byDay } =
-          buildAnalyticsSummary(rows);
+          buildAnalyticsSummary(normalized);
         return {
           updatedAt: updatedAtFromRows,
-          storage: "supabase",
+          storage: "neon",
           byEvent,
           byDay,
         };
       } catch (err) {
-        console.error("Analytics Supabase query failed — returning empty summary", {
-          table: SUPABASE_TABLE,
+        console.error("Analytics database query failed — returning empty summary", {
+          table: ANALYTICS_TABLE,
           error: err,
         });
         return {
           updatedAt: new Date(0).toISOString(),
-          storage: "supabase",
+          storage: "neon",
           byEvent: [],
           byDay: [],
         };

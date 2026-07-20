@@ -22,7 +22,7 @@ export type DaySummary = {
 
 export type AnalyticsSummary = {
   updatedAt: string;
-  storage: "supabase" | "local-file";
+  storage: "neon" | "local-file";
   byEvent: EventSummary[];
   byDay: DaySummary[];
 };

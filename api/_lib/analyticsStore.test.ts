@@ -12,9 +12,8 @@ const loadAnalyticsStore = async (
 ): Promise<AnalyticsStoreModule> => {
   vi.resetModules();
   process.env.ANALYTICS_FILE = analyticsFilePath;
-  process.env.SUPABASE_URL = '';
-  process.env.SUPABASE_SECRET_KEY = '';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = '';
+  process.env.DATABASE_URL = '';
+  process.env.POSTGRES_URL = '';
   process.env.VERCEL = '';
   return import('./analyticsStore');
 };

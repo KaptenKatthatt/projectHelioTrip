@@ -147,7 +147,7 @@ The analytics dashboard shows:
 - event totals grouped by event type
 - top values per event (for example selected planet / constellation / locale)
 - daily totals (last days)
-- active storage source (`Supabase` or `Local file fallback`)
+- active storage source (`Neon` or `Local file fallback`)
 
 #### Protecting the summary endpoint
 
@@ -181,26 +181,24 @@ If the admin page shows errors such as “API not found”, verify that server r
 
 When the app is deployed on Vercel, [@vercel/analytics](https://vercel.com/docs/analytics) and [@vercel/speed-insights](https://vercel.com/docs/speed-insights) are enabled in `App.tsx`. That is separate from the custom event pipeline above; see Vercel’s documentation for what they collect.
 
-### Persist custom analytics on Supabase (free)
+### Persist custom analytics on Neon (free)
 
 By default, custom analytics are stored in a local file (or `/tmp` on serverless platforms like Vercel, where data is lost between function invocations).
-To persist data, connect Supabase:
+To persist data, connect a Postgres database. [Neon](https://neon.com) is recommended because its free tier never pauses the project — its compute auto-suspends when idle and wakes automatically on the next query, so there is nothing to keep alive.
 
-1. Create a Supabase project (free tier).
-2. Run `supabase/analytics_events_daily.sql` in Supabase SQL editor.
+1. Create a Neon project (free tier) and copy the connection string from the dashboard.
+2. Run `db/analytics_events_daily.sql` in the Neon SQL editor (plain Postgres — any Postgres provider works).
 3. Add environment variables in Vercel (Production + Preview):
-   - `SUPABASE_URL`
-   - `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`; both are read by the server)
-   - optional `ANALYTICS_SUPABASE_TABLE` (default `analytics_events_daily`)
-   - optional `ANALYTICS_SUPABASE_INCREMENT_RPC` (default `increment_analytics_event`)
+   - `DATABASE_URL` — the Neon connection string (also accepted as `POSTGRES_URL`, which the Vercel–Neon integration sets automatically)
+   - optional `ANALYTICS_DB_TABLE` (default `analytics_events_daily`)
    - **`ANALYTICS_ADMIN_PASSWORD_BCRYPT`** and **`ADMIN_SESSION_SECRET`** (recommended; see “Protecting the summary endpoint”), **or** legacy **`ANALYTICS_ADMIN_TOKEN`**
 4. Redeploy.
 
-After that, `/api/analytics/event` writes to Supabase and `/admin/analytics` reads from Supabase.
+After that, `/api/analytics/event` writes to Neon and `/admin/analytics` reads from Neon.
 
-Without Supabase on Vercel, aggregates live under `/tmp` inside the serverless runtime and are **not durable** across invocations — configure Supabase for production analytics.
+Without a database on Vercel, aggregates live under `/tmp` inside the serverless runtime and are **not durable** across invocations — configure `DATABASE_URL` for production analytics.
 
-Security note: `POST /api/analytics/event` is a write endpoint that stores aggregated analytics in Supabase (when configured). Keep `GET /api/analytics/summary` protected in production using login + session cookie and/or `ANALYTICS_ADMIN_TOKEN` as described above.
+Security note: `POST /api/analytics/event` is a write endpoint that stores aggregated analytics in the database (when configured). Keep `GET /api/analytics/summary` protected in production using login + session cookie and/or `ANALYTICS_ADMIN_TOKEN` as described above.
 
 ---
 
