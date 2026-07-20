@@ -151,8 +151,8 @@ function applyMoonSeamlessShader(shader: THREE.WebGLProgramParametersWithUniform
 
 export const MoonTerrain = () => {
   const [rawA, rawB] = useTexture([
-    '/moon_texture.png',
-    '/moon-texture2.png',
+    '/moon_texture.webp',
+    '/moon-texture2.webp',
   ]);
 
   const groundTexture = useMemo(() => {

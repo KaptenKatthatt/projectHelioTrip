@@ -167,7 +167,7 @@ const CameraZoomController = ({
 };
 
 const Terrain = () => {
-  const rawGroundTexture = useTexture('/textures/mars_surface.png');
+  const rawGroundTexture = useTexture('/textures/mars_surface.webp');
   const groundTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
     texture.wrapS = THREE.RepeatWrapping;
