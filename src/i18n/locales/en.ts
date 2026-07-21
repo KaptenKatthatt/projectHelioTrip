@@ -37,7 +37,6 @@ export const en: Translation = {
     distanceFromSun: 'Distance from Sun',
     distanceFromEarth: 'Distance from Earth',
     orbitPeriodAroundSun: 'Orbital period around Sun',
-    orbitPeriodAroundEarth: 'Orbital period around Earth',
     orbitPeriodAroundPlanet: (planet: string) => `Orbital period around ${planet}`,
     unitDays: 'days',
     unitHour: 'hour',

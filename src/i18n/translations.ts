@@ -23,7 +23,6 @@ export type Translation = {
     distanceFromSun: string;
     distanceFromEarth: string;
     orbitPeriodAroundSun: string;
-    orbitPeriodAroundEarth: string;
     orbitPeriodAroundPlanet: (planet: string) => string;
     unitDays: string;
     unitHour: string;

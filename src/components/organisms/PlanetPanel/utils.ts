@@ -11,7 +11,7 @@ import { getLivePosition } from "../../../lib/positionsBus";
 import type { BodyId } from "../../../lib/bodies";
 import type { SatelliteId } from "../../../lib/satellites";
 import { getBody } from "../../../lib/bodies";
-import { MOON_ORBITAL_ELEMENTS, PLANET_ORBITAL_ELEMENTS } from "../../../lib/orbitalElements";
+import { PLANET_ORBITAL_ELEMENTS } from "../../../lib/orbitalElements";
 import type { Translation } from "../../../i18n/translations";
 
 export type Row = {
@@ -86,7 +86,7 @@ const formatOrbitPeriod = (
   return parts.join(" ");
 };
 
-const SATELLITE_PERIOD_HOURS: Partial<Record<SatelliteId, number>> = {
+const SATELLITE_PERIOD_HOURS: Record<SatelliteId, number> = {
   iss: 92 / 60,
   sputnik: 96.2 / 60,
 };
@@ -133,21 +133,43 @@ export const buildPlanetInfoRows = (
     ? distanceToEarthKm * KM_TO_MILES
     : distanceToEarthKm;
 
-  const orbitalPeriodDays =
+  const formatOrbitDays = (days: number): string =>
+    formatOrbitPeriod(days, locale, orbitPeriodFormatter, orbitPeriodUnit);
+
+  const planetOrbitalPeriodDays =
     body.kind === "planet"
       ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
-      : body.kind === "moon"
-        ? MOON_ORBITAL_ELEMENTS[body.def.id]?.periodDays
-        : undefined;
-  const satelliteOrbitalPeriodHours =
-    body.kind === "satellite"
-      ? SATELLITE_PERIOD_HOURS[body.def.id as SatelliteId]
       : undefined;
-
   const hasLongOrbitPeriod =
-    satelliteOrbitalPeriodHours === undefined &&
-    orbitalPeriodDays !== undefined &&
-    orbitalPeriodDays > 365;
+    planetOrbitalPeriodDays !== undefined && planetOrbitalPeriodDays > 365;
+
+  const periodRow = ((): Row => {
+    switch (body.kind) {
+      case "planet":
+        return {
+          label: t.ui.orbitPeriodAroundSun,
+          value:
+            planetOrbitalPeriodDays !== undefined
+              ? formatOrbitDays(planetOrbitalPeriodDays)
+              : "—",
+        };
+      case "moon":
+        // Tidally locked (see MoonDefinition.rotationPeriodHours), so the
+        // rotation period equals the orbital period around the parent;
+        // abs() handles retrograde moons like Triton.
+        return {
+          label: t.ui.orbitPeriodAroundPlanet(planetName(body.def.parent)),
+          value: formatOrbitDays(Math.abs(body.def.rotationPeriodHours) / 24),
+        };
+      case "satellite": {
+        const hours = SATELLITE_PERIOD_HOURS[body.def.id];
+        return {
+          label: t.ui.orbitPeriodAroundPlanet(planetName(body.def.parent)),
+          value: `${orbitHoursFormatter.format(hours)} ${getHoursUnit(hours)}`,
+        };
+      }
+    }
+  })();
 
   const radiusScale = body.def.radius;
 
@@ -160,25 +182,7 @@ export const buildPlanetInfoRows = (
     label: t.ui.distanceFromEarth,
     value: `${distanceFormatter.format(displayDistanceToEarth)} ${distanceUnit}`,
   });
-  rows.push({
-    label:
-      satelliteOrbitalPeriodHours !== undefined
-        ? t.ui.orbitPeriodAroundEarth
-        : body.kind === "moon"
-          ? t.ui.orbitPeriodAroundPlanet(planetName(body.def.parent))
-          : t.ui.orbitPeriodAroundSun,
-    value:
-      satelliteOrbitalPeriodHours !== undefined
-        ? `${orbitHoursFormatter.format(satelliteOrbitalPeriodHours)} ${getHoursUnit(satelliteOrbitalPeriodHours)}`
-        : orbitalPeriodDays !== undefined
-          ? formatOrbitPeriod(
-              orbitalPeriodDays,
-              locale,
-              orbitPeriodFormatter,
-              orbitPeriodUnit,
-            )
-          : "—",
-  });
+  rows.push(periodRow);
   rows.push({
     label: t.ui.circumferenceRelativeToEarth,
     value: `${planetName("earth")} x ${ratioFormatter.format(radiusScale)}`,
