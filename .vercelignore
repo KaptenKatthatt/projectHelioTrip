@@ -10,3 +10,10 @@ public/moon-texture2.png
 # Unused high-res ISS source asset pack (88MB). The app renders the separate
 # International_Space_Station_(ISS)_(A).glb at the repo's public root.
 public/International Space Station (ISS) (C) (High Res)/
+
+# Draco/uncompressed GLB authoring sources; the app loads the .meshopt.glb
+# outputs from scripts/compress-models.ts (bundled decoder, no CDN WASM).
+public/Mars 2020 Perseverance Rover.glb
+public/Apollo Lunar Module.glb
+public/sputnik_cleaned.glb
+public/International_Space_Station_(ISS)_(A).glb

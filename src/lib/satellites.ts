@@ -50,7 +50,7 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
     inclination: 51.6 * DEG,
     ascendingNode: 0,
     phase: 0,
-    glbPath: '/International_Space_Station_(ISS)_(A).glb',
+    glbPath: '/International_Space_Station_(ISS)_(A).meshopt.glb',
     glbScale: 0.005,
   },
   {
@@ -64,7 +64,7 @@ export const SATELLITES: readonly SatelliteDefinition[] = [
     yOffset: 1.2,
     ascendingNode: Math.PI / 2,
     phase: Math.PI,
-    glbPath: '/sputnik_cleaned.glb',
+    glbPath: '/sputnik_cleaned.meshopt.glb',
     glbScale: 0.02,
   },
 ];
