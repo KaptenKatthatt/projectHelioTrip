@@ -10,6 +10,7 @@ import { useStore } from '../../store/useStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { MoonLandingScene } from './MoonSurface/MoonLandingScene';
 import { FactSlideshow } from './MoonSurface/FactSlideshow';
+import { MOON_SURFACE_BG_CLASS } from './surfaceBackgrounds';
 
 export const MoonSurface = () => {
   const { t } = useTranslation();
@@ -21,7 +22,9 @@ export const MoonSurface = () => {
   if (!isLandedOnMoon) return null;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#000310]">
+    <div
+      className={`pointer-events-auto fixed inset-0 z-200 flex flex-col ${MOON_SURFACE_BG_CLASS}`}
+    >
       {/* 3D Scene */}
       <div className="absolute inset-0">
         <MoonLandingScene

@@ -1,9 +1,8 @@
+# Attributions
+
 ## Third-party assets
 
-### Milky Way sky texture
-
-- File: `public/textures/milky-way-8k.jpg`
-- Source: https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_8k_stars_milky_way.jpg
-- Author: Solar System Scope
-- License: Creative Commons Attribution 4.0 International (CC BY 4.0)
-- License URL: https://creativecommons.org/licenses/by/4.0/
+No third-party assets currently require attribution. The Milky Way sky
+texture (CC BY 4.0, Solar System Scope) was removed together with the unused
+`public/textures/milky-way-8k.jpg` asset; restore its attribution here if the
+texture is ever reintroduced.

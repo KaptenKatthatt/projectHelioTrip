@@ -1,0 +1,12 @@
+# Authoring sources kept in git but excluded from the deploy.
+# The app loads the .webp siblings of these rasters (see src/lib/textures.ts,
+# MoonTerrain.tsx, MarsSurface.tsx); the JPG/PNG originals only feed the
+# regeneration scripts (npm run textures / textures:surface).
+public/textures/**/*.jpg
+public/textures/**/*.png
+public/moon_texture.png
+public/moon-texture2.png
+
+# Unused high-res ISS source asset pack (88MB). The app renders the separate
+# International_Space_Station_(ISS)_(A).glb at the repo's public root.
+public/International Space Station (ISS) (C) (High Res)/

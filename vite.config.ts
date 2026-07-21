@@ -1,6 +1,10 @@
+import { createRequire } from 'node:module';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+const require = createRequire(import.meta.url);
 
 const API_PORT = process.env.API_PORT ?? '3001';
 const NODE_MODULES_SEGMENT = 'node_modules';
@@ -101,8 +105,37 @@ export const resolveDreiChunk = (id: string): string => {
   return 'vendor-drei-misc';
 };
 
+/**
+ * recharts' direct dependencies, read from its package.json so the list
+ * cannot rot when recharts changes its dependency tree — a hand-copied list
+ * would silently leak new transitive deps into the eager entry graph.
+ */
+const RECHARTS_DEPS: readonly string[] = Object.keys(
+  (
+    require('recharts/package.json') as {
+      dependencies?: Record<string, string>;
+    }
+  ).dependencies ?? {},
+);
+
+/**
+ * Libraries reachable only from the lazy /admin/analytics chunk. Left out of
+ * every named group (including the vendor-misc catch-all) so Rolldown places
+ * them in the async admin chunk instead of the eager entry graph. Forcing
+ * them into a named group makes Rolldown hoist shared CJS wrappers (e.g.
+ * react/jsx-runtime) into that group, dragging it back into the eager graph.
+ * `/d3-` covers victory-vendor's second-level d3 packages.
+ */
+const isAdminOnlyDep = (id: string): boolean =>
+  id.includes('@clerk') ||
+  id.includes('/recharts/') ||
+  id.includes('/d3-') ||
+  RECHARTS_DEPS.some((dep) => id.includes(`/${dep}/`));
+
 export const resolveManualChunk = (id: string): string | undefined => {
   if (!id.includes(NODE_MODULES_SEGMENT)) return undefined;
+
+  if (isAdminOnlyDep(id)) return undefined;
 
   if (id.includes('@react-three/drei')) return resolveDreiChunk(id);
 
@@ -165,6 +198,87 @@ export default defineConfig(({ mode }) => {
             .replace('__FB_APP_ID_META__', facebookAppIdMeta);
         },
       },
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: {
+          name: 'HelioTrip',
+          short_name: 'HelioTrip',
+          description:
+            'Fly through the solar system in first-person 3D. Edutainment for all ages: planets, moons, orbits, and constellations — UI in English and Swedish. Works on desktop and mobile.',
+          id: '/',
+          start_url: '/',
+          display: 'standalone',
+          orientation: 'any',
+          theme_color: '#0b1020',
+          background_color: '#0b1020',
+          lang: 'en',
+          categories: ['education'],
+          icons: [
+            { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+            {
+              src: '/pwa-maskable-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+          ],
+        },
+        workbox: {
+          // Precache the app shell only; the heavy media (textures, GLB
+          // models) is runtime-cached on first use instead. The admin chunk
+          // is excluded too: it is dead weight for every non-admin install,
+          // and the admin route needs the network anyway (Clerk + no-store
+          // analytics API).
+          globPatterns: [
+            '**/*.{js,css,html,svg}',
+            'pwa-*.png',
+            'apple-touch-icon.png',
+          ],
+          globIgnores: [
+            '**/node_modules/**',
+            'International*/**',
+            '**/AdminRoot-*.js',
+          ],
+          // vendor-three exceeds Workbox's 2MB precache default.
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+          navigateFallback: '/index.html',
+          navigateFallbackDenylist: [/^\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin &&
+                (url.pathname.startsWith('/textures/') ||
+                  /\.(webp|png|jpg)$/.test(url.pathname)),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'heliotrip-textures',
+                expiration: {
+                  maxEntries: 150,
+                  maxAgeSeconds: 30 * 24 * 3600,
+                },
+                // Same-origin only, so opaque responses (status 0) cannot occur.
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            {
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && url.pathname.endsWith('.glb'),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'heliotrip-models',
+                expiration: {
+                  maxEntries: 12,
+                  maxAgeSeconds: 30 * 24 * 3600,
+                },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            // No /api/ route on purpose: analytics stays network-only and
+            // already degrades gracefully offline.
+          ],
+        },
+      }),
     ],
     build: {
       rolldownOptions: {

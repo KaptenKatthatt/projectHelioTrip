@@ -20,6 +20,8 @@
     "fallow:json": "npx fallow --format json",
     "perf:baseline": "node scripts/perf-baseline.mjs",
     "textures": "tsx scripts/download-textures.ts",
+    "textures:surface": "tsx scripts/optimize-surface-textures.ts",
+    "icons:pwa": "tsx scripts/generate-pwa-icons.ts",
     "elements": "tsx scripts/generate-orbital-elements.ts",
     "preview": "vite preview",
     "ai:export": "tsx scripts/export-ai-setup.ts",
@@ -75,6 +77,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.9",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.5"
   }
 }

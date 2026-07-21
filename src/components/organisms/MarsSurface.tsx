@@ -11,6 +11,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { MARS_SURFACE_BG_CLASS } from './surfaceBackgrounds';
 import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
 
@@ -167,7 +168,7 @@ const CameraZoomController = ({
 };
 
 const Terrain = () => {
-  const rawGroundTexture = useTexture('/textures/mars_surface.png');
+  const rawGroundTexture = useTexture('/textures/mars_surface.webp');
   const groundTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
     texture.wrapS = THREE.RepeatWrapping;
@@ -214,7 +215,9 @@ export const MarsSurface = () => {
   if (!isLanded) return null;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-200 flex flex-col bg-[#1a0a05]">
+    <div
+      className={`pointer-events-auto fixed inset-0 z-200 flex flex-col ${MARS_SURFACE_BG_CLASS}`}
+    >
       {/* 3D Scene */}
       <div className="absolute inset-0">
         <MarsRoverScene
