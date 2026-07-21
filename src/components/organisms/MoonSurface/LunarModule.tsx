@@ -1,7 +1,7 @@
 import { useGLTF, ContactShadows } from '@react-three/drei';
 
 export const LunarModule = () => {
-  const { scene } = useGLTF('/Apollo%20Lunar%20Module.glb');
+  const { scene } = useGLTF('/Apollo%20Lunar%20Module.meshopt.glb');
 
   return (
     <group position={[0, 0, 0]}>

@@ -77,7 +77,7 @@ const buildMarsTerrainGeometryAndRocks = (): {
 };
 
 const Rover = () => {
-  const { scene } = useGLTF('/Mars%202020%20Perseverance%20Rover.glb');
+  const { scene } = useGLTF('/Mars%202020%20Perseverance%20Rover.meshopt.glb');
   return (
     <group position={[0, 0, 0]}>
       <primitive object={scene} scale={1.5} />

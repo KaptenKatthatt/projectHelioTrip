@@ -4,7 +4,7 @@ import { SATELLITES, getSatellite } from './satellites';
 describe('SATELLITES', () => {
   it('ISS entry has a glbPath pointing to the renamed file', () => {
     const iss = getSatellite('iss');
-    expect(iss?.glbPath).toBe('/International_Space_Station_(ISS)_(A).glb');
+    expect(iss?.glbPath).toBe('/International_Space_Station_(ISS)_(A).meshopt.glb');
   });
 
   it('glbPath is optional — a satellite without it still type-checks', () => {
