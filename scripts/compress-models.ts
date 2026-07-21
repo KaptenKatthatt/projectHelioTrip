@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const PUBLIC_DIR = resolve(ROOT, 'public');
+// Direct .bin paths instead of npx: no per-call resolution overhead, and
+// the pinned devDependency versions always run (npx could pick up a
+// globally installed variant with different quantization behavior).
+const GLTF_TRANSFORM_BIN = resolve(ROOT, 'node_modules', '.bin', 'gltf-transform');
+const GLTFPACK_BIN = resolve(ROOT, 'node_modules', '.bin', 'gltfpack');
 
 /**
  * GLB models shipped to the app. The originals stay in git as authoring
@@ -50,13 +55,14 @@ const main = (): void => {
         continue;
       }
       const decoded = join(workDir, 'decoded.glb');
-      execFileSync('npx', ['gltf-transform', 'copy', input, decoded], {
-        stdio: 'pipe',
-      });
+      // stderr is inherited so the tools' own diagnostics (unsupported
+      // extension, bad geometry, quantization warnings) reach the console
+      // instead of dying unread inside a captured buffer.
+      const stdio: Array<'ignore' | 'inherit'> = ['ignore', 'ignore', 'inherit'];
+      execFileSync(GLTF_TRANSFORM_BIN, ['copy', input, decoded], { stdio });
       execFileSync(
-        'npx',
+        GLTFPACK_BIN,
         [
-          'gltfpack',
           '-i', decoded,
           '-o', output,
           '-cc',
@@ -67,9 +73,8 @@ const main = (): void => {
           '-ke',
           '-ac',
         ],
-        { stdio: 'pipe' },
+        { stdio },
       );
-      rmSync(decoded, { force: true });
       console.log(
         `ok     ${toMeshoptPath(name)} (${kb(input)} -> ${kb(output)} KB)`,
       );

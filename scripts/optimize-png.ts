@@ -26,11 +26,23 @@ const TARGETS: readonly string[] = [
 const decodeRaw = (png: Buffer): Promise<Buffer> =>
   sharp(png).ensureAlpha().raw().toBuffer();
 
+/**
+ * Raw-RGBA comparison cannot see color-profile loss: raw decoding ignores
+ * the ICC profile, so a stripped profile would still compare "identical"
+ * while shifting rendered colors in color-managed browsers. Guard it
+ * separately.
+ */
+const iccFingerprint = async (png: Buffer): Promise<string | null> => {
+  const { icc } = await sharp(png).metadata();
+  return icc ? icc.toString('base64') : null;
+};
+
 const main = async (): Promise<void> => {
   for (const name of TARGETS) {
     const path = resolve(PUBLIC_DIR, name);
     const original = await readFile(path);
     const candidate = await sharp(original)
+      .withMetadata()
       .png({ compressionLevel: 9, effort: 10, palette: false })
       .toBuffer();
 
@@ -38,12 +50,16 @@ const main = async (): Promise<void> => {
       console.log(`skip   ${name} (already optimal)`);
       continue;
     }
-    const [rawA, rawB] = await Promise.all([
+    const [rawA, rawB, iccA, iccB] = await Promise.all([
       decodeRaw(original),
       decodeRaw(candidate),
+      iccFingerprint(original),
+      iccFingerprint(candidate),
     ]);
-    if (!rawA.equals(rawB)) {
-      console.error(`fail   ${name}: pixels differ after re-encode, keeping original`);
+    if (!rawA.equals(rawB) || iccA !== iccB) {
+      console.error(
+        `fail   ${name}: ${iccA !== iccB ? 'ICC profile' : 'pixels'} differ after re-encode, keeping original`,
+      );
       process.exitCode = 1;
       continue;
     }

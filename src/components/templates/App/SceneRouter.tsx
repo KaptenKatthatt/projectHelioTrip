@@ -9,8 +9,12 @@ import { Suspense, lazy, memo } from "react";
 import { SceneErrorBoundary } from "../SceneErrorBoundary";
 import { useStore } from "../../../store/useStore";
 
+// Single import site so the module-eval prefetch below and LazyScene are
+// guaranteed to share one module-cache entry.
+const loadScene = () => import("../../../scene/Scene");
+
 const LazyScene = lazy(async () => {
-  const { Scene } = await import("../../../scene/Scene");
+  const { Scene } = await loadScene();
   return {
     default: (props: {
       readonly onSceneReady?: () => void;
@@ -21,8 +25,10 @@ const LazyScene = lazy(async () => {
 
 // Start fetching the scene chunk at module evaluation, in parallel with
 // React mounting, instead of waiting for the first render to trigger the
-// lazy import. The module cache dedupes this with LazyScene's own import.
-void import("../../../scene/Scene");
+// lazy import. Failures are deliberately swallowed here: the guarded
+// LazyScene import retries the same chunk and surfaces errors through
+// SceneErrorBoundary, so this must not emit an unhandled rejection.
+void loadScene().catch(() => {});
 
 interface SceneRouterProps {
   sceneMountKey: number;
