@@ -19,6 +19,11 @@ const LazyScene = lazy(async () => {
   };
 });
 
+// Start fetching the scene chunk at module evaluation, in parallel with
+// React mounting, instead of waiting for the first render to trigger the
+// lazy import. The module cache dedupes this with LazyScene's own import.
+void import("../../../scene/Scene");
+
 interface SceneRouterProps {
   sceneMountKey: number;
   handleSceneReady: () => void;
