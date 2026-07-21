@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -9,13 +9,14 @@ const SOURCE_SVG = resolve(PUBLIC_DIR, 'saturn-favicon.svg');
 const SOURCE_VIEWBOX = 64;
 const BACKGROUND = '#0b1020';
 
+const svgSource = await readFile(SOURCE_SVG);
+
 /** Rasterize the source SVG to a square PNG buffer of the given size. */
-const rasterize = async (size: number): Promise<Buffer> => {
-  const svg = await readFile(SOURCE_SVG);
+const rasterize = (size: number): Promise<Buffer> => {
   // Scale via density so librsvg renders at full resolution instead of
   // upscaling a 64px bitmap.
   const density = (72 * size) / SOURCE_VIEWBOX;
-  return sharp(svg, { density }).resize(size, size).png().toBuffer();
+  return sharp(svgSource, { density }).resize(size, size).png().toBuffer();
 };
 
 /** Center the icon on an opaque canvas, scaled to fit the safe zone. */
@@ -38,8 +39,8 @@ const composeOnCanvas = async (
 };
 
 const writeIcon = async (name: string, payload: Buffer): Promise<void> => {
-  const path = resolve(PUBLIC_DIR, name);
-  await sharp(payload).toFile(path);
+  // The payload is already an encoded PNG; write it as-is.
+  await writeFile(resolve(PUBLIC_DIR, name), payload);
   console.log(`ok     ${name}`);
 };
 

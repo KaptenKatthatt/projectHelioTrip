@@ -15,6 +15,7 @@ import { StarField } from './StarField';
 import { EarthSphere } from './EarthSphere';
 import { LunarModule } from './LunarModule';
 import { MoonTerrain } from './MoonTerrain';
+import { MOON_SCENE_BG_COLOR } from '../surfaceBackgrounds';
 
 export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
@@ -37,7 +38,7 @@ export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () 
         />
 
         {/* No <Sky> — Moon has no atmosphere */}
-        <color attach="background" args={['#000310']} />
+        <color attach="background" args={[MOON_SCENE_BG_COLOR]} />
         <ambientLight intensity={0.15} color="#0a0f2a" />
         <directionalLight
           position={[80, 60, 20]}

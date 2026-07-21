@@ -8,12 +8,15 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
  * and the dashboard never enter the main app's eager bundle.
  */
 export const AdminRoot = () => {
+  // Shared shell so the mock-auth and real-auth paths cannot drift apart.
+  const page = (
+    <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
+      <AdminAnalyticsPage />
+    </div>
+  );
+
   if (window.location.search.includes('mock_auth=true')) {
-    return (
-      <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
-        <AdminAnalyticsPage />
-      </div>
-    );
+    return page;
   }
 
   if (!PUBLISHABLE_KEY) {
@@ -27,9 +30,7 @@ export const AdminRoot = () => {
       signInFallbackRedirectUrl="/admin/analytics"
       signUpFallbackRedirectUrl="/admin/analytics"
     >
-      <div className="fixed inset-0 overflow-y-auto bg-[hsl(232_44%_6%)] text-[hsl(223_25%_91%)]">
-        <AdminAnalyticsPage />
-      </div>
+      {page}
     </ClerkProvider>
   );
 };

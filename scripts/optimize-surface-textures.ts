@@ -8,14 +8,19 @@ const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const PUBLIC_DIR = resolve(ROOT, 'public');
 
 /**
- * Hand-placed surface textures that ship as large PNGs. The app loads the
- * `.webp` siblings emitted here; the PNGs stay in git as authoring sources
- * (they are not re-downloadable, unlike the planet maps).
+ * Hand-placed surface textures at the public root that ship as large PNGs.
+ * The app loads the `.webp` siblings emitted here; the PNGs stay in git as
+ * authoring sources (they are not re-downloadable, unlike the planet maps).
+ *
+ * Only public-root rasters belong in this list. Anything under
+ * public/textures/ is owned by scripts/download-textures.ts
+ * (ensureWebpForAllRasters), which walks that folder itself — listing a file
+ * in both scripts would make the committed .webp depend on which script ran
+ * first, since both skip when the sibling already exists.
  */
 const SURFACE_TEXTURES: readonly string[] = [
   'moon_texture.png',
   'moon-texture2.png',
-  'textures/mars_surface.png',
 ];
 
 const rasterToWebpPath = (rasterPath: string): string =>
@@ -28,9 +33,11 @@ const writeWebpSibling = async (rasterPath: string): Promise<void> => {
     return;
   }
   const payload = await readFile(rasterPath);
-  // Tiled terrain textures are viewed close-up; quality 90 keeps the
-  // MoonTerrain canvas blend artifact-free while cutting ~85-90% of the size.
-  await sharp(payload).webp({ quality: 90, effort: 6 }).toFile(webpPath);
+  // Same settings as download-textures.ts uses for PNG sources, so every
+  // committed .webp in the repo is encoded identically.
+  await sharp(payload)
+    .webp({ quality: 96, alphaQuality: 100, effort: 5 })
+    .toFile(webpPath);
   const { size } = await stat(webpPath);
   console.log(
     `ok     ${relative(PUBLIC_DIR, webpPath)} (${(size / 1024).toFixed(0)} KB)`,

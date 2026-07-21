@@ -1,8 +1,9 @@
-import { StrictMode, Suspense, lazy } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import './index.css';
 import { App } from './App';
+import { lazyWithRecovery } from './lib/lazyImport';
 
 registerSW({ immediate: true });
 
@@ -12,8 +13,7 @@ if (!rootElement) {
 }
 
 // Lazy so Clerk + recharts load only on the admin route.
-// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-reloaded
-const AdminRoot = lazy(() =>
+const AdminRoot = lazyWithRecovery('admin', () =>
   import('./admin/AdminRoot').then((m) => ({ default: m.AdminRoot })),
 );
 

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { HudControlRailRegion } from './hud/HudControlRailRegion';
 import { HudDetailRegion } from './hud/HudDetailRegion';
 import { HudMobileNavRegion } from './hud/HudMobileNavRegion';
@@ -10,13 +10,18 @@ import { CameraTool } from '../molecules/CameraTool';
 import { LabOverlay } from '../organisms/LabOverlay';
 import { useHudLogic } from './hud/useHudLogic';
 import { useStore } from '../../store/useStore';
+import { lazyWithRecovery } from '../../lib/lazyImport';
+import {
+  MARS_SURFACE_BG_CLASS,
+  MOON_SURFACE_BG_CLASS,
+} from '../organisms/surfaceBackgrounds';
 
 // Lazy so the landing scenes (three.js terrain, GLB models) stay out of the
 // eager bundle; they are only reachable after landing on Mars or the Moon.
-const MarsSurface = lazy(() =>
+const MarsSurface = lazyWithRecovery('mars-surface', () =>
   import('../organisms/MarsSurface').then((m) => ({ default: m.MarsSurface })),
 );
-const MoonSurface = lazy(() =>
+const MoonSurface = lazyWithRecovery('moon-surface', () =>
   import('../organisms/MoonSurface').then((m) => ({ default: m.MoonSurface })),
 );
 
@@ -49,21 +54,23 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
 
   const isLanded = useStore((s) => s.isLanded);
   const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
-  const marsTransitionState = useStore((s) => s.marsTransitionState);
-  const moonTransitionState = useStore((s) => s.moonTransitionState);
 
-  // Warm each surface chunk during the landing transition so it is ready
-  // by touchdown.
+  // Prefetch the surface chunks in idle time so they are already cached when
+  // a landing starts. The Moon landing flips isLandedOnMoon only 1500ms after
+  // the transition begins — too short a window to fetch the chunk on a cold
+  // cache, so warming at transition start is not enough.
   useEffect(() => {
-    if (marsTransitionState === 'landing') {
+    const warm = () => {
       void import('../organisms/MarsSurface');
-    }
-  }, [marsTransitionState]);
-  useEffect(() => {
-    if (moonTransitionState === 'landing') {
       void import('../organisms/MoonSurface');
+    };
+    if (typeof requestIdleCallback !== 'undefined') {
+      const id = requestIdleCallback(warm, { timeout: 10000 });
+      return () => cancelIdleCallback(id);
     }
-  }, [moonTransitionState]);
+    const timer = setTimeout(warm, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div
@@ -132,7 +139,9 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
       {isLanded && (
         <Suspense
           fallback={
-            <div className="pointer-events-auto fixed inset-0 z-200 bg-[#1a0a05]" />
+            <div
+              className={`pointer-events-auto fixed inset-0 z-200 ${MARS_SURFACE_BG_CLASS}`}
+            />
           }
         >
           <MarsSurface />
@@ -141,7 +150,9 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
       {isLandedOnMoon && (
         <Suspense
           fallback={
-            <div className="pointer-events-auto fixed inset-0 z-200 bg-[#000310]" />
+            <div
+              className={`pointer-events-auto fixed inset-0 z-200 ${MOON_SURFACE_BG_CLASS}`}
+            />
           }
         >
           <MoonSurface />
