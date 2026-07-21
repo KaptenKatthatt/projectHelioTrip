@@ -1,13 +1,9 @@
-import { createRequire } from 'node:module';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const require = createRequire(import.meta.url);
-
 const API_PORT = process.env.API_PORT ?? '3001';
-const NODE_MODULES_SEGMENT = 'node_modules';
 const trimTrailingSlash = (value: string): string => value.replace(/\/$/, '');
 
 export const normalizeHostUrl = (raw: string | undefined): string => {
@@ -84,88 +80,6 @@ export function resolvePublicSiteOrigin(
 
   return '';
 }
-
-export const resolveDreiChunk = (id: string): string => {
-  if (id.includes('/core/')) {
-    if (id.includes('/Stars')) return 'vendor-drei-stars';
-    if (id.includes('/OrbitControls') || id.includes('/PointerLockControls')) {
-      return 'vendor-drei-controls';
-    }
-    if (id.includes('/Html') || id.includes('/Line')) {
-      return 'vendor-drei-ui3d';
-    }
-    if (id.includes('/Texture') || id.includes('/useTexture')) {
-      return 'vendor-drei-textures';
-    }
-    return 'vendor-drei-core';
-  }
-  if (id.includes('/web/')) return 'vendor-drei-web';
-  if (id.includes('/helpers/')) return 'vendor-drei-helpers';
-  if (id.includes('/materials/')) return 'vendor-drei-materials';
-  return 'vendor-drei-misc';
-};
-
-/**
- * recharts' direct dependencies, read from its package.json so the list
- * cannot rot when recharts changes its dependency tree — a hand-copied list
- * would silently leak new transitive deps into the eager entry graph.
- */
-const RECHARTS_DEPS: readonly string[] = Object.keys(
-  (
-    require('recharts/package.json') as {
-      dependencies?: Record<string, string>;
-    }
-  ).dependencies ?? {},
-);
-
-/**
- * Libraries reachable only from the lazy /admin/analytics chunk. Left out of
- * every named group (including the vendor-misc catch-all) so Rolldown places
- * them in the async admin chunk instead of the eager entry graph. Forcing
- * them into a named group makes Rolldown hoist shared CJS wrappers (e.g.
- * react/jsx-runtime) into that group, dragging it back into the eager graph.
- * `/d3-` covers victory-vendor's second-level d3 packages.
- */
-const isAdminOnlyDep = (id: string): boolean =>
-  id.includes('@clerk') ||
-  id.includes('/recharts/') ||
-  id.includes('/d3-') ||
-  RECHARTS_DEPS.some((dep) => id.includes(`/${dep}/`));
-
-export const resolveManualChunk = (id: string): string | undefined => {
-  if (!id.includes(NODE_MODULES_SEGMENT)) return undefined;
-
-  if (isAdminOnlyDep(id)) return undefined;
-
-  if (id.includes('@react-three/drei')) return resolveDreiChunk(id);
-
-  const rules: Array<[(moduleId: string) => boolean, string]> = [
-    [(moduleId) => moduleId.includes('/three/'), 'vendor-three'],
-    [(moduleId) => moduleId.includes('@react-three/fiber'), 'vendor-r3f'],
-    [(moduleId) => moduleId.includes('/three-stdlib/'), 'vendor-stdlib'],
-    [
-      (moduleId) =>
-        moduleId.includes('@react-three/postprocessing') ||
-        moduleId.includes('/postprocessing/'),
-      'vendor-postfx',
-    ],
-    [(moduleId) => moduleId.includes('@react-spring/three'), 'vendor-spring3d'],
-    [
-      (moduleId) =>
-        moduleId.includes('/react/') ||
-        moduleId.includes('/react-dom/') ||
-        moduleId.includes('/zustand/'),
-      'vendor-react',
-    ],
-    [(moduleId) => moduleId.includes('/lucide-react/'), 'vendor-ui'],
-  ];
-
-  for (const [matches, chunk] of rules) {
-    if (matches(id)) return chunk;
-  }
-
-  return 'vendor-misc';
-};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -280,13 +194,12 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    build: {
-      rolldownOptions: {
-        output: {
-          manualChunks: resolveManualChunk,
-        },
-      },
-    },
+    // No manualChunks: Rolldown's default chunking splits per async
+    // boundary, which keeps lazy-only libraries (drei, postprocessing,
+    // Clerk, recharts) out of the eager modulepreload graph. Named vendor
+    // groups made Rolldown hoist shared helpers into them, dragging
+    // ~240KB gzip of lazy-only code into every first load.
+    build: {},
     server: {
       proxy: {
         '/api': {

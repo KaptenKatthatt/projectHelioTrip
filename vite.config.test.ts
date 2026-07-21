@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  normalizeHostUrl,
-  resolveDreiChunk,
-  resolveManualChunk,
-  resolvePublicSiteOrigin,
-} from "./vite.config";
+import { normalizeHostUrl, resolvePublicSiteOrigin } from "./vite.config";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -32,29 +27,6 @@ describe("resolvePublicSiteOrigin", () => {
     expect(() => resolvePublicSiteOrigin("production", {})).toThrow(
       "Absolute site URL is required for og:image",
     );
-  });
-});
-
-describe("resolveManualChunk", () => {
-  it("returns undefined for non-node_modules ids", () => {
-    expect(resolveManualChunk("/src/main.tsx")).toBeUndefined();
-  });
-
-  it("routes react stack to vendor-react chunk", () => {
-    expect(resolveManualChunk("/node_modules/react-dom/index.js")).toBe(
-      "vendor-react",
-    );
-  });
-
-  it("routes drei controls to dedicated chunk", () => {
-    expect(
-      resolveManualChunk(
-        "/node_modules/@react-three/drei/core/PointerLockControls.js",
-      ),
-    ).toBe("vendor-drei-controls");
-    expect(
-      resolveDreiChunk("/node_modules/@react-three/drei/core/OrbitControls.js"),
-    ).toBe("vendor-drei-controls");
   });
 });
 
