@@ -11,7 +11,7 @@ import { getLivePosition } from "../../../lib/positionsBus";
 import type { BodyId } from "../../../lib/bodies";
 import type { SatelliteId } from "../../../lib/satellites";
 import { getBody } from "../../../lib/bodies";
-import { PLANET_ORBITAL_ELEMENTS } from "../../../lib/orbitalElements";
+import { MOON_ORBITAL_ELEMENTS, PLANET_ORBITAL_ELEMENTS } from "../../../lib/orbitalElements";
 import type { Translation } from "../../../i18n/translations";
 
 export type Row = {
@@ -136,7 +136,9 @@ export const buildPlanetInfoRows = (
   const orbitalPeriodDays =
     body.kind === "planet"
       ? PLANET_ORBITAL_ELEMENTS[body.def.id]?.periodDays
-      : PLANET_ORBITAL_ELEMENTS[body.def.parent]?.periodDays;
+      : body.kind === "moon"
+        ? MOON_ORBITAL_ELEMENTS[body.def.id]?.periodDays
+        : undefined;
   const satelliteOrbitalPeriodHours =
     body.kind === "satellite"
       ? SATELLITE_PERIOD_HOURS[body.def.id as SatelliteId]
@@ -162,7 +164,9 @@ export const buildPlanetInfoRows = (
     label:
       satelliteOrbitalPeriodHours !== undefined
         ? t.ui.orbitPeriodAroundEarth
-        : t.ui.orbitPeriodAroundSun,
+        : body.kind === "moon"
+          ? t.ui.orbitPeriodAroundPlanet(planetName(body.def.parent))
+          : t.ui.orbitPeriodAroundSun,
     value:
       satelliteOrbitalPeriodHours !== undefined
         ? `${orbitHoursFormatter.format(satelliteOrbitalPeriodHours)} ${getHoursUnit(satelliteOrbitalPeriodHours)}`

@@ -38,6 +38,7 @@ export const sv: Translation = {
     distanceFromEarth: 'Avstånd från Jorden',
     orbitPeriodAroundSun: 'Omloppstid runt Solen',
     orbitPeriodAroundEarth: 'Omloppstid runt Jorden',
+    orbitPeriodAroundPlanet: (planet: string) => `Omloppstid runt ${planet}`,
     unitDays: 'dygn',
     unitHour: 'timme',
     unitHours: 'timmar',
