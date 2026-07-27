@@ -9,6 +9,7 @@ import { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useStore } from '../../../store/useStore';
+import { CanvasCapture } from '../../../scene/CanvasCapture';
 import { CAMERA_SETTINGS } from './constants';
 import { CameraZoomController } from './CameraZoomController';
 import { StarField } from './StarField';
@@ -29,8 +30,12 @@ export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () 
     <Canvas
       shadows
       camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}
+      // Without this R3F uses the raw devicePixelRatio, so a 4K display
+      // rendered this shadowed terrain at DPR 3.
+      dpr={[1, 2]}
     >
       <Suspense fallback={null}>
+        <CanvasCapture />
         <CameraZoomController
           isFlyingIn={isFlyingIn}
           setIsFlyingIn={setIsFlyingIn}

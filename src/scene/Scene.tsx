@@ -75,7 +75,11 @@ type SceneProps = {
 };
 
 
-const SceneContent = () => {
+const SceneContent = ({
+  capturesScreenshots,
+}: {
+  readonly capturesScreenshots: boolean;
+}) => {
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
@@ -117,7 +121,7 @@ const SceneContent = () => {
       </Suspense>
 
       <TimeManager />
-      <CanvasCapture />
+      <CanvasCapture enabled={capturesScreenshots} />
       <PerformanceBaselineProbe />
       <OrbitLines />
       <Suspense fallback={null}>
@@ -188,6 +192,16 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
   const graphicsPreset = getGraphicsPreset();
   const dprCap = getCanvasDprCap(graphicsTier);
 
+  /**
+   * SceneRouter keeps this canvas mounted at `opacity: 0` behind the Mars and
+   * Moon surface scenes, so the solar system kept rendering full frames — two
+   * live WebGL contexts and two animation loops — underneath the heaviest
+   * scenes in the app, for pixels nobody can see.
+   */
+  const isLanded = useStore((s) => s.isLanded);
+  const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const isHiddenBehindSurfaceScene = isLanded || isLandedOnMoon;
+
   useEffect(() => {
     scheduleDeferredTexturePreloads();
   }, []);
@@ -217,9 +231,10 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
           preserveDrawingBuffer: false,
         }}
         dpr={dprCap}
+        frameloop={isHiddenBehindSurfaceScene ? "never" : "always"}
         onCreated={handleCanvasCreated}
       >
-        <SceneContent />
+        <SceneContent capturesScreenshots={!isHiddenBehindSurfaceScene} />
       </Canvas>
     </div>
   );
