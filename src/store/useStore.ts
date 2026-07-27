@@ -4,6 +4,7 @@ import type { BodyId } from '../lib/bodies';
 import { isLocale } from '../i18n/translations';
 import { analytics } from '../lib/analytics';
 import { daysBetweenDateKeys, todayDateKey } from '../lib/dateUtils';
+import { getSimulationTimeMs } from '../lib/simulationClock';
 import {
   sanitizeAchievements,
   sanitizeDiscoveredConstellations,
@@ -107,7 +108,7 @@ const trackShareLinkRestoreAnalytics = (snapshot: ShareLinkState, state: Store):
   analytics.shareLinkRestored(
     inferShareLinkContextType({
       bodyId: snapshot.bodyId,
-      simulationTimeMs: snapshot.simulationTimeMs ?? state.simulationTime.getTime(),
+      simulationTimeMs: snapshot.simulationTimeMs ?? getSimulationTimeMs(),
       timeScale: snapshot.timeScale ?? state.timeScale,
       gameMode: snapshot.gameMode ?? state.gameMode,
       missionId: snapshot.missionId,

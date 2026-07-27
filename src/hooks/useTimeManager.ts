@@ -20,6 +20,10 @@ import {
   setLiveSatelliteOffset,
 } from "../lib/positionsBus";
 import { AU_SCALE, MS_PER_DAY } from "../lib/constants";
+import {
+  getSimulationTimeMs,
+  setSimulationTimeMs,
+} from "../lib/simulationClock";
 import { type PhysicsState, stepPhysics } from "../lib/physicsLabEngine";
 
 const LAB_VELOCITY_EPS_DAYS = 0.001;
@@ -56,10 +60,8 @@ function seedGravityLabBodiesFromOrbitalEphemerides(
 }
 
 type SimulationClockState = {
-  simulationTime: Date;
   isPlaying: boolean;
   timeScale: number;
-  setSimulationTime: (time: Date) => void;
 };
 
 export const computeAdvancedSimulationMs = (
@@ -72,11 +74,17 @@ export const computeAdvancedSimulationMs = (
   return simulationTimeMs + delta * timeScale * MS_PER_DAY;
 };
 
+/**
+ * Advances the module-level clock. Deliberately does *not* touch the store:
+ * writing it here ran a synchronous `localStorage` write through the `persist`
+ * middleware on every frame. `syncSimulationTimeToStore` handles the rare
+ * moments when the store copy actually needs to catch up.
+ */
 export const advanceSimulationClock = (
   state: SimulationClockState,
   delta: number,
 ): number => {
-  const currentMs = state.simulationTime.getTime();
+  const currentMs = getSimulationTimeMs();
   const nextMs = computeAdvancedSimulationMs(
     currentMs,
     state.isPlaying,
@@ -84,9 +92,19 @@ export const advanceSimulationClock = (
     delta,
   );
   if (nextMs !== currentMs) {
-    state.setSimulationTime(new Date(nextMs));
+    setSimulationTimeMs(nextMs);
   }
   return nextMs;
+};
+
+/** Writes the live clock back to the store when it has drifted from it. */
+export const syncSimulationTimeToStore = (state: {
+  simulationTime: Date;
+  setSimulationTime: (time: Date) => void;
+}): void => {
+  const liveMs = getSimulationTimeMs();
+  if (state.simulationTime.getTime() === liveMs) return;
+  state.setSimulationTime(new Date(liveMs));
 };
 
 /**
@@ -105,12 +123,27 @@ export const useTimeManager = (): void => {
   const physicsStatesRef = useRef<Record<string, PhysicsState>>({});
   const lastLabModeRef = useRef<string>("explore");
   const lastLabResetRef = useRef<number>(0);
+  const wasAdvancingRef = useRef(false);
 
   useFrame((_state, delta) => {
     const store = useStore.getState();
     const isLab = store.gameMode === "lab";
     const currentMs = advanceSimulationClock(store, delta);
-    
+
+    /**
+     * Resynchronise the store copy the moment playback stops, so anything
+     * reading `simulationTime` off the store sees the time the user is
+     * actually looking at. One write per pause, not one per frame.
+     */
+    const isAdvancing = store.isPlaying && store.timeScale !== 0;
+    if (wasAdvancingRef.current && !isAdvancing) {
+      syncSimulationTimeToStore(store);
+    }
+    wasAdvancingRef.current = isAdvancing;
+
+    const timeChanged = lastProcessedMsRef.current !== currentMs;
+    if (timeChanged) lastProcessedMsRef.current = currentMs;
+
     // Reset or Initialize physics when entering lab mode OR when trigger increments
     const needsReset = (isLab && lastLabModeRef.current !== "lab") || 
                        (isLab && lastLabResetRef.current !== store.gravityLabResetTrigger);
@@ -140,21 +173,24 @@ export const useTimeManager = (): void => {
           -pState.pos.y * AU_SCALE,
         );
       }
-    } else {
-      // Standard Keplerian Path
-      // Only skip if time is identical AND we are not in lab mode
-      if (lastProcessedMsRef.current !== currentMs) {
-        lastProcessedMsRef.current = currentMs;
-        for (const planet of PLANETS) {
-          const el = PLANET_ORBITAL_ELEMENTS[planet.id];
-          if (!el) continue;
-          propagate(el, currentMs, planetScratch, AU_SCALE);
-          setLivePosition(planet.id, planetScratch.x, planetScratch.y, planetScratch.z);
-        }
+    } else if (timeChanged) {
+      // Standard Keplerian path; positions only change when time does.
+      for (const planet of PLANETS) {
+        const el = PLANET_ORBITAL_ELEMENTS[planet.id];
+        if (!el) continue;
+        propagate(el, currentMs, planetScratch, AU_SCALE);
+        setLivePosition(planet.id, planetScratch.x, planetScratch.y, planetScratch.z);
       }
     }
 
-    // Moons and Satellites always update (to avoid stutter if time steps are small)
+    /**
+     * Moons and satellites are pure functions of simulation time, so
+     * recomputing them while the clock is frozen produces identical values.
+     * Nineteen Kepler solves per frame were being thrown away whenever the
+     * simulation was paused.
+     */
+    if (!timeChanged) return;
+
     for (const moon of MOONS) {
       const el = MOON_ORBITAL_ELEMENTS[moon.id];
       if (!el) continue;
