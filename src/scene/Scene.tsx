@@ -29,6 +29,7 @@ import { AsteroidBelt } from "./AsteroidBelt";
 import { OrbitLines } from "./OrbitLines";
 import { MilkyWayBackground } from "./MilkyWayBackground";
 import { scheduleDeferredTexturePreloads } from "../lib/texturePreload";
+import { CanvasCapture } from "./CanvasCapture";
 import { PerformanceBaselineProbe } from "./PerformanceBaselineProbe";
 
 const LazyBodyPickers = lazy(async () => {
@@ -116,6 +117,7 @@ const SceneContent = () => {
       </Suspense>
 
       <TimeManager />
+      <CanvasCapture />
       <PerformanceBaselineProbe />
       <OrbitLines />
       <Suspense fallback={null}>
@@ -209,7 +211,10 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
           powerPreference: "high-performance",
           stencil: false,
           depth: true,
-          preserveDrawingBuffer: true,
+          // Screenshots are served from inside the render loop by
+          // <CanvasCapture />, so the driver can keep swapping buffers
+          // instead of preserving and copying one on every frame.
+          preserveDrawingBuffer: false,
         }}
         dpr={dprCap}
         onCreated={handleCanvasCreated}
