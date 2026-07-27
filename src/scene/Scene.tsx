@@ -166,6 +166,13 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
   const handleCanvasCreated = useCallback(() => {
     if (sceneReadyFiredRef.current) return;
     sceneReadyFiredRef.current = true;
+    /**
+     * Readiness signal for `scripts/perf-baseline.mjs`. The profiler cannot use
+     * `networkidle`, because `scheduleDeferredTexturePreloads` keeps warming
+     * textures for as long as the page is open.
+     */
+    (window as { __HELIOTRIP_SCENE_READY__?: boolean }).__HELIOTRIP_SCENE_READY__ =
+      true;
     onSceneReady?.();
   }, [onSceneReady]);
 
