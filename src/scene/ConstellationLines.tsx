@@ -29,6 +29,7 @@ import {
   BufferGeometry,
   Float32BufferAttribute,
   Group,
+  type Mesh,
   PerspectiveCamera,
   Quaternion,
   ShaderMaterial,
@@ -147,14 +148,14 @@ export const ConstellationLines = () => {
       ? camera.aspect
       : size.width / Math.max(1, size.height);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
-  const constellationLinesVisible = useStore((s) => s.constellationLinesVisible);
 
   const groupRef = useRef<Group>(null);
+  const linesGroupRef = useRef<Group>(null);
   const starMaterialRef = useRef<StarUniformMaterial | null>(null);
 
   // displayedId lags behind selectedConstellation intentionally (fade-out before fade-in).
   // Never read selectedConstellation directly for rendering decisions.
-  const { displayedId, displayedIdRef, opacity, opacityRef } =
+  const { displayedId, displayedIdRef, opacityRef } =
     useConstellationFade(selectedConstellation);
 
   const renderData = useMemo(() => {
@@ -191,34 +192,51 @@ export const ConstellationLines = () => {
       group.position.set(0, 0, 0);
     }
 
-    // Update star shader uniforms from opacityRef (written by useConstellationFade's useFrame).
+    // Both the fat lines and the star shader are driven straight off opacityRef
+    // (written by useConstellationFade's useFrame). Routing the fade through
+    // React state instead re-rendered this component — and rebuilt renderData —
+    // on every frame of every transition.
+    const visibleOpacity = opacityRef.current;
+
+    const linesGroup = linesGroupRef.current;
+    if (linesGroup) {
+      const lineOpacity = useStore.getState().constellationLinesVisible
+        ? visibleOpacity * 0.95
+        : 0;
+      for (const child of linesGroup.children) {
+        const material = (child as Partial<Mesh>).material;
+        if (material && !Array.isArray(material)) material.opacity = lineOpacity;
+      }
+    }
+
     const starMaterial = starMaterialRef.current;
     if (!starMaterial || !renderData) return;
-    const visibleOpacity = opacityRef.current;
     starMaterial.uniforms.uSize.value = renderData.starSize;
     starMaterial.uniforms.uPixelRatio.value = pixelRatio;
     starMaterial.uniforms.uOpacity.value = visibleOpacity;
   });
 
   if (!renderData) return null;
-  const visibleOpacity = opacity;
-  const lineOpacity = constellationLinesVisible ? visibleOpacity * 0.95 : 0;
 
   return (
     <group ref={groupRef} renderOrder={5}>
-      {renderData.lineSegments.map(([from, to], index) => (
-        <Line
-          key={`${from.x}:${from.y}:${from.z}:${index}`}
-          points={[from, to]}
-          color={LINE_COLOR}
-          lineWidth={LINE_WIDTH}
-          transparent
-          opacity={lineOpacity}
-          depthWrite={false}
-          depthTest={false}
-          blending={AdditiveBlending}
-        />
-      ))}
+      <group ref={linesGroupRef}>
+        {renderData.lineSegments.map(([from, to], index) => (
+          <Line
+            key={`${from.x}:${from.y}:${from.z}:${index}`}
+            points={[from, to]}
+            color={LINE_COLOR}
+            lineWidth={LINE_WIDTH}
+            transparent
+            // Live value comes from the frame loop above; this is only the
+            // value the material is created with.
+            opacity={0}
+            depthWrite={false}
+            depthTest={false}
+            blending={AdditiveBlending}
+          />
+        ))}
+      </group>
       <points geometry={renderData.starGeometry}>
         <shaderMaterial
           ref={starMaterialRef}
@@ -230,7 +248,8 @@ export const ConstellationLines = () => {
             uColor: { value: STAR_COLOR },
             uSize: { value: renderData.starSize },
             uPixelRatio: { value: pixelRatio },
-            uOpacity: { value: visibleOpacity },
+            // Live value comes from the frame loop above.
+            uOpacity: { value: 0 },
           }}
           vertexShader={STAR_VERTEX_SHADER}
           fragmentShader={STAR_FRAGMENT_SHADER}
