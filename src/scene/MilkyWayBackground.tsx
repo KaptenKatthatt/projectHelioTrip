@@ -20,7 +20,7 @@ const DEEP_SKY_OBJECT_RADIUS = 3174;
 
 import {
   SKY_VERTEX_SHADER,
-  SKY_FRAGMENT_SHADER,
+  buildSkyFragmentShader,
   STAR_VERTEX_SHADER,
   STAR_FRAGMENT_SHADER,
   NEBULA_VERTEX_SHADER,
@@ -327,6 +327,11 @@ const buildDeepSkyObjectCloud = (
 const MilkyWaySphere = (): ReactElement => {
   const preset = getGraphicsPreset();
   const [mwW, mwH] = preset.milkyWaySphere;
+  const nebulaOpacity = preset.milkyWayQuality.nebulaOpacity;
+  const fragmentShader = useMemo(
+    () => buildSkyFragmentShader(nebulaOpacity > 0),
+    [nebulaOpacity],
+  );
 
   return (
     <mesh rotation={MILKY_WAY_ROTATION} renderOrder={-20}>
@@ -338,10 +343,10 @@ const MilkyWaySphere = (): ReactElement => {
         uniforms={{
           uBandIntensity: { value: preset.milkyWayQuality.bandIntensity },
           uDustLaneOpacity: { value: preset.milkyWayQuality.dustLaneOpacity },
-          uNebulaOpacity: { value: preset.milkyWayQuality.nebulaOpacity },
+          uNebulaOpacity: { value: nebulaOpacity },
         }}
         vertexShader={SKY_VERTEX_SHADER}
-        fragmentShader={SKY_FRAGMENT_SHADER}
+        fragmentShader={fragmentShader}
       />
     </mesh>
   );
@@ -460,11 +465,22 @@ const MilkyWayDeepSkyObjectOverlay = (): ReactElement => {
 };
 
 export const MilkyWayBackground = (): ReactElement => {
+  const { nebulaOpacity, deepSkyObjectOpacity } =
+    getGraphicsPreset().milkyWayQuality;
+
+  /**
+   * Both overlays are authored features that every preset currently ships at
+   * zero opacity. They are gated rather than deleted, so the capability
+   * survives a future preset that turns them back on — but an invisible point
+   * cloud drawn with `depthTest={false}` and additive blending is pure
+   * overdraw with no early-Z rejection, and its buffers still cost the CPU a
+   * build and the GPU an upload. Gating here keeps both off the critical path.
+   */
   return (
     <group>
       <MilkyWaySphere />
-      <MilkyWayNebulaOverlay />
-      <MilkyWayDeepSkyObjectOverlay />
+      {nebulaOpacity > 0 ? <MilkyWayNebulaOverlay /> : null}
+      {deepSkyObjectOpacity > 0 ? <MilkyWayDeepSkyObjectOverlay /> : null}
       <MilkyWayMicroStarOverlay />
       <MilkyWayStarOverlay />
     </group>
