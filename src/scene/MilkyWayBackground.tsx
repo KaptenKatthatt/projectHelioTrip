@@ -465,7 +465,7 @@ const MilkyWayDeepSkyObjectOverlay = (): ReactElement => {
 };
 
 export const MilkyWayBackground = (): ReactElement => {
-  const { nebulaOpacity, deepSkyObjectOpacity } =
+  const { nebulaOpacity, deepSkyObjectOpacity, overlayMicroStarCount } =
     getGraphicsPreset().milkyWayQuality;
 
   /**
@@ -481,7 +481,7 @@ export const MilkyWayBackground = (): ReactElement => {
       <MilkyWaySphere />
       {nebulaOpacity > 0 ? <MilkyWayNebulaOverlay /> : null}
       {deepSkyObjectOpacity > 0 ? <MilkyWayDeepSkyObjectOverlay /> : null}
-      <MilkyWayMicroStarOverlay />
+      {overlayMicroStarCount > 0 ? <MilkyWayMicroStarOverlay /> : null}
       <MilkyWayStarOverlay />
     </group>
   );

@@ -4,8 +4,13 @@ import { registerSW } from 'virtual:pwa-register';
 import './index.css';
 import { App } from './App';
 import { lazyWithRecovery } from './lib/lazyImport';
+import { initializeQuality } from './lib/quality/initializeQuality';
 
 registerSW({ immediate: true });
+
+// Before React renders anything, so the scene never mounts at a level the
+// machine cannot hold and then has to rebuild.
+initializeQuality();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

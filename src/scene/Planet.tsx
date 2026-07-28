@@ -3,7 +3,7 @@ import { useTexture } from '@react-three/drei/core/Texture';
 import { Color, type Group } from 'three';
 import type { PlanetId } from '../lib/planets';
 import { getLivePosition } from '../lib/positionsBus';
-import { getGraphicsPreset } from '../lib/graphicsTier';
+import { useQualityPreset } from '../hooks/useQualityPreset';
 import {
   configureColorMap,
   configureDataMap,
@@ -22,15 +22,21 @@ type Props = {
 };
 
 const SUN_HDR = new Color(6.0, 4.2, 1.1);
-const PLANET_SPHERE = getGraphicsPreset().planetSphere;
-const GEOMETRY_ARGS: [number, number, number] = [
-  1,
-  PLANET_SPHERE[0],
-  PLANET_SPHERE[1],
-];
-/** Sun stays high-poly on all tiers so bloom + texture read like desktop. */
-const SUN_SPHERE_ARGS: [number, number, number] = [1, 64, 48];
 const MS_PER_HOUR = 3_600_000;
+
+/**
+ * Read per render rather than frozen at import, so a quality change actually
+ * reaches the geometry. R3F rebuilds a primitive when its `args` change.
+ */
+const usePlanetSphereArgs = (): [number, number, number] => {
+  const segments = useQualityPreset((preset) => preset.planetSphere);
+  return useMemo(() => [1, segments[0], segments[1]], [segments]);
+};
+
+const useSunSphereArgs = (): [number, number, number] => {
+  const segments = useQualityPreset((preset) => preset.sunSphere);
+  return useMemo(() => [1, segments[0], segments[1]], [segments]);
+};
 
 export const Planet = ({ id, radius, color, rotationPeriodHours }: Props) => {
   const groupRef = useRef<Group>(null);
@@ -88,7 +94,9 @@ const Body = ({ id, radius, color }: BodyProps) => {
 
 const FlatBody = ({ id, radius, color }: BodyProps) => {
   const isSun = id === 'sun';
-  const sphereArgs = isSun ? SUN_SPHERE_ARGS : GEOMETRY_ARGS;
+  const planetArgs = usePlanetSphereArgs();
+  const sunArgs = useSunSphereArgs();
+  const sphereArgs = isSun ? sunArgs : planetArgs;
   return (
     <mesh castShadow={!isSun} receiveShadow={!isSun} scale={radius}>
       <sphereGeometry args={sphereArgs} />
@@ -115,10 +123,11 @@ const SunBody = ({
   radius: number;
 }) => {
   const map = useTexture(diffuseUrl, configureColorMap);
+  const sunArgs = useSunSphereArgs();
 
   return (
     <mesh scale={radius}>
-      <sphereGeometry args={SUN_SPHERE_ARGS} />
+      <sphereGeometry args={sunArgs} />
       <meshBasicMaterial map={map} color={SUN_HDR} toneMapped={false} />
     </mesh>
   );
@@ -132,10 +141,11 @@ const TexturedBody = ({
   radius: number;
 }) => {
   const map = useTexture(diffuseUrl, configureColorMap);
+  const planetArgs = usePlanetSphereArgs();
 
   return (
     <mesh castShadow receiveShadow scale={radius}>
-      <sphereGeometry args={GEOMETRY_ARGS} />
+      <sphereGeometry args={planetArgs} />
       <meshStandardMaterial map={map} roughness={0.95} metalness={0.0} />
     </mesh>
   );
@@ -157,11 +167,12 @@ const EarthBody = ({
   const map = useTexture(diffuseUrl, configureColorMap);
   const normalMap = useTexture(normalUrl, configureDataMap);
   const roughnessMap = useTexture(roughnessUrl, configureDataMap);
+  const planetArgs = usePlanetSphereArgs();
 
   return (
     <>
       <mesh castShadow receiveShadow scale={radius}>
-        <sphereGeometry args={GEOMETRY_ARGS} />
+        <sphereGeometry args={planetArgs} />
         <meshStandardMaterial
           map={map}
           normalMap={normalMap}

@@ -79,14 +79,35 @@ describe("graphicsTier", () => {
     expect(mod.getCanvasDprCap("low")).toBe(0.9);
   });
 
-  it("returns lighter low preset values", async () => {
+  it("maps each tier onto the quality ladder", async () => {
     vi.resetModules();
     setMatchMedia(true, true);
     setNavigatorPerfHints(4, 3);
 
     const mod = await import("./graphicsTier");
+
+    expect(mod.qualityLevelForTier("high")).toBe(0);
+    expect(mod.qualityLevelForTier("medium")).toBe(2);
+    expect(mod.qualityLevelForTier("low")).toBe(3);
+  });
+
+  /**
+   * The preset now follows the *runtime* quality level rather than the device
+   * heuristic — that is the whole point of the ladder. Boot seeding is what
+   * connects the two, so the low-tier values are asserted through it.
+   */
+  it("seeds the runtime level from the device heuristic on a weak phone", async () => {
+    vi.resetModules();
+    setMatchMedia(true, true);
+    setNavigatorPerfHints(4, 3);
+
+    const { initializeQuality } = await import("./quality/initializeQuality");
+    const mod = await import("./graphicsTier");
+
+    initializeQuality();
     const preset = mod.getGraphicsPreset();
 
+    expect(mod.getGraphicsTier()).toBe("low");
     expect(preset.asteroidCount).toBe(220);
     expect(preset.antialias).toBe(false);
     expect(preset.textureAnisotropy).toBe(1);
