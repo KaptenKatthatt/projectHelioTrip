@@ -1,9 +1,11 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
+  clampNativeFrameMs,
   createAdaptiveState,
   decideQualityChange,
   MIN_SAMPLES,
+  refineNativeFrameMs,
   type AdaptiveState,
   type FrameWindowStats,
 } from '../lib/quality/adaptiveQuality';
@@ -122,12 +124,6 @@ export const useAdaptiveQuality = ({ renderer, initialFloorLevel = 0 }: Options)
     cursorRef.current = (cursorRef.current + 1) % RING_SIZE;
     countRef.current = Math.min(countRef.current + 1, RING_SIZE);
 
-    // The display's own interval, learned from the fastest frames rather than
-    // assumed, so the thresholds work at 60, 120 and 144Hz alike.
-    if (sample > 1 && sample < nativeFrameMsRef.current) {
-      nativeFrameMsRef.current = nativeFrameMsRef.current * 0.9 + sample * 0.1;
-    }
-
     if (now - windowStartRef.current < WINDOW_MS) return;
     windowStartRef.current = now;
 
@@ -145,17 +141,39 @@ export const useAdaptiveQuality = ({ renderer, initialFloorLevel = 0 }: Options)
     scratch.set(framesRef.current.subarray(0, count));
     scratch.sort();
 
+    // The display's own interval, learned from the fastest frames rather than
+    // assumed, so the thresholds work at 60, 120 and 144Hz alike. The rule
+    // itself lives with the rest of the policy, where it can be tested.
+    nativeFrameMsRef.current = refineNativeFrameMs(nativeFrameMsRef.current, scratch);
+
     const stats: FrameWindowStats = {
       sampleCount: count,
       p50FrameMs: scratch[Math.floor(count * 0.5)] ?? 0,
       p90FrameMs: scratch[Math.floor(count * 0.9)] ?? 0,
-      nativeFrameMs: Math.min(17.5, Math.max(6.5, nativeFrameMsRef.current)),
+      nativeFrameMs: clampNativeFrameMs(nativeFrameMsRef.current),
     };
 
     const current = stateRef.current;
     if (!current) return;
 
-    const { decision, next } = decideQualityChange(current, stats);
+    /**
+     * The quality store can move without the controller: pinning a level by
+     * hand and then returning to Auto resets it to the boot seed. Acting on a
+     * stale level steps to the wrong rung — and can emit a "headroom" upgrade
+     * to a level *worse* than the one actually running. `floorLevel` and the
+     * per-rung attempt counts are hardware facts, so they survive the resync.
+     */
+    const storeLevel = getQualityLevel();
+    const storeDprStep = getQualityDprStep();
+    const reconciled =
+      current.level === storeLevel && current.dprStep === storeDprStep
+        ? current
+        : {
+            ...createAdaptiveState(storeLevel, storeDprStep, current.floorLevel),
+            upgradeAttempts: current.upgradeAttempts,
+          };
+
+    const { decision, next } = decideQualityChange(reconciled, stats);
     stateRef.current = next;
 
     if (decision.kind === 'dpr') {

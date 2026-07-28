@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../store/useStore';
 import { qualityStore, subscribeQuality } from '../../lib/quality/qualityStore';
+import { resolveQualitySeed } from '../../lib/quality/initializeQuality';
 
 const SEEN_KEY = 'heliotrip-quality-notice-seen';
 /** Long enough that a cascade of steps settles before anything is claimed. */
@@ -46,15 +47,26 @@ export const QualityNoticeToast = () => {
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
+    /**
+     * The level the app *opened* at. `bindQualityPreference` rewrites the
+     * source from `boot` to `auto` before the first frame, so the source alone
+     * cannot tell a runtime downgrade from the boot guess — without this,
+     * every phone and every weak desktop would be told its graphics had been
+     * lowered when nothing had moved at all.
+     */
+    const seedLevel = resolveQualitySeed().level;
+    const wasLowered = (level: number): boolean =>
+      level > seedLevel && level >= NOTICEABLE_LEVEL;
+
     const evaluate = () => {
       clearTimeout(settleTimer);
       const { level, source } = qualityStore.getState();
-      if (source !== 'auto' || level < NOTICEABLE_LEVEL) return;
+      if (source !== 'auto' || !wasLowered(level)) return;
 
       settleTimer = setTimeout(() => {
         // Re-check: the level may have moved again while we waited.
         const settled = qualityStore.getState();
-        if (settled.source !== 'auto' || settled.level < NOTICEABLE_LEVEL) return;
+        if (settled.source !== 'auto' || !wasLowered(settled.level)) return;
         if (hasBeenSeen()) return;
         markSeen();
         setVisible(true);

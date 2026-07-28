@@ -1,5 +1,5 @@
 import { useStore as useZustandStore } from 'zustand';
-import { QUALITY_PRESETS, type QualityLevel, type QualityPreset } from '../lib/quality/qualityLevels';
+import { QUALITY_PRESETS, type QualityPreset } from '../lib/quality/qualityLevels';
 import { qualityStore } from '../lib/quality/qualityStore';
 
 /**
@@ -14,13 +14,3 @@ import { qualityStore } from '../lib/quality/qualityStore';
  */
 export const useQualityPreset = <T,>(select: (preset: QualityPreset) => T): T =>
   useZustandStore(qualityStore, (state) => select(QUALITY_PRESETS[state.level]));
-
-export const useQualityLevel = (): QualityLevel =>
-  useZustandStore(qualityStore, (state) => state.level);
-
-/**
- * Increments on every level change. Use it as a `key` where an object cannot
- * be reconfigured in place and has to be rebuilt.
- */
-export const useQualityEpoch = (): number =>
-  useZustandStore(qualityStore, (state) => state.epoch);

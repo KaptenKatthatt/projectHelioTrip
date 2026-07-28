@@ -1,6 +1,5 @@
 import { createStore } from 'zustand/vanilla';
 import {
-  clampQualityLevel,
   QUALITY_PRESETS,
   type QualityLevel,
   type QualityPreset,
@@ -106,17 +105,6 @@ export const setQuality = (
     source,
     epoch: levelChanged ? current.epoch + 1 : current.epoch,
   });
-};
-
-export const applyQualityPreference = (
-  preference: 'auto' | QualityLevel,
-  fallbackLevel: QualityLevel,
-): void => {
-  if (preference === 'auto') {
-    setQualityLevel(fallbackLevel, 'auto');
-    return;
-  }
-  setQualityLevel(clampQualityLevel(preference), 'user');
 };
 
 export const subscribeQuality = qualityStore.subscribe;

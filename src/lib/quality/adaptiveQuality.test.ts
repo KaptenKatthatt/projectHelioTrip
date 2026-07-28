@@ -3,8 +3,12 @@ import {
   BAD_WINDOWS_TO_ACT,
   COOLDOWN_WINDOWS,
   GOOD_WINDOWS_TO_ACT,
+  NATIVE_FRAME_MS_MAX,
+  NATIVE_FRAME_MS_MIN,
+  clampNativeFrameMs,
   createAdaptiveState,
   decideQualityChange,
+  refineNativeFrameMs,
   type AdaptiveState,
   type FrameWindowStats,
 } from './adaptiveQuality';
@@ -182,5 +186,93 @@ describe('decideQualityChange', () => {
       );
       expect(decisions.every((d) => d.kind === 'hold')).toBe(true);
     });
+  });
+});
+
+/**
+ * The refresh interval is inferred, not reported, and every threshold is a
+ * multiple of it — so an estimator that drifts low does not degrade the
+ * controller gracefully, it inverts it. These are the tests that keep a
+ * healthy machine healthy.
+ */
+describe('learning the display refresh interval', () => {
+  /**
+   * One window of a 60Hz panel as rAF actually delivers it: mostly 16.7ms,
+   * with the occasional short frame paired against a long one. Sorted, because
+   * that is how the caller hands it over.
+   */
+  const jittery60HzWindow = (): number[] => {
+    const frames: number[] = [];
+    for (let i = 0; i < 120; i += 1) {
+      if (i % 20 === 0) frames.push(8.4);
+      else if (i % 20 === 1) frames.push(25.0);
+      else frames.push(16.7);
+    }
+    return frames.sort((a, b) => a - b);
+  };
+
+  it('is not dragged down by the short frames in a healthy 60Hz window', () => {
+    let native = 16.7;
+    for (let i = 0; i < 200; i += 1) {
+      native = refineNativeFrameMs(native, jittery60HzWindow());
+    }
+
+    // 5% of 120 frames is index 6; the six fastest are the 8.4ms outliers, so
+    // the estimate must read the 16.7ms that follows them.
+    expect(native).toBeGreaterThan(16);
+    expect(clampNativeFrameMs(native)).toBeGreaterThan(16);
+  });
+
+  it('still finds a genuine 120Hz display', () => {
+    const window120 = new Array(120).fill(8.3);
+    let native = 16.7;
+    for (let i = 0; i < 60; i += 1) native = refineNativeFrameMs(native, window120);
+
+    expect(clampNativeFrameMs(native)).toBeLessThan(9);
+  });
+
+  it('never moves upward, so a slow scene cannot redefine the refresh rate', () => {
+    const slow = new Array(120).fill(40);
+    expect(refineNativeFrameMs(16.7, slow)).toBe(16.7);
+  });
+
+  it('ignores an empty window rather than resetting', () => {
+    expect(refineNativeFrameMs(16.7, [])).toBe(16.7);
+  });
+
+  it('clamps into the range the thresholds assume', () => {
+    expect(clampNativeFrameMs(1)).toBe(NATIVE_FRAME_MS_MIN);
+    expect(clampNativeFrameMs(120)).toBe(NATIVE_FRAME_MS_MAX);
+  });
+
+  /**
+   * The end-to-end statement of the bug: a 60Hz machine comfortably holding
+   * vsync for an hour must still be sitting at the level it started on. Before
+   * the estimator read whole windows, the accumulated drift pushed the "bad"
+   * threshold below 16.7ms and the controller walked such a machine to the
+   * bottom rung.
+   */
+  it('leaves a comfortable 60Hz machine where it started after a long session', () => {
+    let native = 16.7;
+    let state = createAdaptiveState(0);
+    const downgrades: string[] = [];
+
+    for (let i = 0; i < 200; i += 1) {
+      native = refineNativeFrameMs(native, jittery60HzWindow());
+      const result = decideQualityChange(state, {
+        sampleCount: 120,
+        p50FrameMs: 16.7,
+        p90FrameMs: 16.7,
+        nativeFrameMs: clampNativeFrameMs(native),
+      });
+      if (result.decision.kind !== 'hold' && result.decision.reason === 'slow') {
+        downgrades.push(result.decision.kind);
+      }
+      state = result.next;
+    }
+
+    expect(downgrades).toEqual([]);
+    expect(state.level).toBe(0);
+    expect(state.dprStep).toBe(0);
   });
 });
