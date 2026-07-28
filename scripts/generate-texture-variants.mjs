@@ -17,8 +17,9 @@
  *
  *   node scripts/generate-texture-variants.mjs [--check]
  *
- * `--check` verifies every expected variant exists and is newer than its
- * source, without writing anything. That is what CI runs.
+ * `--check` verifies every expected variant exists and that the generated
+ * manifest still describes the textures on disk, without writing anything.
+ * That is what CI runs.
  */
 
 import { readdir, stat, mkdir, writeFile, readFile } from 'node:fs/promises';
@@ -71,7 +72,6 @@ const run = async () => {
   let written = 0;
   let skipped = 0;
   const missing = [];
-  const stale = [];
   /** url -> { native, sizes } for the generated manifest. */
   const manifest = new Map();
 
@@ -96,15 +96,13 @@ const run = async () => {
       if (check) {
         if (!existsSync(target)) {
           missing.push(path.relative(process.cwd(), target));
-          continue;
         }
-        const [sourceStat, targetStat] = await Promise.all([
-          stat(source),
-          stat(target),
-        ]);
-        if (targetStat.mtimeMs < sourceStat.mtimeMs) {
-          stale.push(path.relative(process.cwd(), target));
-        }
+        // Deliberately no mtime comparison. Git does not record mtimes, and it
+        // writes a tree in index order -- `diffuse-1024.webp` sorts before
+        // `diffuse.webp`, so on any fresh checkout every variant looks older
+        // than its source and the check would fail for all of them. Drift in
+        // the source is caught instead by the manifest comparison below, which
+        // re-reads each source's real dimensions with sharp.
         continue;
       }
 
@@ -135,15 +133,14 @@ const run = async () => {
     const onDisk = existsSync(manifestPath)
       ? await readFile(manifestPath, 'utf8')
       : '';
-    if (onDisk !== manifestSource) {
+    const manifestDrifted = onDisk !== manifestSource;
+    if (manifestDrifted) {
       console.error(
         'src/lib/quality/textureVariants.generated.ts does not match the textures on disk.',
       );
-      missing.push('src/lib/quality/textureVariants.generated.ts');
     }
-    if (missing.length || stale.length) {
+    if (missing.length || manifestDrifted) {
       for (const file of missing) console.error(`missing variant: ${file}`);
-      for (const file of stale) console.error(`stale variant:   ${file}`);
       console.error(
         '\nRun `node scripts/generate-texture-variants.mjs` and commit the result.',
       );

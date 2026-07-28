@@ -25,13 +25,24 @@ const dedupeAppend = (
   return out;
 };
 
-const DATA_MAP_PATTERN = /\/(normal|roughness)\.webp$/;
+/**
+ * The `-\d+` is the downscaled-variant suffix the quality ladder appends
+ * (`normal-1024.webp`). Without it these patterns stop matching the moment a
+ * machine boots below the top rung, and this filter quietly turns into a
+ * no-op on precisely the devices it exists to protect — eagerly preloading
+ * the data maps they were meant to skip.
+ */
+const DATA_MAP_PATTERN = /\/(normal|roughness)(-\d+)?\.webp$/;
+const ROUGHNESS_PATTERN = /\/roughness(-\d+)?\.webp$/;
 
-const shouldPreloadUrlForTier = (url: string, tier: GraphicsTier): boolean => {
+export const shouldPreloadUrlForTier = (
+  url: string,
+  tier: GraphicsTier,
+): boolean => {
   const lowerUrl = url.toLowerCase();
   if (!DATA_MAP_PATTERN.test(lowerUrl)) return true;
   if (tier === "high") return true;
-  if (tier === "medium") return !lowerUrl.includes("/roughness.webp");
+  if (tier === "medium") return !ROUGHNESS_PATTERN.test(lowerUrl);
   return false;
 };
 
