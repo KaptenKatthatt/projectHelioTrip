@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ChevronLeft, Rocket } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { MobileHudSheetId } from '../../../lib/mobileHudSheetIds';
@@ -28,7 +28,7 @@ type HudDetailRegionProps = {
   readonly onBackToConstellationsMenu: () => void;
 };
 
-export const HudDetailRegion = ({
+export const HudDetailRegion = memo(({
   mobileLayout,
   openNavSheet,
   closeNavSheets,
@@ -175,4 +175,6 @@ export const HudDetailRegion = ({
       )}
     </>
   );
-};
+});
+
+HudDetailRegion.displayName = "HudDetailRegion";

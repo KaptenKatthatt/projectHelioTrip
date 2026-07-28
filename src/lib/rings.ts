@@ -1,5 +1,6 @@
 import type { PlanetId } from './planets';
 import type { RingGap } from './ringTexture';
+import { textureUrl } from './quality/textureResolution';
 
 export type RingDefinition = {
   /** Inner radius as a multiple of planet radius. */
@@ -45,7 +46,7 @@ export const RING_DEFINITIONS: Partial<Record<PlanetId, RingDefinition>> = {
     innerScale: 1.5,
     outerScale: 2.4,
     tilt: deg(26.73),
-    texture: '/textures/saturn/ring.webp',
+    texture: textureUrl('/textures/saturn/ring.webp'),
     color: '#d7c29a',
     opacity: 1,
     spin: 0.015,

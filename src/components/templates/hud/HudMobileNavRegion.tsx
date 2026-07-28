@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { GameMode } from "../../../lib/missions/types";
 import type { MobileHudSheetId } from "../../../lib/mobileHudSheetIds";
 import { useStore } from "../../../store/useStore";
@@ -12,7 +13,7 @@ type HudMobileNavRegionProps = {
   readonly starsContextActive: boolean;
 };
 
-export const HudMobileNavRegion = ({
+export const HudMobileNavRegion = memo(({
   mobileLayout,
   openNavSheet,
   onToggleSheet,
@@ -43,4 +44,6 @@ export const HudMobileNavRegion = ({
       />
     </div>
   );
-};
+});
+
+HudMobileNavRegion.displayName = "HudMobileNavRegion";

@@ -67,11 +67,21 @@ export const resolveQualitySeed = (): QualitySeed => {
   return cachedSeed;
 };
 
+/**
+ * Tracked separately from `cachedSeed`, not derived from it. Reading the seed
+ * and applying it are different events: the module-level texture tables in
+ * `textures.ts` resolve the seed while they are being built, which happens
+ * before `main.tsx` runs — so a guard keyed on the seed cache would conclude
+ * the work was already done, skip the store write entirely, and leave every
+ * machine on the default rung however weak its GPU had just been measured.
+ */
+let applied = false;
+
 /** Idempotent; safe to call from module scope. */
 export const initializeQuality = (): QualitySeed => {
-  const alreadyResolved = cachedSeed !== null;
   const seed = resolveQualitySeed();
-  if (!alreadyResolved) {
+  if (!applied) {
+    applied = true;
     setQuality(seed.level, seed.dprStep, 'boot');
   }
   return seed;
@@ -79,5 +89,6 @@ export const initializeQuality = (): QualitySeed => {
 
 /** Test seam — production code never needs this. */
 export const resetQualityInitialization = (): void => {
+  applied = false;
   cachedSeed = null;
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useActiveBodyViewGameMode } from '../../../hooks/useActiveBodyViewGameMode';
 import { useResponsiveLayout } from '../../../hooks/useResponsiveLayout';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -55,35 +55,46 @@ export const useHudLogic = () => {
     return () => window.cancelAnimationFrame(id);
   }, [mobileLayout, showPlanetInfoUi, activeBody, viewMode, setMobilePlanetInfoSheetOpen]);
 
-  const handleToggleNavSheet = (id: MobileHudSheetId): void => {
-    const next = openNavSheet === id ? null : id;
-    setOpenNavSheet(next);
-    if (next === null) {
-      return;
-    }
+  /*
+   * Stable identities, so the HUD regions below can be memoized at all. These
+   * are passed down as props; recreated every render they would invalidate
+   * any `React.memo` boundary they cross, which is the usual reason wrapping
+   * a component in `memo` appears to do nothing. The zustand setters are
+   * already stable, and `setOpenNavSheet` is a `useState` setter, so the only
+   * real dependency here is the current sheet.
+   */
+  const handleToggleNavSheet = useCallback(
+    (id: MobileHudSheetId): void => {
+      const next = openNavSheet === id ? null : id;
+      setOpenNavSheet(next);
+      if (next === null) {
+        return;
+      }
 
-    setMobilePlanetInfoSheetOpen(false);
-    const nextGameMode = SHEET_GAME_MODE[next];
-    if (!nextGameMode) return;
-    setGameMode(nextGameMode);
-  };
+      setMobilePlanetInfoSheetOpen(false);
+      const nextGameMode = SHEET_GAME_MODE[next];
+      if (!nextGameMode) return;
+      setGameMode(nextGameMode);
+    },
+    [openNavSheet, setMobilePlanetInfoSheetOpen, setGameMode],
+  );
 
-  const closeNavSheets = (): void => {
+  const closeNavSheets = useCallback((): void => {
     setOpenNavSheet(null);
-  };
+  }, []);
 
-  const handleResetToStart = (): void => {
-    closeNavSheets();
+  const handleResetToStart = useCallback((): void => {
+    setOpenNavSheet(null);
     setMobilePlanetInfoSheetOpen(false);
     resetSolarSystemStart();
-  };
+  }, [setMobilePlanetInfoSheetOpen, resetSolarSystemStart]);
 
-  const handleBackToConstellationsMenu = (): void => {
+  const handleBackToConstellationsMenu = useCallback((): void => {
     setSelectedConstellation(null);
     setMobilePlanetInfoSheetOpen(false);
     setOpenNavSheet('stars');
     setGameMode('explore');
-  };
+  }, [setSelectedConstellation, setMobilePlanetInfoSheetOpen, setGameMode]);
 
   return {
     t,

@@ -10,7 +10,7 @@ import { setQualityLevel } from './qualityStore';
  * that requires the `subscribeWithSelector` middleware, and adding middleware
  * to an already `persist`-wrapped store is a larger change than it looks.
  */
-export const applyQualityPreference = (
+const applyQualityPreference = (
   preference: GraphicsQualityPreference,
 ): void => {
   if (preference === 'auto') {

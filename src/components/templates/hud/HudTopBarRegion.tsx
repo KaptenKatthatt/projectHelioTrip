@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Flame } from "lucide-react";
 import type { GameMode } from "../../../lib/missions/types";
 import { useTranslation } from "../../../hooks/useTranslation";
@@ -18,7 +19,7 @@ const MODE_ACCENT: Record<GameMode, string> = {
   lab: "bg-indigo-400",
 };
 
-export const HudTopBarRegion = ({
+export const HudTopBarRegion = memo(({
   mobileLayout,
   appTitle,
   tagline,
@@ -68,4 +69,6 @@ export const HudTopBarRegion = ({
       )}
     </div>
   );
-};
+});
+
+HudTopBarRegion.displayName = "HudTopBarRegion";

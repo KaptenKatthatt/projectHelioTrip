@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { CollapsibleHudPanel } from "../../molecules/CollapsibleHudPanel";
 import { ConstellationStoryCard } from "../../molecules/ConstellationStoryCard";
 import { DailyChallengeCard } from "../../molecules/DailyChallengeCard";
@@ -23,7 +24,7 @@ type HudPrimaryNavRegionProps = {
   readonly progressTitle: string;
 };
 
-export const HudPrimaryNavRegion = ({
+export const HudPrimaryNavRegion = memo(({
   mobileLayout,
   showPlanetInfoUi,
   showMissionUi,
@@ -101,4 +102,6 @@ export const HudPrimaryNavRegion = ({
       </div>
     </>
   );
-};
+});
+
+HudPrimaryNavRegion.displayName = "HudPrimaryNavRegion";

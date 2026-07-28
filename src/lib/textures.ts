@@ -4,6 +4,7 @@ import type { MoonId } from './moons';
 import { PLANETS } from './planets';
 import type { PlanetId } from './planets';
 import { getGraphicsPreset } from './graphicsTier';
+import { textureUrl } from './quality/textureResolution';
 
 type SurfaceTextures = {
   diffuse: string;
@@ -15,8 +16,13 @@ type CloudTextures = {
   diffuse: string;
 };
 
+/**
+ * Every surface texture URL goes through the resolver, so a machine that
+ * booted on a lower rung downloads and uploads a smaller copy. Bodies whose
+ * source is already within the cap resolve back to the source unchanged.
+ */
 const base = (body: PlanetId | MoonId, file: string): string =>
-  `/textures/${body}/${file}`;
+  textureUrl(`/textures/${body}/${file}`);
 
 const PLANET_TEXTURES: Partial<Record<PlanetId, SurfaceTextures>> = {
   sun: { diffuse: base('sun', 'diffuse.webp') },

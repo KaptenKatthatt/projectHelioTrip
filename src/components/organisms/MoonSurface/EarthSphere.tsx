@@ -8,13 +8,14 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { textureUrl } from '../../../lib/quality/textureResolution';
 
 export const EarthSphere = () => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [diffuse, normal, roughness] = useTexture([
-    '/textures/earth/diffuse.webp',
-    '/textures/earth/normal.webp',
-    '/textures/earth/roughness.webp',
+    textureUrl('/textures/earth/diffuse.webp'),
+    textureUrl('/textures/earth/normal.webp'),
+    textureUrl('/textures/earth/roughness.webp'),
   ]);
 
   useFrame(() => {

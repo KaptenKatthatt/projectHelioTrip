@@ -11,6 +11,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { readSurfaceCanvasQuality } from '../../lib/quality/surfaceQuality';
+import { textureUrl } from '../../lib/quality/textureResolution';
 import { useStore } from '../../store/useStore';
 import { CanvasCapture } from '../../scene/CanvasCapture';
 import { MARS_SURFACE_BG_CLASS } from './surfaceBackgrounds';
@@ -177,7 +178,7 @@ const CameraZoomController = ({
 };
 
 const Terrain = () => {
-  const rawGroundTexture = useTexture('/textures/mars_surface.webp');
+  const rawGroundTexture = useTexture(textureUrl('/textures/mars_surface.webp'));
   const groundTexture = useMemo(() => {
     const texture = rawGroundTexture.clone();
     texture.wrapS = THREE.RepeatWrapping;

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { GameMode } from '../../../lib/missions/types';
 import { AboutDialog } from '../../organisms/AboutDialog';
 import { ConstellationViewControls } from '../../ConstellationViewControls';
@@ -12,7 +13,7 @@ type HudControlRailRegionProps = {
   readonly gameMode: GameMode;
 };
 
-export const HudControlRailRegion = ({
+export const HudControlRailRegion = memo(({
   show,
   selectedConstellation,
   gameMode,
@@ -63,4 +64,6 @@ export const HudControlRailRegion = ({
       </div>
     </footer>
   );
-};
+});
+
+HudControlRailRegion.displayName = "HudControlRailRegion";

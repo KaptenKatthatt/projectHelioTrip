@@ -86,6 +86,22 @@ export type QualityPreset = {
   readonly antialias: boolean;
   readonly dprCap: number;
   readonly surfaceShadowMapSize: number;
+  /**
+   * Longest edge a surface texture may have, in pixels.
+   *
+   * This is the ladder's largest lever on memory and the one it could not
+   * reach until the downscaled variants existed. A WebP is small on the wire
+   * and enormous in VRAM: the browser decodes it to RGBA8 before upload, so
+   * the full set costs about 289 MB of video memory once three has built its
+   * mipmaps -- for bodies that are a few dozen pixels across. Capping at 1024
+   * takes that to 56 MB and at 512 to 14 MB. Integrated GPUs share that
+   * memory with the system and have very little cache in front of it, which
+   * is exactly the hardware this whole ladder exists for.
+   *
+   * Level 0 sits above every source texture, so it loads the originals and
+   * nothing changes for a machine that can afford them.
+   */
+  readonly textureMaxSize: number;
 };
 
 const MILKY_WAY_BY_LEVEL: Record<QualityLevel, MilkyWayQualityPreset> = {
@@ -208,6 +224,7 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     antialias: true,
     dprCap: 2,
     surfaceShadowMapSize: 1024,
+    textureMaxSize: 4096,
   },
   1: {
     starsCount: 9500,
@@ -230,6 +247,7 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     antialias: true,
     dprCap: 1.5,
     surfaceShadowMapSize: 1024,
+    textureMaxSize: 2048,
   },
   2: {
     starsCount: 7000,
@@ -252,6 +270,7 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     antialias: true,
     dprCap: 1.25,
     surfaceShadowMapSize: 512,
+    textureMaxSize: 1024,
   },
   3: {
     starsCount: 2400,
@@ -274,6 +293,7 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     antialias: false,
     dprCap: 0.9,
     surfaceShadowMapSize: 0,
+    textureMaxSize: 1024,
   },
   4: {
     starsCount: 1200,
@@ -296,5 +316,6 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     antialias: false,
     dprCap: 0.65,
     surfaceShadowMapSize: 0,
+    textureMaxSize: 512,
   },
 };
