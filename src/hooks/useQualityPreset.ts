@@ -1,5 +1,9 @@
 import { useStore as useZustandStore } from 'zustand';
-import { QUALITY_PRESETS, type QualityPreset } from '../lib/quality/qualityLevels';
+import {
+  QUALITY_PRESETS,
+  type QualityLevel,
+  type QualityPreset,
+} from '../lib/quality/qualityLevels';
 import { qualityStore } from '../lib/quality/qualityStore';
 
 /**
@@ -14,3 +18,14 @@ import { qualityStore } from '../lib/quality/qualityStore';
  */
 export const useQualityPreset = <T,>(select: (preset: QualityPreset) => T): T =>
   useZustandStore(qualityStore, (state) => select(QUALITY_PRESETS[state.level]));
+
+/**
+ * The current rung, for the rare case where an object cannot be reconfigured
+ * in place and has to be rebuilt. `ShaderMaterial` is the example: three
+ * compiles its program once and caches the uniform list against it, so neither
+ * a new `fragmentShader` string nor a replaced `uniforms` object reaches the
+ * GPU until the material is recreated. Using this as a `key` is what makes a
+ * downgrade of the sky actually take effect.
+ */
+export const useQualityLevel = (): QualityLevel =>
+  useZustandStore(qualityStore, (state) => state.level);

@@ -1,10 +1,8 @@
 import { useMemo, type ReactElement } from "react";
 import { useThree } from "@react-three/fiber";
 import { AdditiveBlending, BackSide } from "three";
-import {
-  getGraphicsPreset,
-  type MilkyWayQualityPreset,
-} from "../lib/graphicsTier";
+import { useQualityLevel, useQualityPreset } from "../hooks/useQualityPreset";
+import type { MilkyWayQualityPreset } from "../lib/quality/qualityLevels";
 
 const MILKY_WAY_ROTATION: [number, number, number] = [0.02, Math.PI * 0.64, 0];
 const STAR_OVERLAY_RADIUS_BASE = 3192;
@@ -325,24 +323,39 @@ const buildDeepSkyObjectCloud = (
 };
 
 const MilkyWaySphere = (): ReactElement => {
-  const preset = getGraphicsPreset();
-  const [mwW, mwH] = preset.milkyWaySphere;
-  const nebulaOpacity = preset.milkyWayQuality.nebulaOpacity;
+  const level = useQualityLevel();
+  const [mwW, mwH] = useQualityPreset((p) => p.milkyWaySphere);
+  const quality = useQualityPreset((p) => p.milkyWayQuality);
+  const nebulaOpacity = quality.nebulaOpacity;
   const fragmentShader = useMemo(
-    () => buildSkyFragmentShader(nebulaOpacity > 0),
-    [nebulaOpacity],
+    () =>
+      buildSkyFragmentShader({
+        withNebula: nebulaOpacity > 0,
+        fbmOctaves: quality.skyFbmOctaves,
+        dustLanes: quality.skyDustLanes,
+        starMist: quality.skyStarMist,
+      }),
+    [nebulaOpacity, quality.skyFbmOctaves, quality.skyDustLanes, quality.skyStarMist],
   );
 
+  /**
+   * `key` forces a fresh material on every level change. `ShaderMaterial`
+   * compiles its program once and caches the uniform list against that
+   * program, so neither a new `fragmentShader` string nor a replaced
+   * `uniforms` object reaches the GPU on its own — without this a downgrade
+   * would keep paying for the expensive sky it was supposed to shed.
+   */
   return (
     <mesh rotation={MILKY_WAY_ROTATION} renderOrder={-20}>
       <sphereGeometry args={[3200, mwW, mwH]} />
       <shaderMaterial
+        key={level}
         side={BackSide}
         toneMapped={false}
         depthWrite={false}
         uniforms={{
-          uBandIntensity: { value: preset.milkyWayQuality.bandIntensity },
-          uDustLaneOpacity: { value: preset.milkyWayQuality.dustLaneOpacity },
+          uBandIntensity: { value: quality.bandIntensity },
+          uDustLaneOpacity: { value: quality.dustLaneOpacity },
           uNebulaOpacity: { value: nebulaOpacity },
         }}
         vertexShader={SKY_VERTEX_SHADER}
@@ -360,6 +373,10 @@ const PointCloudOverlay = ({
   vertexShader,
   fragmentShader,
 }: OverlayShaderProps): ReactElement => {
+  // See `useQualityLevel`: a replaced `uniforms` object never reaches an
+  // already-compiled program, so the opacity of a new rung would be ignored.
+  const level = useQualityLevel();
+
   return (
     <points renderOrder={renderOrder} rotation={MILKY_WAY_ROTATION}>
       <bufferGeometry>
@@ -368,6 +385,7 @@ const PointCloudOverlay = ({
         <bufferAttribute attach="attributes-size" args={[data.sizes, 1]} />
       </bufferGeometry>
       <shaderMaterial
+        key={level}
         transparent
         depthWrite={false}
         depthTest={false}
@@ -385,17 +403,17 @@ const PointCloudOverlay = ({
 };
 
 const MilkyWayStarOverlay = (): ReactElement => {
-  const preset = getGraphicsPreset();
+  const quality = useQualityPreset((p) => p.milkyWayQuality);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
   const starCloud = useMemo(
-    () => buildStarCloud(preset.milkyWayQuality),
-    [preset.milkyWayQuality],
+    () => buildStarCloud(quality),
+    [quality],
   );
 
   return (
     <PointCloudOverlay
       data={starCloud}
-      opacity={preset.milkyWayQuality.overlayStarOpacity}
+      opacity={quality.overlayStarOpacity}
       pixelRatio={pixelRatio}
       renderOrder={-14}
       vertexShader={STAR_VERTEX_SHADER}
@@ -405,17 +423,17 @@ const MilkyWayStarOverlay = (): ReactElement => {
 };
 
 const MilkyWayMicroStarOverlay = (): ReactElement => {
-  const preset = getGraphicsPreset();
+  const quality = useQualityPreset((p) => p.milkyWayQuality);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
   const starCloud = useMemo(
-    () => buildMicroStarCloud(preset.milkyWayQuality),
-    [preset.milkyWayQuality],
+    () => buildMicroStarCloud(quality),
+    [quality],
   );
 
   return (
     <PointCloudOverlay
       data={starCloud}
-      opacity={preset.milkyWayQuality.overlayMicroStarOpacity}
+      opacity={quality.overlayMicroStarOpacity}
       pixelRatio={pixelRatio}
       renderOrder={-17}
       vertexShader={STAR_VERTEX_SHADER}
@@ -425,17 +443,17 @@ const MilkyWayMicroStarOverlay = (): ReactElement => {
 };
 
 const MilkyWayNebulaOverlay = (): ReactElement => {
-  const preset = getGraphicsPreset();
+  const quality = useQualityPreset((p) => p.milkyWayQuality);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
   const nebulaCloud = useMemo(
-    () => buildNebulaCloud(preset.milkyWayQuality),
-    [preset.milkyWayQuality],
+    () => buildNebulaCloud(quality),
+    [quality],
   );
 
   return (
     <PointCloudOverlay
       data={nebulaCloud}
-      opacity={preset.milkyWayQuality.nebulaOpacity}
+      opacity={quality.nebulaOpacity}
       pixelRatio={pixelRatio}
       renderOrder={-16}
       vertexShader={NEBULA_VERTEX_SHADER}
@@ -445,17 +463,17 @@ const MilkyWayNebulaOverlay = (): ReactElement => {
 };
 
 const MilkyWayDeepSkyObjectOverlay = (): ReactElement => {
-  const preset = getGraphicsPreset();
+  const quality = useQualityPreset((p) => p.milkyWayQuality);
   const pixelRatio = useThree((s) => s.gl.getPixelRatio());
   const cloud = useMemo(
-    () => buildDeepSkyObjectCloud(preset.milkyWayQuality),
-    [preset.milkyWayQuality],
+    () => buildDeepSkyObjectCloud(quality),
+    [quality],
   );
 
   return (
     <PointCloudOverlay
       data={cloud}
-      opacity={preset.milkyWayQuality.deepSkyObjectOpacity}
+      opacity={quality.deepSkyObjectOpacity}
       pixelRatio={pixelRatio}
       renderOrder={-15}
       vertexShader={DEEP_SKY_OBJECT_VERTEX_SHADER}
@@ -466,7 +484,7 @@ const MilkyWayDeepSkyObjectOverlay = (): ReactElement => {
 
 export const MilkyWayBackground = (): ReactElement => {
   const { nebulaOpacity, deepSkyObjectOpacity, overlayMicroStarCount } =
-    getGraphicsPreset().milkyWayQuality;
+    useQualityPreset((p) => p.milkyWayQuality);
 
   /**
    * Both overlays are authored features that every preset currently ships at

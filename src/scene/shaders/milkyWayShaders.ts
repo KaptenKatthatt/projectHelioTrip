@@ -31,6 +31,39 @@ const NEBULA_CHUNK = `
   color += nebulaColor * (nebulaMask * uNebulaOpacity * 0.09);
 `;
 
+/**
+ * The dust lanes cost two of the five `fbm` calls the base sky makes, and
+ * produce a darkening that is at most a couple of levels out of 255 in the
+ * final image. Off, the term collapses to a constant the compiler folds away.
+ */
+const DUST_CHUNK = `
+  float dustNoiseA = fbm(vec2(dir.x * 10.0 + dir.z * 4.0, latitude * 30.0) + vec2(14.0, 3.0));
+  float dustNoiseB = fbm(vec2(dir.x * 15.0 - dir.z * 9.0, latitude * 46.0) + vec2(-8.0, 9.0));
+  float dustMask = smoothstep(0.62, 0.92, dustNoiseA * 0.7 + dustNoiseB * 0.5);
+  float dustLanes = dustMask * bandGlow * uDustLaneOpacity;
+`;
+
+const DUST_CHUNK_OFF = `
+  float dustLanes = 0.0;
+`;
+
+/**
+ * The mottling inside the band. `0.5` is the mean of an fbm chain, so turning
+ * it off leaves the band at its average brightness rather than shifting it.
+ * `flowUv` then feeds nothing and is dropped by the shader compiler.
+ */
+const STAR_MIST_CHUNK = `  float starMist = fbm(flowUv + vec2(3.0, -2.0));`;
+const STAR_MIST_CHUNK_OFF = `  float starMist = 0.5;`;
+
+/**
+ * Gated with the star mist because it is the same faint-noise family. Its
+ * contribution peaks around 2e-6 in linear space, far below one 8-bit level.
+ */
+const FAINT_SCATTER_CHUNK = `
+  float faintScatter = fbm(vec2(dir.x * 18.0 + dir.z * 4.0, latitude * 18.0) + vec2(1.7, 5.2));
+  color += vec3(0.00008, 0.0001, 0.00018) * pow(faintScatter, 8.0) * 0.025;
+`;
+
 const SKY_FRAGMENT_SHADER_TEMPLATE = `
 uniform float uBandIntensity;
 uniform float uDustLaneOpacity;
@@ -57,12 +90,12 @@ float fbm(vec2 point) {
   float value = 0.0;
   float amplitude = 0.5;
   mat2 rotation = mat2(1.6, 1.2, -1.2, 1.6);
-  for (int octave = 0; octave < 5; octave++) {
+  for (int octave = 0; octave < __FBM_OCTAVES__; octave++) {
     value += amplitude * noise(point);
     point = rotation * point * 1.82;
     amplitude *= 0.52;
   }
-  return value;
+  return value * __FBM_NORMALIZATION__;
 }
 
 void main() {
@@ -80,17 +113,13 @@ void main() {
   float bandDistance = abs(latitude - bandCenter);
   float bandCore = exp(-pow(bandDistance / 0.026, 2.0));
   float bandGlow = exp(-pow(bandDistance / 0.075, 2.0));
-  float starMist = fbm(flowUv + vec2(3.0, -2.0));
+/* STAR_MIST_CHUNK */
 
   vec3 bulgeDirection = normalize(vec3(0.92, 0.03, -0.38));
   float bulgeDistance = 1.0 - max(dot(dir, bulgeDirection), 0.0);
   float bulge = exp(-pow(bulgeDistance / 0.32, 2.0)) * bandGlow;
 
-  float dustNoiseA = fbm(vec2(dir.x * 10.0 + dir.z * 4.0, latitude * 30.0) + vec2(14.0, 3.0));
-  float dustNoiseB = fbm(vec2(dir.x * 15.0 - dir.z * 9.0, latitude * 46.0) + vec2(-8.0, 9.0));
-  float dustMask = smoothstep(0.62, 0.92, dustNoiseA * 0.7 + dustNoiseB * 0.5);
-  float dustLanes = dustMask * bandGlow * uDustLaneOpacity;
-
+/* DUST_CHUNK */
   vec3 baseSpace = vec3(0.00001, 0.000015, 0.00004) +
     vec3(0.00002, 0.00003, 0.00008) * pow(max(0.0, 1.0 - abs(latitude)), 5.2);
   vec3 bandColor = mix(
@@ -103,26 +132,76 @@ void main() {
   color += bandColor * ((bandGlow * 0.02 + bandCore * 0.085 + bulge * 0.008) * uBandIntensity);
 /* NEBULA_CHUNK */
   color *= 1.0 - dustLanes * (0.74 + bandCore * 0.18);
-
-  float faintScatter = fbm(vec2(dir.x * 18.0 + dir.z * 4.0, latitude * 18.0) + vec2(1.7, 5.2));
-  color += vec3(0.00008, 0.0001, 0.00018) * pow(faintScatter, 8.0) * 0.025;
-
+/* FAINT_SCATTER_CHUNK */
   gl_FragColor = vec4(color, 1.0);
 }
 `;
 
-const NEBULA_PLACEHOLDER = '/* NEBULA_CHUNK */';
+/** The octave count the shader was authored against. */
+const REFERENCE_FBM_OCTAVES = 5;
+const FBM_BASE_AMPLITUDE = 0.5;
+const FBM_AMPLITUDE_FALLOFF = 0.52;
+
+const fbmAmplitudeSum = (octaves: number): number => {
+  let amplitude = FBM_BASE_AMPLITUDE;
+  let sum = 0;
+  for (let i = 0; i < octaves; i += 1) {
+    sum += amplitude;
+    amplitude *= FBM_AMPLITUDE_FALLOFF;
+  }
+  return sum;
+};
 
 /**
- * Builds the sky shader for a preset. Passing `false` drops three full
- * five-octave `fbm` evaluations per fragment that would otherwise be computed
- * and then multiplied by a zero uniform.
+ * Keeps a shortened fbm chain in the same range as the full one.
+ *
+ * Without it, dropping octaves quietly halves the noise: every threshold the
+ * shader applies to an fbm result (`smoothstep(0.62, 0.92, ...)`, the
+ * `- 0.5` that centres the band's wander) is tuned for a chain that sums to
+ * ~1.0, so a two-octave sky would not merely be cheaper, it would be a
+ * different picture with the band drifting off centre. At the reference count
+ * this returns exactly 1, and multiplying by 1 is an exact no-op in IEEE 754 —
+ * which is what lets level 0 stay bit-identical to the shader as authored.
  */
-export const buildSkyFragmentShader = (withNebula: boolean): string =>
-  SKY_FRAGMENT_SHADER_TEMPLATE.replace(
-    NEBULA_PLACEHOLDER,
+const fbmNormalization = (octaves: number): number =>
+  fbmAmplitudeSum(REFERENCE_FBM_OCTAVES) / fbmAmplitudeSum(octaves);
+
+export type SkyShaderOptions = {
+  readonly withNebula: boolean;
+  readonly fbmOctaves: number;
+  readonly dustLanes: boolean;
+  readonly starMist: boolean;
+};
+
+/**
+ * Builds the sky shader for a preset.
+ *
+ * The sky is a sphere that fills the screen, so every term here is paid once
+ * per pixel and nothing else in the scene comes close to its fill cost. At
+ * level 0 it runs five `fbm` chains of five octaves each; at the bottom rung
+ * one chain of one octave, a twenty-fifth of the noise work, which is the
+ * single largest saving available on a fill-bound machine.
+ */
+export const buildSkyFragmentShader = ({
+  withNebula,
+  fbmOctaves,
+  dustLanes,
+  starMist,
+}: SkyShaderOptions): string => {
+  const octaves = Math.max(1, Math.round(fbmOctaves));
+  return SKY_FRAGMENT_SHADER_TEMPLATE.replace(
+    '/* NEBULA_CHUNK */',
     withNebula ? NEBULA_CHUNK : '',
-  );
+  )
+    .replace('/* DUST_CHUNK */', dustLanes ? DUST_CHUNK : DUST_CHUNK_OFF)
+    .replace(
+      '/* STAR_MIST_CHUNK */',
+      starMist ? STAR_MIST_CHUNK : STAR_MIST_CHUNK_OFF,
+    )
+    .replace('/* FAINT_SCATTER_CHUNK */', starMist ? FAINT_SCATTER_CHUNK : '')
+    .replace('__FBM_OCTAVES__', String(octaves))
+    .replace('__FBM_NORMALIZATION__', fbmNormalization(octaves).toFixed(8));
+};
 
 export const STAR_VERTEX_SHADER = `
 uniform float uPixelRatio;

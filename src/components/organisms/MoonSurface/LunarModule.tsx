@@ -1,6 +1,10 @@
 import { useGLTF, ContactShadows } from '@react-three/drei';
 
-export const LunarModule = () => {
+export const LunarModule = ({
+  shadowsEnabled = true,
+}: {
+  readonly shadowsEnabled?: boolean;
+}) => {
   const { scene } = useGLTF('/Apollo%20Lunar%20Module.meshopt.glb');
 
   return (
@@ -17,7 +21,9 @@ export const LunarModule = () => {
         everything it should shade is in place. Ten frames is a sixth of a
         second and still removes effectively all of the cost.
       */}
-      <ContactShadows opacity={0.4} scale={14} blur={2} far={4} frames={10} />
+      {shadowsEnabled ? (
+        <ContactShadows opacity={0.4} scale={14} blur={2} far={4} frames={10} />
+      ) : null}
     </group>
   );
 };
