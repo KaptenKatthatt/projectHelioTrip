@@ -128,6 +128,13 @@ export const useTimeManager = (): void => {
   useFrame((_state, delta) => {
     const store = useStore.getState();
     const isLab = store.gameMode === "lab";
+    /**
+     * Lab mode drives planets from the N-body integrator, so their positions
+     * no longer match the Keplerian ephemerides for `currentMs`. Leaving it
+     * has to force one Keplerian pass even if the clock is paused, or the
+     * planets stay parked wherever the physics left them.
+     */
+    const leftLabMode = !isLab && lastLabModeRef.current === "lab";
     const currentMs = advanceSimulationClock(store, delta);
 
     /**
@@ -173,7 +180,7 @@ export const useTimeManager = (): void => {
           -pState.pos.y * AU_SCALE,
         );
       }
-    } else if (timeChanged) {
+    } else if (timeChanged || leftLabMode) {
       // Standard Keplerian path; positions only change when time does.
       for (const planet of PLANETS) {
         const el = PLANET_ORBITAL_ELEMENTS[planet.id];
@@ -189,7 +196,7 @@ export const useTimeManager = (): void => {
      * Nineteen Kepler solves per frame were being thrown away whenever the
      * simulation was paused.
      */
-    if (!timeChanged) return;
+    if (!timeChanged && !leftLabMode) return;
 
     for (const moon of MOONS) {
       const el = MOON_ORBITAL_ELEMENTS[moon.id];

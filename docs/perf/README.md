@@ -22,17 +22,17 @@ npm run build
 npm run perf:baseline
 ```
 
-Always pin the quality level. Without `PERF_QUALITY` the adaptive controller is
-what gets measured, and no two runs are comparable:
-
-```sh
-PERF_QUALITY=0 npm run perf:baseline
-```
+There is nothing to pin. `getGraphicsTier` (`src/lib/graphicsTier.ts`) resolves
+the tier once per page load from pointer type, viewport width, core count and
+memory — there is no `?quality=` override and no runtime adaptive-quality
+controller. The harness always uses a 1920x1080 fine-pointer viewport, which
+always resolves to the `high` tier, so runs are already comparable. Change
+`graphicsTier.ts` if you want to measure another tier.
 
 To measure a weak GPU reproducibly on any machine, render through SwiftShader:
 
 ```sh
-PERF_SOFTWARE=1 PERF_QUALITY=4 npm run perf:baseline
+PERF_SOFTWARE=1 npm run perf:baseline
 ```
 
 Other knobs: `PERF_BASE_URL` (profile an already-running server instead of
@@ -40,8 +40,6 @@ spawning one), `PERF_SAMPLE_MS`, `PERF_WARMUP_MS`, `PERF_HEADLESS`.
 
 ## Reading the output
 
-`p50FrameMs` and `p90FrameMs` are the numbers to watch — they are what the
-runtime adaptive-quality controller reasons about, so harness output and
-controller decisions stay in the same units. Average FPS hides sustained
-stutter: a scene alternating 8 ms and 40 ms frames has a respectable average and
-feels awful.
+`p50FrameMs` and `p90FrameMs` are the numbers to watch. Average FPS hides
+sustained stutter: a scene alternating 8 ms and 40 ms frames has a respectable
+average and feels awful.

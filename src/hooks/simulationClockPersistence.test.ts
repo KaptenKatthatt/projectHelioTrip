@@ -103,4 +103,43 @@ describe("simulation playback and persistence", () => {
     expect(getSimulationTimeMs()).toBe(target.getTime());
     expect(useStore.getState().simulationTime).toEqual(target);
   });
+
+  /**
+   * `restoreFromShareLink` applies its partial through a raw `set`, bypassing
+   * the slice setter that moves the clock. Without an explicit nudge the scene
+   * keeps drawing "now" while the store holds the shared timestamp, and the
+   * next pause overwrites the restored value.
+   */
+  it("moves the live clock when a share link carries a timestamp", async () => {
+    const { useStore, getSimulationTimeMs } = await loadModules();
+    const sharedMs = Date.parse("2031-06-15T09:30:00.000Z");
+
+    useStore.getState().restoreFromShareLink({
+      bodyId: null,
+      simulationTimeMs: sharedMs,
+      timeScale: null,
+      gameMode: null,
+      missionId: null,
+      navigationMode: null,
+    });
+
+    expect(getSimulationTimeMs()).toBe(sharedMs);
+    expect(useStore.getState().simulationTime.getTime()).toBe(sharedMs);
+  });
+
+  it("leaves the clock alone for a share link without a timestamp", async () => {
+    const { useStore, getSimulationTimeMs } = await loadModules();
+    const before = getSimulationTimeMs();
+
+    useStore.getState().restoreFromShareLink({
+      bodyId: "mars",
+      simulationTimeMs: null,
+      timeScale: null,
+      gameMode: null,
+      missionId: null,
+      navigationMode: null,
+    });
+
+    expect(getSimulationTimeMs()).toBe(before);
+  });
 });

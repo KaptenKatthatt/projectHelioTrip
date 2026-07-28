@@ -12,11 +12,14 @@ import { chromium } from "@playwright/test";
  * a per-module network waterfall. Every baseline committed before this change
  * was captured that way and reads ~1.2 FPS, which says nothing about the app.
  *
+ * The graphics tier needs no pinning: `getGraphicsTier` resolves it from the
+ * pointer type, viewport width, core count and memory, and the fixed
+ * 1920x1080 desktop viewport below always lands on `high`. There is no
+ * `?quality=` override and no runtime adaptive-quality controller, so runs are
+ * already comparable to each other.
+ *
  * Env knobs:
  * - `PERF_BASE_URL`   profile an already-running server instead of spawning one
- * - `PERF_QUALITY`    pin the graphics quality level (see `?quality=`); without
- *                     this the adaptive controller is what gets measured, and
- *                     no two runs are comparable
  * - `PERF_SOFTWARE=1` render through SwiftShader, i.e. a reproducible weak GPU
  * - `PERF_SAMPLE_MS`, `PERF_WARMUP_MS`, `PERF_HEADLESS`
  */
@@ -27,7 +30,6 @@ const SAMPLE_MS = Number(process.env.PERF_SAMPLE_MS ?? "30000");
 const WARMUP_MS = Number(process.env.PERF_WARMUP_MS ?? "5000");
 const HEADLESS = process.env.PERF_HEADLESS === "1";
 const SOFTWARE_GPU = process.env.PERF_SOFTWARE === "1";
-const QUALITY = process.env.PERF_QUALITY ?? "";
 const SCENE_READY_TIMEOUT_MS = 60_000;
 
 const distIndexPath = path.join(process.cwd(), "dist", "index.html");
@@ -102,13 +104,6 @@ const startPreviewServer = async () => {
   };
 };
 
-const buildTargetUrl = (baseUrl) => {
-  if (!QUALITY) return baseUrl;
-  const url = new URL(baseUrl);
-  url.searchParams.set("quality", QUALITY);
-  return url.toString();
-};
-
 const launchArgs = () => {
   const args = [
     "--disable-background-timer-throttling",
@@ -178,8 +173,8 @@ const collectFrameStats = async (page, sampleMs) =>
       averageFps,
       onePercentLowFps,
       avgFrameMs,
-      // p50/p90 mirror what the adaptive controller reasons about at runtime,
-      // so harness output and controller decisions speak the same language.
+      // p50/p90 are the numbers to watch: average FPS hides sustained stutter,
+      // and a scene alternating 8 ms and 40 ms frames averages out fine.
       p50FrameMs: percentile(0.5),
       p90FrameMs: percentile(0.9),
       p95FrameMs: percentile(0.95),
@@ -195,16 +190,19 @@ const collectFrameStats = async (page, sampleMs) =>
 
 const run = async () => {
   const server = EXTERNAL_BASE_URL ? null : await startPreviewServer();
-  const baseUrl = EXTERNAL_BASE_URL || server.url;
-  const targetUrl = buildTargetUrl(baseUrl);
+  const targetUrl = EXTERNAL_BASE_URL || server.url;
 
-  const browser = await chromium.launch({
-    headless: HEADLESS,
-    args: launchArgs(),
-  });
-
+  // The launch itself is inside the try: if Playwright fails to start, the
+  // preview server still has to be torn down or it holds --strictPort 4173
+  // and every later run times out waiting for a port it can never bind.
+  let browser;
   let result;
   try {
+    browser = await chromium.launch({
+      headless: HEADLESS,
+      args: launchArgs(),
+    });
+
     const context = await browser.newContext({
       viewport: { width: 1920, height: 1080 },
     });
@@ -248,7 +246,6 @@ const run = async () => {
       baseUrl: targetUrl,
       servedFrom: server ? "vite preview (production build)" : "external",
       renderer: SOFTWARE_GPU ? "swiftshader" : "default",
-      qualityLevel: QUALITY || "adaptive",
       sampleMs: SAMPLE_MS,
       warmupMs: WARMUP_MS,
       measuredAt: new Date().toISOString(),
@@ -256,7 +253,7 @@ const run = async () => {
       cpuProfile: { totalSamples, topHotspots },
     };
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
     if (server) await server.stop();
   }
 
@@ -267,7 +264,7 @@ const run = async () => {
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z")
     .replace("T", "-");
-  const suffix = `${SOFTWARE_GPU ? "-swiftshader" : ""}${QUALITY ? `-q${QUALITY}` : ""}`;
+  const suffix = SOFTWARE_GPU ? "-swiftshader" : "";
   const jsonPath = path.join(outDir, `baseline-${stamp}${suffix}.json`);
   await fs.writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
 
@@ -277,7 +274,6 @@ const run = async () => {
     `- URL: \`${result.baseUrl}\``,
     `- Served from: ${result.servedFrom}`,
     `- Renderer: ${result.renderer}`,
-    `- Quality level: ${result.qualityLevel}`,
     `- Warmup: ${result.warmupMs} ms`,
     `- Sample window: ${result.sampleMs} ms`,
     `- Captured at: ${result.measuredAt}`,

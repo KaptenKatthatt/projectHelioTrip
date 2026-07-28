@@ -4,7 +4,7 @@ import type { BodyId } from '../lib/bodies';
 import { isLocale } from '../i18n/translations';
 import { analytics } from '../lib/analytics';
 import { daysBetweenDateKeys, todayDateKey } from '../lib/dateUtils';
-import { getSimulationTimeMs } from '../lib/simulationClock';
+import { getSimulationTimeMs, setSimulationTimeMs } from '../lib/simulationClock';
 import {
   sanitizeAchievements,
   sanitizeDiscoveredConstellations,
@@ -354,6 +354,14 @@ export const useStore = create<Store>()(
         restoreFromShareLink: (snapshot) => {
           const state = get();
           const partial = buildShareLinkPartialState(snapshot, state);
+          /**
+           * The live clock is what every renderer reads; this partial is
+           * applied with a raw `set`, so it would otherwise leave the store
+           * holding the shared timestamp while the scene kept drawing "now".
+           */
+          if (partial.simulationTime) {
+            setSimulationTimeMs(partial.simulationTime.getTime());
+          }
           set(partial as Partial<Store>);
           trackShareLinkRestoreAnalytics(snapshot, state);
         },
