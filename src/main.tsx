@@ -5,12 +5,15 @@ import './index.css';
 import { App } from './App';
 import { lazyWithRecovery } from './lib/lazyImport';
 import { initializeQuality } from './lib/quality/initializeQuality';
+import { bindQualityPreference } from './lib/quality/bindQualityPreference';
 
 registerSW({ immediate: true });
 
 // Before React renders anything, so the scene never mounts at a level the
-// machine cannot hold and then has to rebuild.
+// machine cannot hold and then has to rebuild. The preference binding runs
+// straight after, since a pinned level must win over the boot guess.
 initializeQuality();
+bindQualityPreference();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

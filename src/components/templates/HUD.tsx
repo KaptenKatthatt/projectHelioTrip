@@ -7,6 +7,7 @@ import { HudPrimaryNavRegion } from './hud/HudPrimaryNavRegion';
 import { HudTopBarRegion } from './hud/HudTopBarRegion';
 import { MobileContextStrip } from '../molecules/MobileContextStrip';
 import { CameraTool } from '../molecules/CameraTool';
+import { QualityNoticeToast } from '../molecules/QualityNoticeToast';
 import { LabOverlay } from '../organisms/LabOverlay';
 import { useHudLogic } from './hud/useHudLogic';
 import { useStore } from '../../store/useStore';
@@ -135,6 +136,7 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
       />
       <HudOverlayRegion />
       {mobileLayout && gameMode !== 'lab' && <CameraTool className="fixed bottom-32 left-4 z-10" />}
+      <QualityNoticeToast />
       {gameMode === 'lab' ? <LabOverlay /> : null}
       {isLanded && (
         <Suspense

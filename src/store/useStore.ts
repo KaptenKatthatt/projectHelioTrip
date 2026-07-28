@@ -5,6 +5,7 @@ import { isLocale } from '../i18n/translations';
 import { analytics } from '../lib/analytics';
 import { daysBetweenDateKeys, todayDateKey } from '../lib/dateUtils';
 import { getSimulationTimeMs, setSimulationTimeMs } from '../lib/simulationClock';
+import { isGraphicsQualityPreference } from '../lib/quality/qualityLevels';
 import {
   sanitizeAchievements,
   sanitizeDiscoveredConstellations,
@@ -384,6 +385,7 @@ export const useStore = create<Store>()(
         quizStreakDays: state.quizStreakDays,
         lastQuizCompletedOn: state.lastQuizCompletedOn,
         discoveredConstellations: [...state.discoveredConstellations],
+        graphicsQuality: state.graphicsQuality,
       }),
       merge: (persisted, current): Store => {
         const p = persisted as Partial<PersistedState> | undefined;
@@ -421,6 +423,9 @@ export const useStore = create<Store>()(
           lastQuizCompletedOn:
             typeof p?.lastQuizCompletedOn === 'string' ? p?.lastQuizCompletedOn : null,
           discoveredConstellations: sanitizeDiscoveredConstellations(p?.discoveredConstellations),
+          graphicsQuality: isGraphicsQualityPreference(p?.graphicsQuality)
+            ? p.graphicsQuality
+            : 'auto',
         };
       },
     },

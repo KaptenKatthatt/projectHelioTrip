@@ -65,6 +65,14 @@ export type Translation = {
     bodyInfo: string;
     timeControls: string;
     start: string;
+    graphicsQuality: string;
+    graphicsQualityAuto: string;
+    graphicsQualityHigh: string;
+    graphicsQualityLow: string;
+    graphicsQualityAutoHint: string;
+    graphicsQualityCurrent: string;
+    graphicsQualityLowered: string;
+    graphicsQualityNoticeDismiss: string;
     aboutOpen: string;
     aboutTitle: string;
     aboutClose: string;

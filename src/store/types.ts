@@ -7,6 +7,7 @@ import type { FactCardLevel } from '../lib/learning/bodyContent';
 import type { SimulationSlice } from './slices/createSimulationSlice';
 import type { GameSlice } from './slices/createGameSlice';
 import type { ShareLinkState } from '../lib/shareLink';
+import type { GraphicsQualityPreference } from '../lib/quality/qualityLevels';
 
 export type Store = SimulationSlice &
   GameSlice & {
@@ -32,4 +33,5 @@ export type PersistedState = {
   quizStreakDays: number;
   lastQuizCompletedOn: string | null;
   discoveredConstellations: ConstellationId[];
+  graphicsQuality: GraphicsQualityPreference;
 };

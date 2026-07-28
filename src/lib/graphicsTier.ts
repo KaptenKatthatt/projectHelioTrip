@@ -31,9 +31,13 @@ let cachedBucket: RuntimeDeviceBucket | null = null;
 const detectRuntimeDeviceBucket = (): RuntimeDeviceBucket => {
   if (typeof window === 'undefined') return 'desktop';
 
+  // Guarded: every real browser has matchMedia, but a host that lacks it
+  // should fall back to the desktop assumption rather than throw during boot.
+  const matches = (query: string): boolean =>
+    typeof window.matchMedia === 'function' && window.matchMedia(query).matches;
+
   const mobileLike =
-    window.matchMedia('(pointer: coarse)').matches ||
-    window.matchMedia('(max-width: 768px)').matches;
+    matches('(pointer: coarse)') || matches('(max-width: 768px)');
 
   if (!mobileLike) return 'desktop';
 
