@@ -21,6 +21,8 @@
     "perf:baseline": "node scripts/perf-baseline.mjs",
     "textures": "tsx scripts/download-textures.ts",
     "textures:surface": "tsx scripts/optimize-surface-textures.ts",
+    "textures:variants": "node scripts/generate-texture-variants.mjs",
+    "textures:variants:check": "node scripts/generate-texture-variants.mjs --check",
     "icons:pwa": "tsx scripts/generate-pwa-icons.ts",
     "optimize:png": "tsx scripts/optimize-png.ts",
     "models:compress": "tsx scripts/compress-models.ts",

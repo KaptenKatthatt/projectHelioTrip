@@ -30,6 +30,7 @@ import { TIME_SPEED_PRESETS } from '../lib/timePlayback';
 import { XP_AWARDS, resolveTitle } from '../lib/learning/xp';
 import { createSimulationSlice } from './slices/createSimulationSlice';
 import { createGameSlice } from './slices/createGameSlice';
+import { PERSISTED_PREFERENCES_KEY } from './persistKey';
 
 // Re-export for backward compatibility (tests, etc.)
 export type { Store } from './types';
@@ -369,7 +370,7 @@ export const useStore = create<Store>()(
       };
     },
     {
-      name: 'heliotrip-preferences',
+      name: PERSISTED_PREFERENCES_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state): PersistedState => ({
         locale: state.locale,
