@@ -44,6 +44,30 @@ bands, Earth clouds, Saturn rings) before committing.
 **Decision needed from owner:** accept "near-lossless" (UASTC) for the
 planet textures in exchange for the VRAM/perf wins, or keep byte-exact WebP.
 
+## three.js loads before the scene does (parked: large refactor)
+
+**What it is.** The `useStore` chunk — loaded eagerly at boot, before the
+lazy `Scene` chunk is even requested — weighs 765KB (197KB gzipped), and
+most of that is three.js itself. It gets there through the data model, not
+the renderer: `createSimulationSlice.ts`, `planets.ts`, `moons.ts`,
+`bodies.ts` and `kepler.ts` all import `Vector3` (and friends) for
+positions and orbital math, and the store imports them all. So every visitor
+downloads and parses all of three.js on the critical path of first paint,
+including the parse cost on exactly the weak machines the quality ladder
+exists for.
+
+**Expected win.** Roughly 197KB gzip off the eager download and the
+associated parse/compile time (likely 100-300ms on a weak CPU) moved behind
+the scene's lazy boundary, where the loading screen already covers it.
+
+**Why it is parked.** The fix is to stop the eager data model from speaking
+in three types — either a local `{x, y, z}` vector type converted at the
+scene boundary, or moving the Vector3-producing math into the scene chunk.
+That touches the store's public types, every slice, and the orbital-math
+call sites at once; it is a coordinated refactor with real regression risk,
+not a sweep item. If picked up: `npx vite build` and inspecting which chunk
+`WebGLRenderer` lands in is the one-line acceptance test.
+
 ## Smaller parked items
 
 - **`.vercelignore` / `SURFACE_TEXTURES` dual lists.** Authoring-source
