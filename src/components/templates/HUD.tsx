@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { HudControlRailRegion } from './hud/HudControlRailRegion';
 import { HudDetailRegion } from './hud/HudDetailRegion';
 import { HudMobileNavRegion } from './hud/HudMobileNavRegion';
@@ -55,6 +55,25 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
 
   const isLanded = useStore((s) => s.isLanded);
   const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+
+  /**
+   * Held stable so `HudDetailRegion`'s memo boundary survives. An element
+   * built inline in the prop list is a new object on every render of `HUD`,
+   * which is enough on its own to re-render the largest region in the tree
+   * whether or not anything it displays actually changed.
+   */
+  const mobileBottomNav = useMemo(
+    () => (
+      <HudMobileNavRegion
+        mobileLayout={mobileLayout}
+        openNavSheet={openNavSheet}
+        onToggleSheet={handleToggleNavSheet}
+        gameMode={gameMode}
+        starsContextActive={gameMode === 'explore' && selectedConstellation !== null}
+      />
+    ),
+    [mobileLayout, openNavSheet, handleToggleNavSheet, gameMode, selectedConstellation],
+  );
 
   // Prefetch the surface chunks in idle time so they are already cached when
   // a landing starts. The Moon landing flips isLandedOnMoon only 1500ms after
@@ -124,15 +143,7 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
         mobileBodyTitle={mobileBodyTitle}
         mobileBodyColor={mobileBodyColor}
         setMobilePlanetInfoSheetOpen={setMobilePlanetInfoSheetOpen}
-        mobileBottomNav={
-          <HudMobileNavRegion
-            mobileLayout={mobileLayout}
-            openNavSheet={openNavSheet}
-            onToggleSheet={handleToggleNavSheet}
-            gameMode={gameMode}
-            starsContextActive={gameMode === 'explore' && selectedConstellation !== null}
-          />
-        }
+        mobileBottomNav={mobileBottomNav}
       />
       <HudOverlayRegion />
       {mobileLayout && gameMode !== 'lab' && <CameraTool className="fixed bottom-32 left-4 z-10" />}
