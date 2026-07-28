@@ -17,18 +17,29 @@
  *
  *   node scripts/generate-texture-variants.mjs [--check]
  *
- * `--check` verifies every expected variant exists and that the generated
- * manifest still describes the textures on disk, without writing anything.
- * That is what CI runs.
+ * `--check` verifies every expected variant exists, that the generated
+ * manifest still describes the textures on disk, and that every source's
+ * content hash matches the one recorded at generation time -- so a source
+ * replaced with new artwork at the same dimensions is caught, not just one
+ * whose size changed. Hashes, unlike mtimes, survive a fresh checkout. That
+ * is what CI runs; it writes nothing.
  */
 
-import { readdir, stat, mkdir, writeFile, readFile } from 'node:fs/promises';
+import { readdir, stat, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import sharp from 'sharp';
 
 const TEXTURE_ROOT = path.join(process.cwd(), 'public', 'textures');
+/**
+ * Content hash of every source at the time its variants were generated.
+ * Checked in beside the script; read only by `--check`. This is what lets CI
+ * catch a source replaced with new artwork at the *same* dimensions -- the
+ * manifest comparison alone only sees sizes.
+ */
+const HASHES_PATH = path.join(process.cwd(), 'scripts', 'texture-variant-hashes.json');
 
 /**
  * Must stay in step with the `textureMaxSize` values in
@@ -44,13 +55,15 @@ const WEBP_QUALITY = 82;
 const isSourceTexture = (name) =>
   name.endsWith('.webp') && !/-\d+\.webp$/.test(name);
 
-const collectSources = async (dir) => {
+const isVariantTexture = (name) => /-\d+\.webp$/.test(name);
+
+const collectFiles = async (dir, predicate) => {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      out.push(...(await collectSources(full)));
-    } else if (isSourceTexture(entry.name)) {
+      out.push(...(await collectFiles(full, predicate)));
+    } else if (predicate(entry.name)) {
       out.push(full);
     }
   }
@@ -62,7 +75,7 @@ export const variantPath = (source, size) =>
 
 const run = async () => {
   const check = process.argv.includes('--check');
-  const sources = (await collectSources(TEXTURE_ROOT)).sort();
+  const sources = (await collectFiles(TEXTURE_ROOT, isSourceTexture)).sort();
   if (sources.length === 0) {
     console.error('No source textures found under public/textures.');
     process.exitCode = 1;
@@ -72,53 +85,75 @@ const run = async () => {
   let written = 0;
   let skipped = 0;
   const missing = [];
+  const staleSources = [];
+  /** Every variant a current source justifies; anything else on disk is an orphan. */
+  const expectedVariants = new Set();
   /** url -> { native, sizes } for the generated manifest. */
   const manifest = new Map();
+  /** repo-relative source path -> sha256 of its bytes. */
+  const hashes = {};
+  const recordedHashes = existsSync(HASHES_PATH)
+    ? JSON.parse(await readFile(HASHES_PATH, 'utf8'))
+    : {};
 
   for (const source of sources) {
-    const meta = await sharp(source).metadata();
+    const rel = path.relative(process.cwd(), source).split(path.sep).join('/');
+    const payload = await readFile(source);
+    hashes[rel] = createHash('sha256').update(payload).digest('hex');
+
+    // One decode per source, shared by every size below. The image is handed
+    // to sharp as bytes we already read for the hash, so the file is touched
+    // exactly once however many variants it yields.
+    const image = sharp(payload);
+    const meta = await image.metadata();
     const longest = Math.max(meta.width ?? 0, meta.height ?? 0);
 
-    for (const size of VARIANT_SIZES) {
-      const target = variantPath(source, size);
-      const url = `/${path.relative(path.join(process.cwd(), 'public'), source).split(path.sep).join('/')}`;
-      const entry = manifest.get(url) ?? { native: longest, sizes: [] };
-      if (longest > size) entry.sizes.push(size);
-      manifest.set(url, entry);
+    const url = `/${path.relative(path.join(process.cwd(), 'public'), source).split(path.sep).join('/')}`;
+    const wantedSizes = VARIANT_SIZES.filter((size) => longest > size);
+    manifest.set(url, { native: longest, sizes: wantedSizes });
+    skipped += VARIANT_SIZES.length - wantedSizes.length;
+    for (const size of wantedSizes) expectedVariants.add(variantPath(source, size));
 
-      // Nothing to gain from upscaling: a rung whose cap is at or above the
-      // source resolution simply uses the source file.
-      if (longest <= size) {
-        skipped += 1;
-        continue;
-      }
-
-      if (check) {
+    if (check) {
+      // Mtimes would be the obvious staleness signal, but git records none
+      // and writes a tree in index order -- on a fresh checkout every variant
+      // looks older than its source. Content hashes survive a checkout.
+      if (recordedHashes[rel] !== hashes[rel]) staleSources.push(rel);
+      for (const size of wantedSizes) {
+        const target = variantPath(source, size);
         if (!existsSync(target)) {
           missing.push(path.relative(process.cwd(), target));
         }
-        // Deliberately no mtime comparison. Git does not record mtimes, and it
-        // writes a tree in index order -- `diffuse-1024.webp` sorts before
-        // `diffuse.webp`, so on any fresh checkout every variant looks older
-        // than its source and the check would fail for all of them. Drift in
-        // the source is caught instead by the manifest comparison below, which
-        // re-reads each source's real dimensions with sharp.
-        continue;
       }
-
-      await mkdir(path.dirname(target), { recursive: true });
-      await sharp(source)
-        .resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: WEBP_QUALITY })
-        .toFile(target);
-
-      const { size: bytes } = await stat(target);
-      console.log(
-        `${path.relative(process.cwd(), target)}  ${(bytes / 1024).toFixed(0)} KB`,
-      );
-      written += 1;
+      continue;
     }
+
+    await Promise.all(
+      wantedSizes.map(async (size) => {
+        const target = variantPath(source, size);
+        await mkdir(path.dirname(target), { recursive: true });
+        await image
+          .clone()
+          .resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: WEBP_QUALITY })
+          .toFile(target);
+        const { size: bytes } = await stat(target);
+        console.log(
+          `${path.relative(process.cwd(), target)}  ${(bytes / 1024).toFixed(0)} KB`,
+        );
+        written += 1;
+      }),
+    );
   }
+
+  /**
+   * A variant whose source shrank (or vanished) is not referenced by the
+   * manifest, so it can never 404 -- but it stays committed and deployed
+   * forever, invisible to a check that only looks for *missing* files.
+   */
+  const orphans = (await collectFiles(TEXTURE_ROOT, isVariantTexture)).filter(
+    (file) => !expectedVariants.has(file),
+  );
 
   const manifestSource = renderManifest(manifest);
   const manifestPath = path.join(
@@ -133,29 +168,48 @@ const run = async () => {
     const onDisk = existsSync(manifestPath)
       ? await readFile(manifestPath, 'utf8')
       : '';
-    const manifestDrifted = onDisk !== manifestSource;
+    // Compared with line endings normalized: a Windows checkout with
+    // autocrlf rewrites the file to CRLF, which is not drift.
+    const normalize = (text) => text.replaceAll('\r\n', '\n');
+    const manifestDrifted = normalize(onDisk) !== normalize(manifestSource);
     if (manifestDrifted) {
       console.error(
         'src/lib/quality/textureVariants.generated.ts does not match the textures on disk.',
       );
     }
-    if (missing.length || manifestDrifted) {
+    if (missing.length || staleSources.length || orphans.length || manifestDrifted) {
       for (const file of missing) console.error(`missing variant: ${file}`);
+      for (const file of staleSources) {
+        console.error(`source changed since variants were generated: ${file}`);
+      }
+      for (const file of orphans) {
+        console.error(
+          `orphaned variant (no current source justifies it): ${path.relative(process.cwd(), file)}`,
+        );
+      }
       console.error(
         '\nRun `node scripts/generate-texture-variants.mjs` and commit the result.',
       );
       process.exitCode = 1;
       return;
     }
-    console.log(`All texture variants present for ${sources.length} sources.`);
+    console.log(
+      `All texture variants present and sources unchanged for ${sources.length} sources.`,
+    );
     return;
   }
 
+  for (const file of orphans) {
+    await rm(file);
+    console.log(`removed orphan ${path.relative(process.cwd(), file)}`);
+  }
   await writeFile(manifestPath, manifestSource);
+  await writeFile(HASHES_PATH, `${JSON.stringify(hashes, null, 2)}\n`);
   console.log(
     `\n${written} variants written, ${skipped} skipped (source already at or below the cap).`,
   );
   console.log('Manifest: src/lib/quality/textureVariants.generated.ts');
+  console.log('Hashes:   scripts/texture-variant-hashes.json');
 };
 
 const renderManifest = (manifest) => {
@@ -187,4 +241,10 @@ ${entries}
 `;
 };
 
-await run();
+// Only when executed as a script. The unit tests import `VARIANT_SIZES` from
+// this module, and an unconditional top-level run() would silently regenerate
+// every variant as a side effect of running the test suite.
+const invokedDirectly =
+  process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
+if (invokedDirectly) await run();
+export {};

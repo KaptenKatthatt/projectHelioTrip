@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { resolveTextureUrl } from './textureResolution';
 import { TEXTURE_VARIANTS } from './textureVariants.generated';
 import { QUALITY_LEVELS, QUALITY_PRESETS } from './qualityLevels';
+// The generator itself, so the agreement below is structural rather than a
+// third hand-maintained copy of the size list.
+import { VARIANT_SIZES } from '../../../scripts/generate-texture-variants.mjs';
 
 const SOURCES = Object.keys(TEXTURE_VARIANTS);
 const OVERSIZED = '/textures/europa/diffuse.webp'; // native 4096
@@ -81,7 +84,7 @@ describe('the ladder and the generator agree', () => {
    * actually emits, or the app asks for files that were never written.
    */
   it('uses only caps the generator emits, or one above every source', () => {
-    const generated = new Set([2048, 1024, 512]);
+    const generated = new Set(VARIANT_SIZES);
     const largestNative = Math.max(
       ...Object.values(TEXTURE_VARIANTS).map((entry) => entry.native),
     );

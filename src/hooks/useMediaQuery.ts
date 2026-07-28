@@ -12,11 +12,13 @@ import { useCallback, useSyncExternalStore } from "react";
 const mediaQueryLists = new Map<string, MediaQueryList>();
 
 /**
- * A cached list must never outlive the `matchMedia` that produced it — its
- * `matches` would keep answering for the old environment. Real browsers never
- * swap the function, but anything that does (a test harness, a polyfill
- * installed late) would otherwise be silently ignored for the rest of the
- * session, which is a stale answer rather than a slow one.
+ * A cached list must not outlive the `matchMedia` that produced it — its
+ * `matches` would keep answering for the old environment. This guard keeps
+ * *snapshots* and *newly mounted* consumers correct after a swap; a component
+ * already mounted still holds its change listener on the old list, because
+ * nothing announces the swap to an existing subscription. That boundary is
+ * acceptable: no real browser replaces `matchMedia` mid-session, and the test
+ * harness that does (`mockMatchMedia`) installs it before rendering.
  */
 let cachedMatchMedia: typeof window.matchMedia | null = null;
 

@@ -371,6 +371,10 @@ export const useStore = create<Store>()(
     },
     {
       name: PERSISTED_PREFERENCES_KEY,
+      // If a migrate() is ever added here, `readPersistedPreference` in
+      // persistKey.ts parses this payload raw before the store exists and
+      // must be taught the same migration, or pre-store readers (texture
+      // resolution) silently lose the fields they look for.
       storage: createJSONStorage(() => localStorage),
       partialize: (state): PersistedState => ({
         locale: state.locale,

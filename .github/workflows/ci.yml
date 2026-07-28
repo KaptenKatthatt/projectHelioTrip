@@ -9,9 +9,10 @@ on:
       - "package.json"
       - "package-lock.json"
       - "playwright.config.ts"
-      # Needed by the texture-variant sync check: a replaced source texture is
-      # exactly the drift it exists to catch, and it touches nothing else.
-      - "public/**"
+      # Needed by the texture-variant sync check; scoped to the folder that
+      # check actually reads so a GLB or icon change does not run two full
+      # jobs (including a 20-minute-budget Playwright container) for nothing.
+      - "public/textures/**"
       - "scripts/**"
       - "src/**"
       - "vite.config.ts"
@@ -26,7 +27,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "playwright.config.ts"
-      - "public/**"
+      - "public/textures/**"
       - "scripts/**"
       - "src/**"
       - "vite.config.ts"

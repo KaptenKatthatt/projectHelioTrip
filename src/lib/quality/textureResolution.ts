@@ -1,7 +1,7 @@
 import { QUALITY_PRESETS, isQualityLevel, type QualityLevel } from './qualityLevels';
 import { TEXTURE_VARIANTS } from './textureVariants.generated';
 import { resolveQualitySeed } from './initializeQuality';
-import { PERSISTED_PREFERENCES_KEY } from '../../store/persistKey';
+import { readPersistedPreference } from '../../store/persistKey';
 
 /**
  * Picks which copy of a texture to load.
@@ -36,20 +36,13 @@ export const resetTextureResolution = (): void => {
  * it the seed alone would decide, and someone who had explicitly chosen High
  * on a machine the probe judged weak would keep being served 512px textures
  * — the one setting in the app whose whole purpose is to overrule that
- * judgement, silently ignored for the thing it costs the most.
+ * judgement, silently ignored for the thing it costs the most. The raw
+ * storage shape is parsed by `readPersistedPreference`, next to the persist
+ * key, so there is exactly one place that knows it.
  */
 const readPinnedLevel = (): QualityLevel | null => {
-  try {
-    const raw = localStorage.getItem(PERSISTED_PREFERENCES_KEY);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    const preference = (parsed as { state?: { graphicsQuality?: unknown } })
-      ?.state?.graphicsQuality;
-    return isQualityLevel(preference) ? preference : null;
-  } catch {
-    // Private mode, or a shape we do not recognise. The seed is a fine answer.
-    return null;
-  }
+  const preference = readPersistedPreference('graphicsQuality');
+  return isQualityLevel(preference) ? preference : null;
 };
 
 export const getTextureMaxSize = (): number => {
