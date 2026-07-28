@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { type Group } from 'three';
 import { SATELLITES } from '../lib/satellites';
 import type { SatelliteDefinition } from '../lib/satellites';
-import { useStore } from '../store/useStore';
+import { getSimulationTimeMs } from '../lib/simulationClock';
 import {
   getLivePosition,
   getLiveSatelliteOffset,
@@ -44,7 +44,7 @@ export const Satellite = ({ satellite }: Props) => {
   }, [satellite]);
 
   useFrame(() => {
-    const simMs = useStore.getState().simulationTime.getTime();
+    const simMs = getSimulationTimeMs();
     if (lastSimMsRef.current === simMs) return;
     lastSimMsRef.current = simMs;
 

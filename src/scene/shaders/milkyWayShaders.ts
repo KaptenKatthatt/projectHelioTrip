@@ -7,7 +7,31 @@ void main() {
 }
 `;
 
-export const SKY_FRAGMENT_SHADER = `
+/**
+ * The nebula term costs three of this shader's eight `fbm` calls — each five
+ * octaves of four `sin()` — across a sphere that fills the screen. Every preset
+ * currently sets `uNebulaOpacity` to zero, which multiplied all of that work
+ * away at the last line. It is compiled in only when a preset actually asks
+ * for it, via `buildSkyFragmentShader`, so the feature survives without
+ * costing anything while it is switched off.
+ */
+const NEBULA_CHUNK = `
+  float nebulaFieldA = fbm(vec2(dir.x * 3.2 + dir.z * 1.5, latitude * 12.0) + vec2(2.0, 11.0));
+  float nebulaFieldB = fbm(vec2(dir.x * 6.0 - dir.z * 2.8, latitude * 20.0) + vec2(-6.0, 7.0));
+  float nebulaMask = smoothstep(0.84, 0.96, nebulaFieldA * 0.7 + nebulaFieldB * 0.5);
+  nebulaMask *= smoothstep(0.08, 0.018, bandDistance);
+
+  vec3 nebulaColorA = vec3(0.035, 0.07, 0.14);
+  vec3 nebulaColorB = vec3(0.08, 0.045, 0.09);
+  vec3 nebulaColor = mix(
+    nebulaColorA,
+    nebulaColorB,
+    fbm(vec2(dir.x * 4.2 + dir.z * 2.1, latitude * 15.0) + vec2(20.0, -4.0))
+  );
+  color += nebulaColor * (nebulaMask * uNebulaOpacity * 0.09);
+`;
+
+const SKY_FRAGMENT_SHADER_TEMPLATE = `
 uniform float uBandIntensity;
 uniform float uDustLaneOpacity;
 uniform float uNebulaOpacity;
@@ -67,11 +91,6 @@ void main() {
   float dustMask = smoothstep(0.62, 0.92, dustNoiseA * 0.7 + dustNoiseB * 0.5);
   float dustLanes = dustMask * bandGlow * uDustLaneOpacity;
 
-  float nebulaFieldA = fbm(vec2(dir.x * 3.2 + dir.z * 1.5, latitude * 12.0) + vec2(2.0, 11.0));
-  float nebulaFieldB = fbm(vec2(dir.x * 6.0 - dir.z * 2.8, latitude * 20.0) + vec2(-6.0, 7.0));
-  float nebulaMask = smoothstep(0.84, 0.96, nebulaFieldA * 0.7 + nebulaFieldB * 0.5);
-  nebulaMask *= smoothstep(0.08, 0.018, bandDistance);
-
   vec3 baseSpace = vec3(0.00001, 0.000015, 0.00004) +
     vec3(0.00002, 0.00003, 0.00008) * pow(max(0.0, 1.0 - abs(latitude)), 5.2);
   vec3 bandColor = mix(
@@ -79,17 +98,10 @@ void main() {
     vec3(0.06, 0.065, 0.09),
     starMist * 0.62 + bulge * 0.38
   );
-  vec3 nebulaColorA = vec3(0.035, 0.07, 0.14);
-  vec3 nebulaColorB = vec3(0.08, 0.045, 0.09);
-  vec3 nebulaColor = mix(
-    nebulaColorA,
-    nebulaColorB,
-    fbm(vec2(dir.x * 4.2 + dir.z * 2.1, latitude * 15.0) + vec2(20.0, -4.0))
-  );
 
   vec3 color = baseSpace;
   color += bandColor * ((bandGlow * 0.02 + bandCore * 0.085 + bulge * 0.008) * uBandIntensity);
-  color += nebulaColor * (nebulaMask * uNebulaOpacity * 0.09);
+/* NEBULA_CHUNK */
   color *= 1.0 - dustLanes * (0.74 + bandCore * 0.18);
 
   float faintScatter = fbm(vec2(dir.x * 18.0 + dir.z * 4.0, latitude * 18.0) + vec2(1.7, 5.2));
@@ -98,6 +110,19 @@ void main() {
   gl_FragColor = vec4(color, 1.0);
 }
 `;
+
+const NEBULA_PLACEHOLDER = '/* NEBULA_CHUNK */';
+
+/**
+ * Builds the sky shader for a preset. Passing `false` drops three full
+ * five-octave `fbm` evaluations per fragment that would otherwise be computed
+ * and then multiplied by a zero uniform.
+ */
+export const buildSkyFragmentShader = (withNebula: boolean): string =>
+  SKY_FRAGMENT_SHADER_TEMPLATE.replace(
+    NEBULA_PLACEHOLDER,
+    withNebula ? NEBULA_CHUNK : '',
+  );
 
 export const STAR_VERTEX_SHADER = `
 uniform float uPixelRatio;

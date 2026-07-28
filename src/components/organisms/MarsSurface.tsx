@@ -11,6 +11,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { CanvasCapture } from '../../scene/CanvasCapture';
 import { MARS_SURFACE_BG_CLASS } from './surfaceBackgrounds';
 import { terrainRng } from '../../lib/terrainRng';
 import * as THREE from 'three';
@@ -283,8 +284,15 @@ const MarsRoverScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }
     : [8, 3, 8];
 
   return (
-    <Canvas shadows camera={{ position: initialCameraPosition, fov: 45 }}>
+    <Canvas
+      shadows
+      camera={{ position: initialCameraPosition, fov: 45 }}
+      // Without this R3F uses the raw devicePixelRatio, so a 4K display
+      // rendered this shadowed, fogged terrain at DPR 3.
+      dpr={[1, 2]}
+    >
       <Suspense fallback={null}>
+        <CanvasCapture />
         <CameraZoomController
           isFlyingIn={isFlyingIn}
           setIsFlyingIn={setIsFlyingIn}

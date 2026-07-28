@@ -54,6 +54,34 @@ const buildOrbitPoints = (
   return points;
 };
 
+/**
+ * There are only a handful of (multiplier, scale) pairs the camera can reach,
+ * and the same nine rings get rebuilt every time one of the distance
+ * thresholds is crossed — around eight thousand fresh Vector3 instances, right
+ * in the middle of a fly-through. Each combination is built once and kept.
+ */
+const orbitVariantCache = new Map<string, readonly OrbitLineData[]>();
+
+const getOrbitVariant = (
+  maxSegmentMultiplier: number,
+  cameraQualityScale: number,
+): readonly OrbitLineData[] => {
+  const key = `${BASE_SEGMENTS}:${maxSegmentMultiplier}:${cameraQualityScale}`;
+  const cached = orbitVariantCache.get(key);
+  if (cached) return cached;
+
+  const built = ORBIT_PLANETS.map((p) => ({
+    id: p.id,
+    points: buildOrbitPoints(
+      p.position.length(),
+      maxSegmentMultiplier,
+      cameraQualityScale,
+    ),
+  }));
+  orbitVariantCache.set(key, built);
+  return built;
+};
+
 export const OrbitLines = () => {
   const camera = useThree((s) => s.camera);
   const viewMode = useStore((s) => s.viewMode);
@@ -120,15 +148,7 @@ export const OrbitLines = () => {
   const cameraQualityScale = isCameraQualityBoosted ? CAMERA_QUALITY_SCALE : 1;
 
   const orbits = useMemo<readonly OrbitLineData[]>(
-    () =>
-      ORBIT_PLANETS.map((p) => ({
-        id: p.id,
-        points: buildOrbitPoints(
-          p.position.length(),
-          maxSegmentMultiplier,
-          cameraQualityScale,
-        ),
-      })),
+    () => getOrbitVariant(maxSegmentMultiplier, cameraQualityScale),
     [cameraQualityScale, maxSegmentMultiplier],
   );
 

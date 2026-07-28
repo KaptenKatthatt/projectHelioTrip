@@ -2,6 +2,7 @@ import { Camera } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStore } from "../../store/useStore";
+import { requestCanvasCapture } from "../../lib/captureBus";
 import { savePhoto } from "../../lib/photoStore";
 import { Scrapbook } from "../organisms/Scrapbook";
 
@@ -18,26 +19,33 @@ export const CameraTool = ({ className, vertical = true }: CameraToolProps) => {
   const [scrapbookOpen, setScrapbookOpen] = useState(false);
 
   const takePhoto = async () => {
-    const canvas = document.querySelector("canvas");
-    if (!canvas) return;
-
     // Show flash
     setFlash(true);
     setTimeout(() => setFlash(false), 300);
 
-    // Capture
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-    
+    /**
+     * Served from inside the render loop, where the drawing buffer still
+     * holds the finished frame. Reading it here instead would require
+     * `preserveDrawingBuffer`, which costs every frame of every session.
+     */
+    let dataUrl: string;
+    try {
+      dataUrl = await requestCanvasCapture();
+    } catch (error) {
+      console.warn("HelioTrip: could not capture the current frame.", error);
+      return;
+    }
+
     // Determine location string
     const locationLabel = activeBody ? bodyName(activeBody) : "Deep Space";
-    
+
     await savePhoto({
       id: crypto.randomUUID(),
       dataUrl,
       timestampMs: Date.now(),
       locationLabel,
     });
-    
+
     useStore.getState().recordPhotoTaken(activeBody);
   };
 

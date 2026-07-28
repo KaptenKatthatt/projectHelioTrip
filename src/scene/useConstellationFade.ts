@@ -19,10 +19,13 @@ const FADE_IN_SECONDS = FADE_IN_MS / 1000;
  *
  * WHAT it returns
  * ---------------
- * displayedId  — React state; drives JSX and renderData useMemo.
+ * displayedId  — React state; drives JSX and renderData useMemo. Changes once
+ *                per transition, not per frame.
  * displayedIdRef — ref mirror; safe to read inside useFrame without stale closure.
- * opacity      — React state (0–1); drives Line opacity props (JSX path).
- * opacityRef   — ref mirror; read in useFrame for the star-shader uniform.
+ * opacityRef   — the live fade value (0–1). Deliberately *not* React state:
+ *                driving it through setState re-rendered ConstellationLines —
+ *                and its renderData useMemo — on every frame of every fade.
+ *                Consumers apply it to materials and uniforms directly.
  *
  * The hook registers its own useFrame (priority default 0) which runs BEFORE
  * the useFrame in ConstellationLines so opacityRef is always fresh when read there.
@@ -30,7 +33,6 @@ const FADE_IN_SECONDS = FADE_IN_MS / 1000;
 export function useConstellationFade(selectedConstellation: ConstellationId | null): {
   displayedId: ConstellationId | null;
   displayedIdRef: React.MutableRefObject<ConstellationId | null>;
-  opacity: number;
   opacityRef: React.MutableRefObject<number>;
 } {
   const displayedIdRef = useRef<ConstellationId | null>(null);
@@ -39,15 +41,10 @@ export function useConstellationFade(selectedConstellation: ConstellationId | nu
   const opacityRef = useRef(0);
 
   const [displayedId, setDisplayedId] = useState<ConstellationId | null>(null);
-  const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
     displayedIdRef.current = displayedId;
   }, [displayedId]);
-
-  useEffect(() => {
-    opacityRef.current = opacity;
-  }, [opacity]);
 
   useEffect(() => {
     const current = displayedIdRef.current;
@@ -57,7 +54,6 @@ export function useConstellationFade(selectedConstellation: ConstellationId | nu
       if (!current) {
         phaseRef.current = 'idle';
         opacityRef.current = 0;
-        setOpacity(0);
         return;
       }
       phaseRef.current = 'fadeOut';
@@ -68,7 +64,6 @@ export function useConstellationFade(selectedConstellation: ConstellationId | nu
       displayedIdRef.current = selectedConstellation;
       setDisplayedId(selectedConstellation);
       opacityRef.current = 0;
-      setOpacity(0);
       phaseRef.current = 'fadeIn';
       return;
     }
@@ -82,29 +77,24 @@ export function useConstellationFade(selectedConstellation: ConstellationId | nu
     const phase = phaseRef.current;
 
     if (phase === 'fadeOut') {
-      const next =
+      opacityRef.current =
         FADE_OUT_SECONDS <= 1e-6
           ? 0
           : Math.max(0, opacityRef.current - delta / FADE_OUT_SECONDS);
-      opacityRef.current = next;
-      setOpacity(next);
     } else if (phase === 'fadeIn') {
-      const next =
+      opacityRef.current =
         FADE_IN_SECONDS <= 1e-6
           ? 1
           : Math.min(1, opacityRef.current + delta / FADE_IN_SECONDS);
-      opacityRef.current = next;
-      setOpacity(next);
     }
 
     if (phase === 'fadeOut' && opacityRef.current <= 0.001) {
       const nextId = nextIdRef.current;
+      opacityRef.current = 0;
       if (nextId) {
         nextIdRef.current = null;
         displayedIdRef.current = nextId;
         setDisplayedId(nextId);
-        opacityRef.current = 0;
-        setOpacity(0);
         phaseRef.current = 'fadeIn';
       } else {
         displayedIdRef.current = null;
@@ -113,10 +103,9 @@ export function useConstellationFade(selectedConstellation: ConstellationId | nu
       }
     } else if (phase === 'fadeIn' && opacityRef.current >= 0.999) {
       opacityRef.current = 1;
-      setOpacity(1);
       phaseRef.current = 'idle';
     }
   });
 
-  return { displayedId, displayedIdRef, opacity, opacityRef };
+  return { displayedId, displayedIdRef, opacityRef };
 }

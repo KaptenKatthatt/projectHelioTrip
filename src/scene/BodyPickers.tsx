@@ -131,6 +131,9 @@ function usePickables(viewMode: 'close' | 'overview' | 'free') {
   }, [viewMode]);
 }
 
+/** Singleton component, so a shared module-level scratch vector is safe here. */
+const pickPositionScratch = new Vector3();
+
 export const BodyPickers = () => {
   const navigationMode = useStore((s) => s.navigationMode);
   const viewMode = useStore((s) => s.viewMode);
@@ -140,6 +143,43 @@ export const BodyPickers = () => {
   const { hoveredId, displayedId, onHoverEnter, onHoverLeave } = useHoverLabelState();
   const onSelect = useBodySelection(mobileLayout);
   const pickables = usePickables(viewMode);
+
+  /**
+   * One frame callback for every pickable body rather than one each. R3F walks
+   * its subscriber list every frame, and this was ten to seventeen separate
+   * closures doing the same three lines of trigonometry.
+   */
+  const registryRef = useRef(new Map<BodyId, PickRegistration>());
+  const camera = useThree((s) => s.camera);
+  const screenHeight = useThree((s) => s.size.height);
+
+  const register = useCallback(
+    (id: BodyId, registration: PickRegistration | null) => {
+      if (registration) registryRef.current.set(id, registration);
+      else registryRef.current.delete(id);
+    },
+    [],
+  );
+
+  useFrame(() => {
+    const isPerspective = camera instanceof PerspectiveCamera;
+    const fovScale = isPerspective
+      ? (Math.tan(((camera.fov * Math.PI) / 180) / 2) * PICK_SCREEN_PX) /
+        screenHeight
+      : 0;
+
+    for (const [id, { mesh, radius }] of registryRef.current) {
+      getBodyWorldPosition(id, pickPositionScratch);
+      mesh.position.copy(pickPositionScratch);
+
+      if (!isPerspective) {
+        mesh.scale.setScalar(radius * 1.2);
+        continue;
+      }
+      const pxWorld = camera.position.distanceTo(pickPositionScratch) * fovScale;
+      mesh.scale.setScalar(Math.max(radius * 1.2, pxWorld));
+    }
+  });
 
   const enabled = !isTraveling && navigationMode !== 'free';
 
@@ -152,6 +192,7 @@ export const BodyPickers = () => {
           key={entry.id}
           id={entry.id}
           radius={entry.radius}
+          register={register}
           onHoverEnter={onHoverEnter}
           onHoverLeave={onHoverLeave}
           onSelect={onSelect}
@@ -168,9 +209,15 @@ export const BodyPickers = () => {
   );
 };
 
+type PickRegistration = {
+  readonly mesh: Mesh;
+  readonly radius: number;
+};
+
 type PickableBodyProps = {
   id: BodyId;
   radius: number;
+  register: (id: BodyId, registration: PickRegistration | null) => void;
   onHoverEnter: (id: BodyId) => void;
   onHoverLeave: (id: BodyId) => void;
   onSelect: (id: BodyId) => void;
@@ -179,34 +226,20 @@ type PickableBodyProps = {
 const PickableBody = ({
   id,
   radius,
+  register,
   onHoverEnter,
   onHoverLeave,
   onSelect,
 }: PickableBodyProps) => {
-  const meshRef = useRef<Mesh>(null);
-  const bodyPosRef = useRef(new Vector3());
   const downPosRef = useRef<{ x: number; y: number } | null>(null);
-  const camera = useThree((s) => s.camera);
-  const screenHeight = useThree((s) => s.size.height);
 
-  useFrame(() => {
-    const mesh = meshRef.current;
-    if (!mesh) return;
-    const bodyPos = bodyPosRef.current;
-    getBodyWorldPosition(id, bodyPos);
-    mesh.position.copy(bodyPos);
-
-    if (camera instanceof PerspectiveCamera) {
-      const distance = camera.position.distanceTo(bodyPos);
-      const fovRad = (camera.fov * Math.PI) / 180;
-      const pxWorld =
-        (distance * Math.tan(fovRad / 2) * PICK_SCREEN_PX) / screenHeight;
-      const effectiveRadius = Math.max(radius * 1.2, pxWorld);
-      mesh.scale.setScalar(effectiveRadius);
-    } else {
-      mesh.scale.setScalar(radius * 1.2);
-    }
-  });
+  // Positioning and scaling happen in the parent's single frame callback.
+  const handleMeshRef = useCallback(
+    (mesh: Mesh | null) => {
+      register(id, mesh ? { mesh, radius } : null);
+    },
+    [id, radius, register],
+  );
 
   const handlePointerOver = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
@@ -252,7 +285,7 @@ const PickableBody = ({
 
   return (
     <mesh
-      ref={meshRef}
+      ref={handleMeshRef}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
       onPointerDown={handlePointerDown}

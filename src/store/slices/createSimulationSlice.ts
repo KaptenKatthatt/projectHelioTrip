@@ -18,6 +18,10 @@ import { DEFAULT_TIME_SCALE } from '../../lib/timePlayback';
 import { detectLocale } from '../../i18n/translations';
 import type { Locale } from '../../i18n/translations';
 import type { ConstellationId } from '../../lib/constellations';
+import {
+  getSimulationTimeMs,
+  setSimulationTimeMs,
+} from '../../lib/simulationClock';
 
 export type ViewMode = 'close' | 'overview';
 export type NavigationMode = 'cinematic' | 'free';
@@ -78,7 +82,8 @@ export const createSimulationSlice: StateCreator<SimulationSlice, [], [], Simula
   cameraPosition: INITIAL_OVERVIEW_CAMERA_POSITION.clone(),
   isTraveling: false,
   isTravelAnimating: false,
-  simulationTime: new Date(),
+  // Seeded from the module-level clock so the two can never disagree.
+  simulationTime: new Date(getSimulationTimeMs()),
   timeScale: DEFAULT_TIME_SCALE,
   isPlaying: false,
   viewMode: 'overview',
@@ -100,9 +105,20 @@ export const createSimulationSlice: StateCreator<SimulationSlice, [], [], Simula
   setActiveBody: (id) => set({ activeBody: id }),
   setCameraPosition: (position) => set({ cameraPosition: position.clone() }),
   setIsTraveling: (traveling) => set({ isTraveling: traveling }),
-  setSimulationTime: (time) => set({ simulationTime: time }),
+  /**
+   * External writes (share-link restore, pause resync) must move the live
+   * clock too, otherwise the next frame would immediately overwrite them.
+   */
+  setSimulationTime: (time) => {
+    setSimulationTimeMs(time.getTime());
+    set({ simulationTime: time });
+  },
   arrive: () => set({ isTraveling: false }),
-  resetSimulationTime: () => set({ simulationTime: new Date() }),
+  resetSimulationTime: () => {
+    const now = new Date();
+    setSimulationTimeMs(now.getTime());
+    set({ simulationTime: now });
+  },
   setTimeScale: (scale) => set({ timeScale: scale }),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),

@@ -29,6 +29,7 @@ import { AsteroidBelt } from "./AsteroidBelt";
 import { OrbitLines } from "./OrbitLines";
 import { MilkyWayBackground } from "./MilkyWayBackground";
 import { scheduleDeferredTexturePreloads } from "../lib/texturePreload";
+import { CanvasCapture } from "./CanvasCapture";
 import { PerformanceBaselineProbe } from "./PerformanceBaselineProbe";
 
 const LazyBodyPickers = lazy(async () => {
@@ -74,7 +75,11 @@ type SceneProps = {
 };
 
 
-const SceneContent = () => {
+const SceneContent = ({
+  capturesScreenshots,
+}: {
+  readonly capturesScreenshots: boolean;
+}) => {
   const navigationMode = useStore((s) => s.navigationMode);
   const selectedConstellation = useStore((s) => s.selectedConstellation);
   const showSolarBodies = selectedConstellation === null;
@@ -116,6 +121,7 @@ const SceneContent = () => {
       </Suspense>
 
       <TimeManager />
+      <CanvasCapture enabled={capturesScreenshots} />
       <PerformanceBaselineProbe />
       <OrbitLines />
       <Suspense fallback={null}>
@@ -166,6 +172,13 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
   const handleCanvasCreated = useCallback(() => {
     if (sceneReadyFiredRef.current) return;
     sceneReadyFiredRef.current = true;
+    /**
+     * Readiness signal for `scripts/perf-baseline.mjs`. The profiler cannot use
+     * `networkidle`, because `scheduleDeferredTexturePreloads` keeps warming
+     * textures for as long as the page is open.
+     */
+    (window as { __HELIOTRIP_SCENE_READY__?: boolean }).__HELIOTRIP_SCENE_READY__ =
+      true;
     onSceneReady?.();
   }, [onSceneReady]);
 
@@ -178,6 +191,16 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
   const graphicsTier = getGraphicsTier();
   const graphicsPreset = getGraphicsPreset();
   const dprCap = getCanvasDprCap(graphicsTier);
+
+  /**
+   * SceneRouter keeps this canvas mounted at `opacity: 0` behind the Mars and
+   * Moon surface scenes, so the solar system kept rendering full frames — two
+   * live WebGL contexts and two animation loops — underneath the heaviest
+   * scenes in the app, for pixels nobody can see.
+   */
+  const isLanded = useStore((s) => s.isLanded);
+  const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const isHiddenBehindSurfaceScene = isLanded || isLandedOnMoon;
 
   useEffect(() => {
     scheduleDeferredTexturePreloads();
@@ -202,12 +225,16 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
           powerPreference: "high-performance",
           stencil: false,
           depth: true,
-          preserveDrawingBuffer: true,
+          // Screenshots are served from inside the render loop by
+          // <CanvasCapture />, so the driver can keep swapping buffers
+          // instead of preserving and copying one on every frame.
+          preserveDrawingBuffer: false,
         }}
         dpr={dprCap}
+        frameloop={isHiddenBehindSurfaceScene ? "never" : "always"}
         onCreated={handleCanvasCreated}
       >
-        <SceneContent />
+        <SceneContent capturesScreenshots={!isHiddenBehindSurfaceScene} />
       </Canvas>
     </div>
   );
