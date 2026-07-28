@@ -31,15 +31,12 @@ export type QualityState = {
   readonly level: QualityLevel;
   readonly dprStep: DprStep;
   readonly source: QualitySource;
-  /** Bumped on every level change, so consumers can key rebuilds off it. */
-  readonly epoch: number;
 };
 
 const initialState: QualityState = {
   level: 0,
   dprStep: 0,
   source: 'boot',
-  epoch: 0,
 };
 
 export const qualityStore = createStore<QualityState>(() => initialState);
@@ -81,11 +78,9 @@ export const setQualityLevel = (level: QualityLevel, source: QualitySource): voi
     level,
     dprStep: current.level === level ? current.dprStep : 0,
     source,
-    epoch: current.level === level ? current.epoch : current.epoch + 1,
   });
 };
 
-/** Does not bump `epoch`: nothing needs rebuilding for a resolution change. */
 export const setQualityDprStep = (dprStep: DprStep): void => {
   if (qualityStore.getState().dprStep === dprStep) return;
   qualityStore.setState({ dprStep });
@@ -97,14 +92,10 @@ export const setQuality = (
   source: QualitySource,
 ): void => {
   const current = qualityStore.getState();
-  const levelChanged = current.level !== level;
-  if (!levelChanged && current.dprStep === dprStep && current.source === source) return;
-  qualityStore.setState({
-    level,
-    dprStep,
-    source,
-    epoch: levelChanged ? current.epoch + 1 : current.epoch,
-  });
+  if (current.level === level && current.dprStep === dprStep && current.source === source) {
+    return;
+  }
+  qualityStore.setState({ level, dprStep, source });
 };
 
 export const subscribeQuality = qualityStore.subscribe;

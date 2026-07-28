@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockMatchMedia } from '../../test/mockMatchMedia';
 
@@ -59,6 +59,9 @@ describe('QualityNoticeToast', () => {
     return quality;
   };
 
+  /** Mirrors the component's own auto-dismiss delay. */
+  const VISIBLE_MS = 6000;
+
   /** Past the settle delay and well inside the visible window. */
   const settle = async () => {
     await vi.advanceTimersByTimeAsync(11_000);
@@ -93,6 +96,31 @@ describe('QualityNoticeToast', () => {
 
     quality.setQualityLevel(1, 'auto');
     await settle();
+
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  /**
+   * The notice's only call to action is "change this under About", so the user
+   * doing exactly that must not be the one case where it never goes away. It
+   * used to be: the hide timer lived in the effect keyed on the preference, so
+   * pinning a level cancelled the countdown and stranded the notice on screen
+   * for the rest of the session.
+   */
+  it('still closes itself after the user takes control', async () => {
+    await seedAt(0);
+    const quality = await mount();
+    quality.setQualityLevel(3, 'auto');
+    await settle();
+    expect(screen.getByRole('status')).toBeTruthy();
+
+    const { useStore } = await import('../../store/useStore');
+    await act(async () => {
+      useStore.getState().setGraphicsQuality(0);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(VISIBLE_MS + 1000);
+    });
 
     expect(screen.queryByRole('status')).toBeNull();
   });

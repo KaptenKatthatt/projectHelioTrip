@@ -1,6 +1,12 @@
-import { useMemo, type ReactElement } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 import { useThree } from "@react-three/fiber";
-import { AdditiveBlending, BackSide } from "three";
+import { AdditiveBlending, BackSide, type ShaderMaterial } from "three";
 import { useQualityLevel, useQualityPreset } from "../hooks/useQualityPreset";
 import type { MilkyWayQualityPreset } from "../lib/quality/qualityLevels";
 
@@ -373,9 +379,30 @@ const PointCloudOverlay = ({
   vertexShader,
   fragmentShader,
 }: OverlayShaderProps): ReactElement => {
-  // See `useQualityLevel`: a replaced `uniforms` object never reaches an
-  // already-compiled program, so the opacity of a new rung would be ignored.
-  const level = useQualityLevel();
+  /**
+   * Built once and then written into, never replaced. `ShaderMaterial` caches
+   * the uniform list against its compiled program the first time it is drawn,
+   * so three keeps uploading from whichever object it captured then — handing
+   * the material a *new* `uniforms` object changes nothing on the GPU.
+   *
+   * Keying the material off the quality level is not a substitute: the
+   * controller trims resolution before it ever touches the level, and
+   * `uPixelRatio` follows the resolution. A material rebuilt only on level
+   * changes would keep sizing its points for the pixel ratio the trim just
+   * took away.
+   */
+  const materialRef = useRef<ShaderMaterial>(null);
+  const [initialUniforms] = useState(() => ({
+    uPixelRatio: { value: pixelRatio },
+    uOpacity: { value: opacity },
+  }));
+  useLayoutEffect(() => {
+    const material = materialRef.current;
+    if (!material) return;
+    const { uPixelRatio, uOpacity } = material.uniforms;
+    if (uPixelRatio) uPixelRatio.value = pixelRatio;
+    if (uOpacity) uOpacity.value = opacity;
+  }, [pixelRatio, opacity]);
 
   return (
     <points renderOrder={renderOrder} rotation={MILKY_WAY_ROTATION}>
@@ -385,16 +412,13 @@ const PointCloudOverlay = ({
         <bufferAttribute attach="attributes-size" args={[data.sizes, 1]} />
       </bufferGeometry>
       <shaderMaterial
-        key={level}
+        ref={materialRef}
         transparent
         depthWrite={false}
         depthTest={false}
         toneMapped={false}
         blending={AdditiveBlending}
-        uniforms={{
-          uPixelRatio: { value: pixelRatio },
-          uOpacity: { value: opacity },
-        }}
+        uniforms={initialUniforms}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
       />

@@ -41,11 +41,23 @@ export const QualityNoticeToast = () => {
   const preference = useStore((s) => s.graphicsQuality);
   const [visible, setVisible] = useState(false);
 
+  /**
+   * The countdown to closing is deliberately its own effect, keyed on
+   * `visible` rather than on the preference. Owned by the detection effect
+   * below it would be torn down the moment the user pinned a level — which is
+   * precisely what this notice tells them to go and do — and a notice whose
+   * hide timer has been cancelled never comes down again.
+   */
+  useEffect(() => {
+    if (!visible) return;
+    const hideTimer = setTimeout(() => setVisible(false), VISIBLE_MS);
+    return () => clearTimeout(hideTimer);
+  }, [visible]);
+
   useEffect(() => {
     if (preference !== 'auto' || hasBeenSeen()) return;
 
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
-    let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
     /**
      * The level the app *opened* at. `bindQualityPreference` rewrites the
@@ -70,7 +82,6 @@ export const QualityNoticeToast = () => {
         if (hasBeenSeen()) return;
         markSeen();
         setVisible(true);
-        hideTimer = setTimeout(() => setVisible(false), VISIBLE_MS);
       }, STABLE_BEFORE_SHOWING_MS);
     };
 
@@ -79,7 +90,6 @@ export const QualityNoticeToast = () => {
     return () => {
       unsubscribe();
       clearTimeout(settleTimer);
-      clearTimeout(hideTimer);
     };
   }, [preference]);
 
