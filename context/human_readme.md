@@ -17,7 +17,7 @@ Responsible for:
 
 - Agent read order
 - Cross-cutting rules that should apply to all agents
-- Mandatory verification before "done" (for example `npx tsc --noEmit` and `npm run lint`)
+- Mandatory verification before "done" (`npx tsc -b` and `npm run lint`)
 
 Edit this file when you want to control **how agents work in general**.
 

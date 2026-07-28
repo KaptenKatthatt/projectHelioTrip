@@ -33,7 +33,7 @@ These scripts copy `template/` into the target repo root and place quality-gate 
 
 Use this prompt in the target repository:
 
-`Open and apply the AI setup from ./ai-export (or from root files if already copied). Follow AGENTS read order exactly: context/AGENTS_CONTEXT.md -> context/AGENT_REFERENCE.md -> context/DESIGN_SYSTEM.md -> .cursor/rules/*.mdc -> .github/copilot-instructions.md. Then implement required repository-specific customizations from CUSTOMIZE_BEFORE_USE.md, and verify with npx tsc --noEmit and npm run lint.`
+`Open and apply the AI setup from ./ai-export (or from root files if already copied). Follow AGENTS read order exactly: context/AGENTS_CONTEXT.md -> context/AGENT_REFERENCE.md -> context/DESIGN_SYSTEM.md -> .cursor/rules/*.mdc -> .github/copilot-instructions.md. Then implement required repository-specific customizations from CUSTOMIZE_BEFORE_USE.md, and verify with npx tsc -b and npm run lint.`
 
 ## Recommended workflow
 

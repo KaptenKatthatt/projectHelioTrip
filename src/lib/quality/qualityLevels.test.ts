@@ -174,11 +174,17 @@ describe('QUALITY_PRESETS', () => {
       'nebulaClusterCount',
       'skyFbmOctaves',
     ] as const;
+    const extraScalarFields = ['ringDebrisScale', 'surfaceShadowMapSize'] as const;
 
     for (let level = 0; level < QUALITY_LEVELS.length - 1; level++) {
       const better = QUALITY_PRESETS[level as QualityLevel];
       const worse = QUALITY_PRESETS[(level + 1) as QualityLevel];
 
+      for (const field of extraScalarFields) {
+        expect(better[field], `${field} between level ${level} and ${level + 1}`).toBeGreaterThanOrEqual(
+          worse[field],
+        );
+      }
       for (const field of scalarFields) {
         expect(better[field], `${field} between level ${level} and ${level + 1}`).toBeGreaterThanOrEqual(
           worse[field],
@@ -203,12 +209,21 @@ describe('QUALITY_PRESETS', () => {
 
   it('never turns an effect back on at a worse level', () => {
     const flags = ['postProcessingEnabled', 'bloom', 'depthOfField', 'antialias', 'cloudsEnabled'] as const;
+    const milkyWayFlags = ['skyDustLanes', 'skyStarMist'] as const;
     for (let level = 0; level < QUALITY_LEVELS.length - 1; level++) {
       const better = QUALITY_PRESETS[level as QualityLevel];
       const worse = QUALITY_PRESETS[(level + 1) as QualityLevel];
       for (const flag of flags) {
         if (!better[flag]) {
           expect(worse[flag], `${flag} at level ${level + 1}`).toBe(false);
+        }
+      }
+      for (const flag of milkyWayFlags) {
+        if (!better.milkyWayQuality[flag]) {
+          expect(
+            worse.milkyWayQuality[flag],
+            `milkyWayQuality.${flag} at level ${level + 1}`,
+          ).toBe(false);
         }
       }
     }

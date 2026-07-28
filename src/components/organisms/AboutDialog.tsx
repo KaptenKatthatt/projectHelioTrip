@@ -3,6 +3,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AUTHOR_WEBSITE_URL } from "../../lib/footerLinks";
+import { GraphicsQualityToggle } from "../molecules/GraphicsQualityToggle";
 import { LanguageToggle } from "../molecules/LanguageToggle";
 
 type AboutDialogProps = {
@@ -82,6 +83,11 @@ export const AboutDialog = ({ open: openProp, onClose }: AboutDialogProps = {}) 
                     <p>{t.ui.aboutP2}</p>
                     <p>{t.ui.aboutP3}</p>
                     <p>{t.ui.aboutP4}</p>
+                  </div>
+                  <div className="mt-5 border-t border-white/10 pt-4">
+                    <GraphicsQualityToggle />
+                  </div>
+                  <div className="mt-4 space-y-3 text-white/75">
                     <p>
                       <a
                         href={AUTHOR_WEBSITE_URL}

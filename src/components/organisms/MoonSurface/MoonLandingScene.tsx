@@ -9,6 +9,7 @@ import { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useStore } from '../../../store/useStore';
+import { readSurfaceCanvasQuality } from '../../../lib/quality/surfaceQuality';
 import { CanvasCapture } from '../../../scene/CanvasCapture';
 import { CAMERA_SETTINGS } from './constants';
 import { CameraZoomController } from './CameraZoomController';
@@ -21,6 +22,7 @@ import { MOON_SCENE_BG_COLOR } from '../surfaceBackgrounds';
 export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const moonTransitionState = useStore((s) => s.moonTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
+  const [surfaceQuality] = useState(readSurfaceCanvasQuality);
 
   const initialCameraPosition = isFlyingIn
     ? CAMERA_SETTINGS.FLY_IN_START.toArray()
@@ -28,11 +30,11 @@ export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () 
 
   return (
     <Canvas
-      shadows
+      shadows={surfaceQuality.shadowsEnabled}
       camera={{ position: initialCameraPosition as [number, number, number], fov: 45 }}
       // Without this R3F uses the raw devicePixelRatio, so a 4K display
       // rendered this shadowed terrain at DPR 3.
-      dpr={[1, 2]}
+      dpr={surfaceQuality.dpr}
     >
       <Suspense fallback={null}>
         <CanvasCapture />
@@ -49,8 +51,8 @@ export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () 
           position={[80, 60, 20]}
           intensity={3.0}
           color="#fff8f0"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
+          castShadow={surfaceQuality.shadowsEnabled}
+          shadow-mapSize={[surfaceQuality.shadowMapSize, surfaceQuality.shadowMapSize]}
           shadow-camera-left={-20}
           shadow-camera-right={20}
           shadow-camera-top={20}
@@ -59,7 +61,7 @@ export const MoonLandingScene = ({ onTakeoffComplete }: { onTakeoffComplete: () 
 
         <StarField />
         <EarthSphere />
-        <LunarModule />
+        <LunarModule shadowsEnabled={surfaceQuality.shadowsEnabled} />
         <MoonTerrain />
 
         {moonTransitionState !== 'taking_off' && !isFlyingIn && (

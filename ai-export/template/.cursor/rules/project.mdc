@@ -31,7 +31,7 @@ alwaysApply: true
 
 ## CI / Vercel
 - Production build uses `tsc` with `noUnusedLocals` / `noUnusedParameters` (see `tsconfig`). Unused imports, props, or destructured values **fail the build**.
-- Before claiming a task is done, run `npm run build` (or at least `npx tsc --noEmit`) and fix all TS errors. Do not leave placeholder props “for later” on components.
+- Before claiming a task is done, run `npm run build` (or at least `npx tsc -b`) and fix all TS errors. Not `tsc --noEmit`: the root `tsconfig.json` only holds `references`, so that command checks nothing and always exits 0. Do not leave placeholder props “for later” on components.
 - After any code change, run `npm run lint` and fix all lint errors before claiming completion.
 
 ## Communication

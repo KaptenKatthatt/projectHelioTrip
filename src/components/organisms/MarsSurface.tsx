@@ -10,6 +10,7 @@ import {
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Info } from 'lucide-react';
+import { readSurfaceCanvasQuality } from '../../lib/quality/surfaceQuality';
 import { useStore } from '../../store/useStore';
 import { CanvasCapture } from '../../scene/CanvasCapture';
 import { MARS_SURFACE_BG_CLASS } from './surfaceBackgrounds';
@@ -77,12 +78,19 @@ const buildMarsTerrainGeometryAndRocks = (): {
   return { geometry: geo, rocks: rockData };
 };
 
-const Rover = () => {
+const Rover = ({ shadowsEnabled }: { shadowsEnabled: boolean }) => {
   const { scene } = useGLTF('/Mars%202020%20Perseverance%20Rover.meshopt.glb');
   return (
     <group position={[0, 0, 0]}>
       <primitive object={scene} scale={1.5} />
-      <ContactShadows opacity={0.5} scale={12} blur={2.5} far={4.5} />
+      {/*
+        Neither the rover nor the light moves -- only the camera orbits -- so
+        the contact shadow is settled after the first few frames. Without a
+        frame budget this rendered an extra depth pass every single frame.
+      */}
+      {shadowsEnabled ? (
+        <ContactShadows opacity={0.5} scale={12} blur={2.5} far={4.5} frames={10} />
+      ) : null}
     </group>
   );
 };
@@ -279,17 +287,18 @@ export const MarsSurface = () => {
 const MarsRoverScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }) => {
   const marsTransitionState = useStore((s) => s.marsTransitionState);
   const [isFlyingIn, setIsFlyingIn] = useState(true);
+  const [surfaceQuality] = useState(readSurfaceCanvasQuality);
   const initialCameraPosition: [number, number, number] = isFlyingIn
     ? [15, 60, 40]
     : [8, 3, 8];
 
   return (
     <Canvas
-      shadows
+      shadows={surfaceQuality.shadowsEnabled}
       camera={{ position: initialCameraPosition, fov: 45 }}
       // Without this R3F uses the raw devicePixelRatio, so a 4K display
       // rendered this shadowed, fogged terrain at DPR 3.
-      dpr={[1, 2]}
+      dpr={surfaceQuality.dpr}
     >
       <Suspense fallback={null}>
         <CanvasCapture />
@@ -315,15 +324,15 @@ const MarsRoverScene = ({ onTakeoffComplete }: { onTakeoffComplete: () => void }
           position={[50, 100, 20]}
           intensity={2.5}
           color="#fff5f0"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
+          castShadow={surfaceQuality.shadowsEnabled}
+          shadow-mapSize={[surfaceQuality.shadowMapSize, surfaceQuality.shadowMapSize]}
           shadow-camera-left={-20}
           shadow-camera-right={20}
           shadow-camera-top={20}
           shadow-camera-bottom={-20}
         />
 
-        <Rover />
+        <Rover shadowsEnabled={surfaceQuality.shadowsEnabled} />
         <Terrain />
 
         {marsTransitionState !== 'taking_off' && !isFlyingIn && (

@@ -13,6 +13,7 @@ import {
 } from 'three';
 import type { PlanetId } from '../lib/planets';
 import { getRingDefinition, type RingDefinition } from '../lib/rings';
+import { useQualityPreset } from '../hooks/useQualityPreset';
 import { createProceduralRingTexture } from '../lib/ringTexture';
 import { configureColorMap } from '../lib/textures';
 
@@ -21,15 +22,17 @@ type Props = {
   radius: number;
 };
 
-const RADIAL_SEGMENTS = 128;
-const THETA_SEGMENTS = 96;
-
 /**
  * Builds a flat ring whose UVs run 0..1 along the radial axis so a 1D
  * horizontal texture is sampled by distance from the planet.
  */
-const createRingGeometry = (inner: number, outer: number): RingGeometry => {
-  const geo = new RingGeometry(inner, outer, THETA_SEGMENTS, RADIAL_SEGMENTS);
+const createRingGeometry = (
+  inner: number,
+  outer: number,
+  thetaSegments: number,
+  radialSegments: number,
+): RingGeometry => {
+  const geo = new RingGeometry(inner, outer, thetaSegments, radialSegments);
   const pos = geo.attributes.position;
   if (!pos) return geo;
 
@@ -122,25 +125,28 @@ export const Rings = ({ planetId, radius }: Props) => {
   return <RingSystem def={def} radius={radius} />;
 };
 
-const RingSystem = ({
-  def,
-  radius,
-}: {
-  def: RingDefinition;
-  radius: number;
-}) => {
+const RingSystem = ({ def, radius }: { def: RingDefinition; radius: number }) => {
   const groupRef = useRef<Group>(null);
+  const [thetaSegments, radialSegments] = useQualityPreset((p) => p.ringSegments);
+  const debrisScale = useQualityPreset((p) => p.ringDebrisScale);
 
   const inner = radius * def.innerScale;
   const outer = radius * def.outerScale;
 
+  /**
+   * Rounded, not floored: the authored counts are small enough that flooring
+   * a 0.45 scale would quietly lose a tenth of Saturn's debris on top of the
+   * intended reduction.
+   */
+  const particleCount = Math.round(def.particleCount * debrisScale);
+
   const ringGeometry = useMemo(
-    () => createRingGeometry(inner, outer),
-    [inner, outer],
+    () => createRingGeometry(inner, outer, thetaSegments, radialSegments),
+    [inner, outer, thetaSegments, radialSegments],
   );
   const particleGeometry = useMemo(
-    () => createParticleGeometry(inner, outer, def.particleCount, def.seed),
-    [inner, outer, def.particleCount, def.seed],
+    () => createParticleGeometry(inner, outer, particleCount, def.seed),
+    [inner, outer, particleCount, def.seed],
   );
   const particleTexture = useMemo(() => createSoftParticleTexture(), []);
 
@@ -163,28 +169,26 @@ const RingSystem = ({
   return (
     <group ref={groupRef}>
       {def.texture ? (
-        <TexturedRingMesh
-          geometry={ringGeometry}
-          def={def}
-          url={def.texture}
-        />
+        <TexturedRingMesh geometry={ringGeometry} def={def} url={def.texture} />
       ) : (
         <ProceduralRingMesh geometry={ringGeometry} def={def} />
       )}
-      <points geometry={particleGeometry}>
-        <pointsMaterial
-          vertexColors
-          color={def.color}
-          map={particleTexture}
-          alphaMap={particleTexture}
-          size={def.particleSize}
-          sizeAttenuation
-          transparent
-          opacity={Math.min(1, def.opacity + 0.3)}
-          alphaTest={0.02}
-          depthWrite={false}
-        />
-      </points>
+      {particleCount > 0 ? (
+        <points geometry={particleGeometry}>
+          <pointsMaterial
+            vertexColors
+            color={def.color}
+            map={particleTexture}
+            alphaMap={particleTexture}
+            size={def.particleSize}
+            sizeAttenuation
+            transparent
+            opacity={Math.min(1, def.opacity + 0.3)}
+            alphaTest={0.02}
+            depthWrite={false}
+          />
+        </points>
+      ) : null}
     </group>
   );
 };
@@ -194,11 +198,7 @@ type RingMeshProps = {
   def: RingDefinition;
 };
 
-const TexturedRingMesh = ({
-  geometry,
-  def,
-  url,
-}: RingMeshProps & { url: string }) => {
+const TexturedRingMesh = ({ geometry, def, url }: RingMeshProps & { url: string }) => {
   const map = useTexture(url, configureColorMap) as Texture;
 
   return (

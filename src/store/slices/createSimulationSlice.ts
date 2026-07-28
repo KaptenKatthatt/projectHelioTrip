@@ -22,6 +22,7 @@ import {
   getSimulationTimeMs,
   setSimulationTimeMs,
 } from '../../lib/simulationClock';
+import type { GraphicsQualityPreference } from '../../lib/quality/qualityLevels';
 
 export type ViewMode = 'close' | 'overview';
 export type NavigationMode = 'cinematic' | 'free';
@@ -49,6 +50,11 @@ export interface SimulationState {
   isLandedOnMoon: boolean;
   marsTransitionState: 'idle' | 'landing' | 'taking_off';
   moonTransitionState: 'idle' | 'landing' | 'taking_off';
+  /**
+   * `auto` hands the level to the adaptive controller. A number pins it and
+   * the controller stands down — the user's judgement wins over the measurement.
+   */
+  graphicsQuality: GraphicsQualityPreference;
 }
 
 export interface SimulationActions {
@@ -56,6 +62,7 @@ export interface SimulationActions {
   setCameraPosition: (position: Vector3) => void;
   setIsTraveling: (traveling: boolean) => void;
   setSimulationTime: (time: Date) => void;
+  setGraphicsQuality: (quality: GraphicsQualityPreference) => void;
   arrive: () => void;
   resetSimulationTime: () => void;
   setTimeScale: (scale: number) => void;
@@ -101,8 +108,10 @@ export const createSimulationSlice: StateCreator<SimulationSlice, [], [], Simula
   isLandedOnMoon: false,
   marsTransitionState: 'idle',
   moonTransitionState: 'idle',
+  graphicsQuality: 'auto',
 
   setActiveBody: (id) => set({ activeBody: id }),
+  setGraphicsQuality: (quality) => set({ graphicsQuality: quality }),
   setCameraPosition: (position) => set({ cameraPosition: position.clone() }),
   setIsTraveling: (traveling) => set({ isTraveling: traveling }),
   /**

@@ -26,7 +26,7 @@ Use this guide when applying quality guardrails in another repository.
 
 Run after each AI-generated code change:
 
-- `npx tsc --noEmit`
+- `npx tsc -b` (not `--noEmit`: a solution-style root `tsconfig.json` makes that a no-op)
 - `npm run lint`
 
 Optionally add test gates:

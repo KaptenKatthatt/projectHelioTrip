@@ -298,6 +298,3 @@ export const QUALITY_PRESETS: Record<QualityLevel, QualityPreset> = {
     surfaceShadowMapSize: 0,
   },
 };
-
-export const getQualityPresetForLevel = (level: QualityLevel): QualityPreset =>
-  QUALITY_PRESETS[level];

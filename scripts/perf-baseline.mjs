@@ -12,11 +12,13 @@ import { chromium } from "@playwright/test";
  * a per-module network waterfall. Every baseline committed before this change
  * was captured that way and reads ~1.2 FPS, which says nothing about the app.
  *
- * The graphics tier needs no pinning: `getGraphicsTier` resolves it from the
- * pointer type, viewport width, core count and memory, and the fixed
- * 1920x1080 desktop viewport below always lands on `high`. There is no
- * `?quality=` override and no runtime adaptive-quality controller, so runs are
- * already comparable to each other.
+ * Caveat on comparability: the app now runs an adaptive quality controller
+ * (`useAdaptiveQuality`) that trims resolution and steps down the quality
+ * ladder from measured frame times, and it remembers what it settled on in
+ * localStorage. A 30s sample therefore straddles whatever it decided partway
+ * through, and consecutive runs start from different seeds. Read `frameStats`
+ * alongside the `HelioTrip quality change` console lines, and clear site data
+ * between runs if you need two runs that opened at the same level.
  *
  * Env knobs:
  * - `PERF_BASE_URL`   profile an already-running server instead of spawning one

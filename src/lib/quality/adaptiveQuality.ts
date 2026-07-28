@@ -69,6 +69,47 @@ export const PROBATION_WINDOWS = 10;
 export const MAX_UPGRADE_ATTEMPTS_PER_LEVEL = 1;
 export const MAX_DPR_STEP: DprStep = 2;
 
+/**
+ * The estimate of the display's own frame interval is clamped into this range
+ * before any threshold is derived from it. Below 6.5ms is faster than any
+ * panel this app will meet; above 17.5ms is slower than 60Hz, and treating a
+ * struggling machine's frame time as its refresh rate would define the problem
+ * out of existence.
+ */
+export const NATIVE_FRAME_MS_MIN = 6.5;
+export const NATIVE_FRAME_MS_MAX = 17.5;
+/** How far into a window's fastest frames to read the refresh interval. */
+const NATIVE_FRAME_PERCENTILE = 0.05;
+const NATIVE_FRAME_EMA_WEIGHT = 0.1;
+
+/**
+ * Refines the learned refresh interval from one window of sorted frame times.
+ *
+ * Read from a whole window's 5th percentile rather than from single frames.
+ * The estimate only ever moves *down*, so any rule driven by individual deltas
+ * ratchets: rAF on a perfectly healthy 60Hz panel regularly emits a short
+ * delta paired with a long one, and each short one drags the estimate further
+ * from the truth with no path back. Left unchecked it walks to the floor,
+ * every ordinary 16.7ms frame then reads as 2.5x native, and the controller
+ * marches a machine that was never struggling all the way to the bottom rung.
+ * Needing a twentieth of a window to be fast makes that impossible while still
+ * identifying a genuine 120Hz display within seconds.
+ */
+export const refineNativeFrameMs = (
+  previous: number,
+  sortedWindowMs: ArrayLike<number>,
+): number => {
+  const count = sortedWindowMs.length;
+  if (count === 0) return previous;
+  const fastest =
+    sortedWindowMs[Math.floor(count * NATIVE_FRAME_PERCENTILE)] ?? sortedWindowMs[0];
+  if (fastest === undefined || fastest <= 1 || fastest >= previous) return previous;
+  return previous * (1 - NATIVE_FRAME_EMA_WEIGHT) + fastest * NATIVE_FRAME_EMA_WEIGHT;
+};
+
+export const clampNativeFrameMs = (value: number): number =>
+  Math.min(NATIVE_FRAME_MS_MAX, Math.max(NATIVE_FRAME_MS_MIN, value));
+
 export const createAdaptiveState = (
   level: QualityLevel,
   dprStep: DprStep = 0,

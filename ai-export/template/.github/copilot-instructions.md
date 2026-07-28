@@ -32,7 +32,12 @@ to English in the same change.
 
 After any code change, run:
 
-- `npx tsc --noEmit`
+- `npx tsc -b`
 - `npm run lint`
+
+Use `tsc -b`, not `tsc --noEmit`. The root `tsconfig.json` is a solution file
+containing only `references`, so `npx tsc --noEmit` type-checks nothing and
+exits 0 however broken the code is. `tsc -b` is what actually checks, and it
+is what `npm run build` and CI run.
 
 Do not report a task as completed while TypeScript or lint errors remain.
