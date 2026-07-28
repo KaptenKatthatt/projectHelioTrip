@@ -12,11 +12,8 @@ import { ConstellationRotationControls } from "./ConstellationRotationControls";
 import { OverviewLookControls } from "./OverviewLookControls";
 import { SkyFocusCamera } from "./SkyFocusCamera";
 import { TimeManager } from "./TimeManager";
-import {
-  getCanvasDprCap,
-  getGraphicsPreset,
-  getGraphicsTier,
-} from "../lib/graphicsTier";
+import { getQualityPreset, getEffectiveDpr } from "../lib/quality/qualityStore";
+import { useQualityPreset } from "../hooks/useQualityPreset";
 import {
   INITIAL_OVERVIEW_CAMERA_POSITION,
   INITIAL_OVERVIEW_FOV,
@@ -29,8 +26,9 @@ import { AsteroidBelt } from "./AsteroidBelt";
 import { OrbitLines } from "./OrbitLines";
 import { MilkyWayBackground } from "./MilkyWayBackground";
 import { scheduleDeferredTexturePreloads } from "../lib/texturePreload";
+import { AdaptiveQualityController } from "./AdaptiveQualityController";
 import { CanvasCapture } from "./CanvasCapture";
-import { PerformanceBaselineProbe } from "./PerformanceBaselineProbe";
+import { QualityEffects } from "./QualityEffects";
 
 const LazyBodyPickers = lazy(async () => {
   const module = await import("./BodyPickers");
@@ -87,7 +85,8 @@ const SceneContent = ({
     (s) => s.activeBody !== null && s.viewMode === "close",
   );
 
-  const graphicsPreset = getGraphicsPreset();
+  const starsRadius = useQualityPreset((preset) => preset.starsRadius);
+  const starsCount = useQualityPreset((preset) => preset.starsCount);
 
   return (
     <>
@@ -109,9 +108,9 @@ const SceneContent = ({
           <MilkyWayBackground />
         ) : (
           <Stars
-            radius={graphicsPreset.starsRadius}
+            radius={starsRadius}
             depth={400}
-            count={graphicsPreset.starsCount}
+            count={starsCount}
             factor={6}
             saturation={0}
             fade
@@ -121,8 +120,9 @@ const SceneContent = ({
       </Suspense>
 
       <TimeManager />
+      <QualityEffects />
+      <AdaptiveQualityController />
       <CanvasCapture enabled={capturesScreenshots} />
-      <PerformanceBaselineProbe />
       <OrbitLines />
       <Suspense fallback={null}>
         <LazyConstellationLines />
@@ -188,9 +188,17 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
     onSceneMounted?.();
   }, [onSceneMounted]);
 
-  const graphicsTier = getGraphicsTier();
-  const graphicsPreset = getGraphicsPreset();
-  const dprCap = getCanvasDprCap(graphicsTier);
+  /**
+   * Read once. `antialias` is a context-creation attribute and cannot change
+   * without a new WebGL context, so it is fixed at whatever the boot seed
+   * chose; `EffectComposer` multisampling is the knob the controller uses at
+   * runtime. The pixel ratio starts here and is then driven imperatively by
+   * `QualityEffects`, which avoids re-rendering the whole scene tree.
+   */
+  const bootAntialias = getQualityPreset().antialias;
+  const bootDpr = getEffectiveDpr(
+    typeof window === "undefined" ? 1 : window.devicePixelRatio || 1,
+  );
 
   /**
    * SceneRouter keeps this canvas mounted at `opacity: 0` behind the Mars and
@@ -221,7 +229,7 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
           far: 8000,
         }}
         gl={{
-          antialias: graphicsPreset.antialias,
+          antialias: bootAntialias,
           powerPreference: "high-performance",
           stencil: false,
           depth: true,
@@ -230,7 +238,7 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
           // instead of preserving and copying one on every frame.
           preserveDrawingBuffer: false,
         }}
-        dpr={dprCap}
+        dpr={bootDpr}
         frameloop={isHiddenBehindSurfaceScene ? "never" : "always"}
         onCreated={handleCanvasCreated}
       >

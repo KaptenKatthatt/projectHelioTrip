@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
-import { getGraphicsPreset } from "../lib/graphicsTier";
+import { useQualityPreset } from "../hooks/useQualityPreset";
 import { PLANETS } from "../lib/planets";
 import { useStore } from "../store/useStore";
 
 const ORBIT_PLANETS = PLANETS.filter((p) => p.id !== "sun");
-const BASE_SEGMENTS = getGraphicsPreset().orbitLineSegments;
+
 const OVERVIEW_MAX_SEGMENT_MULTIPLIER = 1.5;
 const OVERVIEW_ULTRA_MAX_SEGMENT_MULTIPLIER = 1.65;
 const NON_OVERVIEW_MAX_SEGMENT_MULTIPLIER = 1.5;
@@ -31,6 +31,7 @@ type OrbitLineData = {
 
 const buildOrbitPoints = (
   radius: number,
+  baseSegments: number,
   maxSegmentMultiplier: number,
   cameraQualityScale: number,
 ): readonly Vector3[] => {
@@ -40,7 +41,7 @@ const buildOrbitPoints = (
   const segments = Math.max(
     64,
     Math.round(
-      BASE_SEGMENTS *
+      baseSegments *
         cameraQualityScale *
         (1 + ratio * (maxSegmentMultiplier - 1)),
     ),
@@ -63,10 +64,11 @@ const buildOrbitPoints = (
 const orbitVariantCache = new Map<string, readonly OrbitLineData[]>();
 
 const getOrbitVariant = (
+  baseSegments: number,
   maxSegmentMultiplier: number,
   cameraQualityScale: number,
 ): readonly OrbitLineData[] => {
-  const key = `${BASE_SEGMENTS}:${maxSegmentMultiplier}:${cameraQualityScale}`;
+  const key = `${baseSegments}:${maxSegmentMultiplier}:${cameraQualityScale}`;
   const cached = orbitVariantCache.get(key);
   if (cached) return cached;
 
@@ -74,6 +76,7 @@ const getOrbitVariant = (
     id: p.id,
     points: buildOrbitPoints(
       p.position.length(),
+      baseSegments,
       maxSegmentMultiplier,
       cameraQualityScale,
     ),
@@ -91,6 +94,7 @@ export const OrbitLines = () => {
     useState(false);
   const qualityBoostRef = useRef(false);
   const ultraBoostRef = useRef(false);
+  const baseSegments = useQualityPreset((preset) => preset.orbitLineSegments);
 
   useEffect(() => {
     if (viewMode !== "overview") {
@@ -148,8 +152,8 @@ export const OrbitLines = () => {
   const cameraQualityScale = isCameraQualityBoosted ? CAMERA_QUALITY_SCALE : 1;
 
   const orbits = useMemo<readonly OrbitLineData[]>(
-    () => getOrbitVariant(maxSegmentMultiplier, cameraQualityScale),
-    [cameraQualityScale, maxSegmentMultiplier],
+    () => getOrbitVariant(baseSegments, maxSegmentMultiplier, cameraQualityScale),
+    [baseSegments, cameraQualityScale, maxSegmentMultiplier],
   );
 
   const opacity = viewMode === "overview" ? 0.03 : 0.08;

@@ -3,7 +3,7 @@ import { useTexture } from '@react-three/drei/core/Texture';
 import { type Group } from 'three';
 import type { MoonDefinition } from '../lib/moons';
 import { getLiveMoonOffset, getLivePosition } from '../lib/positionsBus';
-import { getGraphicsPreset } from '../lib/graphicsTier';
+import { useQualityPreset } from '../hooks/useQualityPreset';
 import { configureColorMap, getMoonTextures } from '../lib/textures';
 import { useSimulationTickFrame } from '../hooks/useSimulationTickFrame';
 import { applyBodySpinFromTime } from './bodySpin';
@@ -12,12 +12,11 @@ type Props = {
   moon: MoonDefinition;
 };
 
-const MOON_SPHERE = getGraphicsPreset().cloudSphere;
-const GEOMETRY_ARGS: [number, number, number] = [
-  1,
-  MOON_SPHERE[0],
-  MOON_SPHERE[1],
-];
+/** Moons deliberately share the cloud sphere budget, as they did before. */
+const useMoonSphereArgs = (): [number, number, number] => {
+  const segments = useQualityPreset((preset) => preset.cloudSphere);
+  return useMemo(() => [1, segments[0], segments[1]], [segments]);
+};
 const MS_PER_HOUR = 3_600_000;
 
 export const Moon = ({ moon }: Props) => {
@@ -26,11 +25,7 @@ export const Moon = ({ moon }: Props) => {
   const initial = useMemo(() => {
     const parent = getLivePosition(moon.parent);
     const offset = getLiveMoonOffset(moon.id);
-    return [
-      parent.x + offset.x,
-      parent.y + offset.y,
-      parent.z + offset.z,
-    ] as const;
+    return [parent.x + offset.x, parent.y + offset.y, parent.z + offset.z] as const;
   }, [moon]);
 
   const periodMs = moon.rotationPeriodHours * MS_PER_HOUR;
@@ -40,11 +35,7 @@ export const Moon = ({ moon }: Props) => {
     if (group) {
       const parent = getLivePosition(moon.parent);
       const offset = getLiveMoonOffset(moon.id);
-      group.position.set(
-        parent.x + offset.x,
-        parent.y + offset.y,
-        parent.z + offset.z,
-      );
+      group.position.set(parent.x + offset.x, parent.y + offset.y, parent.z + offset.z);
     }
 
     applyBodySpinFromTime(spinRef, simMs, periodMs);
@@ -67,31 +58,29 @@ const MoonBody = ({ moon }: Props) => {
   return <TexturedMoon moon={moon} diffuseUrl={textures.diffuse} />;
 };
 
-const FlatMoon = ({ moon }: Props) => (
-  <mesh castShadow receiveShadow scale={moon.radius}>
-    <sphereGeometry args={GEOMETRY_ARGS} />
-    <meshStandardMaterial
-      color={moon.color}
-      roughness={0.92}
-      metalness={0.03}
-      emissive={moon.color}
-      emissiveIntensity={0.08}
-    />
-  </mesh>
-);
+const FlatMoon = ({ moon }: Props) => {
+  const sphereArgs = useMoonSphereArgs();
+  return (
+    <mesh castShadow receiveShadow scale={moon.radius}>
+      <sphereGeometry args={sphereArgs} />
+      <meshStandardMaterial
+        color={moon.color}
+        roughness={0.92}
+        metalness={0.03}
+        emissive={moon.color}
+        emissiveIntensity={0.08}
+      />
+    </mesh>
+  );
+};
 
-const TexturedMoon = ({
-  moon,
-  diffuseUrl,
-}: {
-  moon: MoonDefinition;
-  diffuseUrl: string;
-}) => {
+const TexturedMoon = ({ moon, diffuseUrl }: { moon: MoonDefinition; diffuseUrl: string }) => {
   const map = useTexture(diffuseUrl, configureColorMap);
+  const sphereArgs = useMoonSphereArgs();
 
   return (
     <mesh castShadow receiveShadow scale={moon.radius}>
-      <sphereGeometry args={GEOMETRY_ARGS} />
+      <sphereGeometry args={sphereArgs} />
       <meshStandardMaterial map={map} roughness={0.95} metalness={0} />
     </mesh>
   );
