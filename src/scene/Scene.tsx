@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei/core/Stars";
 import { CameraManager } from "./CameraManager";
@@ -195,9 +195,13 @@ export const Scene = ({ onSceneReady, onSceneMounted }: SceneProps) => {
    * runtime. The pixel ratio starts here and is then driven imperatively by
    * `QualityEffects`, which avoids re-rendering the whole scene tree.
    */
-  const bootAntialias = getQualityPreset().antialias;
-  const bootDpr = getEffectiveDpr(
-    typeof window === "undefined" ? 1 : window.devicePixelRatio || 1,
+  const bootAntialias = useMemo(() => getQualityPreset().antialias, []);
+  const bootDpr = useMemo(
+    () =>
+      getEffectiveDpr(
+        typeof window === "undefined" ? 1 : window.devicePixelRatio || 1,
+      ),
+    [],
   );
 
   /**
