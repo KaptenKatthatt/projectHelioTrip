@@ -55,6 +55,17 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
 
   const isLanded = useStore((s) => s.isLanded);
   const isLandedOnMoon = useStore((s) => s.isLandedOnMoon);
+  const navigationMode = useStore((s) => s.navigationMode);
+
+  /**
+   * Free flight puts a virtual joystick in the bottom-left corner on mobile.
+   * Its base sits directly on the HUD's 7rem bottom padding and is 118px tall,
+   * so the camera buttons have to clear ~14.4rem to stop overlapping it.
+   */
+  const cameraToolPosition =
+    navigationMode === 'free'
+      ? 'fixed bottom-[calc(15.5rem+env(safe-area-inset-bottom))] left-4 z-10'
+      : 'fixed bottom-32 left-4 z-10';
 
   /**
    * Held stable so `HudDetailRegion`'s memo boundary survives. An element
@@ -146,7 +157,7 @@ export const HUD = ({ hudFrame = 'viewport' }: HUDProps) => {
         mobileBottomNav={mobileBottomNav}
       />
       <HudOverlayRegion />
-      {mobileLayout && gameMode !== 'lab' && <CameraTool className="fixed bottom-32 left-4 z-10" />}
+      {mobileLayout && gameMode !== 'lab' && <CameraTool className={cameraToolPosition} />}
       <QualityNoticeToast />
       {gameMode === 'lab' ? <LabOverlay /> : null}
       {isLanded && (
